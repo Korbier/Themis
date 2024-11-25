@@ -130,18 +130,6 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- LOGGER -->
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-core</artifactId>
-            <version>1.4.12</version>
-        </dependency>
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <version>${logback.version}</version>
-        </dependency>
-
         <!-- UNIT TESTS -->
         <dependency>
             <groupId>io.quarkus</groupId>
