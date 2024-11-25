@@ -14,12 +14,12 @@ public class Scene extends TObject<SceneDescriptor> {
     }
 
     @Override
-    public void setup() throws ThemisException {
+    public void setup() {
 
     }
 
     @Override
-    public void cleanup() throws ThemisException {
+    public void cleanup() {
 
     }
 

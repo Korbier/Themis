@@ -12,14 +12,6 @@ public record WindowDescriptor(
     implements TObjectDescriptor
 {
 
-    public WindowDescriptor(int width, int height, String title, boolean resizable, boolean maximized) {
-        this.width = width;
-        this.height = height;
-        this.title = title;
-        this.resizable = resizable;
-        this.maximized = maximized;
-    }
-
     public WindowDescriptor(int width, int height, String title) {
         this( width, height, title, true, false );
     }
