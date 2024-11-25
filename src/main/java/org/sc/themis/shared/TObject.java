@@ -6,7 +6,7 @@ public abstract class TObject<D> {
 
     private final D descriptor;
 
-    public TObject(D descriptor ) {
+    public TObject( D descriptor ) {
         this.descriptor = descriptor;
     }
 

@@ -1,10 +1,7 @@
-package org.sc.themis.input;
+package org.sc.themis.scene;
 
 import org.sc.themis.shared.TObjectDescriptor;
 
-public record InputDescriptor(
-)
+public record SceneDescriptor()
     implements TObjectDescriptor
-{
-
-}
+{}

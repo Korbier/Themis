@@ -21,6 +21,7 @@
         <lwjgl.version>3.3.4</lwjgl.version>
         <joml.version>1.10.5</joml.version>
         <logback.version>1.4.12</logback.version>
+        <awaitility.version>4.2.2</awaitility.version>
     </properties>
 
     <dependencyManagement>

@@ -17,10 +17,10 @@ public class WindowTest {
         WindowDescriptor descriptor = new WindowDescriptor(800, 600, "Mon application");
         Window window = new Window( descriptor );
 
-        //Then
+        //When
         window.setup();
 
-        //When
+        //Then
         Assertions.assertNotNull( window.getHandle() );
         Assertions.assertEquals( 800, window.getSize().x );
         Assertions.assertEquals( 600, window.getSize().y );

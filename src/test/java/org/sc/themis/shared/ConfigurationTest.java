@@ -27,8 +27,8 @@ class ConfigurationTest {
     @DisplayName("Get application.name - nominal case")
     void testGetApplicationName_01() {
         //Given
-        //Then
         //When
+        //Then
         Assertions.assertEquals(APPLICATION_NAME, this.configuration.application().name());
     }
 
@@ -36,8 +36,8 @@ class ConfigurationTest {
     @DisplayName("Get application.version - nominal case")
     void testGetApplicationVersion_01() {
         //Given
-        //Then
         //When
+        //Then
         Assertions.assertEquals(APPLICATION_VERSION, this.configuration.application().version());
     }
 
@@ -45,8 +45,8 @@ class ConfigurationTest {
     @DisplayName("Get engine.name - nominal case")
     void testGetEngineName_01() {
         //Given
-        //Then
         //When
+        //Then
         Assertions.assertEquals(ENGINE_NAME, this.configuration.engine().name());
     }
 
@@ -54,9 +54,8 @@ class ConfigurationTest {
     @DisplayName("Get engine.version - nominal case")
     void testGetEngineVersion_01() {
         //Given
-        //Then
-        String appname = this.configuration.engine().version();
         //When
+        //Then
         Assertions.assertEquals(ENGINE_VERSION, this.configuration.engine().version());
     }
 
@@ -64,8 +63,8 @@ class ConfigurationTest {
     @DisplayName("Get window.width - nominal case")
     void testGetWindowWidth_01() {
         //Given
-        //Then
         //When
+        //Then
         Assertions.assertEquals(WINDOW_WIDTH, this.configuration.window().width());
     }
 
@@ -73,8 +72,8 @@ class ConfigurationTest {
     @DisplayName("Get window.height - nominal case")
     void testGetWindowHeight_01() {
         //Given
-        //Then
         //When
+        //Then
         Assertions.assertEquals(WINDOW_HEIGHT, this.configuration.window().height());
     }
 
@@ -82,8 +81,8 @@ class ConfigurationTest {
     @DisplayName("Get window.resizable - nominal case")
     void testGetWindowResizable_01() {
         //Given
-        //Then
         //When
+        //Then
         Assertions.assertEquals(WINDOW_RESIZABLE, this.configuration.window().resizable());
     }
 
@@ -91,8 +90,8 @@ class ConfigurationTest {
     @DisplayName("Get window.maximized - nominal case")
     void testGetWindowMaximized_01() {
         //Given
-        //Then
         //When
+        //Then
         Assertions.assertEquals(WINDOW_MAXIMIZED, this.configuration.window().maximized());
     }
 

@@ -2,6 +2,7 @@ package org.sc.themis.input;
 
 import org.joml.Vector2f;
 import org.sc.themis.shared.TObject;
+import org.sc.themis.window.Window;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -12,18 +13,21 @@ public class Input extends TObject<InputDescriptor> {
 
     private static final org.jboss.logging.Logger LOG = org.jboss.logging.Logger.getLogger(Input.class);
 
+    private final Window window;
+
     private final Vector2f mousePosition         = new Vector2f();
     private final Vector2f displayVector         = new Vector2f();
     private final Vector2f previousMousePosition = new Vector2f( -1.0f, -1.0f );
+    private final Map<Integer, Boolean> pressed  = new HashMap<>();
 
     private boolean leftMouseButtonPressed  = false;
     private boolean rightMouseButtonPressed = false;
     private boolean mouseInWindow           = false;
 
-    private Map<Integer, Boolean> pressed = new HashMap<>();
 
-    public Input( InputDescriptor descriptor ) {
+    public Input(Window window, InputDescriptor descriptor ) {
         super(descriptor);
+        this.window = window;
     }
 
     @Override
@@ -40,25 +44,25 @@ public class Input extends TObject<InputDescriptor> {
     public void cleanup() {}
 
     private void setupMousePositionCallback() {
-        glfwSetCursorPosCallback( getDescriptor().window().getHandle(), (handle, xpos, ypos) -> {
+        glfwSetCursorPosCallback( this.window.getHandle(), (handle, xpos, ypos) -> {
             mousePosition.x = (float) xpos;
             mousePosition.y = (float) ypos;
         });
     }
 
     private void setupCursorCallback() {
-        glfwSetCursorEnterCallback( getDescriptor().window().getHandle(), (handle, entered) -> mouseInWindow = entered);
+        glfwSetCursorEnterCallback( this.window.getHandle(), (handle, entered) -> mouseInWindow = entered);
     }
 
     private void setupMouseBoutonCallback() {
-        glfwSetMouseButtonCallback( getDescriptor().window().getHandle(), (handle, button, action, mode) -> {
+        glfwSetMouseButtonCallback( this.window.getHandle(), (handle, button, action, mode) -> {
             leftMouseButtonPressed = button == GLFW_MOUSE_BUTTON_1 && action == GLFW_PRESS;
             rightMouseButtonPressed = button == GLFW_MOUSE_BUTTON_2 && action == GLFW_PRESS;
         });
     }
 
     private void setupKeyCallback() {
-        glfwSetKeyCallback( getDescriptor().window().getHandle(), (w, key, scancode, action, mods) -> {
+        glfwSetKeyCallback( this.window.getHandle(), (w, key, scancode, action, mods) -> {
             if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
                 glfwSetWindowShouldClose(w, true);
             }
@@ -66,7 +70,7 @@ public class Input extends TObject<InputDescriptor> {
     }
 
     private void setupPollListener() {
-        getDescriptor().window().addPollListener( this::mousePoll );
+        this.window.addPollListener( this::mousePoll );
     }
 
     public Vector2f getMousePosition() {
@@ -82,7 +86,7 @@ public class Input extends TObject<InputDescriptor> {
     }
 
     public boolean isKeyPressed( int code ) {
-        return glfwGetKey( getDescriptor().window().getHandle(), code ) == GLFW_PRESS;
+        return glfwGetKey( this.window.getHandle(), code ) == GLFW_PRESS;
     }
 
     public boolean isKeyPressedNoRepeat( int code ) {
