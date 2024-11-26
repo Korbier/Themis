@@ -2,7 +2,7 @@ package org.sc.themis.renderer.device;
 
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
-import org.sc.themis.renderer.base.VkObject;
+import org.sc.themis.renderer.base.VulkanObject;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.slf4j.Logger;
@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 
-public class VkPhysicalDevices extends VkObject {
+public class VkPhysicalDevices extends VulkanObject {
 
     final private static Logger logger = LoggerFactory.getLogger( VkPhysicalDevices.class );
 
@@ -90,13 +90,13 @@ public class VkPhysicalDevices extends VkObject {
 
         // Get number of physical devices
         IntBuffer intBuffer = stack.mallocInt(1);
-        enumeratePhysicalDevices( this.instance.getHandle(), intBuffer, null );
+        vkPhysicalDevice().enumeratePhysicalDevices( this.instance.getHandle(), intBuffer, null );
 
         int numDevices = intBuffer.get(0);
 
         // Populate physical devices list pointer
         pPhysicalDevices = stack.mallocPointer(numDevices);
-         enumeratePhysicalDevices( this.instance.getHandle(), intBuffer, pPhysicalDevices );
+        vkPhysicalDevice().enumeratePhysicalDevices( this.instance.getHandle(), intBuffer, pPhysicalDevices );
 
         return pPhysicalDevices;
 

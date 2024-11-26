@@ -3,7 +3,7 @@ package org.sc.themis.renderer.device.layer;
 import org.jboss.logging.Logger;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkLayerProperties;
-import org.sc.themis.renderer.base.VkObject;
+import org.sc.themis.renderer.base.VulkanObject;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 
@@ -21,7 +21,7 @@ import java.util.*;
  * as to retrieve the selected validation layers.
  *
  */
-public class VkLayers extends VkObject {
+public class VkLayers extends VulkanObject {
 
     private static final org.jboss.logging.Logger LOG = Logger.getLogger(VkLayers.class);
 
@@ -114,12 +114,12 @@ public class VkLayers extends VkObject {
     private VkLayerProperties.Buffer vkFetchLayers(MemoryStack stack ) throws ThemisException {
 
         IntBuffer numLayersArr = stack.callocInt(1);
-        enumerateInstanceLayerProperties( numLayersArr, null );
+        vkInstance().enumerateInstanceLayerProperties( numLayersArr, null );
 
         int numLayers = numLayersArr.get(0);
         VkLayerProperties.Buffer layersBuff = VkLayerProperties.calloc(numLayers, stack);
 
-        enumerateInstanceLayerProperties( numLayersArr, layersBuff );
+        vkInstance().enumerateInstanceLayerProperties( numLayersArr, layersBuff );
 
         return layersBuff;
 

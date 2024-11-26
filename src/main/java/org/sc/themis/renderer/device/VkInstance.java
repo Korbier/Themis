@@ -9,7 +9,7 @@ import org.lwjgl.vulkan.VkApplicationInfo;
 import org.lwjgl.vulkan.VkDebugUtilsMessengerCallbackDataEXT;
 import org.lwjgl.vulkan.VkDebugUtilsMessengerCreateInfoEXT;
 import org.lwjgl.vulkan.VkInstanceCreateInfo;
-import org.sc.themis.renderer.base.VkObject;
+import org.sc.themis.renderer.base.VulkanObject;
 import org.sc.themis.renderer.device.extension.VkDefaultExtensions;
 import org.sc.themis.renderer.device.extension.VkExtension;
 import org.sc.themis.renderer.device.extension.VkExtensions;
@@ -27,7 +27,7 @@ import static org.lwjgl.vulkan.EXTDebugUtils.*;
 import static org.lwjgl.vulkan.VK10.*;
 import static org.lwjgl.vulkan.VK13.VK_API_VERSION_1_3;
 
-public class VkInstance extends VkObject {
+public class VkInstance extends VulkanObject {
 
     private static final org.jboss.logging.Logger LOG = Logger.getLogger(VkInstance.class);
 
@@ -74,14 +74,14 @@ public class VkInstance extends VkObject {
     }
 
     private void vkCleanupInstance() throws ThemisException {
-        destroyInstance( this.handle );
+        vkInstance().destroyInstance( this.handle );
         this.handle = null;
     }
 
     private void vkCleanupDebugMessenger() throws ThemisException {
 
         if ( this.debugMessengerHandler != VK_NULL_HANDLE ) {
-            destroyDebugUtilsMessengerEXT( this.handle, this.debugMessengerHandler );
+            vkDebug().destroyDebugUtilsMessengerEXT( this.handle, this.debugMessengerHandler );
             this.debugMessengerHandler = VK_NULL_HANDLE;
         }
 
@@ -236,7 +236,7 @@ public class VkInstance extends VkObject {
         if ( this.isDebugEnabled() ) {
             try ( MemoryStack stack = MemoryStack.stackPush() ) {
                 LongBuffer buffer = stack.mallocLong(1);
-                createDebugUtilsMessengerEXT(this.handle, this.vkDebugMessenger, buffer);
+                vkDebug().createDebugUtilsMessengerEXT(this.handle, this.vkDebugMessenger, buffer);
                 this.debugMessengerHandler = buffer.get(0);
             }
         }
@@ -262,7 +262,7 @@ public class VkInstance extends VkObject {
 
     private org.lwjgl.vulkan.VkInstance vkCreateInstance( MemoryStack stack, VkInstanceCreateInfo instanceCreateInfo) throws ThemisException {
         PointerBuffer pInstance = stack.mallocPointer(1);
-        createInstance(instanceCreateInfo, pInstance);
+        vkInstance().createInstance(instanceCreateInfo, pInstance);
         return new org.lwjgl.vulkan.VkInstance(pInstance.get(0), instanceCreateInfo);
     }
 

@@ -3,14 +3,14 @@ package org.sc.themis.renderer.device.extension;
 import org.jboss.logging.Logger;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkExtensionProperties;
-import org.sc.themis.renderer.base.VkObject;
+import org.sc.themis.renderer.base.VulkanObject;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 
 import java.nio.IntBuffer;
 import java.util.*;
 
-public class VkExtensions extends VkObject {
+public class VkExtensions extends VulkanObject {
 
     private static final org.jboss.logging.Logger LOG = Logger.getLogger(VkExtensions.class);
 
@@ -96,12 +96,12 @@ public class VkExtensions extends VkObject {
     private VkExtensionProperties.Buffer vkFetchExtensions(MemoryStack stack ) throws ThemisException {
 
         IntBuffer numExtArr = stack.callocInt(1);
-        enumerateInstanceExtensionProperties( numExtArr, null );
+        vkInstance().enumerateInstanceExtensionProperties( numExtArr, null );
 
         int numLayers = numExtArr.get(0);
         VkExtensionProperties.Buffer extensionsBuff = VkExtensionProperties.calloc(numLayers, stack);
 
-        enumerateInstanceExtensionProperties( numExtArr, extensionsBuff );
+        vkInstance().enumerateInstanceExtensionProperties( numExtArr, extensionsBuff );
 
         return extensionsBuff;
 

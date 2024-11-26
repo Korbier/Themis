@@ -15,11 +15,8 @@ In progress : 🔲 Done : ✅
   * 🔲 VkMemoryAllocator
   * ✅ Configuration
     * ✅ renderer.debug
-    * ✅ application.version
-    * ✅ engine.name
-    * ✅ engine.version
-  * 
-### to do
+
+### to do / Ideas
 * Scene
     * Configuration
       * scene.projection.fov
