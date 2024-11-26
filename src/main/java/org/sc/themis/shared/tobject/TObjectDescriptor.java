@@ -1,4 +1,4 @@
-package org.sc.themis.shared;
+package org.sc.themis.shared.tobject;
 
 public interface TObjectDescriptor {
 

@@ -5,7 +5,7 @@ import org.joml.Vector2i;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.glfw.GLFWVulkan;
 import org.lwjgl.system.MemoryUtil;
-import org.sc.themis.shared.TObject;
+import org.sc.themis.shared.tobject.TObject;
 import org.sc.themis.shared.assertion.Assertions;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.window.exception.WindowGlfwInitException;

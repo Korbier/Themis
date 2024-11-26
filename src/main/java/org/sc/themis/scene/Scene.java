@@ -2,7 +2,7 @@ package org.sc.themis.scene;
 
 import org.jboss.logging.Logger;
 import org.sc.themis.renderer.Renderer;
-import org.sc.themis.shared.TObject;
+import org.sc.themis.shared.tobject.TObject;
 
 public class Scene extends TObject<SceneDescriptor> {
 

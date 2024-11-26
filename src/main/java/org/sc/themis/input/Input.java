@@ -1,8 +1,8 @@
 package org.sc.themis.input;
 
 import org.joml.Vector2f;
-import org.sc.themis.shared.TObject;
-import org.sc.themis.shared.TObjectDescriptor;
+import org.sc.themis.shared.tobject.TObject;
+import org.sc.themis.shared.tobject.TObjectDescriptor;
 import org.sc.themis.window.Window;
 
 import java.util.HashMap;

@@ -5,7 +5,7 @@ import org.sc.themis.gamestate.Gamestate;
 import org.sc.themis.input.Input;
 import org.sc.themis.renderer.Renderer;
 import org.sc.themis.scene.Scene;
-import org.sc.themis.shared.TObject;
+import org.sc.themis.shared.tobject.TObject;
 import org.sc.themis.shared.assertion.Assertions;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.window.Window;

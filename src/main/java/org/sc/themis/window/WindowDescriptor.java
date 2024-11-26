@@ -1,6 +1,6 @@
 package org.sc.themis.window;
 
-import org.sc.themis.shared.TObjectDescriptor;
+import org.sc.themis.shared.tobject.TObjectDescriptor;
 
 public record WindowDescriptor(
     int width,

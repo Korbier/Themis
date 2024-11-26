@@ -2,8 +2,7 @@ package org.sc.themis.renderer;
 
 import org.jboss.logging.Logger;
 import org.sc.themis.scene.Scene;
-import org.sc.themis.shared.TObject;
-import org.sc.themis.shared.exception.ThemisException;
+import org.sc.themis.shared.tobject.TObject;
 
 public class Renderer extends TObject<RendererDescriptor> {
 
