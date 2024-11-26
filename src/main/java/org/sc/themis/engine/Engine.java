@@ -3,7 +3,6 @@ package org.sc.themis.engine;
 import org.sc.themis.engine.exception.EngineGamestateNotFoundException;
 import org.sc.themis.gamestate.Gamestate;
 import org.sc.themis.input.Input;
-import org.sc.themis.input.InputDescriptor;
 import org.sc.themis.renderer.Renderer;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.shared.TObject;
@@ -28,13 +27,15 @@ public class Engine extends TObject<EngineDescriptor> {
     public Engine(EngineDescriptor descriptor) {
         super(descriptor);
         this.window = new Window( descriptor.window() );
-        this.input = new Input( this.window, new InputDescriptor() );
+        this.input = new Input( this.window );
         this.renderer = new Renderer( descriptor.renderer() );
         this.scene = new Scene( this.renderer, descriptor.scene() );
     }
 
     @Override
     public void setup() throws ThemisException {
+
+        LOG.trace("Engine initialisation ... ");
 
         this.window.setup();
         this.input.setup();

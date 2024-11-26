@@ -6,22 +6,7 @@
 
 In progress : 🔲 Done : ✅
 
-* Engine
-  * ✅ Window
-  * 🔲 Input 
-  * ✅ Configuration loading
-  * ✅ Configuration
-    * ✅ application.name
-    * ✅ application.version
-    * ✅ engine.name
-    * ✅ engine.version
-    * ✅ window.width
-    * ✅ window.height
-    * ✅ window.resizable
-    * ✅ window.maximized
 ### to do
-* Engine
-    * 🔲 Main Structure
 * Scene
     * Configuration
       * scene.projection.fov
@@ -33,6 +18,22 @@ In progress : 🔲 Done : ✅
     * renderer.msaa.enabled
     * renderer.msaa.value
 ### done
+* Engine Skeleton
+  * ✅ main loop
+  * ✅ Window Skeleton
+  * ✅ Input Skeleton
+  * ✅ Scene Skeleton
+  * ✅ Renderer Skeleton
+  * ✅ Gamestate Skeleton
+  * ✅ Configuration
+    * ✅ application.name
+    * ✅ application.version
+    * ✅ engine.name
+    * ✅ engine.version
+    * ✅ window.width
+    * ✅ window.height
+    * ✅ window.resizable
+    * ✅ window.maximized
     
 
 

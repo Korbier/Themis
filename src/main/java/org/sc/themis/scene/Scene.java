@@ -1,10 +1,12 @@
 package org.sc.themis.scene;
 
+import org.jboss.logging.Logger;
 import org.sc.themis.renderer.Renderer;
 import org.sc.themis.shared.TObject;
-import org.sc.themis.shared.exception.ThemisException;
 
 public class Scene extends TObject<SceneDescriptor> {
+
+    private static final Logger LOG = Logger.getLogger(Scene.class);
 
     private final Renderer renderer;
 
@@ -16,6 +18,7 @@ public class Scene extends TObject<SceneDescriptor> {
     @Override
     public void setup() {
 
+        LOG.trace( "Scene initialized" );
     }
 
     @Override

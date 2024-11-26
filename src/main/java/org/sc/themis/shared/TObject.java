@@ -2,7 +2,7 @@ package org.sc.themis.shared;
 
 import org.sc.themis.shared.exception.ThemisException;
 
-public abstract class TObject<D> {
+public abstract class TObject<D extends TObjectDescriptor> {
 
     private final D descriptor;
 

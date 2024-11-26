@@ -6,6 +6,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.sc.themis.engine.exception.EngineGamestateNotFoundException;
 import org.sc.themis.renderer.RendererDescriptor;
+import org.sc.themis.renderer.activity.RendererActivity;
 import org.sc.themis.scene.SceneDescriptor;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.window.WindowDescriptor;
@@ -20,7 +21,7 @@ public class EngineTest {
         //Given
         EngineDescriptor descriptor = new EngineDescriptor(
             new WindowDescriptor(800, 600, "Mon application"),
-            new RendererDescriptor(),
+            new RendererDescriptor( new RendererActivity() {} ),
             new SceneDescriptor()
         );
 
@@ -53,7 +54,7 @@ public class EngineTest {
         //Given
         EngineDescriptor descriptor = new EngineDescriptor(
             new WindowDescriptor(800, 600, "Mon application"),
-            new RendererDescriptor(),
+            new RendererDescriptor( new RendererActivity() {} ),
             new SceneDescriptor()
         );
 

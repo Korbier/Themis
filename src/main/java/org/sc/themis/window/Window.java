@@ -35,8 +35,6 @@ public class Window extends TObject<WindowDescriptor> {
     @Override
     public void setup() throws ThemisException {
 
-        LOG.tracef( "Window setup" );
-
         Assertions.isTrue( org.lwjgl.glfw.GLFW::glfwInit, new WindowGlfwInitException() );
         Assertions.isTrue( GLFWVulkan::glfwVulkanSupported, new WindowVukanNotSupportedException() );
 
@@ -47,13 +45,12 @@ public class Window extends TObject<WindowDescriptor> {
         setupWindow( getDescriptor().title(), getDescriptor().resizable(), getDescriptor().maximized() );
         setupCallback();
 
-        LOG.tracef( "Window initialized (Size=%dx%d, Resolution=%d,%d)", this.size.x, this.size.y, this.resolution.x, this.resolution.y );
+        LOG.tracef( "Window initialized (Size=%dx%d, Resolution=%dx%d)", this.size.x, this.size.y, this.resolution.x, this.resolution.y );
 
     }
 
     @Override
     public void cleanup() {
-        LOG.tracef( "Window setup" );
         glfwSetWindowShouldClose( this.getHandle(), true);
     }
 
