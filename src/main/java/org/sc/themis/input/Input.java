@@ -1,8 +1,8 @@
 package org.sc.themis.input;
 
 import org.joml.Vector2f;
+import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.tobject.TObject;
-import org.sc.themis.shared.tobject.TObjectDescriptor;
 import org.sc.themis.window.Window;
 
 import java.util.HashMap;
@@ -10,7 +10,7 @@ import java.util.Map;
 
 import static org.lwjgl.glfw.GLFW.*;
 
-public class Input extends TObject<TObjectDescriptor> {
+public class Input extends TObject {
 
     private static final org.jboss.logging.Logger LOG = org.jboss.logging.Logger.getLogger(Input.class);
 
@@ -26,8 +26,8 @@ public class Input extends TObject<TObjectDescriptor> {
     private boolean mouseInWindow           = false;
 
 
-    public Input( Window window ) {
-        super(TObjectDescriptor.EMPTY_DESCRIPTOR);
+    public Input( Configuration configuration, Window window ) {
+        super(configuration);
         this.window = window;
     }
 

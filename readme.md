@@ -6,6 +6,19 @@
 
 In progress : 🔲 Done : ✅
 
+* Renderer
+  * ✅ VkExtensions 
+  * ✅ VkLayers
+  * ✅ VkInstance   
+  * ✅ VkPhysicalDevices
+  * ✅ VkPhysicalDevice
+  * 🔲 VkMemoryAllocator
+  * ✅ Configuration
+    * ✅ renderer.debug
+    * ✅ application.version
+    * ✅ engine.name
+    * ✅ engine.version
+  * 
 ### to do
 * Scene
     * Configuration

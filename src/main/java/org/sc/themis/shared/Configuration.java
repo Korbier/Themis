@@ -10,15 +10,16 @@ public interface Configuration {
     Application application();
     Engine engine();
     Window window();
+    Renderer renderer();
 
     interface Application {
         String name();
-        String version();
+        int version();
     }
 
     interface Engine {
         String name();
-        String version();
+        int version();
     }
 
     interface Window {
@@ -26,6 +27,10 @@ public interface Configuration {
         int height();
         boolean resizable();
         boolean maximized();
+    }
+
+    interface Renderer {
+        boolean debug();
     }
 
 

@@ -1,17 +1,18 @@
 package org.sc.themis.shared.tobject;
 
+import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 
-public abstract class TObject<D extends TObjectDescriptor> {
+public abstract class TObject {
 
-    private final D descriptor;
+    private final Configuration configuration;
 
-    public TObject( D descriptor ) {
-        this.descriptor = descriptor;
+    public TObject(Configuration configuration) {
+        this.configuration = configuration;
     }
 
-    public D getDescriptor() {
-        return this.descriptor;
+    public Configuration getConfiguration() {
+        return this.configuration;
     }
 
     abstract public void setup() throws ThemisException;

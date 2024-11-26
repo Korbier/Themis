@@ -1,13 +1,13 @@
 package org.sc.playground;
 
-import org.sc.playground.starter.StarterGamestate;
-import org.sc.playground.starter.StarterRendererActivity;
+import org.sc.playground.noop.NoopGamestate;
+import org.sc.playground.noop.NoopRendererActivity;
 import org.sc.themis.gamestate.Gamestate;
 import org.sc.themis.renderer.activity.RendererActivity;
 
 public enum Playgrounds {
 
-    STARTER( "starter", new StarterGamestate(), new StarterRendererActivity() );
+    NOOP( "noop", new NoopGamestate(), new NoopRendererActivity() );
 
     final String name;
     final Gamestate gamestate;
@@ -25,7 +25,7 @@ public enum Playgrounds {
             if ( playground.name.equals( name ) ) return playground;
         }
 
-        return Playgrounds.STARTER;
+        return Playgrounds.NOOP;
 
     }
 
