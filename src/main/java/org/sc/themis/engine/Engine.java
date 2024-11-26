@@ -115,11 +115,13 @@ public class Engine extends TObject<EngineDescriptor> {
         }
     }
 
-    private void loadGamestate(Gamestate gamestate) {
+    private void loadGamestate( Gamestate gamestate ) {
         this.currentGamestate = gamestate;
+        this.currentGamestate.setup();
     }
 
     private void cleanupGamestate(Gamestate gamestate) {
+        gamestate.cleanup();
     }
 
     private void update( long tpf ) throws ThemisException {

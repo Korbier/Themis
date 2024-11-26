@@ -5,6 +5,9 @@ import org.sc.themis.scene.Scene;
 
 public interface Gamestate {
 
+    void setup();
+    void cleanup();
+
     void input(Scene scene, Input input, long tpf);
     void update( Scene scene, long tpf );
 

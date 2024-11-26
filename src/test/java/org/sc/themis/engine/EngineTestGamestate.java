@@ -15,6 +15,16 @@ public class EngineTestGamestate implements Gamestate {
     }
 
     @Override
+    public void setup() {
+
+    }
+
+    @Override
+    public void cleanup() {
+
+    }
+
+    @Override
     public void input(Scene scene, Input input, long tpf) {
 
     }

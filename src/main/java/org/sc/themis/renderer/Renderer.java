@@ -14,13 +14,13 @@ public class Renderer extends TObject<RendererDescriptor> {
     }
 
     @Override
-    public void setup() throws ThemisException {
+    public void setup() {
 
         LOG.trace( "Renderer initialized" );
     }
 
     @Override
-    public void cleanup() throws ThemisException {
+    public void cleanup() {
 
     }
 

@@ -77,7 +77,7 @@ public class Window extends TObject<WindowDescriptor> {
     }
 
     private void setupCallback() {
-        glfwSetFramebufferSizeCallback( handle, (window, w, h) -> this.resize(w, h) );
+        glfwSetFramebufferSizeCallback( handle, (_, w, h) -> this.resize(w, h) );
     }
 
     public Long getHandle() {

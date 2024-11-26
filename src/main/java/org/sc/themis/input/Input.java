@@ -45,25 +45,25 @@ public class Input extends TObject<TObjectDescriptor> {
     public void cleanup() {}
 
     private void setupMousePositionCallback() {
-        glfwSetCursorPosCallback( this.window.getHandle(), (handle, xpos, ypos) -> {
+        glfwSetCursorPosCallback( this.window.getHandle(), (_, xpos, ypos) -> {
             mousePosition.x = (float) xpos;
             mousePosition.y = (float) ypos;
         });
     }
 
     private void setupCursorCallback() {
-        glfwSetCursorEnterCallback( this.window.getHandle(), (handle, entered) -> mouseInWindow = entered);
+        glfwSetCursorEnterCallback( this.window.getHandle(), (_, entered) -> mouseInWindow = entered);
     }
 
     private void setupMouseBoutonCallback() {
-        glfwSetMouseButtonCallback( this.window.getHandle(), (handle, button, action, mode) -> {
+        glfwSetMouseButtonCallback( this.window.getHandle(), (_, button, action, mode) -> {
             leftMouseButtonPressed = button == GLFW_MOUSE_BUTTON_1 && action == GLFW_PRESS;
             rightMouseButtonPressed = button == GLFW_MOUSE_BUTTON_2 && action == GLFW_PRESS;
         });
     }
 
     private void setupKeyCallback() {
-        glfwSetKeyCallback( this.window.getHandle(), (w, key, scancode, action, mods) -> {
+        glfwSetKeyCallback( this.window.getHandle(), (w, key, _, action, _) -> {
             if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
                 glfwSetWindowShouldClose(w, true);
             }

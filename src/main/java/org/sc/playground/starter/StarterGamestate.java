@@ -7,6 +7,16 @@ import org.sc.themis.scene.Scene;
 public class StarterGamestate implements Gamestate {
 
     @Override
+    public void setup() {
+
+    }
+
+    @Override
+    public void cleanup() {
+
+    }
+
+    @Override
     public void input(Scene scene, Input input, long tpf) {
 
     }

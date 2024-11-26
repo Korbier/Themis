@@ -33,13 +33,6 @@ public class EngineTest {
         engine.run();
 
         //Then
-        /**
-        Assertions.assertNotNull( window.getHandle() );
-        Assertions.assertEquals( 800, window.getSize().x );
-        Assertions.assertEquals( 600, window.getSize().y );
-        Assertions.assertNotEquals( 0, window.getResolution().x );
-        Assertions.assertNotEquals( 0, window.getResolution().y );
-        **/
 
         //Cleanup
         engine.cleanup();
@@ -65,13 +58,6 @@ public class EngineTest {
 
         //Then
         Assertions.assertThrows( EngineGamestateNotFoundException.class,  engine::run );
-        /**
-         Assertions.assertNotNull( window.getHandle() );
-         Assertions.assertEquals( 800, window.getSize().x );
-         Assertions.assertEquals( 600, window.getSize().y );
-         Assertions.assertNotEquals( 0, window.getResolution().x );
-         Assertions.assertNotEquals( 0, window.getResolution().y );
-         **/
 
         //Cleanup
         engine.cleanup();
