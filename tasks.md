@@ -14,8 +14,8 @@ In progress : 🔲 Done : ✅
   * ✅ VkSwapChain
   * ✅ Renderer.presentQueue
   * ✅ VkImageView
-  * 🔲 VkSwapChain.acquire -> need VkSemaphore
-  * 🔲 VkSwapChain.present -> need VkSemaphore
+  * ✅ VkSwapChain.acquire -> need VkSemaphore
+  * ✅ VkSwapChain.present -> need VkSemaphore
 * ✅ Configuration
   * ✅ renderer.image-count
   * ✅ renderer.vsync-enabled

@@ -8,9 +8,12 @@ import org.sc.themis.renderer.base.VulkanObject;
 import org.sc.themis.renderer.device.VkDevice;
 import org.sc.themis.renderer.device.VkPhysicalDevice;
 import org.sc.themis.renderer.exception.SurfaceFormatNotFoundException;
+import org.sc.themis.renderer.exception.VkOutOfDateKHRException;
+import org.sc.themis.renderer.exception.VkSuboptimalKHRException;
 import org.sc.themis.renderer.queue.VkQueue;
 import org.sc.themis.renderer.resource.VkImageView;
 import org.sc.themis.renderer.resource.VkImageViewDescriptor;
+import org.sc.themis.renderer.sync.VkSemaphore;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.window.Window;
@@ -161,14 +164,13 @@ public class VkSwapChain extends VulkanObject {
         return this.swapChainExtent;
     }
 
-    /**
-    public boolean acquire( MemoryStack stack, VkSemaphore acquireSemaphore ) throws CoreException {
+    public boolean acquire( MemoryStack stack, VkSemaphore acquireSemaphore ) throws ThemisException {
 
         boolean resize = false;
 
         try {
             IntBuffer ip = stack.mallocInt(1);
-            vk().vkSurface().acquireNextImageKHR( this.device.getHandle(), this.handle, ~0L, acquireSemaphore.getHandle(), MemoryUtil.NULL, ip);
+            vkSurface().acquireNextImageKHR( this.device.getHandle(), this.handle, ~0L, acquireSemaphore.getHandle(), MemoryUtil.NULL, ip);
             this.currentFrame = ip.get(0);
         } catch (VkOutOfDateKHRException e) {
             resize = true;
@@ -179,16 +181,14 @@ public class VkSwapChain extends VulkanObject {
         return resize;
 
     }
-    **/
 
-    /**
-    public boolean present( MemoryStack stack, VkSemaphore presentSemaphore ) throws CoreException {
+    public boolean present( MemoryStack stack, VkSemaphore presentSemaphore ) throws ThemisException {
 
         boolean resize = false;
 
         try {
             VkPresentInfoKHR presentInfo = createPresentInfo( stack, presentSemaphore  );
-            vk().vkSurface().queuePresentKHR( this.presentQueue.getHandle(), presentInfo );
+            vkSurface().queuePresentKHR( this.presentQueue.getHandle(), presentInfo );
         } catch (VkOutOfDateKHRException e) {
             resize = true;
         } catch (VkSuboptimalKHRException e) {
@@ -209,8 +209,6 @@ public class VkSwapChain extends VulkanObject {
                 .pSwapchains(stack.longs(this.handle))
                 .pImageIndices(stack.ints(this.currentFrame));
     }
-     **/
-
 
     private VkImageView[] createImageViews(int format ) throws ThemisException {
 
