@@ -13,7 +13,7 @@ public class VkQueueSelectors {
     public final static Predicate<VkQueueFamily> SELECTOR_TRANSFERT_QUEUE = vkQueueFamily -> hasFlag(vkQueueFamily, VK_QUEUE_TRANSFER_BIT);
 
     private static boolean hasFlag( VkQueueFamily properties, int flag ) {
-        return (properties.properties().queueFlags() & VK_QUEUE_GRAPHICS_BIT) != 0;
+        return (properties.properties().queueFlags() & flag) != 0;
     }
 
 }

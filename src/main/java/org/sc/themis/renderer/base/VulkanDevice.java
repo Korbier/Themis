@@ -34,5 +34,8 @@ public class VulkanDevice extends Vulkan {
         vk( () -> vkDeviceWaitIdle( device ) );
     }
 
+    public void getDeviceQueue(VkDevice device, int queueFamilyIndex, int queueIndex, PointerBuffer pQueue) throws ThemisException {
+        vk( () -> vkGetDeviceQueue(device, queueFamilyIndex, queueIndex, pQueue) );
+    }
 
 }

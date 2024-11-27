@@ -6,6 +6,9 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkInstance;
 import org.lwjgl.vulkan.*;
 import org.sc.themis.renderer.base.VulkanObject;
+import org.sc.themis.renderer.exception.NoQueueFamilyFoundException;
+import org.sc.themis.renderer.queue.VkQueue;
+import org.sc.themis.renderer.queue.VkQueueFamily;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.utils.BitwiseState;
@@ -13,6 +16,7 @@ import org.sc.themis.shared.utils.BitwiseState;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
@@ -52,6 +56,18 @@ public class VkDevice extends VulkanObject {
     @Override
     public void cleanup() throws ThemisException {
         cleanupVkDevice();
+    }
+
+    public VkQueue selectQueue( int queueIndex, Predicate<VkQueueFamily> selector ) throws ThemisException {
+
+        int queueFamilyIndex = selectQueueFamily( selector );
+        org.lwjgl.vulkan.VkQueue vkQueue = vkFetchQueue( queueIndex, queueFamilyIndex);
+
+        VkQueue queue = new VkQueue( getConfiguration(), vkQueue );
+        queue.setup();
+
+        return queue;
+
     }
 
     private void setupVkDevice() throws ThemisException {
@@ -136,5 +152,21 @@ public class VkDevice extends VulkanObject {
         vkDevice().createDevice( this.physicalDevice.getHandle(), deviceCreateInfo, pp );
         return new org.lwjgl.vulkan.VkDevice(pp.get(0), this.physicalDevice.getHandle(), deviceCreateInfo);
     }
+
+    private int selectQueueFamily( Predicate<VkQueueFamily> selector ) throws NoQueueFamilyFoundException {
+        return getPhysicalDevice()
+                .selectQueueFamily( selector )
+                .orElseThrow(NoQueueFamilyFoundException::new)
+                .handle();
+    }
+
+    private org.lwjgl.vulkan.VkQueue vkFetchQueue( int queueIndex, int queueFamilyIndex ) throws ThemisException {
+        try (MemoryStack stack = MemoryStack.stackPush() ) {
+            PointerBuffer pQueue = stack.mallocPointer(1);
+            vkDevice().getDeviceQueue( getHandle(), queueFamilyIndex, queueIndex, pQueue);
+            return new org.lwjgl.vulkan.VkQueue(pQueue.get(0), getHandle());
+        }
+    }
+
 
 }
