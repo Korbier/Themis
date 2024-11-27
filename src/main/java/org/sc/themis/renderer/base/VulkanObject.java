@@ -12,6 +12,7 @@ public abstract class VulkanObject extends TObject {
     private final VulkanMemoryAllocator memoryAllocator = new VulkanMemoryAllocator();
     private final VulkanSurface surface = new VulkanSurface();
     private final VulkanImage image = new VulkanImage();
+    private final VulkanSync sync = new VulkanSync();
 
     public VulkanObject(Configuration configuration) {
         super( configuration );
@@ -43,6 +44,10 @@ public abstract class VulkanObject extends TObject {
 
     public VulkanImage vkImage() {
         return this.image;
+    }
+
+    public VulkanSync vkSync() {
+        return this.sync;
     }
 
 }

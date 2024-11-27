@@ -7,7 +7,8 @@
 In progress : 🔲 Done : ✅
 
 * Renderer
-  * 🔲 VkSemaphore
+  * ✅ VkSemaphore
+  * ✅ VkFence
   * ✅ VkSurface
   * ✅ VkSurfaceFormat
   * ✅ VkSwapChain

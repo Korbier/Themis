@@ -22,7 +22,6 @@ public class Renderer extends TObject {
     private final Window window;
     private final RendererActivity activity;
 
-
     private final VkInstance instance;
     private VkPhysicalDevice physicalDevice;
     private VkDevice device;
