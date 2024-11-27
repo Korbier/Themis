@@ -3,12 +3,14 @@ package org.sc.themis.renderer;
 import org.jboss.logging.Logger;
 import org.sc.themis.renderer.activity.RendererActivity;
 import org.sc.themis.renderer.device.*;
+import org.sc.themis.renderer.presentation.VkSurface;
 import org.sc.themis.renderer.queue.VkQueue;
 import org.sc.themis.renderer.queue.VkQueueSelectors;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.tobject.TObject;
+import org.sc.themis.window.Window;
 
 public class Renderer extends TObject {
 
@@ -16,17 +18,23 @@ public class Renderer extends TObject {
 
     protected final static int DEFAULT_QUEUE_INDEX = 0;
 
+    private final Window window;
     private final RendererActivity activity;
+
+
     private final VkInstance instance;
     private VkPhysicalDevice physicalDevice;
     private VkDevice device;
     private VkMemoryAllocator memoryAllocator;
 
+    private VkSurface surface;
+
     private VkQueue graphicQueue;
     private VkQueue transfertQueue;
 
-    public Renderer(Configuration configuration, RendererActivity activity ) {
+    public Renderer(Configuration configuration, Window window, RendererActivity activity ) {
         super(configuration);
+        this.window = window;
         this.activity = activity;
         this.instance = new VkInstance( configuration );
     }
@@ -37,12 +45,19 @@ public class Renderer extends TObject {
         this.setupPhysicalDevice();
         this.setupDevice();
         this.setupMemoryAllocator();
+        this.setupSurface();
         this.setupQueues();
         LOG.trace( "Renderer initialized" );
     }
 
+    private void setupSurface() throws ThemisException {
+        this.surface = new VkSurface(getConfiguration(), this.instance, this.window );
+        this.surface.setup();
+    }
+
     @Override
     public void cleanup() throws ThemisException {
+        this.surface.cleanup();
         this.transfertQueue.cleanup();
         this.graphicQueue.cleanup();
         this.memoryAllocator.cleanup();

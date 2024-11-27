@@ -6,17 +6,27 @@
 
 In progress : 🔲 Done : ✅
 
-### to do / Ideas
-* Scene
-    * Configuration
-      * scene.projection.fov
-      * scene.projection.znear
-      * scene.projection.zfar
 * Renderer
-  * Configuration
-    * renderer.vsync
-    * renderer.msaa.enabled
-    * renderer.msaa.value
+  * ✅ VkSurface
+  * ✅ VkSurfaceFormat
+  * 🔲 VkSwapChain
+  * 🔲 Renderer.presentQueue
+
+### to do / Ideas
+
+  * 🔲 VkResource
+    * 🔲 VkBuffer
+    * 🔲 VkStagingResource
+    * 🔲 VkStagingBuffer
+    * 🔲 VkStagingImage
+  * 🔲 VkSync
+    * 🔲 VkSemaphore
+    * 🔲 VkFence
+  * 🔲 VkCommand
+  * 🔲 VkFramebuffer
+  * 🔲 VkPipeline
+  * 🔲 VkRenderpass
+
 ### done
 * Engine Skeleton
   * ✅ main loop
@@ -44,7 +54,7 @@ In progress : 🔲 Done : ✅
   * ✅ VkDevice
   * ✅ VkQueue
   * ✅ Renderer.graphicQueue
-  * ✅ Renderer.transfertQueue* 
+  * ✅ Renderer.transfertQueue 
   * ✅ Configuration
     * ✅ renderer.debug
     * ✅ renderer.feature.sampler-anisotropy
