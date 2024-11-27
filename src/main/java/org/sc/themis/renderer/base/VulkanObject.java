@@ -9,6 +9,7 @@ public abstract class VulkanObject extends TObject {
     private final VulkanInstance instance = new VulkanInstance();
     private final VulkanPhysicalDevice physicalDevice = new VulkanPhysicalDevice();
     private final VulkanDevice device = new VulkanDevice();
+    private final VulkanMemoryAllocator memoryAllocator = new VulkanMemoryAllocator();
 
     public VulkanObject(Configuration configuration) {
         super( configuration );
@@ -28,6 +29,10 @@ public abstract class VulkanObject extends TObject {
 
     protected VulkanDevice vkDevice() {
         return this.device;
+    }
+
+    protected VulkanMemoryAllocator vkMemoryAllocator() {
+        return this.memoryAllocator;
     }
 
 }

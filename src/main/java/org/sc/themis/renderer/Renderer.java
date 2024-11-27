@@ -16,6 +16,7 @@ public class Renderer extends TObject {
     private final VkInstance instance;
     private VkPhysicalDevice physicalDevice;
     private VkDevice device;
+    private VkMemoryAllocator memoryAllocator;
 
     public Renderer(Configuration configuration, RendererActivity activity ) {
         super(configuration);
@@ -28,7 +29,13 @@ public class Renderer extends TObject {
         this.instance.setup();
         this.setupPhysicalDevice();
         this.setupDevice();
+        this.setupMemoryAllocator();
         LOG.trace( "Renderer initialized" );
+    }
+
+    private void setupMemoryAllocator() throws ThemisException {
+        this.memoryAllocator = new VkMemoryAllocator( getConfiguration(), this.physicalDevice, this.device, this.instance );
+        this.memoryAllocator.setup();
     }
 
     private void setupDevice() throws ThemisException {
@@ -37,16 +44,18 @@ public class Renderer extends TObject {
     }
 
     private void setupPhysicalDevice() throws ThemisException {
-
         VkPhysicalDevices devices = new VkPhysicalDevices(getConfiguration(), this.instance);
-        devices.setup();
-
-        this.physicalDevice = devices.select( VkPhysicalDeviceSelectors.hasGraphicsQueue.and( VkPhysicalDeviceSelectors.hasKHRSwapChainExtension ) );
-
+        try {
+            devices.setup();
+            this.physicalDevice = devices.select(VkPhysicalDeviceSelectors.hasGraphicsQueue.and(VkPhysicalDeviceSelectors.hasKHRSwapChainExtension));
+        } finally {
+            devices.cleanup();
+        }
     }
 
     @Override
     public void cleanup() throws ThemisException {
+        this.memoryAllocator.cleanup();
         this.device.cleanup();
         this.physicalDevice.cleanup();
         this.instance.cleanup();

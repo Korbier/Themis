@@ -6,16 +6,6 @@
 
 In progress : 🔲 Done : ✅
 
-* Renderer
-  * ✅ VkExtensions 
-  * ✅ VkLayers
-  * ✅ VkInstance   
-  * ✅ VkPhysicalDevices
-  * ✅ VkPhysicalDevice
-  * 🔲 VkMemoryAllocator
-  * ✅ VkDevice
-  * ✅ Configuration
-    * ✅ renderer.debug
 
 ### to do / Ideas
 * Scene
@@ -45,7 +35,18 @@ In progress : 🔲 Done : ✅
     * ✅ window.height
     * ✅ window.resizable
     * ✅ window.maximized
-    
+* Renderer
+  * ✅ VkExtensions
+  * ✅ VkLayers
+  * ✅ VkInstance
+  * ✅ VkPhysicalDevices
+  * ✅ VkPhysicalDevice
+  * ✅ VkMemoryAllocator
+  * ✅ VkDevice
+  * ✅ Configuration
+    * ✅ renderer.debug
+    * ✅ renderer.feature.sampler-anisotropy
+    * ✅ renderer.feature.geometry-shader    
 
 
 
