@@ -5,7 +5,8 @@ import org.joml.Vector2i;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.glfw.GLFWVulkan;
 import org.lwjgl.system.MemoryUtil;
-import org.sc.themis.shared.TObject;
+import org.sc.themis.shared.Configuration;
+import org.sc.themis.shared.tobject.TObject;
 import org.sc.themis.shared.assertion.Assertions;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.window.exception.WindowGlfwInitException;
@@ -17,7 +18,7 @@ import java.util.List;
 
 import static org.lwjgl.glfw.GLFW.*;
 
-public class Window extends TObject<WindowDescriptor> {
+public class Window extends TObject {
 
     private static final Logger LOG = Logger.getLogger(Window.class);
 
@@ -28,8 +29,8 @@ public class Window extends TObject<WindowDescriptor> {
     private Long handle;
     private boolean resized = false;
 
-    public Window( WindowDescriptor descriptor ) {
-        super( descriptor );
+    public Window( Configuration configuration ) {
+        super( configuration );
     }
 
     @Override
@@ -41,8 +42,8 @@ public class Window extends TObject<WindowDescriptor> {
         GLFWVidMode vidMode = glfwGetVideoMode(glfwGetPrimaryMonitor());
         Assertions.notNull( vidMode, new WindowVideoModeNotSupportedException() );
 
-        setupAttributes( vidMode, getDescriptor().width(), getDescriptor().height() );
-        setupWindow( getDescriptor().title(), getDescriptor().resizable(), getDescriptor().maximized() );
+        setupAttributes( vidMode, getConfiguration().window().width(), getConfiguration().window().height() );
+        setupWindow( getConfiguration().application().name(), getConfiguration().window().resizable(), getConfiguration().window().maximized() );
         setupCallback();
 
         LOG.tracef( "Window initialized (Size=%dx%d, Resolution=%dx%d)", this.size.x, this.size.y, this.resolution.x, this.resolution.y );

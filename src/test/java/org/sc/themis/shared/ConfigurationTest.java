@@ -10,10 +10,10 @@ import org.junit.jupiter.api.Test;
 class ConfigurationTest {
 
     private final static String APPLICATION_NAME = "Themis Application";
-    private final static String APPLICATION_VERSION = "0.0.0";
+    private final static int APPLICATION_VERSION = 1;
 
     private final static String ENGINE_NAME = "Themis Engine";
-    private final static String ENGINE_VERSION = "0.0.1";
+    private final static int ENGINE_VERSION = 1;
 
     private final static int WINDOW_WIDTH = 800;
     private final static int WINDOW_HEIGHT = 600;

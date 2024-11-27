@@ -6,7 +6,8 @@
 
 In progress : 🔲 Done : ✅
 
-### to do
+
+### to do / Ideas
 * Scene
     * Configuration
       * scene.projection.fov
@@ -34,7 +35,18 @@ In progress : 🔲 Done : ✅
     * ✅ window.height
     * ✅ window.resizable
     * ✅ window.maximized
-    
+* Renderer
+  * ✅ VkExtensions
+  * ✅ VkLayers
+  * ✅ VkInstance
+  * ✅ VkPhysicalDevices
+  * ✅ VkPhysicalDevice
+  * ✅ VkMemoryAllocator
+  * ✅ VkDevice
+  * ✅ Configuration
+    * ✅ renderer.debug
+    * ✅ renderer.feature.sampler-anisotropy
+    * ✅ renderer.feature.geometry-shader    
 
 
 

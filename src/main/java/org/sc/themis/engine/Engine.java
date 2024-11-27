@@ -4,13 +4,15 @@ import org.sc.themis.engine.exception.EngineGamestateNotFoundException;
 import org.sc.themis.gamestate.Gamestate;
 import org.sc.themis.input.Input;
 import org.sc.themis.renderer.Renderer;
+import org.sc.themis.renderer.activity.RendererActivity;
 import org.sc.themis.scene.Scene;
-import org.sc.themis.shared.TObject;
+import org.sc.themis.shared.Configuration;
+import org.sc.themis.shared.tobject.TObject;
 import org.sc.themis.shared.assertion.Assertions;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.window.Window;
 
-public class Engine extends TObject<EngineDescriptor> {
+public class Engine extends TObject {
 
     private static final org.jboss.logging.Logger LOG = org.jboss.logging.Logger.getLogger(Engine.class);
 
@@ -24,12 +26,12 @@ public class Engine extends TObject<EngineDescriptor> {
     private Gamestate nextGamestate;
     private Gamestate currentGamestate;
 
-    public Engine(EngineDescriptor descriptor) {
-        super(descriptor);
-        this.window = new Window( descriptor.window() );
-        this.input = new Input( this.window );
-        this.renderer = new Renderer( descriptor.renderer() );
-        this.scene = new Scene( this.renderer, descriptor.scene() );
+    public Engine(Configuration configuration, RendererActivity activity ) {
+        super(configuration);
+        this.window = new Window( configuration );
+        this.input = new Input( configuration, this.window );
+        this.renderer = new Renderer( configuration, activity );
+        this.scene = new Scene( configuration, this.renderer );
     }
 
     @Override
@@ -109,7 +111,7 @@ public class Engine extends TObject<EngineDescriptor> {
 
     private void loadRequestedGamestate() {
         if ( this.nextGamestate != null ) {
-            this.cleanupGamestate( this.currentGamestate );
+            this.cleanupGamestate();
             this.loadGamestate( this.nextGamestate );
             this.nextGamestate = null;
         }
@@ -120,11 +122,13 @@ public class Engine extends TObject<EngineDescriptor> {
         this.currentGamestate.setup();
     }
 
-    private void cleanupGamestate(Gamestate gamestate) {
-        gamestate.cleanup();
+    private void cleanupGamestate() {
+        if ( this.currentGamestate != null ) {
+            this.currentGamestate.cleanup();
+        }
     }
 
-    private void update( long tpf ) throws ThemisException {
+    private void update( long tpf ) {
         this.currentGamestate.update( this.scene, tpf );
     }
 

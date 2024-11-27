@@ -1,10 +1,10 @@
-package org.sc.playground.starter;
+package org.sc.playground.noop;
 
 import org.sc.themis.gamestate.Gamestate;
 import org.sc.themis.input.Input;
 import org.sc.themis.scene.Scene;
 
-public class StarterGamestate implements Gamestate {
+public class NoopGamestate implements Gamestate {
 
     @Override
     public void setup() {
