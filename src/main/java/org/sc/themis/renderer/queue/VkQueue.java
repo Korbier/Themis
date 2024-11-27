@@ -12,10 +12,12 @@ public class VkQueue extends VulkanObject {
     private static final org.jboss.logging.Logger LOG = Logger.getLogger(VkQueue.class);
 
     private final org.lwjgl.vulkan.VkQueue vkQueue;
+    private final int queueFamilyIndex;
 
-    public VkQueue( Configuration configuration, org.lwjgl.vulkan.VkQueue queue ) {
+    public VkQueue( Configuration configuration, org.lwjgl.vulkan.VkQueue queue, int queueFamilyIndex ) {
         super( configuration );
         this.vkQueue = queue;
+        this.queueFamilyIndex = queueFamilyIndex;
     }
 
     public void setup() throws ThemisException {
@@ -41,6 +43,10 @@ public class VkQueue extends VulkanObject {
 
     public org.lwjgl.vulkan.VkQueue getHandle() {
         return this.vkQueue;
+    }
+
+    public int getQueueFamilyIndex() {
+        return this.queueFamilyIndex;
     }
 
 }

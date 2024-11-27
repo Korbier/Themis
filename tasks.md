@@ -6,17 +6,37 @@
 
 In progress : 🔲 Done : ✅
 
-### to do / Ideas
-* Scene
-    * Configuration
-      * scene.projection.fov
-      * scene.projection.znear
-      * scene.projection.zfar
 * Renderer
-  * Configuration
-    * renderer.vsync
-    * renderer.msaa.enabled
-    * renderer.msaa.value
+  * ✅ VkSemaphore
+  * ✅ VkFence
+  * ✅ VkSurface
+  * ✅ VkSurfaceFormat
+  * ✅ VkSwapChain
+  * ✅ Renderer.presentQueue
+  * ✅ VkImageView
+  * ✅ VkSwapChain.acquire -> need VkSemaphore
+  * ✅ VkSwapChain.present -> need VkSemaphore
+* ✅ Configuration
+  * ✅ renderer.image-count
+  * ✅ renderer.vsync-enabled
+
+### to do / Ideas
+
+  * 🔲 VkResource
+    * 🔲 VkBuffer
+    * 🔲 VkImage
+    * 🔲 VkImageView
+    * 🔲 VkStagingResource
+    * 🔲 VkStagingBuffer
+    * 🔲 VkStagingImage
+  * 🔲 VkSync
+    * 🔲 VkSemaphore
+    * 🔲 VkFence
+  * 🔲 VkCommand
+  * 🔲 VkFramebuffer
+  * 🔲 VkPipeline
+  * 🔲 VkRenderpass
+
 ### done
 * Engine Skeleton
   * ✅ main loop
@@ -25,15 +45,18 @@ In progress : 🔲 Done : ✅
   * ✅ Scene Skeleton
   * ✅ Renderer Skeleton
   * ✅ Gamestate Skeleton
-  * ✅ Configuration
-    * ✅ application.name
-    * ✅ application.version
-    * ✅ engine.name
-    * ✅ engine.version
-    * ✅ window.width
-    * ✅ window.height
-    * ✅ window.resizable
-    * ✅ window.maximized
+* ✅ Configuration
+  * ✅ application.name
+  * ✅ application.version
+  * ✅ engine.name
+  * ✅ engine.version
+  * ✅ window.width
+  * ✅ window.height
+  * ✅ window.resizable
+  * ✅ window.maximized
+  * ✅ renderer.debug
+  * ✅ renderer.feature.sampler-anisotropy
+  * ✅ renderer.feature.geometry-shader
 * Renderer
   * ✅ VkExtensions
   * ✅ VkLayers
@@ -44,9 +67,5 @@ In progress : 🔲 Done : ✅
   * ✅ VkDevice
   * ✅ VkQueue
   * ✅ Renderer.graphicQueue
-  * ✅ Renderer.transfertQueue* 
-  * ✅ Configuration
-    * ✅ renderer.debug
-    * ✅ renderer.feature.sampler-anisotropy
-    * ✅ renderer.feature.geometry-shader    
+  * ✅ Renderer.transfertQueue 
 

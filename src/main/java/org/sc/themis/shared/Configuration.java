@@ -31,6 +31,8 @@ public interface Configuration {
 
     interface Renderer {
         boolean debug();
+        int imageCount();
+        boolean vsyncEnabled();
         Feature feature();
     }
 
