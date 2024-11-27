@@ -7,15 +7,24 @@
 In progress : 🔲 Done : ✅
 
 * Renderer
+  * 🔲 VkSemaphore
   * ✅ VkSurface
   * ✅ VkSurfaceFormat
-  * 🔲 VkSwapChain
-  * 🔲 Renderer.presentQueue
+  * ✅ VkSwapChain
+  * ✅ Renderer.presentQueue
+  * ✅ VkImageView
+  * 🔲 VkSwapChain.acquire -> need VkSemaphore
+  * 🔲 VkSwapChain.present -> need VkSemaphore
+* ✅ Configuration
+  * ✅ renderer.image-count
+  * ✅ renderer.vsync-enabled
 
 ### to do / Ideas
 
   * 🔲 VkResource
     * 🔲 VkBuffer
+    * 🔲 VkImage
+    * 🔲 VkImageView
     * 🔲 VkStagingResource
     * 🔲 VkStagingBuffer
     * 🔲 VkStagingImage
@@ -35,15 +44,18 @@ In progress : 🔲 Done : ✅
   * ✅ Scene Skeleton
   * ✅ Renderer Skeleton
   * ✅ Gamestate Skeleton
-  * ✅ Configuration
-    * ✅ application.name
-    * ✅ application.version
-    * ✅ engine.name
-    * ✅ engine.version
-    * ✅ window.width
-    * ✅ window.height
-    * ✅ window.resizable
-    * ✅ window.maximized
+* ✅ Configuration
+  * ✅ application.name
+  * ✅ application.version
+  * ✅ engine.name
+  * ✅ engine.version
+  * ✅ window.width
+  * ✅ window.height
+  * ✅ window.resizable
+  * ✅ window.maximized
+  * ✅ renderer.debug
+  * ✅ renderer.feature.sampler-anisotropy
+  * ✅ renderer.feature.geometry-shader
 * Renderer
   * ✅ VkExtensions
   * ✅ VkLayers
@@ -55,8 +67,4 @@ In progress : 🔲 Done : ✅
   * ✅ VkQueue
   * ✅ Renderer.graphicQueue
   * ✅ Renderer.transfertQueue 
-  * ✅ Configuration
-    * ✅ renderer.debug
-    * ✅ renderer.feature.sampler-anisotropy
-    * ✅ renderer.feature.geometry-shader    
 

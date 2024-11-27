@@ -1,5 +1,6 @@
 package org.sc.themis.renderer.presentation;
 
+import org.jboss.logging.Logger;
 import org.lwjgl.system.MemoryStack;
 import org.sc.themis.renderer.base.VulkanObject;
 import org.sc.themis.renderer.device.VkInstance;
@@ -10,6 +11,8 @@ import org.sc.themis.window.Window;
 import java.nio.LongBuffer;
 
 public class VkSurface extends VulkanObject {
+
+    private static final org.jboss.logging.Logger LOG = Logger.getLogger(VkSurface.class);
 
     private final VkInstance instance;
     private final Window window;
@@ -25,6 +28,7 @@ public class VkSurface extends VulkanObject {
     @Override
     public void setup() throws ThemisException {
         setupWindowSurface();
+        LOG.trace("Surface initialized");
     }
 
     @Override

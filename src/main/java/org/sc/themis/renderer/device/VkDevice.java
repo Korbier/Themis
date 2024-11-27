@@ -7,6 +7,7 @@ import org.lwjgl.vulkan.VkInstance;
 import org.lwjgl.vulkan.*;
 import org.sc.themis.renderer.base.VulkanObject;
 import org.sc.themis.renderer.exception.NoQueueFamilyFoundException;
+import org.sc.themis.renderer.presentation.VkSurface;
 import org.sc.themis.renderer.queue.VkQueue;
 import org.sc.themis.renderer.queue.VkQueueFamily;
 import org.sc.themis.shared.Configuration;
@@ -14,12 +15,12 @@ import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.utils.BitwiseState;
 
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 
-import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+import static org.lwjgl.vulkan.VK10.*;
 
 public class VkDevice extends VulkanObject {
 
@@ -63,10 +64,24 @@ public class VkDevice extends VulkanObject {
         int queueFamilyIndex = selectQueueFamily( selector );
         org.lwjgl.vulkan.VkQueue vkQueue = vkFetchQueue( queueIndex, queueFamilyIndex);
 
-        VkQueue queue = new VkQueue( getConfiguration(), vkQueue );
+        VkQueue queue = new VkQueue( getConfiguration(), vkQueue, queueFamilyIndex );
         queue.setup();
 
         return queue;
+
+    }
+
+    public VkQueue selectPresentQueue( int queueIndex, VkSurface surface ) throws ThemisException {
+
+        Predicate<VkQueueFamily> selector = (queueFamily) -> {
+            try (MemoryStack stack = MemoryStack.stackPush()) {
+                IntBuffer intBuff = stack.mallocInt(1);
+                KHRSurface.vkGetPhysicalDeviceSurfaceSupportKHR( this.physicalDevice.getHandle(), queueIndex, surface.getHandle(), intBuff);
+                return intBuff.get(0) == VK_TRUE;
+            }
+        };
+
+        return selectQueue( queueIndex, selector );
 
     }
 
