@@ -2,10 +2,7 @@ package org.sc.themis.renderer;
 
 import org.jboss.logging.Logger;
 import org.sc.themis.renderer.activity.RendererActivity;
-import org.sc.themis.renderer.device.VkInstance;
-import org.sc.themis.renderer.device.VkPhysicalDevice;
-import org.sc.themis.renderer.device.VkPhysicalDeviceSelectors;
-import org.sc.themis.renderer.device.VkPhysicalDevices;
+import org.sc.themis.renderer.device.*;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
@@ -18,6 +15,7 @@ public class Renderer extends TObject {
     private final RendererActivity activity;
     private final VkInstance instance;
     private VkPhysicalDevice physicalDevice;
+    private VkDevice device;
 
     public Renderer(Configuration configuration, RendererActivity activity ) {
         super(configuration);
@@ -29,7 +27,13 @@ public class Renderer extends TObject {
     public void setup() throws ThemisException {
         this.instance.setup();
         this.setupPhysicalDevice();
+        this.setupDevice();
         LOG.trace( "Renderer initialized" );
+    }
+
+    private void setupDevice() throws ThemisException {
+        this.device = new VkDevice( getConfiguration(), this.physicalDevice );
+        this.device.setup();
     }
 
     private void setupPhysicalDevice() throws ThemisException {
@@ -43,6 +47,7 @@ public class Renderer extends TObject {
 
     @Override
     public void cleanup() throws ThemisException {
+        this.device.cleanup();
         this.physicalDevice.cleanup();
         this.instance.cleanup();
     }

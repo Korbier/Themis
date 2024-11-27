@@ -53,8 +53,6 @@ public class VkPhysicalDevice extends VulkanObject {
 
         if (LOG.isTraceEnabled()) {
             showDevicesExtensions();
-            showDevicesFeatures();
-            showDevicesProperties();
             showQueueFamilyProperties();
         }
 
@@ -75,12 +73,8 @@ public class VkPhysicalDevice extends VulkanObject {
         return this.handle;
     }
 
-    public boolean supportSamplerAnysotropy() {
-        return this.vkPhysicalDeviceFeatures.samplerAnisotropy();
-    }
-
-    public boolean supportGeometryShader() {
-        return this.vkPhysicalDeviceFeatures.geometryShader();
+    public VkPhysicalDeviceFeatures getFeatures() {
+        return this.vkPhysicalDeviceFeatures;
     }
 
     public VkQueueFamilyProperties.Buffer getQueueFamilyProperties() {
@@ -211,15 +205,6 @@ public class VkPhysicalDevice extends VulkanObject {
         }
 
         return result;
-
-    }
-
-    private void showDevicesFeatures() {
-        LOG.trace( "Feature availability ");
-        LOG.tracef( " . Geometry shader : %s", this.vkPhysicalDeviceFeatures.geometryShader() );
-    }
-
-    private void showDevicesProperties() {
 
     }
 

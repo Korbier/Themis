@@ -13,6 +13,7 @@ In progress : 🔲 Done : ✅
   * ✅ VkPhysicalDevices
   * ✅ VkPhysicalDevice
   * 🔲 VkMemoryAllocator
+  * ✅ VkDevice
   * ✅ Configuration
     * ✅ renderer.debug
 

@@ -31,6 +31,12 @@ public interface Configuration {
 
     interface Renderer {
         boolean debug();
+        Feature feature();
+    }
+
+    interface Feature {
+        boolean samplerAnisotropy();
+        boolean geometryShader();
     }
 
 
