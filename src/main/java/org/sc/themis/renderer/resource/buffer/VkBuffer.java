@@ -1,4 +1,4 @@
-package org.sc.themis.renderer.resource;
+package org.sc.themis.renderer.resource.buffer;
 
 import org.joml.Matrix4f;
 import org.joml.Vector2i;

@@ -1,4 +1,4 @@
-package org.sc.themis.renderer.resource;
+package org.sc.themis.renderer.resource.image;
 
 public record VkImageViewDescriptor(
     int aspectMask,

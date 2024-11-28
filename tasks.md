@@ -6,16 +6,19 @@
 
 In progress : 🔲 Done : ✅
 
-### to do / Ideas
-
+* Renderer
   * 🔲 VkResource
     * ✅ VkBuffer
-    * 🔲 VkImage
-    * 🔲 VkImageView
+    * ✅ VkImage
+    * ✅ VkImageView
+    * ✅ VkSampler
     * 🔲 VkStagingResource
     * 🔲 VkStagingBuffer
     * 🔲 VkStagingImage
+  
+### to do / Ideas
 
+* Renderer
   * 🔲 VkCommand
   * 🔲 VkFramebuffer
   * 🔲 VkPipeline
@@ -29,7 +32,7 @@ In progress : 🔲 Done : ✅
   * ✅ Scene Skeleton
   * ✅ Renderer Skeleton
   * ✅ Gamestate Skeleton
-* ✅ Configuration
+* Configuration
   * ✅ application.name
   * ✅ application.version
   * ✅ engine.name
