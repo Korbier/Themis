@@ -167,14 +167,21 @@ public class VkBuffer extends VulkanObject {
     }
 
     public void set( int offset, float [] values ) {
-        if ( isMapped() ) {
+        if ( isMapped() ) this.mappedContent.asFloatBuffer().put( offset, values );
+        /**
+        {
             int o = offset;
             for ( float f : values ) {
                 this.mappedContent.putFloat(o, f);
                 o += MemorySizeUtils.FLOAT;
             }
         }
+         **/
     }
+    public void set( int offset, int [] values ) {
+        if (isMapped()) this.mappedContent.asIntBuffer().put(offset, values);
+    }
+
 
     private VkBufferCreateInfo createBufferCreateInfo(MemoryStack stack) {
         return VkBufferCreateInfo.calloc(stack)

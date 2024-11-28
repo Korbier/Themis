@@ -10,4 +10,12 @@ public record VkBufferDescriptor (
         int requiredFlags //an index identifying a memory type from the memoryTypes array of the VkPhysicalDeviceMemoryProperties structure.
 ) {
 
+    public VkBufferDescriptor( long size, int bufferUsage, int memoryUsage, int requiredFlags) {
+        this( false, size, -1, -1, bufferUsage, memoryUsage, requiredFlags );
+    }
+
+    public VkBufferDescriptor( long chunckSize, int chunckCount, int bufferUsage, int memoryUsage, int requiredFlags) {
+        this( true, -1, chunckSize, chunckCount, bufferUsage, memoryUsage, requiredFlags );
+    }
+
 }

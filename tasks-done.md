@@ -39,6 +39,14 @@
   * ✅ VkSurfaceFormat
   * ✅ VkSwapChain
   * ✅ VkImageView
+  * ✅ VkResource
+    * ✅ VkBuffer
+    * ✅ VkImage
+    * ✅ VkImageView
+    * ✅ VkSampler
+    * ✅ VkStagingResource
+    * ✅ VkStagingBuffer
+    * ✅ VkStagingImage
   * ✅ VkSync
     * ✅ VkSemaphore
     * ✅ VkFence 
