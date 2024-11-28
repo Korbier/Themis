@@ -85,6 +85,10 @@ public class VkDevice extends VulkanObject {
 
     }
 
+    public boolean isFeatureEnabled( int feature ) {
+        return this.features.isset( feature );
+    }
+
     private void setupVkDevice() throws ThemisException {
         try ( MemoryStack stack = MemoryStack.stackPush() ){
             PointerBuffer requiredExtensions = selectVkExtensions(stack);

@@ -1,4 +1,4 @@
-package org.sc.themis.renderer.resource;
+package org.sc.themis.renderer.resource.image;
 
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkImageViewCreateInfo;

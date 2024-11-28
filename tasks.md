@@ -6,66 +6,30 @@
 
 In progress : 🔲 Done : ✅
 
-* Renderer
-  * ✅ VkSemaphore
-  * ✅ VkFence
-  * ✅ VkSurface
-  * ✅ VkSurfaceFormat
-  * ✅ VkSwapChain
-  * ✅ Renderer.presentQueue
-  * ✅ VkImageView
-  * ✅ VkSwapChain.acquire -> need VkSemaphore
-  * ✅ VkSwapChain.present -> need VkSemaphore
-* ✅ Configuration
-  * ✅ renderer.image-count
-  * ✅ renderer.vsync-enabled
-
 ### to do / Ideas
 
-  * 🔲 VkResource
-    * 🔲 VkBuffer
-    * 🔲 VkImage
-    * 🔲 VkImageView
-    * 🔲 VkStagingResource
-    * 🔲 VkStagingBuffer
-    * 🔲 VkStagingImage
-  * 🔲 VkSync
-    * 🔲 VkSemaphore
-    * 🔲 VkFence
+* Renderer
+  * 🔲 VkStagingResource.commit -> Need VkCommand
   * 🔲 VkCommand
   * 🔲 VkFramebuffer
   * 🔲 VkPipeline
   * 🔲 VkRenderpass
 
-### done
-* Engine Skeleton
-  * ✅ main loop
-  * ✅ Window Skeleton
-  * ✅ Input Skeleton
-  * ✅ Scene Skeleton
-  * ✅ Renderer Skeleton
-  * ✅ Gamestate Skeleton
-* ✅ Configuration
-  * ✅ application.name
-  * ✅ application.version
-  * ✅ engine.name
-  * ✅ engine.version
-  * ✅ window.width
-  * ✅ window.height
-  * ✅ window.resizable
-  * ✅ window.maximized
-  * ✅ renderer.debug
-  * ✅ renderer.feature.sampler-anisotropy
-  * ✅ renderer.feature.geometry-shader
-* Renderer
-  * ✅ VkExtensions
-  * ✅ VkLayers
-  * ✅ VkInstance
-  * ✅ VkPhysicalDevices
-  * ✅ VkPhysicalDevice
-  * ✅ VkMemoryAllocator
-  * ✅ VkDevice
-  * ✅ VkQueue
-  * ✅ Renderer.graphicQueue
-  * ✅ Renderer.transfertQueue 
+* Scene 
+  * 🔲 Mesh
+  * 🔲 Model
+  * 🔲 Instance
+  * 🔲 ModelLoading
+  * 🔲 Material <?>
 
+* Playgrounds
+  * Triangle
+  * Deferred rendering
+  * Mouse picking
+  * Subpass
+  * Msaa
+  * Descriptorset
+    * uniform
+    * storagebuffer
+    * imagesampler    
+  

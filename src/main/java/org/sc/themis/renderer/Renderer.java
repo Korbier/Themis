@@ -7,10 +7,12 @@ import org.sc.themis.renderer.presentation.VkSurface;
 import org.sc.themis.renderer.presentation.VkSwapChain;
 import org.sc.themis.renderer.queue.VkQueue;
 import org.sc.themis.renderer.queue.VkQueueSelectors;
+import org.sc.themis.renderer.sync.VkSemaphore;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.tobject.TObject;
+import org.sc.themis.shared.utils.FramedObject;
 import org.sc.themis.window.Window;
 
 public class Renderer extends TObject {
@@ -34,6 +36,9 @@ public class Renderer extends TObject {
     private VkQueue transfertQueue;
     private VkQueue presentQueue;
 
+    private FramedObject<VkSemaphore> acquireSemaphore;
+    private FramedObject<VkSemaphore> presentSemaphore;
+
     public Renderer(Configuration configuration, Window window, RendererActivity activity ) {
         super(configuration);
         this.window = window;
@@ -50,11 +55,14 @@ public class Renderer extends TObject {
         this.setupSurface();
         this.setupQueues();
         this.setupSwapChain();
+        this.setupSemaphores();
         LOG.trace( "Renderer initialized" );
     }
 
     @Override
     public void cleanup() throws ThemisException {
+        this.presentSemaphore.accept( VkSemaphore::cleanup );
+        this.acquireSemaphore.accept( VkSemaphore::cleanup );
         this.swapChain.cleanup();
         this.presentQueue.cleanup();
         this.transfertQueue.cleanup();
@@ -64,6 +72,10 @@ public class Renderer extends TObject {
         this.device.cleanup();
         this.physicalDevice.cleanup();
         this.instance.cleanup();
+    }
+
+    public void render( Scene scene, long tpf ) {
+
     }
 
     private void setupSwapChain() throws ThemisException {
@@ -102,8 +114,17 @@ public class Renderer extends TObject {
         }
     }
 
-    public void render(Scene scene, long tpf ) {
-
+    private void setupSemaphores() throws ThemisException {
+        this.acquireSemaphore = FramedObject.of( this.swapChain.getFrameCount(), () -> {
+            VkSemaphore semaphore = new VkSemaphore(getConfiguration(), this.device);
+            semaphore.setup();
+            return semaphore;
+        });
+        this.presentSemaphore = FramedObject.of( this.swapChain.getFrameCount(), () -> {
+            VkSemaphore semaphore = new VkSemaphore(getConfiguration(), this.device);
+            semaphore.setup();
+            return semaphore;
+        });
     }
 
 }
