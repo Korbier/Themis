@@ -43,10 +43,10 @@ public class VulkanMemoryAllocator extends Vulkan {
 
     public void mapMemory(long allocator, long allocation, PointerBuffer pb) throws ThemisException {
         vk(
-                () -> vmaMapMemory(allocator, allocation, pb),
-                (errno) -> {
-                    //TODO Check thrown exceptions
-                }
+            () -> vmaMapMemory(allocator, allocation, pb),
+            (errno) -> {
+                //TODO Check thrown exceptions
+            }
         );
     }
 

@@ -6,32 +6,16 @@
 
 In progress : 🔲 Done : ✅
 
-* Renderer
-  * ✅ VkSemaphore
-  * ✅ VkFence
-  * ✅ VkSurface
-  * ✅ VkSurfaceFormat
-  * ✅ VkSwapChain
-  * ✅ Renderer.presentQueue
-  * ✅ VkImageView
-  * ✅ VkSwapChain.acquire -> need VkSemaphore
-  * ✅ VkSwapChain.present -> need VkSemaphore
-* ✅ Configuration
-  * ✅ renderer.image-count
-  * ✅ renderer.vsync-enabled
-
 ### to do / Ideas
 
   * 🔲 VkResource
-    * 🔲 VkBuffer
+    * ✅ VkBuffer
     * 🔲 VkImage
     * 🔲 VkImageView
     * 🔲 VkStagingResource
     * 🔲 VkStagingBuffer
     * 🔲 VkStagingImage
-  * 🔲 VkSync
-    * 🔲 VkSemaphore
-    * 🔲 VkFence
+
   * 🔲 VkCommand
   * 🔲 VkFramebuffer
   * 🔲 VkPipeline
@@ -55,6 +39,8 @@ In progress : 🔲 Done : ✅
   * ✅ window.resizable
   * ✅ window.maximized
   * ✅ renderer.debug
+  * ✅ renderer.image-count
+  * ✅ renderer.vsync-enabled
   * ✅ renderer.feature.sampler-anisotropy
   * ✅ renderer.feature.geometry-shader
 * Renderer
@@ -66,6 +52,13 @@ In progress : 🔲 Done : ✅
   * ✅ VkMemoryAllocator
   * ✅ VkDevice
   * ✅ VkQueue
-  * ✅ Renderer.graphicQueue
-  * ✅ Renderer.transfertQueue 
+  * ✅ VkSemaphore
+  * ✅ VkFence
+  * ✅ VkSurface
+  * ✅ VkSurfaceFormat
+  * ✅ VkSwapChain
+  * ✅ VkImageView
+  * ✅ VkSync
+    * ✅ VkSemaphore
+    * ✅ VkFence 
 
