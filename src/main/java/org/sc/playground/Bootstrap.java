@@ -20,7 +20,7 @@ public class Bootstrap implements QuarkusApplication {
         Playgrounds playground = selectPlayground( args );
         LOG.infof( "Running %s playground ...", playground );
 
-        Engine engine = new Engine( this.configuration, playground.rendererActivity );
+        Engine engine = new Engine( this.configuration, playground.rendererActivityFactory.apply( configuration ) );
         engine.setup();
         engine.setGamestate( playground.gamestate );
         engine.run();

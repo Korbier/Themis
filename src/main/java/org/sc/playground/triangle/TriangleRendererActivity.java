@@ -1,12 +1,12 @@
-package org.sc.playground.noop;
+package org.sc.playground.triangle;
 
 import org.sc.themis.renderer.activity.RendererActivity;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 
-public class NoopRendererActivity extends RendererActivity {
+public class TriangleRendererActivity extends RendererActivity {
 
-    public NoopRendererActivity(Configuration configuration) {
+    public TriangleRendererActivity(Configuration configuration) {
         super(configuration);
     }
 
