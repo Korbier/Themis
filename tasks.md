@@ -6,6 +6,7 @@
 
 In progress : 🔲 Done : ✅
 
+* ✅ VkFramebuffer
 * 🔲 VkRenderpass
 
 ### to do / Ideas
@@ -14,7 +15,6 @@ In progress : 🔲 Done : ✅
   * 🔲 VkStagingResource.commit -> Need VkCommand
   * 🔲 VkCommand
   * 🔲 VkPipeline
-  * 🔲 VkFramebuffer
 
 * Scene 
   * 🔲 Mesh

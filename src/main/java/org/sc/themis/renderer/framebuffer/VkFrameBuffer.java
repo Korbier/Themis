@@ -42,7 +42,7 @@ public class VkFrameBuffer extends VulkanObject {
 
     @Override
     public void cleanup() throws ThemisException {
-        framebuffer().destroyFramebuffer( this.device.getHandle(), this.handle );
+        vkFramebuffer().destroyFramebuffer( this.device.getHandle(), this.handle );
     }
 
     public long getHandle() {
@@ -55,7 +55,7 @@ public class VkFrameBuffer extends VulkanObject {
 
     private long vkCreateFrameBuffer(MemoryStack stack, VkFramebufferCreateInfo frameBufferCreateInfo) throws ThemisException {
         LongBuffer pFramebuffer = stack.mallocLong(1);
-        framebuffer().createFramebuffer( this.device.getHandle(), frameBufferCreateInfo, pFramebuffer );
+        vkFramebuffer().createFramebuffer( this.device.getHandle(), frameBufferCreateInfo, pFramebuffer );
         return pFramebuffer.get(0);
     }
 

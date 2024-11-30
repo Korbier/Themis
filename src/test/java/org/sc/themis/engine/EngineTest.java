@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.sc.playground.noop.NoopRendererActivity;
+import org.sc.playground.triangle.TriangleRendererActivity;
 import org.sc.themis.engine.exception.EngineGamestateNotFoundException;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
@@ -22,7 +23,7 @@ public class EngineTest {
 
         //Given
 
-        Engine engine = new Engine( configuration, new NoopRendererActivity( this.configuration ) );
+        Engine engine = new Engine( configuration, new TriangleRendererActivity( this.configuration ) );
 
         //When
         engine.setup();
