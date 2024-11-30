@@ -13,6 +13,7 @@ public abstract class VulkanObject extends TObject {
     private final VulkanSurface surface = new VulkanSurface();
     private final VulkanImage image = new VulkanImage();
     private final VulkanSync sync = new VulkanSync();
+    private final VulkanFramebuffer framebuffer = new VulkanFramebuffer();
 
     public VulkanObject(Configuration configuration) {
         super( configuration );
@@ -48,6 +49,10 @@ public abstract class VulkanObject extends TObject {
 
     public VulkanSync vkSync() {
         return this.sync;
+    }
+
+    public VulkanFramebuffer framebuffer() {
+        return this.framebuffer;
     }
 
 }

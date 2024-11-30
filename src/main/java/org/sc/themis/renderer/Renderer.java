@@ -1,12 +1,14 @@
 package org.sc.themis.renderer;
 
 import org.jboss.logging.Logger;
+import org.lwjgl.vulkan.VkExtent2D;
 import org.sc.themis.renderer.activity.RendererActivity;
 import org.sc.themis.renderer.device.*;
 import org.sc.themis.renderer.presentation.VkSurface;
 import org.sc.themis.renderer.presentation.VkSwapChain;
 import org.sc.themis.renderer.queue.VkQueue;
 import org.sc.themis.renderer.queue.VkQueueSelectors;
+import org.sc.themis.renderer.resource.image.VkImageView;
 import org.sc.themis.renderer.sync.VkSemaphore;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.shared.Configuration;
@@ -56,11 +58,13 @@ public class Renderer extends TObject {
         this.setupQueues();
         this.setupSwapChain();
         this.setupSemaphores();
+        this.setupActivity();
         LOG.trace( "Renderer initialized" );
     }
 
     @Override
     public void cleanup() throws ThemisException {
+        this.activity.cleanup();
         this.presentSemaphore.accept( VkSemaphore::cleanup );
         this.acquireSemaphore.accept( VkSemaphore::cleanup );
         this.swapChain.cleanup();
@@ -78,6 +82,26 @@ public class Renderer extends TObject {
 
     }
 
+    public VkDevice getDevice() {
+        return this.device;
+    }
+
+    public int getFrameCount() {
+        return this.swapChain.getFrameCount();
+    }
+
+    public VkExtent2D getExtent() {
+        return this.swapChain.getExtent();
+    }
+
+    public VkImageView getImageView( int frame ) {
+        return this.swapChain.getImageView( frame );
+    }
+
+    public int getImageFormat() {
+        return this.swapChain.getSurfaceFormat().imageFormat();
+    }
+
     private void setupSwapChain() throws ThemisException {
         this.swapChain = new VkSwapChain(getConfiguration(), this.window, this.device, this.surface, this.presentQueue, this.graphicQueue, this.transfertQueue);
         this.swapChain.setup();
@@ -86,6 +110,10 @@ public class Renderer extends TObject {
     private void setupSurface() throws ThemisException {
         this.surface = new VkSurface(getConfiguration(), this.instance, this.window );
         this.surface.setup();
+    }
+
+    private void setupActivity() throws ThemisException {
+        this.activity.setup( this );
     }
 
     private void setupQueues() throws ThemisException {
