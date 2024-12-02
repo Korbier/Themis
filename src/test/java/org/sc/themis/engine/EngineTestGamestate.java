@@ -15,12 +15,12 @@ public class EngineTestGamestate implements Gamestate {
     }
 
     @Override
-    public void setup() {
+    public void setup(Scene scene) {
 
     }
 
     @Override
-    public void cleanup() {
+    public void cleanup( Scene scene ) {
 
     }
 

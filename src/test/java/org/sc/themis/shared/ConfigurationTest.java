@@ -1,12 +1,15 @@
 package org.sc.themis.shared;
 
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.TestProfile;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.sc.themis.Profiles;
 
 @QuarkusTest
+@TestProfile(Profiles.TagWithoutUiTest.class)
 class ConfigurationTest {
 
     private final static String APPLICATION_NAME = "Themis Application";

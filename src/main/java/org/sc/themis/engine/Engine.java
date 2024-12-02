@@ -119,12 +119,12 @@ public class Engine extends TObject {
 
     private void loadGamestate( Gamestate gamestate ) {
         this.currentGamestate = gamestate;
-        this.currentGamestate.setup();
+        this.currentGamestate.setup( this.scene );
     }
 
     private void cleanupGamestate() {
         if ( this.currentGamestate != null ) {
-            this.currentGamestate.cleanup();
+            this.currentGamestate.cleanup( this.scene );
         }
     }
 
