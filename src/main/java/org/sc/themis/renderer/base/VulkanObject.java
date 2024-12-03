@@ -15,6 +15,7 @@ public abstract class VulkanObject extends TObject {
     private final VulkanSync sync = new VulkanSync();
     private final VulkanFramebuffer framebuffer = new VulkanFramebuffer();
     private final VulkanRenderPass renderPass = new VulkanRenderPass();
+    private final VulkanPipeline pipeline = new VulkanPipeline();
 
     public VulkanObject(Configuration configuration) {
         super( configuration );
@@ -58,6 +59,10 @@ public abstract class VulkanObject extends TObject {
 
     public VulkanRenderPass vkRenderPass() {
         return this.renderPass;
+    }
+
+    public VulkanPipeline vkPipeline() {
+        return this.pipeline;
     }
 
 }

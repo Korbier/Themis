@@ -39,6 +39,8 @@
   * ✅ VkSurfaceFormat
   * ✅ VkSwapChain
   * ✅ VkImageView
+  * ✅ VkFramebuffer
+  * ✅ VkRenderpass
   * ✅ VkResource
     * ✅ VkBuffer
     * ✅ VkImage
