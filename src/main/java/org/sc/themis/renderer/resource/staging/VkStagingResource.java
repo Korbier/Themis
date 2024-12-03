@@ -78,8 +78,7 @@ public sealed abstract class VkStagingResource
 
     public void load( int buffersize, int offset, int [] data ) throws ThemisException {
         this.recreateStagingBuffer( buffersize );
-        this.stagingBuffer.set( offset, data );
-        setStatus( VkStagingResourceStatus.LOADED );
+        set( offset, data );
     }
 
     public void load( int buffersize, float [] data ) throws ThemisException {
@@ -88,14 +87,12 @@ public sealed abstract class VkStagingResource
 
     public void load( int buffersize, int offset, float [] data ) throws ThemisException {
         this.recreateStagingBuffer( buffersize );
-        this.stagingBuffer.set( offset, data );
-        setStatus( VkStagingResourceStatus.LOADED );
+        set( offset, data );
     }
 
     public void load( ByteBuffer bBuffer ) throws ThemisException {
         this.recreateStagingBuffer( bBuffer.capacity() );
-        this.stagingBuffer.set( bBuffer );
-        setStatus( VkStagingResourceStatus.LOADED );
+        set( bBuffer );
     }
 
     public void set( ByteBuffer data ) {
