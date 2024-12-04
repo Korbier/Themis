@@ -59,6 +59,10 @@ public class VkDevice extends VulkanObject {
         cleanupVkDevice();
     }
 
+    public void waitIdle() throws ThemisException {
+        vkDevice().deviceWaitIdle( this.getHandle() );
+    }
+
     public VkQueue selectQueue( int queueIndex, Predicate<VkQueueFamily> selector ) throws ThemisException {
 
         int queueFamilyIndex = selectQueueFamily( selector );

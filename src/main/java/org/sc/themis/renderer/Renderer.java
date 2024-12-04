@@ -1,8 +1,11 @@
 package org.sc.themis.renderer;
 
 import org.jboss.logging.Logger;
+import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkExtent2D;
 import org.sc.themis.renderer.activity.RendererActivity;
+import org.sc.themis.renderer.command.VkCommand;
+import org.sc.themis.renderer.command.VkCommandPool;
 import org.sc.themis.renderer.device.*;
 import org.sc.themis.renderer.presentation.VkSurface;
 import org.sc.themis.renderer.presentation.VkSwapChain;
@@ -38,6 +41,9 @@ public class Renderer extends TObject {
     private VkQueue transfertQueue;
     private VkQueue presentQueue;
 
+    private VkCommandPool graphicCommandPool;
+    private VkCommandPool transfertCommandPool;
+
     private FramedObject<VkSemaphore> acquireSemaphore;
     private FramedObject<VkSemaphore> presentSemaphore;
 
@@ -56,6 +62,7 @@ public class Renderer extends TObject {
         this.setupMemoryAllocator();
         this.setupSurface();
         this.setupQueues();
+        this.setupCommandPool();
         this.setupSwapChain();
         this.setupSemaphores();
         this.setupActivity();
@@ -68,6 +75,8 @@ public class Renderer extends TObject {
         this.presentSemaphore.accept( VkSemaphore::cleanup );
         this.acquireSemaphore.accept( VkSemaphore::cleanup );
         this.swapChain.cleanup();
+        this.transfertCommandPool.cleanup();
+        this.graphicCommandPool.cleanup();
         this.presentQueue.cleanup();
         this.transfertQueue.cleanup();
         this.graphicQueue.cleanup();
@@ -78,8 +87,31 @@ public class Renderer extends TObject {
         this.instance.cleanup();
     }
 
-    public void render( Scene scene, long tpf ) {
+    public void render( Scene scene, long tpf ) throws ThemisException {
+        this.activity.render( scene, tpf );
+        this.present( getPresentSemaphore( getCurrentFrame() ) );
+    }
 
+    public void acquire() throws ThemisException {
+        try (MemoryStack stack = MemoryStack.stackPush() ) {
+            if (this.window.isResized() || this.swapChain.acquire(stack, getAcquireSemanphore( getCurrentFrame() ) ) ) {
+                this.window.resetResized();
+                this.resize();
+                this.swapChain.acquire(stack, getAcquireSemanphore( getCurrentFrame() ) );
+            }
+        }
+    }
+
+    public void present( VkSemaphore presentSemaphore ) throws ThemisException {
+        try (MemoryStack stack = MemoryStack.stackPush() ) {
+            if ( this.swapChain.present( stack, presentSemaphore ) ) {
+                this.window.setResized( true );
+            }
+        }
+    }
+
+    public void waitIdle() throws ThemisException {
+        getDevice().waitIdle();
     }
 
     public VkDevice getDevice() {
@@ -88,6 +120,10 @@ public class Renderer extends TObject {
 
     public int getFrameCount() {
         return this.swapChain.getFrameCount();
+    }
+
+    public int getCurrentFrame() {
+        return this.swapChain.getCurrentFrame();
     }
 
     public VkExtent2D getExtent() {
@@ -102,6 +138,26 @@ public class Renderer extends TObject {
         return this.swapChain.getSurfaceFormat().imageFormat();
     }
 
+    public VkCommand createGraphicCommand( boolean primary ) throws ThemisException {
+        return this.graphicCommandPool.create( primary );
+    }
+
+    public VkCommand createTransfertCommand( boolean primary ) throws ThemisException {
+        return this.transfertCommandPool.create( primary );
+    }
+
+    public VkSemaphore getAcquireSemanphore( int frame ) {
+        return this.acquireSemaphore.get( frame );
+    }
+
+    public VkSemaphore getPresentSemaphore( int frame ) {
+        return this.presentSemaphore.get( frame );
+    }
+
+    private void resize() throws ThemisException {
+        this.activity.resize();
+    }
+
     private void setupSwapChain() throws ThemisException {
         this.swapChain = new VkSwapChain(getConfiguration(), this.window, this.device, this.surface, this.presentQueue, this.graphicQueue, this.transfertQueue);
         this.swapChain.setup();
@@ -114,6 +170,13 @@ public class Renderer extends TObject {
 
     private void setupActivity() throws ThemisException {
         this.activity.setup( this );
+    }
+
+    private void setupCommandPool() throws ThemisException {
+        this.graphicCommandPool = new VkCommandPool( getConfiguration(), this.device, this.graphicQueue );
+        this.graphicCommandPool.setup();
+        this.transfertCommandPool = new VkCommandPool( getConfiguration(), this.device, this.transfertQueue );
+        this.transfertCommandPool.setup();
     }
 
     private void setupQueues() throws ThemisException {

@@ -4,6 +4,7 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.util.shaderc.Shaderc;
 import org.sc.themis.renderer.Renderer;
 import org.sc.themis.renderer.activity.RendererActivity;
+import org.sc.themis.renderer.command.VkCommand;
 import org.sc.themis.renderer.device.VkDevice;
 import org.sc.themis.renderer.framebuffer.VkFrameBuffer;
 import org.sc.themis.renderer.framebuffer.VkFrameBufferAttachments;
@@ -13,6 +14,8 @@ import org.sc.themis.renderer.renderpass.VkRenderPass;
 import org.sc.themis.renderer.renderpass.VkRenderPassDescriptor;
 import org.sc.themis.renderer.renderpass.VkRenderPassLayout;
 import org.sc.themis.renderer.renderpass.VkSubpass;
+import org.sc.themis.renderer.sync.VkFence;
+import org.sc.themis.scene.Scene;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.utils.FramedObject;
@@ -42,6 +45,9 @@ public class TriangleRendererActivity extends RendererActivity {
     private VkPipelineLayout pipelineLayout;
     private VkPipeline pipeline;
 
+    private VkCommand command;
+    private VkFence fence;
+
     public TriangleRendererActivity(Configuration configuration) {
         super(configuration);
     }
@@ -54,22 +60,70 @@ public class TriangleRendererActivity extends RendererActivity {
         setupFramebuffers();
         setupShaderProgram();
         setupPipeline();
-    }
-
-    private void setupRenderPass() throws ThemisException {
-        VkRenderPassDescriptor descriptor = createSubPassDescriptor( renderer.getDevice() );
-        this.renderPass = new VkRenderPass(getConfiguration(), renderer.getDevice(), descriptor);
-        this.renderPass.setup();
+        setupCommand();
+        setupFence();
     }
 
     @Override
     public void cleanup() throws ThemisException {
+        this.renderer.waitIdle();
+        this.fence.cleanup();
+        this.command.cleanup();
         this.pipeline.cleanup();
         this.pipelineLayout.cleanup();
         this.shaderProgram.cleanup();
         this.framebuffers.accept( VkFrameBuffer::cleanup );
         this.renderPass.cleanup();
         this.frameBufferAttachments.cleanup();
+    }
+
+    @Override
+    public void render(Scene scene, long tpf) throws ThemisException {
+
+        this.renderer.acquire();
+
+        int frame = this.renderer.getCurrentFrame();
+
+        this.command.begin();
+        this.command.beginRenderPass( this.renderPass, this.framebuffers.get( frame ) );
+        this.command.viewportAndScissor( this.renderer.getExtent() );
+        this.command.bindPipeline( this.pipeline );
+        this.command.draw( 3, 1, 0, 0);
+        this.command.endRenderPass();
+        this.command.end();
+        this.command.submit( this.fence, this.renderer.getAcquireSemanphore( frame ), this.renderer.getPresentSemaphore( frame ) );
+
+        this.fence.waitFor();
+        this.fence.reset();
+
+    }
+
+    @Override
+    public void resize() throws ThemisException {
+
+        this.framebuffers.accept( VkFrameBuffer::cleanup );
+        this.renderPass.cleanup();
+        this.frameBufferAttachments.cleanup();
+
+        setupFramebufferAttachments();
+        setupRenderPass();
+        setupFramebuffers();
+
+    }
+
+    private void setupFence() throws ThemisException {
+        this.fence = new VkFence(getConfiguration(), this.renderer.getDevice(), false );
+        this.fence.setup();
+    }
+
+    private void setupCommand() throws ThemisException {
+        this.command = this.renderer.createGraphicCommand( true );
+    }
+
+    private void setupRenderPass() throws ThemisException {
+        VkRenderPassDescriptor descriptor = createSubPassDescriptor( renderer.getDevice() );
+        this.renderPass = new VkRenderPass(getConfiguration(), renderer.getDevice(), descriptor);
+        this.renderPass.setup();
     }
 
     private void setupFramebufferAttachments() throws ThemisException {
@@ -140,12 +194,12 @@ public class TriangleRendererActivity extends RendererActivity {
             inputState.setup( stack );
 
             this.pipeline = new VkPipeline(
-                    getConfiguration(),
-                    this.renderer.getDevice(),
-                    new VkPipelineDescriptor(this.renderPass, 0, false, 1, false, 1, 1, 1),
-                    this.shaderProgram,
-                    this.pipelineLayout,
-                    inputState
+                getConfiguration(),
+                this.renderer.getDevice(),
+                new VkPipelineDescriptor(this.renderPass, 0, false, 1, false, 1, 1, 1),
+                this.shaderProgram,
+                this.pipelineLayout,
+                inputState
             );
 
             this.pipeline.setup();

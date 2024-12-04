@@ -2,6 +2,7 @@ package org.sc.playground.noop;
 
 import org.sc.themis.renderer.Renderer;
 import org.sc.themis.renderer.activity.RendererActivity;
+import org.sc.themis.scene.Scene;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 
@@ -13,6 +14,16 @@ public class NoopRendererActivity extends RendererActivity {
 
     @Override
     public void setup(Renderer renderer) throws ThemisException {
+
+    }
+
+    @Override
+    public void render(Scene scene, long tpf) throws ThemisException {
+
+    }
+
+    @Override
+    public void resize() throws ThemisException {
 
     }
 

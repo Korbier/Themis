@@ -6,10 +6,6 @@
 
 In progress : 🔲 Done : ✅
 
-* Renderer
-  * 🔲 VkCommand
-  * 🔲 VkPipeline
-
 ### to do / Ideas
 
 * Renderer
@@ -23,7 +19,7 @@ In progress : 🔲 Done : ✅
   * 🔲 Material <?>
 
 * Playgrounds
-  * Triangle
+  * Triangle #2 (VertexBuffer)
   * Deferred rendering
   * Mouse picking
   * Subpass
