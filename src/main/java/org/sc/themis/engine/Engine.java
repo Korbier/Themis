@@ -136,7 +136,7 @@ public class Engine extends TObject {
         this.currentGamestate.input( this.scene, this.input, tpf );
     }
 
-    private void render( long tpf ) {
+    private void render( long tpf ) throws ThemisException {
         this.renderer.render( this.scene, tpf );
     }
 

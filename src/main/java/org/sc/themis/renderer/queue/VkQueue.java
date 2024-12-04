@@ -1,11 +1,20 @@
 package org.sc.themis.renderer.queue;
 
 import org.jboss.logging.Logger;
+import org.lwjgl.system.MemoryStack;
+import org.lwjgl.vulkan.VkSubmitInfo;
 import org.sc.themis.renderer.base.VulkanObject;
+import org.sc.themis.renderer.sync.VkFence;
+import org.sc.themis.renderer.sync.VkSemaphore;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 
+import java.nio.IntBuffer;
+import java.nio.LongBuffer;
 import java.util.Objects;
+
+import static org.lwjgl.vulkan.VK10.VK_NULL_HANDLE;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
 public class VkQueue extends VulkanObject {
 

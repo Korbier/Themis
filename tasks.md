@@ -6,15 +6,10 @@
 
 In progress : 🔲 Done : ✅
 
-* ✅ VkFramebuffer
-* 🔲 VkRenderpass
-
 ### to do / Ideas
 
 * Renderer
   * 🔲 VkStagingResource.commit -> Need VkCommand
-  * 🔲 VkCommand
-  * 🔲 VkPipeline
 
 * Scene 
   * 🔲 Mesh
@@ -24,7 +19,7 @@ In progress : 🔲 Done : ✅
   * 🔲 Material <?>
 
 * Playgrounds
-  * Triangle
+  * Triangle #2 (VertexBuffer)
   * Deferred rendering
   * Mouse picking
   * Subpass
