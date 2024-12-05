@@ -2,18 +2,19 @@ package org.sc.playground;
 
 import org.sc.playground.noop.NoopGamestate;
 import org.sc.playground.noop.NoopRendererActivity;
+import org.sc.playground.pushconstant.PushConstantRendererActivity;
 import org.sc.playground.triangle.TriangleRendererActivity;
 import org.sc.themis.gamestate.Gamestate;
 import org.sc.themis.renderer.activity.RendererActivity;
 import org.sc.themis.shared.Configuration;
 
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 public enum Playgrounds {
 
     NOOP( "noop", new NoopGamestate(), NoopRendererActivity::new),
-    TRIANGLE( "triangle", new NoopGamestate(), TriangleRendererActivity::new );
+    TRIANGLE( "triangle", new NoopGamestate(), TriangleRendererActivity::new ),
+    PUSH_CONSTANT( "pushconstant", new NoopGamestate(), PushConstantRendererActivity::new );
 
     final String name;
     final Gamestate gamestate;

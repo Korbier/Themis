@@ -1,5 +1,6 @@
-package org.sc.playground.triangle;
+package org.sc.playground.pushconstant;
 
+import org.joml.Matrix4f;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.util.shaderc.Shaderc;
 import org.sc.playground.shared.BaseRendererActivity;
@@ -10,24 +11,27 @@ import org.sc.themis.renderer.sync.VkFence;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
+import org.sc.themis.shared.utils.MemorySizeUtils;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import static org.lwjgl.vulkan.VK10.*;
 
-public class TriangleRendererActivity extends BaseRendererActivity {
+import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_FRAGMENT_BIT;
+import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_VERTEX_BIT;
 
-    private final static String SHADER_VERTEX_SOURCE = "src/main/resources/playground/triangle/vertex_shader.glsl";
-    private final static String SHADER_VERTEX_COMPILED = "target/playground/triangle/vertex_shader.spirv";
-    private final static String SHADER_FRAGMENT_SOURCE = "src/main/resources/playground/triangle/fragment_shader.glsl";
-    private final static String SHADER_FRAGMENT_COMPILED = "target/playground/triangle/fragment_shader.spirv";
+public class PushConstantRendererActivity extends BaseRendererActivity {
+
+    private final static String SHADER_VERTEX_SOURCE = "src/main/resources/playground/pushconstant/vertex_shader.glsl";
+    private final static String SHADER_VERTEX_COMPILED = "target/playground/pushconstant/vertex_shader.spirv";
+    private final static String SHADER_FRAGMENT_SOURCE = "src/main/resources/playground/pushconstant/fragment_shader.glsl";
+    private final static String SHADER_FRAGMENT_COMPILED = "target/playground/pushconstant/fragment_shader.spirv";
 
     private VkShaderProgram shaderProgram;
     private VkPipelineLayout pipelineLayout;
     private VkPipeline pipeline;
 
-    public TriangleRendererActivity(Configuration configuration) {
+    public PushConstantRendererActivity(Configuration configuration) {
         super(configuration);
     }
 
@@ -45,6 +49,8 @@ public class TriangleRendererActivity extends BaseRendererActivity {
         command.beginRenderPass( this.renderPass, framebuffer );
         command.viewportAndScissor( this.renderer.getExtent() );
         command.bindPipeline( this.pipeline );
+        command.pushConstant( VK_SHADER_STAGE_VERTEX_BIT, 0, 0.2f, 0.2f, 0.0f );
+        command.pushConstant( VK_SHADER_STAGE_FRAGMENT_BIT, MemorySizeUtils.MAT4x4F,  0.0f, 1.0f, 0.0f );
         command.draw( 3, 1, 0, 0);
         command.endRenderPass();
         command.end();
@@ -55,6 +61,7 @@ public class TriangleRendererActivity extends BaseRendererActivity {
 
     }
 
+    @Override
     public void setupPipeline() throws ThemisException {
         this.setupShaderProgram();
         this.setupPipelineAndLayout();
@@ -88,7 +95,13 @@ public class TriangleRendererActivity extends BaseRendererActivity {
 
     private void setupPipelineAndLayout() throws ThemisException {
 
-        this.pipelineLayout = new VkPipelineLayout(getConfiguration(), this.renderer.getDevice(), new VkPushConstantRange[0] );
+        this.pipelineLayout = new VkPipelineLayout(
+            getConfiguration(), this.renderer.getDevice(),
+            new VkPushConstantRange[] {
+                new VkPushConstantRange( VK_SHADER_STAGE_VERTEX_BIT, 0, MemorySizeUtils.MAT4x4F ),
+                new VkPushConstantRange( VK_SHADER_STAGE_FRAGMENT_BIT, MemorySizeUtils.MAT4x4F, MemorySizeUtils.MAT4x4F )
+            }
+        );
         this.pipelineLayout.setup();
 
         try (MemoryStack stack = MemoryStack.stackPush() ) {

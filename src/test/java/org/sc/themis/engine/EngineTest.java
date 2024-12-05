@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.sc.playground.noop.NoopRendererActivity;
+import org.sc.playground.pushconstant.PushConstantRendererActivity;
 import org.sc.playground.triangle.TriangleRendererActivity;
 import org.sc.themis.Profiles;
 import org.sc.themis.engine.exception.EngineGamestateNotFoundException;
@@ -24,10 +25,27 @@ public class EngineTest {
     Configuration configuration;
 
     @Test
-    @DisplayName("Create engine - nominal case")
+    @DisplayName("Create engine - no gamestate found")
     void testCreateEngine_01() throws ThemisException {
 
-        System.out.println( ConfigUtils.getProfiles().stream().collect(Collectors.joining(",")) );
+        //Given
+
+        Engine engine = new Engine( configuration, new NoopRendererActivity( this.configuration ) );
+
+        //When
+        engine.setup();
+
+        //Then
+        Assertions.assertThrows( EngineGamestateNotFoundException.class,  engine::run );
+
+        //Cleanup
+        engine.cleanup();
+
+    }
+
+    @Test
+    @DisplayName("Create engine - nominal case - triangle")
+    void testCreateEngine_02() throws ThemisException {
 
         //Given
         Engine engine = new Engine( configuration, new TriangleRendererActivity( this.configuration ) );
@@ -44,24 +62,24 @@ public class EngineTest {
 
     }
 
-
     @Test
-    @DisplayName("Create engine - no gamestate found")
-    void testCreateEngine_02() throws ThemisException {
+    @DisplayName("Create engine - nominal case - pushconstant")
+    void testCreateEngine_03() throws ThemisException {
 
         //Given
-
-        Engine engine = new Engine( configuration, new NoopRendererActivity( this.configuration ) );
+        Engine engine = new Engine( configuration, new PushConstantRendererActivity( this.configuration ) );
 
         //When
         engine.setup();
+        engine.setGamestate( new EngineTestGamestate( engine, 5 ) );
+        engine.run();
 
         //Then
-        Assertions.assertThrows( EngineGamestateNotFoundException.class,  engine::run );
 
         //Cleanup
         engine.cleanup();
 
     }
+
 
 }

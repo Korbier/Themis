@@ -136,6 +136,10 @@ public class VkCommand extends VkCommandSet {
         pipeline().bindPipeline( pipeline, compute ? VK_PIPELINE_BIND_POINT_COMPUTE : VK_PIPELINE_BIND_POINT_GRAPHICS );
     }
 
+    public void pushConstant( int shaderStage , int offset, float ... data  ) throws ThemisException {
+        pipeline().pushConstant(  shaderStage, offset, data  );
+    }
+
     /**** Buffer ****/
     public void copy( VkBuffer srcBuffer, VkBuffer dstBuffer ) throws ThemisException {
         resource().copy( srcBuffer, dstBuffer, ResourceSet.Region.of( 0, 0, srcBuffer.getRequestedSize() ) );

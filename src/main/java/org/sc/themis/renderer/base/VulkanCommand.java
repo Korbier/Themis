@@ -5,6 +5,7 @@ import org.lwjgl.vulkan.*;
 import org.sc.themis.renderer.exception.*;
 import org.sc.themis.shared.exception.ThemisException;
 
+import java.nio.ByteBuffer;
 import java.nio.LongBuffer;
 
 import static org.lwjgl.vulkan.VK10.*;
@@ -148,4 +149,9 @@ public class VulkanCommand extends Vulkan {
     public void cmdPipelineBarrier(VkCommandBuffer commandBuffer, int srcStageMask, int dstStageMask, VkImageMemoryBarrier.Buffer pImageMemoryBarriers) throws ThemisException {
         vk( () -> vkCmdPipelineBarrier( commandBuffer, srcStageMask, dstStageMask, 0, null, null, pImageMemoryBarriers ) );
     }
+
+    public void cmdPushConstants(VkCommandBuffer commandBuffer, long layout, int stageFlags, int offset, ByteBuffer pValues) throws ThemisException {
+        vk( () -> vkCmdPushConstants( commandBuffer, layout, stageFlags, offset, pValues ) );
+    }
+
 }
