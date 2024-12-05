@@ -45,8 +45,8 @@ public class TriangleRendererActivity extends RendererActivity {
     private VkPipelineLayout pipelineLayout;
     private VkPipeline pipeline;
 
-    private VkCommand command;
-    private VkFence fence;
+    private FramedObject<VkCommand> commands;
+    private FramedObject<VkFence> fences;
 
     public TriangleRendererActivity(Configuration configuration) {
         super(configuration);
@@ -67,8 +67,8 @@ public class TriangleRendererActivity extends RendererActivity {
     @Override
     public void cleanup() throws ThemisException {
         this.renderer.waitIdle();
-        this.fence.cleanup();
-        this.command.cleanup();
+        this.fences.accept( VkFence::cleanup );
+        this.commands.accept( VkCommand::cleanup );
         this.pipeline.cleanup();
         this.pipelineLayout.cleanup();
         this.shaderProgram.cleanup();
@@ -83,18 +83,21 @@ public class TriangleRendererActivity extends RendererActivity {
         this.renderer.acquire();
 
         int frame = this.renderer.getCurrentFrame();
+        VkCommand     command = this.commands.get( frame );
+        VkFence       fence = this.fences.get( frame );
+        VkFrameBuffer framebuffer = this.framebuffers.get( frame );
 
-        this.command.begin();
-        this.command.beginRenderPass( this.renderPass, this.framebuffers.get( frame ) );
-        this.command.viewportAndScissor( this.renderer.getExtent() );
-        this.command.bindPipeline( this.pipeline );
-        this.command.draw( 3, 1, 0, 0);
-        this.command.endRenderPass();
-        this.command.end();
-        this.command.submit( this.fence, this.renderer.getAcquireSemanphore( frame ), this.renderer.getPresentSemaphore( frame ) );
+        command.begin();
+        command.beginRenderPass( this.renderPass, framebuffer );
+        command.viewportAndScissor( this.renderer.getExtent() );
+        command.bindPipeline( this.pipeline );
+        command.draw( 3, 1, 0, 0);
+        command.endRenderPass();
+        command.end();
+        command.submit( fence, this.renderer.getAcquireSemanphore( frame ), this.renderer.getPresentSemaphore( frame ) );
 
-        this.fence.waitFor();
-        this.fence.reset();
+        fence.waitFor();
+        fence.reset();
 
     }
 
@@ -112,12 +115,15 @@ public class TriangleRendererActivity extends RendererActivity {
     }
 
     private void setupFence() throws ThemisException {
-        this.fence = new VkFence(getConfiguration(), this.renderer.getDevice(), false );
-        this.fence.setup();
+        this.fences = FramedObject.of( this.renderer.getFrameCount(), () -> {
+            VkFence fence = new VkFence(getConfiguration(), this.renderer.getDevice(), false);
+            fence.setup();
+            return fence;
+        });
     }
 
     private void setupCommand() throws ThemisException {
-        this.command = this.renderer.createGraphicCommand( true );
+        this.commands = FramedObject.of( this.renderer.getFrameCount(), () -> this.renderer.createGraphicCommand( true ) );
     }
 
     private void setupRenderPass() throws ThemisException {
