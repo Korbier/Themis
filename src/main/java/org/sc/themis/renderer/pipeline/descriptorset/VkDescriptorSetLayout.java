@@ -1,5 +1,6 @@
 package org.sc.themis.renderer.pipeline.descriptorset;
 
+import org.jboss.logging.Logger;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkDescriptorSetLayoutBinding;
 import org.lwjgl.vulkan.VkDescriptorSetLayoutCreateInfo;
@@ -7,8 +8,6 @@ import org.sc.themis.renderer.base.VulkanObject;
 import org.sc.themis.renderer.device.VkDevice;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.nio.LongBuffer;
 import java.util.Arrays;
@@ -17,7 +16,7 @@ import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREA
 
 public class VkDescriptorSetLayout extends VulkanObject {
 
-    final private static Logger logger = LoggerFactory.getLogger( VkDescriptorSetLayout.class );
+    private static final org.jboss.logging.Logger LOG = Logger.getLogger(VkDescriptorSetLayout.class);
 
     private final VkDevice device;
     private final VkDescriptorSetBinding [] bindings;
@@ -36,7 +35,7 @@ public class VkDescriptorSetLayout extends VulkanObject {
             VkDescriptorSetLayoutBinding.Buffer descriptorSetLayoutBindings = createDescriptorSetLayoutBindings(stack);
             VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo = createDescriptorSetLayoutCreateInfo(stack, descriptorSetLayoutBindings);
             this.handle = vkCreateDescriptorSetLayout(stack, descriptorSetLayoutCreateInfo);
-            logger.info("VkDescriptorSetLayout initialized ({}).", this);
+            LOG.tracef("VkDescriptorSetLayout initialized (%s).", this);
         }
     }
 

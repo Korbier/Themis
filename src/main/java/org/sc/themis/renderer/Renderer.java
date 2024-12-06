@@ -4,6 +4,8 @@ import org.jboss.logging.Logger;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkExtent2D;
 import org.sc.themis.renderer.activity.RendererActivity;
+import org.sc.themis.renderer.base.frame.FrameKey;
+import org.sc.themis.renderer.base.frame.Frames;
 import org.sc.themis.renderer.command.VkCommand;
 import org.sc.themis.renderer.command.VkCommandPool;
 import org.sc.themis.renderer.device.*;
@@ -17,7 +19,6 @@ import org.sc.themis.scene.Scene;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.tobject.TObject;
-import org.sc.themis.shared.utils.FramedObject;
 import org.sc.themis.window.Window;
 
 public class Renderer extends TObject {
@@ -25,6 +26,10 @@ public class Renderer extends TObject {
     private static final Logger LOG = Logger.getLogger(Renderer.class);
 
     protected final static int DEFAULT_QUEUE_INDEX = 0;
+
+    /*** Framed object ***/
+    private final static FrameKey<VkSemaphore> FK_ACQUIRE_SEMAPHORE = FrameKey.of( VkSemaphore.class );
+    private final static FrameKey<VkSemaphore> FK_PRESENT_SEMAPHORE = FrameKey.of( VkSemaphore.class );
 
     private final Window window;
     private final RendererActivity activity;
@@ -44,8 +49,7 @@ public class Renderer extends TObject {
     private VkCommandPool graphicCommandPool;
     private VkCommandPool transfertCommandPool;
 
-    private FramedObject<VkSemaphore> acquireSemaphore;
-    private FramedObject<VkSemaphore> presentSemaphore;
+    private Frames frames;
 
     public Renderer(Configuration configuration, Window window, RendererActivity activity ) {
         super(configuration);
@@ -64,16 +68,16 @@ public class Renderer extends TObject {
         this.setupQueues();
         this.setupCommandPool();
         this.setupSwapChain();
-        this.setupSemaphores();
         this.setupActivity();
+        this.setupFrames();
+        this.setupSemaphores();
         LOG.trace( "Renderer initialized" );
     }
 
     @Override
     public void cleanup() throws ThemisException {
         this.activity.cleanup();
-        this.presentSemaphore.accept( VkSemaphore::cleanup );
-        this.acquireSemaphore.accept( VkSemaphore::cleanup );
+        this.frames.cleanup();
         this.swapChain.cleanup();
         this.transfertCommandPool.cleanup();
         this.graphicCommandPool.cleanup();
@@ -151,11 +155,11 @@ public class Renderer extends TObject {
     }
 
     public VkSemaphore getAcquireSemanphore( int frame ) {
-        return this.acquireSemaphore.get( frame );
+        return this.frames.get( frame, FK_ACQUIRE_SEMAPHORE );
     }
 
     public VkSemaphore getPresentSemaphore( int frame ) {
-        return this.presentSemaphore.get( frame );
+        return this.frames.get( frame, FK_PRESENT_SEMAPHORE );
     }
 
     private void resize() throws ThemisException {
@@ -209,13 +213,17 @@ public class Renderer extends TObject {
         }
     }
 
+    private void setupFrames() {
+        this.frames = new Frames( getFrameCount() );
+    }
+
     private void setupSemaphores() throws ThemisException {
-        this.acquireSemaphore = FramedObject.of( this.swapChain.getFrameCount(), () -> {
+        this.frames.create( FK_ACQUIRE_SEMAPHORE, () -> {
             VkSemaphore semaphore = new VkSemaphore(getConfiguration(), this.device);
             semaphore.setup();
             return semaphore;
         });
-        this.presentSemaphore = FramedObject.of( this.swapChain.getFrameCount(), () -> {
+        this.frames.create( FK_PRESENT_SEMAPHORE, () -> {
             VkSemaphore semaphore = new VkSemaphore(getConfiguration(), this.device);
             semaphore.setup();
             return semaphore;

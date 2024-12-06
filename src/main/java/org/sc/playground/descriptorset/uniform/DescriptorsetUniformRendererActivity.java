@@ -3,6 +3,8 @@ package org.sc.playground.descriptorset.uniform;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.util.shaderc.Shaderc;
 import org.sc.playground.shared.BaseRendererActivity;
+import org.sc.themis.renderer.base.frame.FrameKey;
+import org.sc.themis.renderer.base.frame.Frames;
 import org.sc.themis.renderer.command.VkCommand;
 import org.sc.themis.renderer.framebuffer.VkFrameBuffer;
 import org.sc.themis.renderer.pipeline.*;
@@ -16,7 +18,6 @@ import org.sc.themis.renderer.sync.VkFence;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
-import org.sc.themis.shared.utils.FramedObject;
 import org.sc.themis.shared.utils.MemorySizeUtils;
 
 import java.io.IOException;
@@ -24,7 +25,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 import static org.lwjgl.vulkan.VK10.*;
-import static org.lwjgl.vulkan.VK10.VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
 
 public class DescriptorsetUniformRendererActivity extends BaseRendererActivity {
 
@@ -33,6 +33,11 @@ public class DescriptorsetUniformRendererActivity extends BaseRendererActivity {
     private final static String SHADER_FRAGMENT_SOURCE = "src/main/resources/playground/descriptorset/uniform/fragment_shader.glsl";
     private final static String SHADER_FRAGMENT_COMPILED = "target/playground/descriptorset/uniform/fragment_shader.spirv";
 
+    /*** Framed object ***/
+    private final static FrameKey<VkBuffer>        FK_UNIFORM_BUFFER = FrameKey.of( VkBuffer.class );
+    private final static FrameKey<VkBuffer>        FK_DYNAMIC_BUFFER = FrameKey.of( VkBuffer.class );
+    private final static FrameKey<VkDescriptorSet> FK_DESCRIPTORSET  = FrameKey.of( VkDescriptorSet.class );
+
     private VkShaderProgram shaderProgram;
     private VkPipelineLayout pipelineLayout;
     private VkPipeline pipeline;
@@ -40,9 +45,7 @@ public class DescriptorsetUniformRendererActivity extends BaseRendererActivity {
     private VkDescriptorSetLayout descriptorLayout;
     private VkDescriptorPool descriptorPool;
 
-    private FramedObject<VkBuffer> uniformBuffers;
-    private FramedObject<VkBuffer> dynUniformBuffers;
-    private FramedObject<VkDescriptorSet> descriptorsets;
+    private Frames frames;
 
     public DescriptorsetUniformRendererActivity(Configuration configuration) {
         super(configuration);
@@ -54,26 +57,25 @@ public class DescriptorsetUniformRendererActivity extends BaseRendererActivity {
         this.renderer.acquire();
 
         int frame = this.renderer.getCurrentFrame();
-        VkCommand command = this.commands.get( frame );
-        VkFence fence = this.fences.get( frame );
-        VkFrameBuffer framebuffer = this.framebuffers.get( frame );
 
-        VkBuffer uniformBuffer = this.uniformBuffers.get( frame );
+        VkCommand       command     = getCommand( frame );
+        VkFence         fence       = getFence( frame );
+        VkFrameBuffer   framebuffer = getFramebuffer( frame );
+        VkBuffer        uniformBuffer = this.frames.get( frame, FK_UNIFORM_BUFFER );
+        VkBuffer        dynamicBuffer = this.frames.get( frame, FK_DYNAMIC_BUFFER );
+        VkDescriptorSet descriptorSet = this.frames.get( frame, FK_DESCRIPTORSET );
+
         uniformBuffer.set( 0, 1.0f, 0.0f, 0.0f, 1.0f );
-
-        VkBuffer dynUniformBuffer = this.dynUniformBuffers.get( frame );
-        dynUniformBuffer.set( dynUniformBuffer.getAlignedOffset(0), 0.0f, 1.0f, 0.0f, 1.0f );
-        dynUniformBuffer.set( dynUniformBuffer.getAlignedOffset(1), 0.0f, 0.0f, 1.0f, 1.0f );
-
-        VkDescriptorSet descriptorSet = this.descriptorsets.get( frame );
+        dynamicBuffer.set( dynamicBuffer.getAlignedOffset(0), 0.0f, 1.0f, 0.0f, 1.0f );
+        dynamicBuffer.set( dynamicBuffer.getAlignedOffset(1), 0.0f, 0.0f, 1.0f, 1.0f );
 
         command.begin();
         command.beginRenderPass( this.renderPass, framebuffer );
         command.viewportAndScissor( this.renderer.getExtent() );
         command.bindPipeline( this.pipeline );
-        command.bindDescriptorSets( new int[] {dynUniformBuffer.getAlignedOffset( 0 )} , descriptorSet );
+        command.bindDescriptorSets( new int[] {dynamicBuffer.getAlignedOffset( 0 )} , descriptorSet );
         command.draw( 3, 1, 0, 0);
-        command.bindDescriptorSets( new int[] {dynUniformBuffer.getAlignedOffset( 1 )} , descriptorSet );
+        command.bindDescriptorSets( new int[] {dynamicBuffer.getAlignedOffset( 1 )} , descriptorSet );
         command.draw( 3, 1, 3, 0);
         command.endRenderPass();
         command.end();
@@ -85,6 +87,7 @@ public class DescriptorsetUniformRendererActivity extends BaseRendererActivity {
     }
 
     public void setupPipeline() throws ThemisException {
+        this.frames = new Frames( this.renderer.getFrameCount() );
         this.setupDescriptorSets();
         this.setupShaderProgram();
         this.setupPipelineAndLayout();
@@ -103,25 +106,23 @@ public class DescriptorsetUniformRendererActivity extends BaseRendererActivity {
         this.descriptorPool = new VkDescriptorPool( getConfiguration(), this.renderer.getDevice(), this.renderer.getFrameCount(), this.descriptorLayout );
         this.descriptorPool.setup();
 
-        this.uniformBuffers = FramedObject.of( this.renderer.getFrameCount(), () -> {
-            VkBufferDescriptor bufferDescriptor = new VkBufferDescriptor(MemorySizeUtils.VEC4F, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, 0);
-            VkBuffer buffer = new VkBuffer(getConfiguration(), this.renderer.getDevice(), this.renderer.getMemoryAllocator(), bufferDescriptor);
+        this.frames.create( FK_UNIFORM_BUFFER, () -> {
+            VkBuffer buffer = new VkBuffer( getConfiguration(), this.renderer.getDevice(), this.renderer.getMemoryAllocator(), VkBufferDescriptor.descriptorsetUniform( MemorySizeUtils.VEC4F ));
             buffer.setup();
             return buffer;
         });
 
-        this.dynUniformBuffers = FramedObject.of( this.renderer.getFrameCount(), () -> {
-            VkBufferDescriptor bufferDescriptor = new VkBufferDescriptor(MemorySizeUtils.VEC4F, 2, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, 0);
-            VkBuffer buffer = new VkBuffer(getConfiguration(), this.renderer.getDevice(), this.renderer.getMemoryAllocator(), bufferDescriptor);
+        this.frames.create( FK_DYNAMIC_BUFFER, () -> {
+            VkBuffer buffer = new VkBuffer( getConfiguration(), this.renderer.getDevice(), this.renderer.getMemoryAllocator(), VkBufferDescriptor.descriptorsetDynamicUniform( MemorySizeUtils.VEC4F, 2 ));
             buffer.setup();
             return buffer;
         });
 
-        this.descriptorsets = FramedObject.of( this.renderer.getFrameCount(), (frame ) -> {
+        this.frames.create( FK_DESCRIPTORSET, ( frame ) -> {
             VkDescriptorSet descriptorSet = new VkDescriptorSet(getConfiguration(), this.renderer.getDevice(), this.descriptorPool, this.descriptorLayout );
             descriptorSet.setup();
-            descriptorSet.bind( 0, this.uniformBuffers.get( frame ) );
-            descriptorSet.bind( 1, this.dynUniformBuffers.get( frame ) );
+            descriptorSet.bind( 0, this.frames.get( frame, FK_UNIFORM_BUFFER ) );
+            descriptorSet.bind( 1, this.frames.get( frame, FK_DYNAMIC_BUFFER ) );
             return descriptorSet;
         });
 
@@ -129,9 +130,7 @@ public class DescriptorsetUniformRendererActivity extends BaseRendererActivity {
 
     @Override
     public void cleanupPipeline() throws ThemisException {
-        this.descriptorsets.accept( VkDescriptorSet::cleanup );
-        this.dynUniformBuffers.accept( VkBuffer::cleanup );
-        this.uniformBuffers.accept( VkBuffer::cleanup );
+        this.frames.cleanup();
         this.descriptorPool.cleanup();
         this.descriptorLayout.cleanup();
         this.pipeline.cleanup();

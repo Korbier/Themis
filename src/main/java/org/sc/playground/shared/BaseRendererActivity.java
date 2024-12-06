@@ -1,24 +1,21 @@
 package org.sc.playground.shared;
 
-import org.lwjgl.system.MemoryStack;
-import org.lwjgl.util.shaderc.Shaderc;
 import org.sc.themis.renderer.Renderer;
 import org.sc.themis.renderer.activity.RendererActivity;
+import org.sc.themis.renderer.base.frame.FrameKey;
+import org.sc.themis.renderer.base.frame.Frames;
 import org.sc.themis.renderer.command.VkCommand;
 import org.sc.themis.renderer.device.VkDevice;
 import org.sc.themis.renderer.framebuffer.VkFrameBuffer;
 import org.sc.themis.renderer.framebuffer.VkFrameBufferAttachments;
 import org.sc.themis.renderer.framebuffer.VkFrameBufferDescriptor;
-import org.sc.themis.renderer.pipeline.*;
 import org.sc.themis.renderer.renderpass.VkRenderPass;
 import org.sc.themis.renderer.renderpass.VkRenderPassDescriptor;
 import org.sc.themis.renderer.renderpass.VkRenderPassLayout;
 import org.sc.themis.renderer.renderpass.VkSubpass;
 import org.sc.themis.renderer.sync.VkFence;
-import org.sc.themis.scene.Scene;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
-import org.sc.themis.shared.utils.FramedObject;
 
 import static org.lwjgl.vulkan.KHRSwapchain.VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 import static org.lwjgl.vulkan.VK10.*;
@@ -27,14 +24,16 @@ public abstract class BaseRendererActivity extends RendererActivity {
 
     private final static String FB_ATTACHMENT_COLOR = "framebuffer.attachment.color";
 
-    protected Renderer renderer;
+    /*** Framed object ***/
+    private final static FrameKey<VkFrameBuffer> FK_FRAMEBUFFER = FrameKey.of( VkFrameBuffer.class );
+    private final static FrameKey<VkCommand>     FK_COMMAND = FrameKey.of( VkCommand.class );
+    private final static FrameKey<VkFence>       FK_FENCE = FrameKey.of( VkFence.class );
 
+    protected Renderer renderer;
     protected VkFrameBufferAttachments frameBufferAttachments;
     protected VkRenderPass renderPass;
-    protected FramedObject<VkFrameBuffer> framebuffers;
 
-    protected FramedObject<VkCommand> commands;
-    protected FramedObject<VkFence> fences;
+    protected Frames frames;
 
     public BaseRendererActivity(Configuration configuration) {
         super(configuration);
@@ -46,6 +45,7 @@ public abstract class BaseRendererActivity extends RendererActivity {
     @Override
     public void setup( Renderer renderer ) throws ThemisException {
         this.renderer = renderer;
+        this.frames = new Frames( this.renderer.getFrameCount() );
         setupFramebufferAttachments();
         setupRenderPass();
         setupFramebuffers();
@@ -57,10 +57,8 @@ public abstract class BaseRendererActivity extends RendererActivity {
     @Override
     public void cleanup() throws ThemisException {
         cleanupPipeline();
+        this.frames.cleanup();
         this.renderer.waitIdle();
-        this.fences.accept( VkFence::cleanup );
-        this.commands.accept( VkCommand::cleanup );
-        this.framebuffers.accept( VkFrameBuffer::cleanup );
         this.renderPass.cleanup();
         this.frameBufferAttachments.cleanup();
     }
@@ -68,7 +66,7 @@ public abstract class BaseRendererActivity extends RendererActivity {
     @Override
     public void resize() throws ThemisException {
 
-        this.framebuffers.accept( VkFrameBuffer::cleanup );
+        this.frames.remove( FK_FRAMEBUFFER, true );
         this.renderPass.cleanup();
         this.frameBufferAttachments.cleanup();
 
@@ -78,16 +76,28 @@ public abstract class BaseRendererActivity extends RendererActivity {
 
     }
 
+    protected VkFrameBuffer getFramebuffer( int frame ) {
+        return this.frames.get( frame, FK_FRAMEBUFFER );
+    }
+
+    protected VkCommand getCommand( int frame ) {
+        return this.frames.get( frame, FK_COMMAND );
+    }
+
+    protected VkFence getFence( int frame ) {
+        return this.frames.get( frame, FK_FENCE );
+    }
+
     private void setupFence() throws ThemisException {
-        this.fences = FramedObject.of( this.renderer.getFrameCount(), () -> {
+        this.frames.create( FK_FENCE, () -> {
             VkFence fence = new VkFence(getConfiguration(), this.renderer.getDevice(), false);
             fence.setup();
             return fence;
-        });
+        } );
     }
 
     private void setupCommand() throws ThemisException {
-        this.commands = FramedObject.of( this.renderer.getFrameCount(), () -> this.renderer.createGraphicCommand( true ) );
+        this.frames.create( FK_COMMAND, () -> this.renderer.createGraphicCommand( true ) );
     }
 
     private void setupRenderPass() throws ThemisException {
@@ -103,19 +113,16 @@ public abstract class BaseRendererActivity extends RendererActivity {
     }
 
     private void setupFramebuffers() throws ThemisException {
-        this.framebuffers = FramedObject.of(
-                this.renderer.getFrameCount(),
-                ( frame ) -> {
-                    VkFrameBufferDescriptor descriptor = new VkFrameBufferDescriptor(
-                            this.renderer.getExtent(),
-                            this.renderPass.getHandle(),
-                            this.renderer.getImageView( frame ).getHandle()
-                    );
-                    VkFrameBuffer framebuffer = new VkFrameBuffer( getConfiguration(), this.renderer.getDevice(), descriptor );
-                    framebuffer.setup();
-                    return framebuffer;
-                }
-        );
+        this.frames.create( FK_FRAMEBUFFER, ( frame ) -> {
+            VkFrameBufferDescriptor descriptor = new VkFrameBufferDescriptor(
+                    this.renderer.getExtent(),
+                    this.renderPass.getHandle(),
+                    this.renderer.getImageView( frame ).getHandle()
+            );
+            VkFrameBuffer framebuffer = new VkFrameBuffer( getConfiguration(), this.renderer.getDevice(), descriptor );
+            framebuffer.setup();
+            return framebuffer;
+        });
     }
 
     private VkRenderPassDescriptor createSubPassDescriptor(VkDevice device) {

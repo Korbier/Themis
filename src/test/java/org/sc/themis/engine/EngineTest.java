@@ -24,7 +24,7 @@ public class EngineTest {
     Configuration configuration;
 
     @ParameterizedTest
-    @EnumSource(value=Playgrounds.class, names="DESC_UNIFORM")
+    @EnumSource(value=Playgrounds.class, names = "NOOP", mode = EnumSource.Mode.EXCLUDE)
     void testRenderActivity( Playgrounds playground ) throws ThemisException {
 
         //Given
