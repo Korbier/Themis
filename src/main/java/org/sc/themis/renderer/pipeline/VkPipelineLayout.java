@@ -4,6 +4,7 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkPipelineLayoutCreateInfo;
 import org.sc.themis.renderer.base.VulkanObject;
 import org.sc.themis.renderer.device.VkDevice;
+import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorSetLayout;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 
@@ -15,13 +16,15 @@ public class VkPipelineLayout extends VulkanObject {
 
     private final VkDevice device;
     private final VkPushConstantRange [] constantRanges;
+    private final VkDescriptorSetLayout [] descriptorSetLayouts;
 
     private long handle;
 
-    public VkPipelineLayout(Configuration configuration, VkDevice device, VkPushConstantRange[] pushConstantRanges ) {
+    public VkPipelineLayout(Configuration configuration, VkDevice device, VkPushConstantRange[] pushConstantRanges, VkDescriptorSetLayout ... descriptorSetLayouts ) {
         super(configuration);
         this.device = device;
         this.constantRanges = pushConstantRanges;
+        this.descriptorSetLayouts = descriptorSetLayouts;
     }
 
     @Override
@@ -44,7 +47,7 @@ public class VkPipelineLayout extends VulkanObject {
     }
 
     private LongBuffer createLayouts(MemoryStack stack) {
-        /**
+
         if ( this.descriptorSetLayouts.length > 0 ) {
 
             LongBuffer layouts = stack.mallocLong(this.descriptorSetLayouts.length);
@@ -56,8 +59,9 @@ public class VkPipelineLayout extends VulkanObject {
             return layouts;
 
         }
-        **/
+
         return null;
+
     }
 
     private VkPipelineLayoutCreateInfo createLayoutCreateInfo(MemoryStack stack, org.lwjgl.vulkan.VkPushConstantRange.Buffer pushConstantRanges, LongBuffer layouts ) {

@@ -128,13 +128,13 @@ public class VkDevice extends VulkanObject {
         VkPhysicalDeviceFeatures features = VkPhysicalDeviceFeatures.calloc(stack);
 
         if ( getConfiguration().renderer().feature().samplerAnisotropy() && this.physicalDevice.getFeatures().samplerAnisotropy() ) {
-            LOG.info( "Sampler Anisotropy feature enabled");
+            LOG.debug( "Sampler Anisotropy feature enabled");
             this.features.set( FEATURE_SAMPLER_ANISOTROPY );
             features.samplerAnisotropy( true );
         }
 
         if ( getConfiguration().renderer().feature().geometryShader() && this.physicalDevice.getFeatures().geometryShader() ) {
-            LOG.info( "Geometry Shader feature enabled");
+            LOG.debug( "Geometry Shader feature enabled");
             this.features.set( FEATURE_GEOMETRY_SHADER );
             features.geometryShader( true );
         }

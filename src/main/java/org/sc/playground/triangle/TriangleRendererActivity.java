@@ -37,9 +37,10 @@ public class TriangleRendererActivity extends BaseRendererActivity {
         this.renderer.acquire();
 
         int frame = this.renderer.getCurrentFrame();
-        VkCommand command = this.commands.get( frame );
-        VkFence fence = this.fences.get( frame );
-        VkFrameBuffer framebuffer = this.framebuffers.get( frame );
+
+        VkCommand     command     = getCommand( frame );
+        VkFence       fence       = getFence( frame );
+        VkFrameBuffer framebuffer = getFramebuffer( frame );
 
         command.begin();
         command.beginRenderPass( this.renderPass, framebuffer );

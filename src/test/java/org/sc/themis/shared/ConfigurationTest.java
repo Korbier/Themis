@@ -18,8 +18,8 @@ class ConfigurationTest {
     private final static String ENGINE_NAME = "Themis Engine";
     private final static int ENGINE_VERSION = 1;
 
-    private final static int WINDOW_WIDTH = 800;
-    private final static int WINDOW_HEIGHT = 600;
+    private final static int WINDOW_WIDTH = 320;
+    private final static int WINDOW_HEIGHT = 200;
     private final static boolean WINDOW_RESIZABLE = true;
     private final static boolean WINDOW_MAXIMIZED = false;
 
