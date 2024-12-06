@@ -7,10 +7,6 @@
 In progress : 🔲 Done : ✅
 
 ### to do / Ideas
-
-* Renderer
-  * 🔲 VkStagingResource.commit -> Need VkCommand
-
 * Scene 
   * 🔲 Mesh
   * 🔲 Model
@@ -25,7 +21,5 @@ In progress : 🔲 Done : ✅
   * Subpass
   * Msaa
   * Descriptorset
-    * uniform
-    * storagebuffer
-    * imagesampler    
+    * storagebuffer   
   

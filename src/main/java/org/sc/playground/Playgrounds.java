@@ -1,5 +1,6 @@
 package org.sc.playground;
 
+import org.sc.playground.descriptorset.imagesampler.DescriptorsetImageSamplerRendererActivity;
 import org.sc.playground.descriptorset.uniform.DescriptorsetUniformRendererActivity;
 import org.sc.playground.noop.NoopGamestate;
 import org.sc.playground.noop.NoopRendererActivity;
@@ -16,7 +17,8 @@ public enum Playgrounds {
     NOOP( "noop", new NoopGamestate(), NoopRendererActivity::new),
     TRIANGLE( "triangle", new NoopGamestate(), TriangleRendererActivity::new ),
     PUSH_CONSTANT( "pushconstant", new NoopGamestate(), PushConstantRendererActivity::new ),
-    DESC_UNIFORM( "desc-uniform", new NoopGamestate(), DescriptorsetUniformRendererActivity::new );
+    DESC_UNIFORM( "desc-uniform", new NoopGamestate(), DescriptorsetUniformRendererActivity::new ),
+    DESC_IMAGESAMPLER( "desc-imagesampler", new NoopGamestate(), DescriptorsetImageSamplerRendererActivity::new );
 
     final String name;
     final Gamestate gamestate;

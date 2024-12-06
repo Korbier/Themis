@@ -5,6 +5,7 @@ import org.joml.Vector2i;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.sc.themis.renderer.base.VulkanObject;
+import org.sc.themis.renderer.command.VkCommand;
 import org.sc.themis.renderer.device.VkDevice;
 import org.sc.themis.renderer.device.VkMemoryAllocator;
 import org.sc.themis.renderer.resource.buffer.VkBuffer;
@@ -33,6 +34,8 @@ public sealed abstract class VkStagingResource
         this.allocator = allocator;
     }
 
+    abstract public void doCommit(VkCommand command) throws ThemisException;
+
     @Override
     final public void setup() {
     }
@@ -44,14 +47,12 @@ public sealed abstract class VkStagingResource
             cleanupStagingBuffer();
         }
     }
-/**
+
     public void commit( VkCommand command ) throws ThemisException {
         doCommit( command );
         setStatus( VkStagingResourceStatus.COMMITED );
     }
 
-     abstract public void doCommit(VkCommand command) throws ThemisException;
-**/
     public VkStagingResourceStatus getStatus() {
         return this.status;
     }

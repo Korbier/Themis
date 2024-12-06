@@ -1,5 +1,6 @@
 package org.sc.themis.renderer.resource.staging;
 
+import org.sc.themis.renderer.command.VkCommand;
 import org.sc.themis.renderer.device.VkDevice;
 import org.sc.themis.renderer.device.VkMemoryAllocator;
 import org.sc.themis.renderer.resource.buffer.VkBuffer;
@@ -24,12 +25,10 @@ public final class VkStagingBuffer extends VkStagingResource {
         this.bufferUsage = bufferUsage;
     }
 
-    /**
     @Override
     public void doCommit(VkCommand command) throws ThemisException {
 
     }
-    **/
 
     @Override
     protected void setupStagingBuffer() throws ThemisException {

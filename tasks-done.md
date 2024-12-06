@@ -56,3 +56,6 @@
     * ✅ VkFence 
 * Playgrounds
   * ✅ Triangle #1 (Shader)
+  * ✅ Pushconstant
+  * ✅ Descriptorset : Uniform & dynamic uniform
+  * ✅ Descriptorset : Image sampler
