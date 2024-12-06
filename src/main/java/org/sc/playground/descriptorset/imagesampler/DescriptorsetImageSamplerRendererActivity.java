@@ -88,49 +88,10 @@ public class DescriptorsetImageSamplerRendererActivity extends BaseRendererActiv
         this.setupPipelineAndLayout();
     }
 
-    private void setupDescriptorSets() throws ThemisException {
-
-        this.descriptorLayout = new VkDescriptorSetLayout(
-            getConfiguration(), this.renderer.getDevice(),
-            VkDescriptorSetBinding.combinedImageSampler( 0, VK_SHADER_STAGE_FRAGMENT_BIT )
-        );
-        this.descriptorLayout.setup();
-
-        this.descriptorPool = new VkDescriptorPool( getConfiguration(), this.renderer.getDevice(), this.renderer.getFrameCount(), this.descriptorLayout );
-        this.descriptorPool.setup();
-
-        getFrames().create( FK_DESCRIPTORSET, () -> new VkDescriptorSet(getConfiguration(), this.renderer.getDevice(), this.descriptorPool, this.descriptorLayout ) );
-        getFrames().update( FK_DESCRIPTORSET, (descriptorset) -> descriptorset.bind( 0, this.vkImage.getView(), this.sampler ) );
-
-    }
-
-    private void setupImage() throws ThemisException {
-
-        this.sampler = new VkSampler( getConfiguration(), this.renderer.getDevice(), new VkSamplerDescriptor(VK_FILTER_LINEAR, 1, true) );
-        this.sampler.setup();
-
-        this.image = Image.of( "src/main/resources/playground/descriptorset/imagesampler/vulkan.png" );
-
-        this.vkImage = new VkStagingImage( getConfiguration(), this.renderer.getDevice(), this.renderer.getMemoryAllocator(), VK_FORMAT_R8G8B8A8_SRGB );
-        this.vkImage.setup();
-        this.vkImage.load( this.image );
-
-        VkCommand transfertCommand = this.renderer.createTransfertCommand( true );
-        transfertCommand.setup();
-
-        VkFence transfertFence = new VkFence( getConfiguration(), this.renderer.getDevice(), false );
-        transfertFence.setup();
-
-        transfertCommand.begin();
-        this.vkImage.commit( transfertCommand );
-        transfertCommand.end();
-        transfertCommand.submit( transfertFence );
-        transfertFence.waitForAndReset();
-
-    }
-
     @Override
     public void cleanupPipeline() throws ThemisException {
+        this.vkImage.cleanup();
+        this.sampler.cleanup();
         this.descriptorPool.cleanup();
         this.descriptorLayout.cleanup();
         this.pipeline.cleanup();
@@ -182,5 +143,45 @@ public class DescriptorsetImageSamplerRendererActivity extends BaseRendererActiv
 
     }
 
+    private void setupDescriptorSets() throws ThemisException {
+
+        this.descriptorLayout = new VkDescriptorSetLayout(
+                getConfiguration(), this.renderer.getDevice(),
+                VkDescriptorSetBinding.combinedImageSampler( 0, VK_SHADER_STAGE_FRAGMENT_BIT )
+        );
+        this.descriptorLayout.setup();
+
+        this.descriptorPool = new VkDescriptorPool( getConfiguration(), this.renderer.getDevice(), this.renderer.getFrameCount(), this.descriptorLayout );
+        this.descriptorPool.setup();
+
+        getFrames().create( FK_DESCRIPTORSET, () -> new VkDescriptorSet(getConfiguration(), this.renderer.getDevice(), this.descriptorPool, this.descriptorLayout ) );
+        getFrames().update( FK_DESCRIPTORSET, (descriptorset) -> descriptorset.bind( 0, this.vkImage.getView(), this.sampler ) );
+
+    }
+
+    private void setupImage() throws ThemisException {
+
+        this.sampler = new VkSampler( getConfiguration(), this.renderer.getDevice(), new VkSamplerDescriptor(VK_FILTER_LINEAR, 1, true) );
+        this.sampler.setup();
+
+        this.image = Image.of( "src/main/resources/playground/descriptorset/imagesampler/vulkan.png" );
+
+        this.vkImage = new VkStagingImage( getConfiguration(), this.renderer.getDevice(), this.renderer.getMemoryAllocator(), VK_FORMAT_R8G8B8A8_SRGB );
+        this.vkImage.setup();
+        this.vkImage.load( this.image );
+
+        VkCommand transfertCommand = this.renderer.createTransfertCommand( true );
+        transfertCommand.setup();
+
+        VkFence transfertFence = new VkFence( getConfiguration(), this.renderer.getDevice(), false );
+        transfertFence.setup();
+
+        transfertCommand.begin();
+        this.vkImage.commit( transfertCommand );
+        transfertCommand.end();
+        transfertCommand.submit( transfertFence );
+        transfertFence.waitForAndReset();
+
+    }
 
 }
