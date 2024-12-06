@@ -14,6 +14,14 @@ public class Frame {
 
     private final Map<FrameKey<? extends VulkanObject>, VulkanObject> content = new HashMap<>();
 
+    private final boolean autoSetup;
+    private final boolean autoCleanup;
+
+    public Frame( boolean autoSetup, boolean autoCleanup ) {
+        this.autoSetup = autoSetup;
+        this.autoCleanup = autoCleanup;
+    }
+
     public <T extends VulkanObject> T get( FrameKey<T> key ) {
         return (T) this.content.get( key );
     }
@@ -25,15 +33,11 @@ public class Frame {
     }
 
     <T extends VulkanObject> T create( FrameKey<T> key, SupplierWithException<T> supplier ) throws ThemisException {
-        T data = supplier.get();
-        this.content.put( key, data );
-        return data;
+        return put( key, supplier.get() );
     }
 
     <T extends VulkanObject> T create( FrameKey<T> key, int frame, FunctionWithException<Integer, T> function ) throws ThemisException {
-        T data = function.apply( frame );
-        this.content.put( key, data );
-        return data;
+        return put( key, function.apply( frame ) );
     }
 
     <T extends VulkanObject> T update( FrameKey<T> key, ConsumerWithException<T> consumer ) throws ThemisException {
@@ -48,9 +52,15 @@ public class Frame {
         return data;
     }
 
-    <T extends VulkanObject> T remove( FrameKey<T> key, boolean cleanup ) throws ThemisException {
+    <T extends VulkanObject> T remove( FrameKey<T> key ) throws ThemisException {
         T data = (T) this.content.remove( key );
-        if ( cleanup ) data.cleanup();
+        if ( this.autoCleanup ) data.cleanup();
+        return data;
+    }
+
+    private <T extends VulkanObject> T put( FrameKey<T> key, T data ) throws ThemisException {
+        if ( this.autoSetup ) data.setup();
+        this.content.put( key, data );
         return data;
     }
 

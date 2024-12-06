@@ -4,6 +4,7 @@ import org.jboss.logging.Logger;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkExtent2D;
 import org.sc.themis.renderer.activity.RendererActivity;
+import org.sc.themis.renderer.base.frame.Frame;
 import org.sc.themis.renderer.base.frame.FrameKey;
 import org.sc.themis.renderer.base.frame.Frames;
 import org.sc.themis.renderer.command.VkCommand;
@@ -60,17 +61,24 @@ public class Renderer extends TObject {
 
     @Override
     public void setup() throws ThemisException {
+
+        /** Core setups **/
         this.instance.setup();
         this.setupPhysicalDevice();
         this.setupDevice();
         this.setupMemoryAllocator();
+
+        /** Presentation setup **/
         this.setupSurface();
         this.setupQueues();
         this.setupCommandPool();
         this.setupSwapChain();
+
+        /** Frame dependent setups **/
+        this.frames = new Frames( getFrameCount(), true, true );
         this.setupActivity();
-        this.setupFrames();
         this.setupSemaphores();
+
         LOG.trace( "Renderer initialized" );
     }
 
@@ -132,6 +140,10 @@ public class Renderer extends TObject {
 
     public int getCurrentFrame() {
         return this.swapChain.getCurrentFrame();
+    }
+
+    public Frames getFrames() {
+        return this.frames;
     }
 
     public VkExtent2D getExtent() {
@@ -213,21 +225,9 @@ public class Renderer extends TObject {
         }
     }
 
-    private void setupFrames() {
-        this.frames = new Frames( getFrameCount() );
-    }
-
     private void setupSemaphores() throws ThemisException {
-        this.frames.create( FK_ACQUIRE_SEMAPHORE, () -> {
-            VkSemaphore semaphore = new VkSemaphore(getConfiguration(), this.device);
-            semaphore.setup();
-            return semaphore;
-        });
-        this.frames.create( FK_PRESENT_SEMAPHORE, () -> {
-            VkSemaphore semaphore = new VkSemaphore(getConfiguration(), this.device);
-            semaphore.setup();
-            return semaphore;
-        });
+        this.frames.create( FK_ACQUIRE_SEMAPHORE, () -> new VkSemaphore(getConfiguration(), this.device) );
+        this.frames.create( FK_PRESENT_SEMAPHORE, () -> new VkSemaphore(getConfiguration(), this.device) );
     }
 
 }

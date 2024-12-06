@@ -18,10 +18,14 @@ public class Frames {
     private final Frame [] frames;
 
     public Frames( int size ) {
+        this( size, false, false );
+    }
+
+    public Frames( int size, boolean autoSetup, boolean autoCleanup ) {
         this.size = size;
         this.frames = new Frame[ this.size ];
         for ( int i = 0; i<this.size; i++) {
-            this.frames[i] = new Frame();
+            this.frames[i] = new Frame(autoSetup, autoCleanup);
         }
     }
 
@@ -67,9 +71,9 @@ public class Frames {
         return this.frames[idx].update( key, consumer );
     }
 
-    public <T extends VulkanObject> void remove( FrameKey<T> key, boolean cleanup ) throws ThemisException {
+    public <T extends VulkanObject> void remove( FrameKey<T> key ) throws ThemisException {
         for ( Frame frame : this.frames ) {
-            frame.remove( key, cleanup );
+            frame.remove( key );
         }
     }
 

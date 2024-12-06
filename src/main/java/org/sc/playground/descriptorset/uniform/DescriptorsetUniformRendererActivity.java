@@ -45,8 +45,6 @@ public class DescriptorsetUniformRendererActivity extends BaseRendererActivity {
     private VkDescriptorSetLayout descriptorLayout;
     private VkDescriptorPool descriptorPool;
 
-    private Frames frames;
-
     public DescriptorsetUniformRendererActivity(Configuration configuration) {
         super(configuration);
     }
@@ -61,9 +59,9 @@ public class DescriptorsetUniformRendererActivity extends BaseRendererActivity {
         VkCommand       command     = getCommand( frame );
         VkFence         fence       = getFence( frame );
         VkFrameBuffer   framebuffer = getFramebuffer( frame );
-        VkBuffer        uniformBuffer = this.frames.get( frame, FK_UNIFORM_BUFFER );
-        VkBuffer        dynamicBuffer = this.frames.get( frame, FK_DYNAMIC_BUFFER );
-        VkDescriptorSet descriptorSet = this.frames.get( frame, FK_DESCRIPTORSET );
+        VkBuffer        uniformBuffer = getFrames().get( frame, FK_UNIFORM_BUFFER );
+        VkBuffer        dynamicBuffer = getFrames().get( frame, FK_DYNAMIC_BUFFER );
+        VkDescriptorSet descriptorSet = getFrames().get( frame, FK_DESCRIPTORSET );
 
         uniformBuffer.set( 0, 1.0f, 0.0f, 0.0f, 1.0f );
         dynamicBuffer.set( dynamicBuffer.getAlignedOffset(0), 0.0f, 1.0f, 0.0f, 1.0f );
@@ -87,7 +85,6 @@ public class DescriptorsetUniformRendererActivity extends BaseRendererActivity {
     }
 
     public void setupPipeline() throws ThemisException {
-        this.frames = new Frames( this.renderer.getFrameCount() );
         this.setupDescriptorSets();
         this.setupShaderProgram();
         this.setupPipelineAndLayout();
@@ -106,31 +103,19 @@ public class DescriptorsetUniformRendererActivity extends BaseRendererActivity {
         this.descriptorPool = new VkDescriptorPool( getConfiguration(), this.renderer.getDevice(), this.renderer.getFrameCount(), this.descriptorLayout );
         this.descriptorPool.setup();
 
-        this.frames.create( FK_UNIFORM_BUFFER, () -> {
-            VkBuffer buffer = new VkBuffer( getConfiguration(), this.renderer.getDevice(), this.renderer.getMemoryAllocator(), VkBufferDescriptor.descriptorsetUniform( MemorySizeUtils.VEC4F ));
-            buffer.setup();
-            return buffer;
-        });
+        getFrames().create( FK_UNIFORM_BUFFER, () -> new VkBuffer( getConfiguration(), this.renderer.getDevice(), this.renderer.getMemoryAllocator(), VkBufferDescriptor.descriptorsetUniform( MemorySizeUtils.VEC4F ) ) );
+        getFrames().create( FK_DYNAMIC_BUFFER, () -> new VkBuffer( getConfiguration(), this.renderer.getDevice(), this.renderer.getMemoryAllocator(), VkBufferDescriptor.descriptorsetDynamicUniform( MemorySizeUtils.VEC4F, 2 )));
 
-        this.frames.create( FK_DYNAMIC_BUFFER, () -> {
-            VkBuffer buffer = new VkBuffer( getConfiguration(), this.renderer.getDevice(), this.renderer.getMemoryAllocator(), VkBufferDescriptor.descriptorsetDynamicUniform( MemorySizeUtils.VEC4F, 2 ));
-            buffer.setup();
-            return buffer;
-        });
-
-        this.frames.create( FK_DESCRIPTORSET, ( frame ) -> {
-            VkDescriptorSet descriptorSet = new VkDescriptorSet(getConfiguration(), this.renderer.getDevice(), this.descriptorPool, this.descriptorLayout );
-            descriptorSet.setup();
-            descriptorSet.bind( 0, this.frames.get( frame, FK_UNIFORM_BUFFER ) );
-            descriptorSet.bind( 1, this.frames.get( frame, FK_DYNAMIC_BUFFER ) );
-            return descriptorSet;
+        getFrames().create( FK_DESCRIPTORSET, () -> new VkDescriptorSet(getConfiguration(), this.renderer.getDevice(), this.descriptorPool, this.descriptorLayout ) );
+        getFrames().update( FK_DESCRIPTORSET, (frame, descriptorset) -> {
+            descriptorset.bind( 0, getFrames().get( frame, FK_UNIFORM_BUFFER ) );
+            descriptorset.bind( 1, getFrames().get( frame, FK_DYNAMIC_BUFFER ) );
         });
 
     }
 
     @Override
     public void cleanupPipeline() throws ThemisException {
-        this.frames.cleanup();
         this.descriptorPool.cleanup();
         this.descriptorLayout.cleanup();
         this.pipeline.cleanup();
