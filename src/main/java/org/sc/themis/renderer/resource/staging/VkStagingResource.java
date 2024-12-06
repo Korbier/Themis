@@ -123,11 +123,11 @@ public sealed abstract class VkStagingResource
         set( () -> this.stagingBuffer.set( offset, value ) );
     }
 
-    public void set( int offset, float [] values ) {
+    public void set( int offset, float ... values ) {
         set( () -> this.stagingBuffer.set( offset, values ) );
     }
 
-    public void set( int offset, int [] values ) {
+    public void set( int offset, int ... values ) {
         set( () -> this.stagingBuffer.set( offset, values ) );
     }
 

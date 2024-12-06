@@ -1,5 +1,6 @@
 package org.sc.playground;
 
+import org.sc.playground.descriptorset.uniform.DescriptorsetUniformRendererActivity;
 import org.sc.playground.noop.NoopGamestate;
 import org.sc.playground.noop.NoopRendererActivity;
 import org.sc.playground.pushconstant.PushConstantRendererActivity;
@@ -14,7 +15,8 @@ public enum Playgrounds {
 
     NOOP( "noop", new NoopGamestate(), NoopRendererActivity::new),
     TRIANGLE( "triangle", new NoopGamestate(), TriangleRendererActivity::new ),
-    PUSH_CONSTANT( "pushconstant", new NoopGamestate(), PushConstantRendererActivity::new );
+    PUSH_CONSTANT( "pushconstant", new NoopGamestate(), PushConstantRendererActivity::new ),
+    DESC_UNIFORM( "desc-uniform", new NoopGamestate(), DescriptorsetUniformRendererActivity::new );
 
     final String name;
     final Gamestate gamestate;
@@ -24,6 +26,10 @@ public enum Playgrounds {
         this.name = name;
         this.gamestate = gamestate;
         this.rendererActivityFactory = rendererActivityFactory;
+    }
+
+    public Function<Configuration, RendererActivity> getFactory() {
+        return this.rendererActivityFactory;
     }
 
     public static Playgrounds fromName( String name ) {

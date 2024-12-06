@@ -118,6 +118,10 @@ public class Renderer extends TObject {
         return this.device;
     }
 
+    public VkMemoryAllocator getMemoryAllocator() {
+        return this.memoryAllocator;
+    }
+
     public int getFrameCount() {
         return this.swapChain.getFrameCount();
     }

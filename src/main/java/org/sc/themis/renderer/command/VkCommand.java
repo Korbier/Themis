@@ -7,6 +7,7 @@ import org.lwjgl.vulkan.VkImageSubresourceRange;
 import org.sc.themis.renderer.command.set.*;
 import org.sc.themis.renderer.framebuffer.VkFrameBuffer;
 import org.sc.themis.renderer.pipeline.VkPipeline;
+import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorSet;
 import org.sc.themis.renderer.renderpass.VkRenderPass;
 import org.sc.themis.renderer.resource.buffer.VkBuffer;
 import org.sc.themis.renderer.resource.image.VkImage;
@@ -138,6 +139,10 @@ public class VkCommand extends VkCommandSet {
 
     public void pushConstant( int shaderStage , int offset, float ... data  ) throws ThemisException {
         pipeline().pushConstant(  shaderStage, offset, data  );
+    }
+
+    public void bindDescriptorSets( int[] dynamicOffsets, VkDescriptorSet... vkDescriptorSets ) throws ThemisException {
+        pipeline().bindDescriptorSets( dynamicOffsets, vkDescriptorSets );
     }
 
     /**** Buffer ****/
