@@ -22,14 +22,16 @@ public sealed abstract class VkStagingResource
         permits VkStagingBuffer, VkStagingImage {
 
     private final VkDevice device;
+    private final VkStagingResourceAllocator resourceAllocator;
     private final VkMemoryAllocator allocator;
     private int bufferSize;
 
     private VkStagingResourceStatus status = VkStagingResourceStatus.CREATED;
     private org.sc.themis.renderer.resource.buffer.VkBuffer stagingBuffer;
 
-    public VkStagingResource(Configuration configuration, VkDevice device, VkMemoryAllocator allocator ) {
+    public VkStagingResource(Configuration configuration, VkStagingResourceAllocator resourceAllocator, VkDevice device, VkMemoryAllocator allocator ) {
         super( configuration );
+        this.resourceAllocator = resourceAllocator;
         this.device = device;
         this.allocator = allocator;
     }
@@ -55,6 +57,10 @@ public sealed abstract class VkStagingResource
 
     public VkStagingResourceStatus getStatus() {
         return this.status;
+    }
+
+    public boolean isRenderable() {
+        return getStatus() == VkStagingResourceStatus.COMMITED;
     }
 
     void setStatus( VkStagingResourceStatus status ) {
@@ -145,7 +151,7 @@ public sealed abstract class VkStagingResource
 
     private void recreateStagingBuffer(int buffersize) throws ThemisException {
 
-        if ( this.stagingBuffer == null || this.bufferSize < buffersize ) {
+        if ( this.stagingBuffer == null || this.bufferSize != buffersize ) {
 
             if ( this.stagingBuffer != null ) {
                 cleanupStagingBuffer();
@@ -154,6 +160,8 @@ public sealed abstract class VkStagingResource
             this.bufferSize = buffersize;
             setupStagingBuffer();
 
+        } else {
+             this.stagingBuffer.compact();
         }
 
     }
@@ -162,6 +170,7 @@ public sealed abstract class VkStagingResource
         Thread.ofVirtual().start( () -> {
             task.run();
             setStatus( VkStagingResourceStatus.LOADED );
+            this.resourceAllocator.signalResourceChanged( this );
         });
     }
 }

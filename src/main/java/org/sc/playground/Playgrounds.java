@@ -2,9 +2,11 @@ package org.sc.playground;
 
 import org.sc.playground.descriptorset.imagesampler.DescriptorsetImageSamplerRendererActivity;
 import org.sc.playground.descriptorset.uniform.DescriptorsetUniformRendererActivity;
+import org.sc.playground.mesh.triangle.MeshTriangleRendererActivity;
 import org.sc.playground.noop.NoopGamestate;
 import org.sc.playground.noop.NoopRendererActivity;
 import org.sc.playground.pushconstant.PushConstantRendererActivity;
+import org.sc.playground.resource.stagingimage.ResourceStagingImageRendererActivity;
 import org.sc.playground.triangle.TriangleRendererActivity;
 import org.sc.themis.gamestate.Gamestate;
 import org.sc.themis.renderer.activity.RendererActivity;
@@ -18,7 +20,9 @@ public enum Playgrounds {
     TRIANGLE( "triangle", new NoopGamestate(), TriangleRendererActivity::new ),
     PUSH_CONSTANT( "pushconstant", new NoopGamestate(), PushConstantRendererActivity::new ),
     DESC_UNIFORM( "desc-uniform", new NoopGamestate(), DescriptorsetUniformRendererActivity::new ),
-    DESC_IMAGESAMPLER( "desc-imagesampler", new NoopGamestate(), DescriptorsetImageSamplerRendererActivity::new );
+    DESC_IMAGESAMPLER( "desc-imagesampler", new NoopGamestate(), DescriptorsetImageSamplerRendererActivity::new ),
+    RES_STAGINGIMAGE( "res-stagingimage", new NoopGamestate(), ResourceStagingImageRendererActivity::new ),
+    MESH_TRIANGLE( "mesh-triangle", new NoopGamestate(), MeshTriangleRendererActivity::new );
 
     final String name;
     final Gamestate gamestate;

@@ -142,6 +142,10 @@ public class VkBuffer extends VulkanObject {
         return this.mappedMemoryHandle != MemoryUtil.NULL;
     }
 
+    public void compact() {
+        if ( isMapped() ) this.mappedContent.compact();
+    }
+
     public void set( ByteBuffer data ) {
         if ( isMapped() ) this.mappedContent.put( data );
     }

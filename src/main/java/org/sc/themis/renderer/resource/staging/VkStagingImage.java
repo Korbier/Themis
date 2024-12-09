@@ -24,8 +24,8 @@ public final class VkStagingImage extends VkStagingResource {
     private VkImageView view;
     private int mipLevels;
 
-    public VkStagingImage(Configuration configuration, VkDevice device, VkMemoryAllocator allocator, int imageFormat ) {
-        super(configuration, device, allocator);
+    public VkStagingImage(Configuration configuration, VkStagingResourceAllocator resourceAllocator, VkDevice device, VkMemoryAllocator allocator, int imageFormat ) {
+        super(configuration, resourceAllocator, device, allocator);
         this.device = device;
         this.imageFormat = imageFormat;
     }

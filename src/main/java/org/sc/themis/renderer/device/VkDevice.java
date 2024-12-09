@@ -3,7 +3,6 @@ package org.sc.themis.renderer.device;
 import org.jboss.logging.Logger;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
-import org.lwjgl.vulkan.VkInstance;
 import org.lwjgl.vulkan.*;
 import org.sc.themis.renderer.base.VulkanObject;
 import org.sc.themis.renderer.exception.NoQueueFamilyFoundException;

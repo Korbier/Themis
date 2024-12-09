@@ -15,6 +15,7 @@ import org.sc.themis.renderer.presentation.VkSwapChain;
 import org.sc.themis.renderer.queue.VkQueue;
 import org.sc.themis.renderer.queue.VkQueueSelectors;
 import org.sc.themis.renderer.resource.image.VkImageView;
+import org.sc.themis.renderer.resource.staging.VkStagingResourceAllocator;
 import org.sc.themis.renderer.sync.VkSemaphore;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.shared.Configuration;
@@ -39,6 +40,7 @@ public class Renderer extends TObject {
     private VkPhysicalDevice physicalDevice;
     private VkDevice device;
     private VkMemoryAllocator memoryAllocator;
+    private VkStagingResourceAllocator resourceAllocator;
 
     private VkSurface surface;
     private VkSwapChain swapChain;
@@ -74,12 +76,21 @@ public class Renderer extends TObject {
         this.setupCommandPool();
         this.setupSwapChain();
 
+        /** Others **/
+        this.setupResourceAllocator();
+
         /** Frame dependent setups **/
         this.frames = new Frames( getFrameCount(), true, true );
         this.setupActivity();
         this.setupSemaphores();
 
+
         LOG.trace( "Renderer initialized" );
+    }
+
+    private void setupResourceAllocator() throws ThemisException {
+        this.resourceAllocator = new VkStagingResourceAllocator( getConfiguration(), this.device, this.memoryAllocator, createTransfertCommand( true ));
+        this.resourceAllocator.setup();
     }
 
     @Override
@@ -93,6 +104,7 @@ public class Renderer extends TObject {
         this.transfertQueue.cleanup();
         this.graphicQueue.cleanup();
         this.surface.cleanup();
+        this.resourceAllocator.cleanup();
         this.memoryAllocator.cleanup();
         this.device.cleanup();
         this.physicalDevice.cleanup();
@@ -100,6 +112,7 @@ public class Renderer extends TObject {
     }
 
     public void render( Scene scene, long tpf ) throws ThemisException {
+        this.getResourceAllocator().commit();
         this.activity.render( scene, tpf );
         this.present( getPresentSemaphore( getCurrentFrame() ) );
     }
@@ -132,6 +145,10 @@ public class Renderer extends TObject {
 
     public VkMemoryAllocator getMemoryAllocator() {
         return this.memoryAllocator;
+    }
+
+    public VkStagingResourceAllocator getResourceAllocator() {
+        return this.resourceAllocator;
     }
 
     public int getFrameCount() {
