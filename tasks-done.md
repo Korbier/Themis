@@ -51,11 +51,16 @@
     * ✅ VkStagingResource
     * ✅ VkStagingBuffer
     * ✅ VkStagingImage
+    * ✅ VkStagingResourceAllocator
   * ✅ VkSync
     * ✅ VkSemaphore
     * ✅ VkFence 
+* Scene
+  * ✅ Mesh 
 * Playgrounds
-  * ✅ Triangle #1 (Shader)
+  * ✅ Triangle (= hello world)
   * ✅ Pushconstant
   * ✅ Descriptorset : Uniform & dynamic uniform
-  * ✅ Descriptorset : Image sampler
+  * ✅ Descriptorset : Image sampler 
+  * ✅ Resource : Staging image
+  * ✅ Mesh : Triangle
