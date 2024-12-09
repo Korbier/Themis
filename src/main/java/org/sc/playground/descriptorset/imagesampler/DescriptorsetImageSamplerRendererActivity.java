@@ -182,6 +182,9 @@ public class DescriptorsetImageSamplerRendererActivity extends BaseRendererActiv
         transfertCommand.submit( transfertFence );
         transfertFence.waitForAndReset();
 
+        transfertFence.cleanup();
+        transfertCommand.cleanup();
+
     }
 
 }
