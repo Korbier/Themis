@@ -117,7 +117,7 @@ public class Renderer extends TObject {
         this.present( getPresentSemaphore( getCurrentFrame() ) );
     }
 
-    public void acquire() throws ThemisException {
+    public int acquire() throws ThemisException {
         try (MemoryStack stack = MemoryStack.stackPush() ) {
             if (this.window.isResized() || this.swapChain.acquire(stack, getAcquireSemanphore( getCurrentFrame() ) ) ) {
                 this.window.resetResized();
@@ -125,6 +125,9 @@ public class Renderer extends TObject {
                 this.swapChain.acquire(stack, getAcquireSemanphore( getCurrentFrame() ) );
             }
         }
+
+        return getCurrentFrame();
+
     }
 
     public void present( VkSemaphore presentSemaphore ) throws ThemisException {
@@ -155,7 +158,7 @@ public class Renderer extends TObject {
         return this.swapChain.getFrameCount();
     }
 
-    public int getCurrentFrame() {
+    private int getCurrentFrame() {
         return this.swapChain.getCurrentFrame();
     }
 

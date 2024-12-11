@@ -43,14 +43,6 @@ public class VkFence extends VulkanObject {
         return getClass().getSimpleName() + " {handle=" + Long.toHexString( getHandle() ) + "}";
     }
 
-    public void waitFor() throws ThemisException {
-        vkSync().waitForFence( this.device.getHandle(), this.getHandle() );
-    }
-
-    public void reset() throws ThemisException {
-        vkSync().resetFence( this.device.getHandle(), this.getHandle() );
-    }
-
     public void waitForAndReset() throws ThemisException {
         waitFor();
         reset();
@@ -72,4 +64,11 @@ public class VkFence extends VulkanObject {
                 .flags(this.signaled ? VK_FENCE_CREATE_SIGNALED_BIT : 0);
     }
 
+    private void waitFor() throws ThemisException {
+        vkSync().waitForFence( this.device.getHandle(), this.getHandle() );
+    }
+
+    private void reset() throws ThemisException {
+        vkSync().resetFence( this.device.getHandle(), this.getHandle() );
+    }
 }

@@ -38,9 +38,7 @@ public class PushConstantRendererActivity extends BaseRendererActivity {
     @Override
     public void render(Scene scene, long tpf) throws ThemisException {
 
-        this.renderer.acquire();
-
-        int frame = this.renderer.getCurrentFrame();
+        int frame = this.renderer.acquire();
 
         VkCommand     command     = getCommand( frame );
         VkFence       fence       = getFence( frame );
@@ -57,8 +55,7 @@ public class PushConstantRendererActivity extends BaseRendererActivity {
         command.end();
         command.submit( fence, this.renderer.getAcquireSemanphore( frame ), this.renderer.getPresentSemaphore( frame ) );
 
-        fence.waitFor();
-        fence.reset();
+        fence.waitForAndReset();
 
     }
 
