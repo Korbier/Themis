@@ -75,6 +75,7 @@ public class SceneTriangleRendererActivity extends BaseRendererActivity {
 
     @Override
     public void cleanupPipeline() throws ThemisException {
+        this.triangle.cleanup();
         this.pipeline.cleanup();
         this.pipelineLayout.cleanup();
         this.shaderProgram.cleanup();
