@@ -82,6 +82,10 @@ public class VkFrameBufferAttachment extends VulkanObject {
         if ( this.image != null ) this.image.cleanup();
     }
 
+    public int getFormat() {
+        return this.format;
+    }
+
     public VkFrameBufferAttachmentType getType() {
         return this.type;
     }

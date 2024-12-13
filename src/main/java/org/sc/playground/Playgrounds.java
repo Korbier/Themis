@@ -2,6 +2,8 @@ package org.sc.playground;
 
 import org.sc.playground.descriptorset.imagesampler.DescriptorsetImageSamplerRendererActivity;
 import org.sc.playground.descriptorset.uniform.DescriptorsetUniformRendererActivity;
+import org.sc.playground.mousepicking.MousePickingGamestate;
+import org.sc.playground.mousepicking.MousePickingRendererActivity;
 import org.sc.playground.scene.cube.SceneCubeGamestate;
 import org.sc.playground.scene.cube.SceneCubeRendererActivity;
 import org.sc.playground.scene.triangle.SceneTriangleRendererActivity;
@@ -28,7 +30,8 @@ public enum Playgrounds {
     RES_STAGINGIMAGE( "res-stagingimage", new NoopGamestate(), ResourceStagingImageRendererActivity::new ),
     SCENE_TRIANGLE( "scene-triangle", new NoopGamestate(), SceneTriangleRendererActivity::new ),
     SCENE_TRIANGLE_2( "scene-triangle-2", new SceneTriangle2Gamestate(), SceneTriangle2RendererActivity::new ),
-    SCENE_CUBE( "scene-cube", new SceneCubeGamestate(), SceneCubeRendererActivity::new );
+    SCENE_CUBE( "scene-cube", new SceneCubeGamestate(), SceneCubeRendererActivity::new ),
+    MOUSEPICKING( "mousepicking", new MousePickingGamestate(), MousePickingRendererActivity::new );
 
     final String name;
     final Gamestate gamestate;

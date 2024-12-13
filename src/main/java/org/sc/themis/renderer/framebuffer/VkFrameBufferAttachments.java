@@ -10,6 +10,8 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import static org.lwjgl.vulkan.VK10.VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+
 public class VkFrameBufferAttachments extends VulkanObject {
 
     private final VkDevice device;
@@ -53,12 +55,19 @@ public class VkFrameBufferAttachments extends VulkanObject {
         return this;
     }
 
-    public VkFrameBufferAttachments depth( String name, int format, int usage ) throws ThemisException {
-        return depth( name, format, usage, 1 );
+    public VkFrameBufferAttachments depth( String name, int format ) throws ThemisException {
+        return depth( name, format, 1 );
+    }
+
+    public VkFrameBufferAttachments depth( String name, int format, int layers ) throws ThemisException {
+        VkFrameBufferAttachment attachment = VkFrameBufferAttachment.depth( getConfiguration(), this.device, this.width, this.height, format, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, layers );
+        attachment.setup();
+        this.attachments.put( name, attachment );
+        return this;
     }
 
     public VkFrameBufferAttachments depth( String name, int format, int usage, int layers ) throws ThemisException {
-        VkFrameBufferAttachment attachment = VkFrameBufferAttachment.depth( getConfiguration(), this.device, this.width, this.height, format, usage, layers );
+        VkFrameBufferAttachment attachment = VkFrameBufferAttachment.depth( getConfiguration(), this.device, this.width, this.height, format, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | usage, layers );
         attachment.setup();
         this.attachments.put( name, attachment );
         return this;
