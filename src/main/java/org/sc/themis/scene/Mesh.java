@@ -1,15 +1,12 @@
 package org.sc.themis.scene;
 
-import org.joml.Vector3f;
 import org.sc.themis.renderer.resource.buffer.VkBuffer;
 import org.sc.themis.renderer.resource.staging.VkStagingBuffer;
 import org.sc.themis.renderer.resource.staging.VkStagingResourceAllocator;
-import org.sc.themis.renderer.resource.staging.VkStagingResourceStatus;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.utils.MemorySizeUtils;
 
 import java.util.Objects;
-import java.util.UUID;
 
 import static org.lwjgl.vulkan.VK10.VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
 import static org.lwjgl.vulkan.VK10.VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
@@ -23,10 +20,6 @@ public class Mesh {
 
     private int vertexCount = 0;
     private int indiceCount = 0;
-
-    public Mesh( VkStagingResourceAllocator bufferAllocator ) {
-        this( bufferAllocator, UUID.randomUUID().toString() );
-    }
 
     public Mesh( VkStagingResourceAllocator bufferAllocator, String identifier ) {
         this.identifier = identifier;
@@ -44,6 +37,11 @@ public class Mesh {
         this.vertexBuffer.load( aVertices.length * MemorySizeUtils.FLOAT, 0, aVertices  );
         this.indiceBuffer.load( indices.length * MemorySizeUtils.INT, 0, indices );
 
+    }
+
+    public void cleanup() throws ThemisException {
+        this.vertexBuffer.cleanup();
+        this.indiceBuffer.cleanup();
     }
 
     private float[] toArray(Vertex[] vertices) {

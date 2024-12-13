@@ -13,7 +13,7 @@ public abstract class RendererActivity extends VulkanObject {
     }
 
     public abstract void setup( Renderer renderer ) throws ThemisException;
-    public abstract void render(Scene scene, long tpf) throws ThemisException;
+    public abstract void render( Scene scene, long tpf ) throws ThemisException;
     public abstract void resize() throws ThemisException;
 
     @Override

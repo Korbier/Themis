@@ -29,6 +29,10 @@ public class Frames {
         }
     }
 
+    public int getSize() {
+        return this.size;
+    }
+
     public void cleanup() throws ThemisException {
         for ( Frame frame : this.frames ) {
             frame.cleanup();

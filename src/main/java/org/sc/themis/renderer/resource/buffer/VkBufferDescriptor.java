@@ -1,7 +1,5 @@
 package org.sc.themis.renderer.resource.buffer;
 
-import org.sc.themis.shared.utils.MemorySizeUtils;
-
 import static org.lwjgl.vulkan.VK10.VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
 import static org.lwjgl.vulkan.VK10.VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
 

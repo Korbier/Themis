@@ -2,11 +2,15 @@ package org.sc.playground;
 
 import org.sc.playground.descriptorset.imagesampler.DescriptorsetImageSamplerRendererActivity;
 import org.sc.playground.descriptorset.uniform.DescriptorsetUniformRendererActivity;
-import org.sc.playground.mesh.triangle.MeshTriangleRendererActivity;
+import org.sc.playground.scene.cube.SceneCubeGamestate;
+import org.sc.playground.scene.cube.SceneCubeRendererActivity;
+import org.sc.playground.scene.triangle.SceneTriangleRendererActivity;
 import org.sc.playground.noop.NoopGamestate;
 import org.sc.playground.noop.NoopRendererActivity;
 import org.sc.playground.pushconstant.PushConstantRendererActivity;
 import org.sc.playground.resource.stagingimage.ResourceStagingImageRendererActivity;
+import org.sc.playground.scene.triangle2.SceneTriangle2Gamestate;
+import org.sc.playground.scene.triangle2.SceneTriangle2RendererActivity;
 import org.sc.playground.triangle.TriangleRendererActivity;
 import org.sc.themis.gamestate.Gamestate;
 import org.sc.themis.renderer.activity.RendererActivity;
@@ -22,7 +26,9 @@ public enum Playgrounds {
     DESC_UNIFORM( "desc-uniform", new NoopGamestate(), DescriptorsetUniformRendererActivity::new ),
     DESC_IMAGESAMPLER( "desc-imagesampler", new NoopGamestate(), DescriptorsetImageSamplerRendererActivity::new ),
     RES_STAGINGIMAGE( "res-stagingimage", new NoopGamestate(), ResourceStagingImageRendererActivity::new ),
-    MESH_TRIANGLE( "mesh-triangle", new NoopGamestate(), MeshTriangleRendererActivity::new );
+    SCENE_TRIANGLE( "scene-triangle", new NoopGamestate(), SceneTriangleRendererActivity::new ),
+    SCENE_TRIANGLE_2( "scene-triangle-2", new SceneTriangle2Gamestate(), SceneTriangle2RendererActivity::new ),
+    SCENE_CUBE( "scene-cube", new SceneCubeGamestate(), SceneCubeRendererActivity::new );
 
     final String name;
     final Gamestate gamestate;
@@ -36,6 +42,10 @@ public enum Playgrounds {
 
     public Function<Configuration, RendererActivity> getFactory() {
         return this.rendererActivityFactory;
+    }
+
+    public Gamestate getGamestate() {
+        return this.gamestate;
     }
 
     public static Playgrounds fromName( String name ) {

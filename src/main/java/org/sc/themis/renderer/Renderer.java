@@ -142,6 +142,10 @@ public class Renderer extends TObject {
         getDevice().waitIdle();
     }
 
+    public Window getWindow() {
+        return this.window;
+    }
+
     public VkDevice getDevice() {
         return this.device;
     }

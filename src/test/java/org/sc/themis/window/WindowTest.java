@@ -29,8 +29,8 @@ public class WindowTest {
 
         //Then
         Assertions.assertNotNull( window.getHandle() );
-        Assertions.assertEquals( 320, window.getSize().x );
-        Assertions.assertEquals( 200, window.getSize().y );
+        Assertions.assertEquals( 800, window.getSize().x );
+        Assertions.assertEquals( 600, window.getSize().y );
         Assertions.assertNotEquals( 0, window.getResolution().x );
         Assertions.assertNotEquals( 0, window.getResolution().y );
 
