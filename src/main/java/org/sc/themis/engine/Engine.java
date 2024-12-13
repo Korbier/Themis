@@ -31,7 +31,7 @@ public class Engine extends TObject {
         this.window = new Window( configuration );
         this.input = new Input( configuration, this.window );
         this.renderer = new Renderer( configuration, this.window, activity );
-        this.scene = new Scene( configuration, this.renderer );
+        this.scene = new Scene( configuration );
     }
 
     @Override
@@ -107,9 +107,11 @@ public class Engine extends TObject {
 
         }
 
+        this.cleanupGamestate();
+
     }
 
-    private void loadRequestedGamestate() {
+    private void loadRequestedGamestate() throws ThemisException {
         if ( this.nextGamestate != null ) {
             this.cleanupGamestate();
             this.loadGamestate( this.nextGamestate );
@@ -117,14 +119,18 @@ public class Engine extends TObject {
         }
     }
 
-    private void loadGamestate( Gamestate gamestate ) {
+    private void loadGamestate( Gamestate gamestate ) throws ThemisException {
         this.currentGamestate = gamestate;
-        this.currentGamestate.setup( this.scene );
+        this.currentGamestate.setup( this.renderer, this.scene );
     }
 
     private void cleanupGamestate() {
         if ( this.currentGamestate != null ) {
-            this.currentGamestate.cleanup( this.scene );
+            try {
+                this.currentGamestate.cleanup( this.renderer, this.scene );
+            } catch (ThemisException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 

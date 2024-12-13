@@ -8,6 +8,7 @@ import org.sc.themis.renderer.base.VulkanObject;
 import org.sc.themis.renderer.device.VkDevice;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
+import org.sc.themis.shared.utils.LogUtils;
 
 import java.nio.LongBuffer;
 import java.util.Arrays;
@@ -46,7 +47,7 @@ public class VkDescriptorSetLayout extends VulkanObject {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "{handle=" + Long.toHexString( getHandle() ) + "}";
+        return getClass().getSimpleName() + "{handle=" + LogUtils.toHexString( getHandle() ) + "}";
     }
 
     public VkDescriptorSetBinding getBinding( int binding ) {

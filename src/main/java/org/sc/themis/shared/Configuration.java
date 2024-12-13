@@ -11,6 +11,7 @@ public interface Configuration {
     Engine engine();
     Window window();
     Renderer renderer();
+    Scene scene();
 
     interface Application {
         String name();
@@ -41,5 +42,14 @@ public interface Configuration {
         boolean geometryShader();
     }
 
+    interface Scene {
+        Projection projection();
+    }
+
+    interface Projection {
+        float fov();
+        float znear();
+        float zfar();
+    }
 
 }

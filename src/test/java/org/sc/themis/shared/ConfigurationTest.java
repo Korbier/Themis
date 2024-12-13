@@ -18,84 +18,58 @@ class ConfigurationTest {
     private final static String ENGINE_NAME = "Themis Engine";
     private final static int ENGINE_VERSION = 1;
 
-    private final static int WINDOW_WIDTH = 320;
-    private final static int WINDOW_HEIGHT = 200;
+    private final static int WINDOW_WIDTH = 800;
+    private final static int WINDOW_HEIGHT = 600;
     private final static boolean WINDOW_RESIZABLE = true;
     private final static boolean WINDOW_MAXIMIZED = false;
+
+    private final static float SCENE_PROJECTION_FOV = 60.0f;
+    private final static float SCENE_PROJECTION_ZNEAR = 0.1f;
+    private final static float SCENE_PROJECTION_ZFAR  = 1400.0f;
 
     @Inject
     Configuration configuration;
 
     @Test
-    @DisplayName("Get application.name - nominal case")
-    void testGetApplicationName_01() {
+    @DisplayName("Get application - nominal case")
+    void testGetApplication_01() {
         //Given
         //When
         //Then
         Assertions.assertEquals(APPLICATION_NAME, this.configuration.application().name());
-    }
-
-    @Test
-    @DisplayName("Get application.version - nominal case")
-    void testGetApplicationVersion_01() {
-        //Given
-        //When
-        //Then
         Assertions.assertEquals(APPLICATION_VERSION, this.configuration.application().version());
     }
 
     @Test
-    @DisplayName("Get engine.name - nominal case")
-    void testGetEngineName_01() {
+    @DisplayName("Get engine - nominal case")
+    void testGetEngine_01() {
         //Given
         //When
         //Then
         Assertions.assertEquals(ENGINE_NAME, this.configuration.engine().name());
-    }
-
-    @Test
-    @DisplayName("Get engine.version - nominal case")
-    void testGetEngineVersion_01() {
-        //Given
-        //When
-        //Then
         Assertions.assertEquals(ENGINE_VERSION, this.configuration.engine().version());
     }
 
     @Test
-    @DisplayName("Get window.width - nominal case")
-    void testGetWindowWidth_01() {
+    @DisplayName("Get window - nominal case")
+    void testGetWindow_01() {
         //Given
         //When
         //Then
         Assertions.assertEquals(WINDOW_WIDTH, this.configuration.window().width());
-    }
-
-    @Test
-    @DisplayName("Get window.height - nominal case")
-    void testGetWindowHeight_01() {
-        //Given
-        //When
-        //Then
         Assertions.assertEquals(WINDOW_HEIGHT, this.configuration.window().height());
-    }
-
-    @Test
-    @DisplayName("Get window.resizable - nominal case")
-    void testGetWindowResizable_01() {
-        //Given
-        //When
-        //Then
         Assertions.assertEquals(WINDOW_RESIZABLE, this.configuration.window().resizable());
-    }
-
-    @Test
-    @DisplayName("Get window.maximized - nominal case")
-    void testGetWindowMaximized_01() {
-        //Given
-        //When
-        //Then
         Assertions.assertEquals(WINDOW_MAXIMIZED, this.configuration.window().maximized());
     }
 
+    @Test
+    @DisplayName("Get scene - nominal case")
+    void testGetScene_01() {
+        //Given
+        //When
+        //Then
+        Assertions.assertEquals(SCENE_PROJECTION_FOV, this.configuration.scene().projection().fov());
+        Assertions.assertEquals(SCENE_PROJECTION_ZNEAR, this.configuration.scene().projection().znear());
+        Assertions.assertEquals(SCENE_PROJECTION_ZFAR, this.configuration.scene().projection().zfar());
+    }
 }

@@ -1,4 +1,4 @@
-package org.sc.playground.mesh.triangle;
+package org.sc.playground.scene.triangle;
 
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.util.shaderc.Shaderc;
@@ -21,12 +21,12 @@ import java.nio.file.Paths;
 import static org.lwjgl.vulkan.VK10.*;
 import static org.lwjgl.vulkan.VK10.VK_FORMAT_R32G32B32_SFLOAT;
 
-public class MeshTriangleRendererActivity extends BaseRendererActivity {
+public class SceneTriangleRendererActivity extends BaseRendererActivity {
 
-    private final static String SHADER_VERTEX_SOURCE = "src/main/resources/playground/mesh/triangle/vertex_shader.glsl";
-    private final static String SHADER_VERTEX_COMPILED = "target/playground/mesh/triangle/vertex_shader.spirv";
-    private final static String SHADER_FRAGMENT_SOURCE = "src/main/resources/playground/mesh/triangle/fragment_shader.glsl";
-    private final static String SHADER_FRAGMENT_COMPILED = "target/playground/mesh/triangle/fragment_shader.spirv";
+    private final static String SHADER_VERTEX_SOURCE = "src/main/resources/playground/scene/triangle/vertex_shader.glsl";
+    private final static String SHADER_VERTEX_COMPILED = "target/playground/scene/triangle/vertex_shader.spirv";
+    private final static String SHADER_FRAGMENT_SOURCE = "src/main/resources/playground/scene/triangle/fragment_shader.glsl";
+    private final static String SHADER_FRAGMENT_COMPILED = "target/playground/scene/triangle/fragment_shader.spirv";
 
     private VkShaderProgram shaderProgram;
     private VkPipelineLayout pipelineLayout;
@@ -35,7 +35,7 @@ public class MeshTriangleRendererActivity extends BaseRendererActivity {
     private final MeshFactory meshFactory = new MeshFactory();
     private Mesh triangle;
 
-    public MeshTriangleRendererActivity(Configuration configuration) {
+    public SceneTriangleRendererActivity(Configuration configuration) {
         super(configuration);
     }
 
