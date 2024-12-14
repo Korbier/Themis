@@ -106,7 +106,11 @@ public class VkFrameBufferAttachment extends VulkanObject {
         return this.image;
     }
 
-    private int calculateUsage( int initialUsage ) {
+    public VkImageView getView() {
+         return this.imageView;
+    }
+
+    private int calculateUsage(int initialUsage ) {
 
         int usage = initialUsage | VK_IMAGE_USAGE_SAMPLED_BIT;
 

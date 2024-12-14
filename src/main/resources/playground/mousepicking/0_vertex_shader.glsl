@@ -17,13 +17,11 @@ layout(std140, set = 0, binding = 0) uniform Global {
     uint utime;
 } global;
 
-
-/******* PUSH - Instance Data ******************/
+/******* PUSHCONSTANT - Instance Data ******************/
 layout(push_constant) uniform pushConstant {
     layout( offset = 0 ) mat4 matrix;
 } instance;
 
-void main()
-{
+void main() {
     gl_Position = global.projection * global.view * instance.matrix * vec4(position, 1.0f);
 }

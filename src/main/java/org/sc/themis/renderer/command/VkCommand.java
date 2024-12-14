@@ -141,6 +141,10 @@ public class VkCommand extends VkCommandSet {
         pipeline().pushConstant(  shaderStage, offset, data  );
     }
 
+    public void pushConstant( int shaderStage , int offset, int ... data  ) throws ThemisException {
+        pipeline().pushConstant(  shaderStage, offset, data  );
+    }
+
     public void bindDescriptorSets( int[] dynamicOffsets, VkDescriptorSet... vkDescriptorSets ) throws ThemisException {
         pipeline().bindDescriptorSets( dynamicOffsets, vkDescriptorSets );
     }

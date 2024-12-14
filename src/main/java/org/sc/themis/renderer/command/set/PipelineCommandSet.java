@@ -38,6 +38,15 @@ public class PipelineCommandSet extends VkCommandSet {
         }
     }
 
+    public void pushConstant( int shaderStage , int offset, int [] data ) throws ThemisException {
+        assetPipelineBinded();
+        try (MemoryStack stack = MemoryStack.stackPush() ) {
+            ByteBuffer pValues = stack.malloc(MemorySizeUtils.MAT4x4F);
+            pValues.asIntBuffer().put( data );
+            vkCommand().cmdPushConstants(buffer().getHandle(), pipeline().getPipelineLayout().getHandle(), shaderStage, offset, pValues);
+        }
+    }
+
     private VkPipeline pipeline() {
         return this.pipeline;
     }

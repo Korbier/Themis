@@ -13,6 +13,11 @@ layout(std140, set = 0, binding = 0) uniform Global {
     uint utime;
 } global;
 
+/******* PUSHCONSTANT - Instance Data ******************/
+layout(push_constant) uniform pushConstant {
+    layout( offset = 64 ) vec4 identifier;
+} instance;
+
 void main() {
-    outFragColor = vec4( 0.5f, 0.5f, 0.5f, 1.0f );
+    outFragColor = instance.identifier;
 }

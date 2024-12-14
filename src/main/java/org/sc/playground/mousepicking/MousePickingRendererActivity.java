@@ -11,6 +11,7 @@ import org.sc.themis.renderer.framebuffer.VkFrameBuffer;
 import org.sc.themis.renderer.framebuffer.VkFrameBufferAttachments;
 import org.sc.themis.renderer.framebuffer.VkFrameBufferDescriptor;
 import org.sc.themis.renderer.pipeline.*;
+import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorSet;
 import org.sc.themis.renderer.renderpass.VkRenderPass;
 import org.sc.themis.renderer.renderpass.VkRenderPassDescriptor;
 import org.sc.themis.renderer.renderpass.VkRenderPassLayout;
@@ -20,6 +21,7 @@ import org.sc.themis.scene.Instance;
 import org.sc.themis.scene.Mesh;
 import org.sc.themis.scene.Model;
 import org.sc.themis.scene.Scene;
+import org.sc.themis.scene.descriptorset.SceneDescriptorSet;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.utils.MemorySizeUtils;
@@ -49,7 +51,6 @@ public class MousePickingRendererActivity extends RendererActivity {
     private final static String SHADER_0_FRAGMENT_SOURCE = "src/main/resources/playground/mousepicking/0_fragment_shader.glsl";
     private final static String SHADER_0_FRAGMENT_COMPILED = "target/playground/mousepicking/0_fragment_shader.spirv";
 
-
     /*** Framed object ***/
     private final static FrameKey<VkFrameBuffer> FK_FRAMEBUFFER = FrameKey.of( VkFrameBuffer.class );
     private final static FrameKey<VkCommand>     FK_COMMAND = FrameKey.of( VkCommand.class );
@@ -58,6 +59,8 @@ public class MousePickingRendererActivity extends RendererActivity {
     protected Renderer renderer;
     protected VkFrameBufferAttachments frameBufferAttachments;
     protected VkRenderPass renderPass;
+
+    private SceneDescriptorSet sceneDescriptorSet;
 
     /** subpass 0 **/
     private VkShaderProgram shaderProgram0;
@@ -70,6 +73,8 @@ public class MousePickingRendererActivity extends RendererActivity {
 
     @Override
     public void setup(Renderer renderer) throws ThemisException {
+        this.renderer = renderer;
+        setupSceneDescriptorSet();
         setupFramebufferAttachments();
         setupRenderPass();
         setupFramebuffers();
@@ -81,6 +86,11 @@ public class MousePickingRendererActivity extends RendererActivity {
 //TODO        setupPipeline2();
         setupCommand();
         setupFence();
+    }
+
+    private void setupSceneDescriptorSet() throws ThemisException {
+        this.sceneDescriptorSet = new SceneDescriptorSet( getConfiguration(), this.renderer );
+        this.sceneDescriptorSet.setup();
     }
 
     private void setupShaderProgram0() throws ThemisException {
@@ -99,17 +109,20 @@ public class MousePickingRendererActivity extends RendererActivity {
     @Override
     public void render(Scene scene, long tpf) throws ThemisException {
 
-
         int frame = this.renderer.acquire();
+
+        this.sceneDescriptorSet.update( frame, scene );
 
         VkCommand       command     = this.renderer.getFrames().get( frame, FK_COMMAND );
         VkFence         fence       = this.renderer.getFrames().get( frame, FK_FENCE );
         VkFrameBuffer   framebuffer = this.renderer.getFrames().get( frame, FK_FRAMEBUFFER );
+        VkDescriptorSet sceneDescriptorSet = this.sceneDescriptorSet.getDescriptorSet( frame );
 
         command.begin();
         command.beginRenderPass( this.renderPass, framebuffer );
         command.viewportAndScissor( this.renderer.getExtent() );
         command.bindPipeline(this.pipeline0);
+        command.bindDescriptorSets( new int[0], sceneDescriptorSet );
 
         for ( Model model : scene.getModels() ) {
             if ( model.isRenderable() ) {
@@ -117,6 +130,7 @@ public class MousePickingRendererActivity extends RendererActivity {
                     command.bindBuffers(mesh.getVerticesBuffer(), mesh.getIndicesBuffer());
                     for (Instance instance : model.getInstances() ) {
                         command.pushConstant( VK_SHADER_STAGE_VERTEX_BIT, 0, instance.matrix() );
+                        command.pushConstant( VK_SHADER_STAGE_FRAGMENT_BIT, MemorySizeUtils.PUSHCONSTANT, instance.getIdentifier() );
                         command.drawIndexed(mesh.getIndiceCount());
                     }
 
@@ -155,11 +169,19 @@ public class MousePickingRendererActivity extends RendererActivity {
         this.renderPass.cleanup();
         this.frameBufferAttachments.cleanup();
 
+        this.sceneDescriptorSet.cleanup();
+
     }
 
     private void setupFramebuffers() throws ThemisException {
         this.renderer.getFrames().create( FK_FRAMEBUFFER, ( frame ) -> {
-            VkFrameBufferDescriptor descriptor = new VkFrameBufferDescriptor( this.renderer.getExtent(), this.renderPass.getHandle(), this.renderer.getImageView( frame ).getHandle() );
+            VkFrameBufferDescriptor descriptor =
+                new VkFrameBufferDescriptor(
+                    this.renderer.getExtent(), this.renderPass.getHandle(),
+                    this.renderer.getImageView( frame ).getHandle(),
+                    this.frameBufferAttachments.get( FB_ATTACHMENT_DEPTH ).getView().getHandle(),
+                    this.frameBufferAttachments.get( FB_ATTACHMENT_IDENTIFIER ).getView().getHandle()
+                );
             return new VkFrameBuffer( getConfiguration(), this.renderer.getDevice(), descriptor );
         });
     }
@@ -167,9 +189,9 @@ public class MousePickingRendererActivity extends RendererActivity {
     private void setupFramebufferAttachments() throws ThemisException {
         this.frameBufferAttachments = new VkFrameBufferAttachments( getConfiguration(), renderer.getDevice(), this.renderer.getExtent() );
         this.frameBufferAttachments.setup();
-        this.frameBufferAttachments.depth( FB_ATTACHMENT_DEPTH, VK_FORMAT_D32_SFLOAT );
         this.frameBufferAttachments.raw(   FB_ATTACHMENT_PRESENTATION, renderer.getImageFormat() );
-        this.frameBufferAttachments.color( FB_ATTACHMENT_IDENTIFIER, VK_FORMAT_R16G16B16A16_UNORM, VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT, VK_SAMPLE_COUNT_1_BIT );
+        this.frameBufferAttachments.depth( FB_ATTACHMENT_DEPTH, VK_FORMAT_D32_SFLOAT );
+        this.frameBufferAttachments.color( FB_ATTACHMENT_IDENTIFIER, VK_FORMAT_R16G16B16A16_UINT, VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT, VK_SAMPLE_COUNT_1_BIT );
     }
 
     private void setupRenderPass() throws ThemisException {
@@ -198,7 +220,7 @@ public class MousePickingRendererActivity extends RendererActivity {
         subpass1.color( 2, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL );
 
         VkSubpass subpass2 = new VkSubpass( device, VK_PIPELINE_BIND_POINT_GRAPHICS );
-        subpass2.color( 2, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL );
+        subpass2.input( 2, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL );
 
         VkSubpass subpass3 = new VkSubpass( device, VK_PIPELINE_BIND_POINT_GRAPHICS );
         subpass3.color( 0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL );
@@ -218,7 +240,11 @@ public class MousePickingRendererActivity extends RendererActivity {
         this.pipelineLayout0 = new VkPipelineLayout(
             getConfiguration(),
             this.renderer.getDevice(),
-            new VkPushConstantRange[0]
+            new VkPushConstantRange[] {
+                new VkPushConstantRange( VK_SHADER_STAGE_VERTEX_BIT, 0, MemorySizeUtils.PUSHCONSTANT ),
+                new VkPushConstantRange( VK_SHADER_STAGE_FRAGMENT_BIT, MemorySizeUtils.PUSHCONSTANT, MemorySizeUtils.PUSHCONSTANT )
+            },
+            this.sceneDescriptorSet.getDescriptorSetLayout()
         );
         this.pipelineLayout0.setup();
 
@@ -237,7 +263,7 @@ public class MousePickingRendererActivity extends RendererActivity {
             this.pipeline0 = new VkPipeline(
                     getConfiguration(),
                     this.renderer.getDevice(),
-                    new VkPipelineDescriptor(this.renderPass, 0, false, 1, false, 1, 1, 1),
+                    new VkPipelineDescriptor(this.renderPass, 0, false, 1, true, 1, 1, 1),
                     this.shaderProgram0,
                     this.pipelineLayout0,
                     inputState

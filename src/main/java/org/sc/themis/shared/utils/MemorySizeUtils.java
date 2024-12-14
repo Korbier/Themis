@@ -2,6 +2,8 @@ package org.sc.themis.shared.utils;
 
 public class MemorySizeUtils {
 
+    public final static int PUSHCONSTANT = 64;
+
     public final static int FLOAT = 4;
     public final static int INT   = 4;
     public final static int LONG   = 8;
