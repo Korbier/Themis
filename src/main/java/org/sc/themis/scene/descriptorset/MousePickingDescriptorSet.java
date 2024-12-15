@@ -10,87 +10,48 @@ import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorSetBinding;
 import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorSetLayout;
 import org.sc.themis.renderer.resource.buffer.VkBuffer;
 import org.sc.themis.renderer.resource.buffer.VkBufferDescriptor;
+import org.sc.themis.scene.Instance;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.utils.MemorySizeUtils;
 
 import static org.lwjgl.vulkan.VK10.*;
-import static org.lwjgl.vulkan.VK10.VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
 
 /**
  * Descriptorset layout
  *
- * MemorySizeUtils.MAT4x4F Projection
- * MemorySizeUtils.MAT4x4F View
- * MemorySizeUtils.MAT4x4F Inverse projection
- * MemorySizeUtils.MAT4x4F Inverse view
- * MemorySizeUtils.MAT4x4F Camera position
- * MemorySizeUtils.VEC2F   Resolution
- * MemorySizeUtils.INT     UTime
+ * MemorySizeUtils.VEC4F Selected instance identifier
  *
- * Shader source
- * layout(std140, set = 0, binding = 0) uniform Global {
- *     mat4 projection;
- *     mat4 view;
- *     mat4 projectionInv;
- *     mat4 viewInv;
- *     vec4 camera;
- *     vec2 resolution;
- *     uint utime;
- * } global;
+ * Shader source (Write)
  *
+ * layout ( std140, set = X, binding = 1 ) buffer Storage {
+ *   vec4 identifier;
+ * } selection;
+ *
+ * Shader source (Read)
+ *
+ * layout ( std140, set = X, binding = 0 ) readonly buffer Storage {
+ *   vec4 identifier;
+ * } selection;
  *
  */
-public class SceneDescriptorSet extends VulkanObject {
+public class MousePickingDescriptorSet extends VulkanObject {
 
     private final static FrameKey<VkBuffer>        FK_BUFFER = FrameKey.of( VkBuffer.class );
     private final static FrameKey<VkDescriptorSet> FK_DESCRIPTORSET = FrameKey.of( VkDescriptorSet.class );
 
-    private final static int BUFFER_SIZE =
-            MemorySizeUtils.MAT4x4F + MemorySizeUtils.MAT4x4F + MemorySizeUtils.MAT4x4F + MemorySizeUtils.MAT4x4F //Projection + View + Project Inv. + View Inv
-            + MemorySizeUtils.MAT4x4F //Camera position
-            + MemorySizeUtils.VEC2F + MemorySizeUtils.INT; //resolution + utime
-    private final static VkBufferDescriptor BUFFER_DESCRIPTOR = new VkBufferDescriptor( BUFFER_SIZE, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, 0 );
+    private final static int BUFFER_SIZE = MemorySizeUtils.VEC4I; //Intance identifier
+    private final static VkBufferDescriptor BUFFER_DESCRIPTOR = VkBufferDescriptor.descriptorsetStorageBuffer( BUFFER_SIZE );
 
     private final Renderer renderer;
 
     private VkDescriptorSetLayout descriptorSetLayout;
     private VkDescriptorPool descriptorPool;
 
-    private final Matrix4f wInvProjection = new Matrix4f();
-    private final Matrix4f wInvView = new Matrix4f();
-    private Long utime = null;
-
-    public SceneDescriptorSet(Configuration configuration, Renderer renderer ) {
+    public MousePickingDescriptorSet(Configuration configuration, Renderer renderer ) {
         super( configuration );
         this.renderer = renderer;
-    }
-
-    public void updateAll( Scene scene ) throws ThemisException {
-        this.renderer.getFrames().update( FK_BUFFER, (frame, buffer) -> update( frame, scene ) );
-    }
-
-    public void update( int frame, Scene scene ) {
-
-        scene.getProjection().resize( this.renderer.getWindow().getSize().x, this.renderer.getWindow().getSize().y );
-
-        if ( this.utime == null ) {
-            this.utime = System.currentTimeMillis();
-        }
-
-        this.wInvProjection.set( scene.getProjection().perspective() ).invert();
-        this.wInvView.set( scene.getCamera().matrix() ).invert();
-
-        VkBuffer buffer = this.renderer.getFrames().get( frame, FK_BUFFER );
-        buffer.set( 0, scene.getProjection().perspective() );
-        buffer.set( MemorySizeUtils.MAT4x4F, scene.getCamera().matrix() );
-        buffer.set( MemorySizeUtils.MAT4x4F * 2, this.wInvProjection );
-        buffer.set( MemorySizeUtils.MAT4x4F * 3, this.wInvView );
-        buffer.set( MemorySizeUtils.MAT4x4F * 4, scene.getCamera().getPosition() );
-        buffer.set( MemorySizeUtils.MAT4x4F * 4 + MemorySizeUtils.VEC4F, this.renderer.getWindow().getResolution() );
-        buffer.set( MemorySizeUtils.MAT4x4F * 4 + MemorySizeUtils.VEC4F + MemorySizeUtils.VEC2I, (int) (System.currentTimeMillis() - this.utime) );
-
     }
 
     public VkDescriptorSetLayout getDescriptorSetLayout() {
@@ -122,7 +83,7 @@ public class SceneDescriptorSet extends VulkanObject {
         this.descriptorSetLayout = new VkDescriptorSetLayout(
             getConfiguration(),
             this.renderer.getDevice(),
-            VkDescriptorSetBinding.uniform(0, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
+            VkDescriptorSetBinding.storageBuffer(0, VK_SHADER_STAGE_FRAGMENT_BIT)
         );
         this.descriptorSetLayout.setup();
     }

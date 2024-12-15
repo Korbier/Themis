@@ -119,6 +119,10 @@ public class VkBuffer extends VulkanObject {
         return getAlignedSize() * index;
     }
 
+    public ByteBuffer getMappedContent() {
+        return this.mappedContent;
+    }
+
     public void map() throws ThemisException {
         if ( isMappable() ) {
             vkMemoryAllocator().mapMemory( this.allocator.getHandle(), this.allocation, this.mappingPointer );

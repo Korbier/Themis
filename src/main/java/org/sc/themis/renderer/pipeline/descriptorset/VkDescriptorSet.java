@@ -7,6 +7,7 @@ import org.lwjgl.vulkan.VkDescriptorSetAllocateInfo;
 import org.lwjgl.vulkan.VkWriteDescriptorSet;
 import org.sc.themis.renderer.base.VulkanObject;
 import org.sc.themis.renderer.device.VkDevice;
+import org.sc.themis.renderer.framebuffer.VkFrameBufferAttachment;
 import org.sc.themis.renderer.resource.buffer.VkBuffer;
 import org.sc.themis.renderer.resource.image.VkImage;
 import org.sc.themis.renderer.resource.image.VkImageView;
@@ -113,6 +114,29 @@ public class VkDescriptorSet extends VulkanObject {
                     .pImageInfo(imageInfo);
 
             vkUpdateDescriptorSets( this.device.getHandle(), descrBuffer, null);
+
+        }
+
+    }
+
+    public void bind( int binding, VkFrameBufferAttachment attachment  ) {
+
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+
+            VkDescriptorImageInfo.Buffer imageInfo = VkDescriptorImageInfo.calloc(1, stack)
+                    .imageLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+                    .imageView( attachment.getView().getHandle());
+
+            VkWriteDescriptorSet.Buffer descrBuffer = VkWriteDescriptorSet.calloc(1, stack);
+            descrBuffer.get(0)
+                    .sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET)
+                    .dstSet( getHandle() )
+                    .dstBinding(binding)
+                    .descriptorType(VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT)
+                    .descriptorCount(1)
+                    .pImageInfo(imageInfo);
+
+            vkUpdateDescriptorSets(this.device.getHandle(), descrBuffer, null);
 
         }
 

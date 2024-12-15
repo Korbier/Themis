@@ -11,6 +11,7 @@ public class MemorySizeUtils {
     public final static int VEC2I  = 2 * INT;
     public final static int VEC3F  = 3 * FLOAT;
     public final static int VEC4F  = 4 * FLOAT;
+    public final static int VEC4I  = 4 * INT;
     public final static int MAT4x4F = 4 * 4 * FLOAT;
 
     private MemorySizeUtils() {}

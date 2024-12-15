@@ -3,6 +3,7 @@ package org.sc.themis.renderer;
 import org.jboss.logging.Logger;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkExtent2D;
+import org.sc.themis.input.Input;
 import org.sc.themis.renderer.activity.RendererActivity;
 import org.sc.themis.renderer.base.frame.Frame;
 import org.sc.themis.renderer.base.frame.FrameKey;
@@ -34,6 +35,7 @@ public class Renderer extends TObject {
     private final static FrameKey<VkSemaphore> FK_PRESENT_SEMAPHORE = FrameKey.of( VkSemaphore.class );
 
     private final Window window;
+    private final Input input;
     private final RendererActivity activity;
 
     private final VkInstance instance;
@@ -54,9 +56,10 @@ public class Renderer extends TObject {
 
     private Frames frames;
 
-    public Renderer(Configuration configuration, Window window, RendererActivity activity ) {
+    public Renderer(Configuration configuration, Window window, Input input, RendererActivity activity ) {
         super(configuration);
         this.window = window;
+        this.input = input;
         this.activity = activity;
         this.instance = new VkInstance( configuration );
     }
@@ -144,6 +147,10 @@ public class Renderer extends TObject {
 
     public Window getWindow() {
         return this.window;
+    }
+
+    public Input getInput() {
+        return this.input;
     }
 
     public VkDevice getDevice() {

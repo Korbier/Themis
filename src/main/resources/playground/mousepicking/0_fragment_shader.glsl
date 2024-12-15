@@ -1,6 +1,6 @@
 #version 450
 
-layout(location = 0) out vec4 outFragColor;
+layout(location = 0) out uvec4 outIdentifier;
 
 /******* 0 - Global Data ******************/
 layout(std140, set = 0, binding = 0) uniform Global {
@@ -15,9 +15,9 @@ layout(std140, set = 0, binding = 0) uniform Global {
 
 /******* PUSHCONSTANT - Instance Data ******************/
 layout(push_constant) uniform pushConstant {
-    layout( offset = 64 ) vec4 identifier;
+    layout( offset = 64 ) uvec4 identifier;
 } instance;
 
 void main() {
-    outFragColor = instance.identifier;
+    outIdentifier = instance.identifier;
 }

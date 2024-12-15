@@ -12,6 +12,7 @@ import org.sc.themis.renderer.framebuffer.VkFrameBufferAttachments;
 import org.sc.themis.renderer.framebuffer.VkFrameBufferDescriptor;
 import org.sc.themis.renderer.pipeline.*;
 import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorSet;
+import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorSetLayout;
 import org.sc.themis.renderer.renderpass.VkRenderPass;
 import org.sc.themis.renderer.renderpass.VkRenderPassDescriptor;
 import org.sc.themis.renderer.renderpass.VkRenderPassLayout;
@@ -21,6 +22,8 @@ import org.sc.themis.scene.Instance;
 import org.sc.themis.scene.Mesh;
 import org.sc.themis.scene.Model;
 import org.sc.themis.scene.Scene;
+import org.sc.themis.scene.descriptorset.FramebufferAttachmentDescriptorSet;
+import org.sc.themis.scene.descriptorset.MousePickingDescriptorSet;
 import org.sc.themis.scene.descriptorset.SceneDescriptorSet;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
@@ -51,6 +54,11 @@ public class MousePickingRendererActivity extends RendererActivity {
     private final static String SHADER_0_FRAGMENT_SOURCE = "src/main/resources/playground/mousepicking/0_fragment_shader.glsl";
     private final static String SHADER_0_FRAGMENT_COMPILED = "target/playground/mousepicking/0_fragment_shader.spirv";
 
+    private final static String SHADER_1_VERTEX_SOURCE = "src/main/resources/playground/mousepicking/1_vertex_shader.glsl";
+    private final static String SHADER_1_VERTEX_COMPILED = "target/playground/mousepicking/1_vertex_shader.spirv";
+    private final static String SHADER_1_FRAGMENT_SOURCE = "src/main/resources/playground/mousepicking/1_fragment_shader.glsl";
+    private final static String SHADER_1_FRAGMENT_COMPILED = "target/playground/mousepicking/1_fragment_shader.spirv";
+
     /*** Framed object ***/
     private final static FrameKey<VkFrameBuffer> FK_FRAMEBUFFER = FrameKey.of( VkFrameBuffer.class );
     private final static FrameKey<VkCommand>     FK_COMMAND = FrameKey.of( VkCommand.class );
@@ -61,11 +69,18 @@ public class MousePickingRendererActivity extends RendererActivity {
     protected VkRenderPass renderPass;
 
     private SceneDescriptorSet sceneDescriptorSet;
+    private FramebufferAttachmentDescriptorSet subpass1DescriptorSet;
+    private MousePickingDescriptorSet mousePickingDescriptorSet;
 
     /** subpass 0 **/
     private VkShaderProgram shaderProgram0;
     private VkPipelineLayout pipelineLayout0;
     private VkPipeline pipeline0;
+
+    /** subpass 1 **/
+    private VkShaderProgram shaderProgram1;
+    private VkPipelineLayout pipelineLayout1;
+    private VkPipeline pipeline1;
 
     public MousePickingRendererActivity(Configuration configuration) {
         super(configuration);
@@ -74,36 +89,18 @@ public class MousePickingRendererActivity extends RendererActivity {
     @Override
     public void setup(Renderer renderer) throws ThemisException {
         this.renderer = renderer;
-        setupSceneDescriptorSet();
         setupFramebufferAttachments();
+        setupDescriptorSets();
         setupRenderPass();
         setupFramebuffers();
         setupShaderProgram0();
         setupPipeline0();
-//TODO        setupShaderProgram1();
-//TODO        setupPipeline1();
+        setupShaderProgram1();
+        setupPipeline1();
 //TODO        setupShaderProgram2();
 //TODO        setupPipeline2();
         setupCommand();
         setupFence();
-    }
-
-    private void setupSceneDescriptorSet() throws ThemisException {
-        this.sceneDescriptorSet = new SceneDescriptorSet( getConfiguration(), this.renderer );
-        this.sceneDescriptorSet.setup();
-    }
-
-    private void setupShaderProgram0() throws ThemisException {
-        try {
-            VkShaderSourceCompiler.compileShaderIfChanged(SHADER_0_VERTEX_SOURCE, SHADER_0_VERTEX_COMPILED, Shaderc.shaderc_glsl_vertex_shader);
-            VkShaderSourceCompiler.compileShaderIfChanged(SHADER_0_FRAGMENT_SOURCE, SHADER_0_FRAGMENT_COMPILED, Shaderc.shaderc_glsl_fragment_shader);
-            VkShaderProgramStage vertexStage = new VkShaderProgramStage(VK_SHADER_STAGE_VERTEX_BIT, Files.readAllBytes(Paths.get(SHADER_0_VERTEX_COMPILED)));
-            VkShaderProgramStage fragmentStage = new VkShaderProgramStage(VK_SHADER_STAGE_FRAGMENT_BIT, Files.readAllBytes(Paths.get(SHADER_0_FRAGMENT_COMPILED)));
-            this.shaderProgram0 = new VkShaderProgram(getConfiguration(), renderer.getDevice(), vertexStage, fragmentStage);
-            this.shaderProgram0.setup();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     @Override
@@ -117,6 +114,8 @@ public class MousePickingRendererActivity extends RendererActivity {
         VkFence         fence       = this.renderer.getFrames().get( frame, FK_FENCE );
         VkFrameBuffer   framebuffer = this.renderer.getFrames().get( frame, FK_FRAMEBUFFER );
         VkDescriptorSet sceneDescriptorSet = this.sceneDescriptorSet.getDescriptorSet( frame );
+        VkDescriptorSet subpass1DescriptorSet = this.subpass1DescriptorSet.getDescriptorSet( frame );
+        VkDescriptorSet mousePickingDescriptorSet = this.mousePickingDescriptorSet.getDescriptorSet( frame );
 
         command.begin();
         command.beginRenderPass( this.renderPass, framebuffer );
@@ -137,6 +136,13 @@ public class MousePickingRendererActivity extends RendererActivity {
                 }
             }
         }
+
+        command.nextSubPass();
+        command.viewport( this.renderer.getExtent() );
+        command.scissor( (int) this.renderer.getInput().getMousePosition().x, (int) this.renderer.getInput().getMousePosition().y, 1, 1 );
+        command.bindPipeline( this.pipeline1 );
+        command.bindDescriptorSets( new int[0], subpass1DescriptorSet, mousePickingDescriptorSet );
+        command.draw( 3, 1, 0, 0 );
 
         command.endRenderPass();
         command.end();
@@ -167,9 +173,25 @@ public class MousePickingRendererActivity extends RendererActivity {
         this.shaderProgram0.cleanup();
 
         this.renderPass.cleanup();
+
+        this.subpass1DescriptorSet.cleanup();
+        this.mousePickingDescriptorSet.cleanup();
+        this.sceneDescriptorSet.cleanup();
+
         this.frameBufferAttachments.cleanup();
 
-        this.sceneDescriptorSet.cleanup();
+    }
+
+    private void setupDescriptorSets() throws ThemisException {
+
+        this.sceneDescriptorSet = new SceneDescriptorSet( getConfiguration(), this.renderer );
+        this.sceneDescriptorSet.setup();
+
+        this.mousePickingDescriptorSet = new MousePickingDescriptorSet( getConfiguration(), this.renderer );
+        this.mousePickingDescriptorSet.setup();
+
+        this.subpass1DescriptorSet = new FramebufferAttachmentDescriptorSet( getConfiguration(), this.renderer, this.frameBufferAttachments.get( FB_ATTACHMENT_IDENTIFIER ) );
+        this.subpass1DescriptorSet.setup();
 
     }
 
@@ -191,7 +213,7 @@ public class MousePickingRendererActivity extends RendererActivity {
         this.frameBufferAttachments.setup();
         this.frameBufferAttachments.raw(   FB_ATTACHMENT_PRESENTATION, renderer.getImageFormat() );
         this.frameBufferAttachments.depth( FB_ATTACHMENT_DEPTH, VK_FORMAT_D32_SFLOAT );
-        this.frameBufferAttachments.color( FB_ATTACHMENT_IDENTIFIER, VK_FORMAT_R16G16B16A16_UINT, VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT, VK_SAMPLE_COUNT_1_BIT );
+        this.frameBufferAttachments.color( FB_ATTACHMENT_IDENTIFIER, VK_FORMAT_R32G32B32A32_UINT, VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT, VK_SAMPLE_COUNT_1_BIT );
     }
 
     private void setupRenderPass() throws ThemisException {
@@ -235,6 +257,19 @@ public class MousePickingRendererActivity extends RendererActivity {
 
     }
 
+    private void setupShaderProgram0() throws ThemisException {
+        try {
+            VkShaderSourceCompiler.compileShaderIfChanged(SHADER_0_VERTEX_SOURCE, SHADER_0_VERTEX_COMPILED, Shaderc.shaderc_glsl_vertex_shader);
+            VkShaderSourceCompiler.compileShaderIfChanged(SHADER_0_FRAGMENT_SOURCE, SHADER_0_FRAGMENT_COMPILED, Shaderc.shaderc_glsl_fragment_shader);
+            VkShaderProgramStage vertexStage = new VkShaderProgramStage(VK_SHADER_STAGE_VERTEX_BIT, Files.readAllBytes(Paths.get(SHADER_0_VERTEX_COMPILED)));
+            VkShaderProgramStage fragmentStage = new VkShaderProgramStage(VK_SHADER_STAGE_FRAGMENT_BIT, Files.readAllBytes(Paths.get(SHADER_0_FRAGMENT_COMPILED)));
+            this.shaderProgram0 = new VkShaderProgram(getConfiguration(), renderer.getDevice(), vertexStage, fragmentStage);
+            this.shaderProgram0.setup();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private void setupPipeline0() throws ThemisException {
 
         this.pipelineLayout0 = new VkPipelineLayout(
@@ -250,14 +285,14 @@ public class MousePickingRendererActivity extends RendererActivity {
 
         try (MemoryStack stack = MemoryStack.stackPush() ) {
 
-            VkVertexInputStateDescriptor descriptor1 = new VkVertexInputStateDescriptor(VK_VERTEX_INPUT_RATE_VERTEX)
+            VkVertexInputStateDescriptor descriptor = new VkVertexInputStateDescriptor(VK_VERTEX_INPUT_RATE_VERTEX)
                     .attribute( VK_FORMAT_R32G32B32_SFLOAT, MemorySizeUtils.VEC3F ) //Position
                     .attribute( VK_FORMAT_R32G32B32_SFLOAT, MemorySizeUtils.VEC3F ) //Normal
                     .attribute( VK_FORMAT_R32G32_SFLOAT, MemorySizeUtils.VEC2F ) //Texture
                     .attribute( VK_FORMAT_R32G32B32_SFLOAT, MemorySizeUtils.VEC3F ) //Tangent
                     .attribute( VK_FORMAT_R32G32B32_SFLOAT, MemorySizeUtils.VEC3F ); //Bitangent
 
-            VkVertexInputState inputState = new VkVertexInputState(descriptor1);
+            VkVertexInputState inputState = new VkVertexInputState(descriptor);
             inputState.setup( stack );
 
             this.pipeline0 = new VkPipeline(
@@ -270,6 +305,50 @@ public class MousePickingRendererActivity extends RendererActivity {
             );
 
             this.pipeline0.setup();
+
+        }
+    }
+
+    private void setupShaderProgram1() throws ThemisException {
+        try {
+            VkShaderSourceCompiler.compileShaderIfChanged(SHADER_1_VERTEX_SOURCE, SHADER_1_VERTEX_COMPILED, Shaderc.shaderc_glsl_vertex_shader);
+            VkShaderSourceCompiler.compileShaderIfChanged(SHADER_1_FRAGMENT_SOURCE, SHADER_1_FRAGMENT_COMPILED, Shaderc.shaderc_glsl_fragment_shader);
+            VkShaderProgramStage vertexStage = new VkShaderProgramStage(VK_SHADER_STAGE_VERTEX_BIT, Files.readAllBytes(Paths.get(SHADER_1_VERTEX_COMPILED)));
+            VkShaderProgramStage fragmentStage = new VkShaderProgramStage(VK_SHADER_STAGE_FRAGMENT_BIT, Files.readAllBytes(Paths.get(SHADER_1_FRAGMENT_COMPILED)));
+            this.shaderProgram1 = new VkShaderProgram(getConfiguration(), renderer.getDevice(), vertexStage, fragmentStage);
+            this.shaderProgram1.setup();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void setupPipeline1() throws ThemisException {
+
+        this.pipelineLayout1 = new VkPipelineLayout(
+                getConfiguration(),
+                this.renderer.getDevice(),
+                new VkPushConstantRange[0],
+                this.subpass1DescriptorSet.getDescriptorSetLayout(),
+                this.mousePickingDescriptorSet.getDescriptorSetLayout()
+        );
+        this.pipelineLayout1.setup();
+
+        try (MemoryStack stack = MemoryStack.stackPush() ) {
+
+            VkVertexInputStateDescriptor descriptor = new VkVertexInputStateDescriptor(VK_VERTEX_INPUT_RATE_VERTEX); //Bitangent
+            VkVertexInputState inputState = new VkVertexInputState(descriptor);
+            inputState.setup( stack );
+
+            this.pipeline1 = new VkPipeline(
+                    getConfiguration(),
+                    this.renderer.getDevice(),
+                    new VkPipelineDescriptor(this.renderPass, 1, false, 1, false, 1, 1, 1),
+                    this.shaderProgram1,
+                    this.pipelineLayout1,
+                    inputState
+            );
+
+            this.pipeline1.setup();
 
         }
     }

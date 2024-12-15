@@ -27,6 +27,7 @@ public class VkDevice extends VulkanObject {
 
     final public static int FEATURE_SAMPLER_ANISOTROPY = 0b0000_0000_0000_0000_0000_0000_0000_0001;
     final public static int FEATURE_GEOMETRY_SHADER    = 0b0000_0000_0000_0000_0000_0000_0000_0010;
+    final public static int FEATURE_FRAGMENT_STORES_AND_ATOMICS = 0b0000_0000_0000_0000_0000_0000_0000_0100;
 
     final private VkPhysicalDevice physicalDevice;
     private org.lwjgl.vulkan.VkDevice handle;
@@ -136,6 +137,12 @@ public class VkDevice extends VulkanObject {
             LOG.debug( "Geometry Shader feature enabled");
             this.features.set( FEATURE_GEOMETRY_SHADER );
             features.geometryShader( true );
+        }
+
+        if ( getConfiguration().renderer().feature().fragmentStoresAndAtomics() && this.physicalDevice.getFeatures().fragmentStoresAndAtomics() ) {
+            LOG.debug( "Fragment Stores and Atomics feature enabled");
+            this.features.set( FEATURE_FRAGMENT_STORES_AND_ATOMICS );
+            features.fragmentStoresAndAtomics( true );
         }
 
         return features;

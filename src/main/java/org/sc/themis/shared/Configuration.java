@@ -40,6 +40,7 @@ public interface Configuration {
     interface Feature {
         boolean samplerAnisotropy();
         boolean geometryShader();
+        boolean fragmentStoresAndAtomics();
     }
 
     interface Scene {
