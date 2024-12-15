@@ -1,6 +1,5 @@
 package org.sc.playground.pushconstant;
 
-import org.joml.Matrix4f;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.util.shaderc.Shaderc;
 import org.sc.playground.shared.BaseRendererActivity;
@@ -53,7 +52,7 @@ public class PushConstantRendererActivity extends BaseRendererActivity {
         command.draw( 3, 1, 0, 0);
         command.endRenderPass();
         command.end();
-        command.submit( fence, this.renderer.getAcquireSemanphore( frame ), this.renderer.getPresentSemaphore( frame ) );
+        command.submit( fence, this.renderer.getAcquireSemaphore( frame ), this.renderer.getPresentSemaphore( frame ) );
 
         fence.waitForAndReset();
 

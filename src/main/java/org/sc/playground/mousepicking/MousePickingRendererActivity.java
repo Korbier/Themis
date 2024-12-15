@@ -12,7 +12,6 @@ import org.sc.themis.renderer.framebuffer.VkFrameBufferAttachments;
 import org.sc.themis.renderer.framebuffer.VkFrameBufferDescriptor;
 import org.sc.themis.renderer.pipeline.*;
 import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorSet;
-import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorSetLayout;
 import org.sc.themis.renderer.renderpass.VkRenderPass;
 import org.sc.themis.renderer.renderpass.VkRenderPassDescriptor;
 import org.sc.themis.renderer.renderpass.VkRenderPassLayout;
@@ -32,15 +31,16 @@ import org.sc.themis.shared.utils.MemorySizeUtils;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Arrays;
 
 import static org.lwjgl.vulkan.KHRSwapchain.VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 import static org.lwjgl.vulkan.VK10.*;
 
 /**
  * 1 pass, 3 subpass :
- *  subpass 0 : draw instance identier
+ *  subpass 0 : draw instances identifiers
  *  subpass 1 : pickup fragment at mouse position
- *  subpass 2 : draw instance with selected instance
+ *  subpass 2 : draw instances with selected instance highlight
  *
  */
 public class MousePickingRendererActivity extends RendererActivity {
@@ -58,6 +58,11 @@ public class MousePickingRendererActivity extends RendererActivity {
     private final static String SHADER_1_VERTEX_COMPILED = "target/playground/mousepicking/1_vertex_shader.spirv";
     private final static String SHADER_1_FRAGMENT_SOURCE = "src/main/resources/playground/mousepicking/1_fragment_shader.glsl";
     private final static String SHADER_1_FRAGMENT_COMPILED = "target/playground/mousepicking/1_fragment_shader.spirv";
+
+    private final static String SHADER_2_VERTEX_SOURCE = "src/main/resources/playground/mousepicking/2_vertex_shader.glsl";
+    private final static String SHADER_2_VERTEX_COMPILED = "target/playground/mousepicking/2_vertex_shader.spirv";
+    private final static String SHADER_2_FRAGMENT_SOURCE = "src/main/resources/playground/mousepicking/2_fragment_shader.glsl";
+    private final static String SHADER_2_FRAGMENT_COMPILED = "target/playground/mousepicking/2_fragment_shader.spirv";
 
     /*** Framed object ***/
     private final static FrameKey<VkFrameBuffer> FK_FRAMEBUFFER = FrameKey.of( VkFrameBuffer.class );
@@ -82,6 +87,11 @@ public class MousePickingRendererActivity extends RendererActivity {
     private VkPipelineLayout pipelineLayout1;
     private VkPipeline pipeline1;
 
+    /** subpass 2 **/
+    private VkShaderProgram shaderProgram2;
+    private VkPipelineLayout pipelineLayout2;
+    private VkPipeline pipeline2;
+
     public MousePickingRendererActivity(Configuration configuration) {
         super(configuration);
     }
@@ -97,8 +107,8 @@ public class MousePickingRendererActivity extends RendererActivity {
         setupPipeline0();
         setupShaderProgram1();
         setupPipeline1();
-//TODO        setupShaderProgram2();
-//TODO        setupPipeline2();
+        setupShaderProgram2();
+        setupPipeline2();
         setupCommand();
         setupFence();
     }
@@ -144,9 +154,28 @@ public class MousePickingRendererActivity extends RendererActivity {
         command.bindDescriptorSets( new int[0], subpass1DescriptorSet, mousePickingDescriptorSet );
         command.draw( 3, 1, 0, 0 );
 
+        command.nextSubPass();
+        command.viewportAndScissor( this.renderer.getExtent() );
+        command.bindPipeline(this.pipeline2);
+        command.bindDescriptorSets( new int[0], sceneDescriptorSet, mousePickingDescriptorSet );
+
+        for ( Model model : scene.getModels() ) {
+            if ( model.isRenderable() ) {
+                for (Mesh mesh : model.getMeshes() ) {
+                    command.bindBuffers(mesh.getVerticesBuffer(), mesh.getIndicesBuffer());
+                    for (Instance instance : model.getInstances() ) {
+                        command.pushConstant( VK_SHADER_STAGE_VERTEX_BIT, 0, instance.matrix() );
+                        command.pushConstant( VK_SHADER_STAGE_FRAGMENT_BIT, MemorySizeUtils.PUSHCONSTANT, instance.getIdentifier() );
+                        command.drawIndexed(mesh.getIndiceCount());
+                    }
+
+                }
+            }
+        }
+
         command.endRenderPass();
         command.end();
-        command.submit( fence, this.renderer.getAcquireSemanphore( frame ), this.renderer.getPresentSemaphore( frame ) );
+        command.submit( fence, this.renderer.getAcquireSemaphore( frame ), this.renderer.getPresentSemaphore( frame ) );
 
         fence.waitForAndReset();
 
@@ -167,6 +196,14 @@ public class MousePickingRendererActivity extends RendererActivity {
 
     @Override
     public void cleanup() throws ThemisException {
+
+        this.pipeline2.cleanup();
+        this.pipelineLayout2.cleanup();
+        this.shaderProgram2.cleanup();
+
+        this.pipeline1.cleanup();
+        this.pipelineLayout1.cleanup();
+        this.shaderProgram1.cleanup();
 
         this.pipeline0.cleanup();
         this.pipelineLayout0.cleanup();
@@ -213,7 +250,7 @@ public class MousePickingRendererActivity extends RendererActivity {
         this.frameBufferAttachments.setup();
         this.frameBufferAttachments.raw(   FB_ATTACHMENT_PRESENTATION, renderer.getImageFormat() );
         this.frameBufferAttachments.depth( FB_ATTACHMENT_DEPTH, VK_FORMAT_D32_SFLOAT );
-        this.frameBufferAttachments.color( FB_ATTACHMENT_IDENTIFIER, VK_FORMAT_R32G32B32A32_UINT, VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT, VK_SAMPLE_COUNT_1_BIT );
+        this.frameBufferAttachments.color( FB_ATTACHMENT_IDENTIFIER, VK_FORMAT_R32G32B32A32_SFLOAT, VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT, VK_SAMPLE_COUNT_1_BIT );
     }
 
     private void setupRenderPass() throws ThemisException {
@@ -353,4 +390,57 @@ public class MousePickingRendererActivity extends RendererActivity {
         }
     }
 
+    private void setupShaderProgram2() throws ThemisException {
+        try {
+            VkShaderSourceCompiler.compileShaderIfChanged(SHADER_2_VERTEX_SOURCE, SHADER_2_VERTEX_COMPILED, Shaderc.shaderc_glsl_vertex_shader);
+            VkShaderSourceCompiler.compileShaderIfChanged(SHADER_2_FRAGMENT_SOURCE, SHADER_2_FRAGMENT_COMPILED, Shaderc.shaderc_glsl_fragment_shader);
+            VkShaderProgramStage vertexStage = new VkShaderProgramStage(VK_SHADER_STAGE_VERTEX_BIT, Files.readAllBytes(Paths.get(SHADER_2_VERTEX_COMPILED)));
+            VkShaderProgramStage fragmentStage = new VkShaderProgramStage(VK_SHADER_STAGE_FRAGMENT_BIT, Files.readAllBytes(Paths.get(SHADER_2_FRAGMENT_COMPILED)));
+            this.shaderProgram2 = new VkShaderProgram(getConfiguration(), renderer.getDevice(), vertexStage, fragmentStage);
+            this.shaderProgram2.setup();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void setupPipeline2() throws ThemisException {
+
+        this.pipelineLayout2 = new VkPipelineLayout(
+                getConfiguration(),
+                this.renderer.getDevice(),
+                new VkPushConstantRange[] {
+                    new VkPushConstantRange( VK_SHADER_STAGE_VERTEX_BIT, 0, MemorySizeUtils.PUSHCONSTANT ),
+                    new VkPushConstantRange( VK_SHADER_STAGE_FRAGMENT_BIT, MemorySizeUtils.PUSHCONSTANT, MemorySizeUtils.PUSHCONSTANT )
+                },
+                this.sceneDescriptorSet.getDescriptorSetLayout(),
+                this.mousePickingDescriptorSet.getDescriptorSetLayout()
+        );
+        this.pipelineLayout2.setup();
+
+        try (MemoryStack stack = MemoryStack.stackPush() ) {
+
+            VkVertexInputStateDescriptor descriptor = new VkVertexInputStateDescriptor(VK_VERTEX_INPUT_RATE_VERTEX)
+                    .attribute( VK_FORMAT_R32G32B32_SFLOAT, MemorySizeUtils.VEC3F ) //Position
+                    .attribute( VK_FORMAT_R32G32B32_SFLOAT, MemorySizeUtils.VEC3F ) //Normal
+                    .attribute( VK_FORMAT_R32G32_SFLOAT, MemorySizeUtils.VEC2F ) //Texture
+                    .attribute( VK_FORMAT_R32G32B32_SFLOAT, MemorySizeUtils.VEC3F ) //Tangent
+                    .attribute( VK_FORMAT_R32G32B32_SFLOAT, MemorySizeUtils.VEC3F ); //Bitangent
+
+            VkVertexInputState inputState = new VkVertexInputState(descriptor);
+            inputState.setup( stack );
+
+            this.pipeline2 = new VkPipeline(
+                    getConfiguration(),
+                    this.renderer.getDevice(),
+                    new VkPipelineDescriptor(this.renderPass, 2, false, 1, true, 1, 1, 1),
+                    this.shaderProgram2,
+                    this.pipelineLayout2,
+                    inputState
+            );
+
+            this.pipeline2.setup();
+
+        }
+
+    }
 }

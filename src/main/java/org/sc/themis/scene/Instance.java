@@ -9,20 +9,20 @@ public class Instance {
 
     private static final org.jboss.logging.Logger LOG = Logger.getLogger(Instance.class);
 
-    private final static Vector4i identifierReference = new Vector4i(0,0,0,0);
-    private static int [] calculateIdentifier() {
-        int [] aIdentifier = new int[4];
+    private final static Vector4f identifierReference = new Vector4f(0,0,0,1);
+    private static float [] calculateIdentifier() {
+        identifierReference.x += 0.01f;
+        float [] aIdentifier = new float[4];
         aIdentifier[0] = identifierReference.x;
         aIdentifier[1] = identifierReference.y;
         aIdentifier[2] = identifierReference.z;
         aIdentifier[3] = identifierReference.w;
-        identifierReference.x++;
-        LOG.tracef( "Provinding new instance identifier : %d-%d-%d-%d", aIdentifier[0], aIdentifier[1], aIdentifier[2], aIdentifier[3] );
+        LOG.tracef( "Provinding new instance identifier : [%f %f %f %f]", aIdentifier[0], aIdentifier[1], aIdentifier[2], aIdentifier[3] );
         return aIdentifier;
     }
 
     private final Model model;
-    private final int [] identifier;
+    private final float [] identifier;
 
     private final Vector3f    position = new Vector3f();
     private final Quaternionf rotation = new Quaternionf();
@@ -41,7 +41,7 @@ public class Instance {
         return model;
     }
 
-    public int [] getIdentifier() {
+    public float [] getIdentifier() {
         return this.identifier;
     }
 

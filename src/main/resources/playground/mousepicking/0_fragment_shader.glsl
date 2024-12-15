@@ -14,7 +14,7 @@ layout(std140, set = 0, binding = 0) uniform Global {
 } global;
 
 /******* PUSHCONSTANT - Instance Data ******************/
-layout(push_constant) uniform pushConstant {
+layout(push_constant) uniform PushConstant {
     layout( offset = 64 ) uvec4 identifier;
 } instance;
 

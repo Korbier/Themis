@@ -41,7 +41,7 @@ public class MousePickingDescriptorSet extends VulkanObject {
     private final static FrameKey<VkBuffer>        FK_BUFFER = FrameKey.of( VkBuffer.class );
     private final static FrameKey<VkDescriptorSet> FK_DESCRIPTORSET = FrameKey.of( VkDescriptorSet.class );
 
-    private final static int BUFFER_SIZE = MemorySizeUtils.VEC4I; //Intance identifier
+    private final static int BUFFER_SIZE = MemorySizeUtils.VEC4F; //Intance identifier
     private final static VkBufferDescriptor BUFFER_DESCRIPTOR = VkBufferDescriptor.descriptorsetStorageBuffer( BUFFER_SIZE );
 
     private final Renderer renderer;
@@ -68,6 +68,13 @@ public class MousePickingDescriptorSet extends VulkanObject {
         setupDescriptorPool();
         setupBuffers();
         setupDescriptorSets();
+    }
+
+    public float [] getSelection( int frame ) {
+        VkBuffer buffer = this.renderer.getFrames().get( frame, FK_BUFFER );
+        float [] identifier = new float[4];
+        buffer.getMappedContent().rewind().asFloatBuffer().get( identifier );
+        return identifier;
     }
 
     private void setupDescriptorSets() throws ThemisException {

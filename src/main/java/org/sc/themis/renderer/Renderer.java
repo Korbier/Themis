@@ -5,7 +5,6 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkExtent2D;
 import org.sc.themis.input.Input;
 import org.sc.themis.renderer.activity.RendererActivity;
-import org.sc.themis.renderer.base.frame.Frame;
 import org.sc.themis.renderer.base.frame.FrameKey;
 import org.sc.themis.renderer.base.frame.Frames;
 import org.sc.themis.renderer.command.VkCommand;
@@ -122,10 +121,10 @@ public class Renderer extends TObject {
 
     public int acquire() throws ThemisException {
         try (MemoryStack stack = MemoryStack.stackPush() ) {
-            if (this.window.isResized() || this.swapChain.acquire(stack, getAcquireSemanphore( getCurrentFrame() ) ) ) {
+            if (this.window.isResized() || this.swapChain.acquire(stack, getAcquireSemaphore( getCurrentFrame() ) ) ) {
                 this.window.resetResized();
                 this.resize();
-                this.swapChain.acquire(stack, getAcquireSemanphore( getCurrentFrame() ) );
+                this.swapChain.acquire(stack, getAcquireSemaphore( getCurrentFrame() ) );
             }
         }
 
@@ -197,7 +196,7 @@ public class Renderer extends TObject {
         return this.transfertCommandPool.create( primary );
     }
 
-    public VkSemaphore getAcquireSemanphore( int frame ) {
+    public VkSemaphore getAcquireSemaphore(int frame ) {
         return this.frames.get( frame, FK_ACQUIRE_SEMAPHORE );
     }
 

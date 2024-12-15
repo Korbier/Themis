@@ -4,7 +4,6 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.util.shaderc.Shaderc;
 import org.sc.playground.shared.BaseRendererActivity;
 import org.sc.themis.renderer.base.frame.FrameKey;
-import org.sc.themis.renderer.base.frame.Frames;
 import org.sc.themis.renderer.command.VkCommand;
 import org.sc.themis.renderer.framebuffer.VkFrameBuffer;
 import org.sc.themis.renderer.pipeline.*;
@@ -75,7 +74,7 @@ public class DescriptorsetUniformRendererActivity extends BaseRendererActivity {
         command.draw( 3, 1, 3, 0);
         command.endRenderPass();
         command.end();
-        command.submit( fence, this.renderer.getAcquireSemanphore( frame ), this.renderer.getPresentSemaphore( frame ) );
+        command.submit( fence, this.renderer.getAcquireSemaphore( frame ), this.renderer.getPresentSemaphore( frame ) );
 
         fence.waitForAndReset();
 
