@@ -8,7 +8,6 @@ import org.sc.themis.renderer.framebuffer.VkFrameBuffer;
 import org.sc.themis.renderer.pipeline.*;
 import org.sc.themis.renderer.sync.VkFence;
 import org.sc.themis.scene.Mesh;
-import org.sc.themis.scene.MeshFactory;
 import org.sc.themis.scene.Model;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.shared.Configuration;
@@ -61,7 +60,7 @@ public class SceneTriangle2RendererActivity extends BaseRendererActivity {
 
         command.endRenderPass();
         command.end();
-        command.submit( fence, this.renderer.getAcquireSemanphore( frame ), this.renderer.getPresentSemaphore( frame ) );
+        command.submit( fence, this.renderer.getAcquireSemaphore( frame ), this.renderer.getPresentSemaphore( frame ) );
 
         fence.waitForAndReset();
 

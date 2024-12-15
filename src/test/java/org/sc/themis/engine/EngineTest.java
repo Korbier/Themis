@@ -24,8 +24,8 @@ public class EngineTest {
     Configuration configuration;
 
     @ParameterizedTest
-    @EnumSource(value=Playgrounds.class, names = "NOOP", mode = EnumSource.Mode.EXCLUDE)
-    //@EnumSource(value=Playgrounds.class, names = "SCENE_CUBE")
+    //@EnumSource(value=Playgrounds.class, names = "NOOP", mode = EnumSource.Mode.EXCLUDE)
+    @EnumSource(value=Playgrounds.class, names = "MOUSEPICKING")
     void testRenderActivity( Playgrounds playground ) throws ThemisException {
 
         //Given

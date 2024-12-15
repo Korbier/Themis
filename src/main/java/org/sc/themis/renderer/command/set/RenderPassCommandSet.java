@@ -37,6 +37,10 @@ public class RenderPassCommandSet extends VkCommandSet {
         vkCommand().cmdEndRenderPass( buffer().getHandle() );
     }
 
+    public void nextSubPass() throws ThemisException {
+        vkCommand().cmdNextSubpass( buffer().getHandle(), VK_SUBPASS_CONTENTS_INLINE );
+    }
+
     public void scissor( int left, int top, int width, int height  ) throws ThemisException {
         try (MemoryStack stack = MemoryStack.stackPush() ) {
             VkRect2D.Buffer scissor = VkRect2D.calloc(1, stack)

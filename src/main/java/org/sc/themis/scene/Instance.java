@@ -1,12 +1,28 @@
 package org.sc.themis.scene;
 
-import org.joml.Matrix4f;
-import org.joml.Quaternionf;
-import org.joml.Vector3f;
+import org.jboss.logging.Logger;
+import org.joml.*;
+
+import java.lang.Math;
 
 public class Instance {
 
+    private static final org.jboss.logging.Logger LOG = Logger.getLogger(Instance.class);
+
+    private final static Vector4f identifierReference = new Vector4f(0,0,0,1);
+    private static float [] calculateIdentifier() {
+        identifierReference.x += 0.01f;
+        float [] aIdentifier = new float[4];
+        aIdentifier[0] = identifierReference.x;
+        aIdentifier[1] = identifierReference.y;
+        aIdentifier[2] = identifierReference.z;
+        aIdentifier[3] = identifierReference.w;
+        LOG.tracef( "Provinding new instance identifier : [%f %f %f %f]", aIdentifier[0], aIdentifier[1], aIdentifier[2], aIdentifier[3] );
+        return aIdentifier;
+    }
+
     private final Model model;
+    private final float [] identifier;
 
     private final Vector3f    position = new Vector3f();
     private final Quaternionf rotation = new Quaternionf();
@@ -17,11 +33,16 @@ public class Instance {
 
     public Instance( Model model ) {
         this.model = model;
+        this.identifier = calculateIdentifier();
         updateMatrix();
     }
 
     public Model getModel() {
         return model;
+    }
+
+    public float [] getIdentifier() {
+        return this.identifier;
     }
 
     public float[] matrix() {

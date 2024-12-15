@@ -57,7 +57,7 @@ public class ResourceStagingImageRendererActivity extends BaseRendererActivity {
         command.draw( 3, 1, 0, 0);
         command.endRenderPass();
         command.end();
-        command.submit( fence, this.renderer.getAcquireSemanphore( frame ), this.renderer.getPresentSemaphore( frame ) );
+        command.submit( fence, this.renderer.getAcquireSemaphore( frame ), this.renderer.getPresentSemaphore( frame ) );
 
         fence.waitForAndReset();
 

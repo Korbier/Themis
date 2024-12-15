@@ -3,8 +3,8 @@ package org.sc.themis.renderer;
 import org.jboss.logging.Logger;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkExtent2D;
+import org.sc.themis.input.Input;
 import org.sc.themis.renderer.activity.RendererActivity;
-import org.sc.themis.renderer.base.frame.Frame;
 import org.sc.themis.renderer.base.frame.FrameKey;
 import org.sc.themis.renderer.base.frame.Frames;
 import org.sc.themis.renderer.command.VkCommand;
@@ -34,6 +34,7 @@ public class Renderer extends TObject {
     private final static FrameKey<VkSemaphore> FK_PRESENT_SEMAPHORE = FrameKey.of( VkSemaphore.class );
 
     private final Window window;
+    private final Input input;
     private final RendererActivity activity;
 
     private final VkInstance instance;
@@ -54,9 +55,10 @@ public class Renderer extends TObject {
 
     private Frames frames;
 
-    public Renderer(Configuration configuration, Window window, RendererActivity activity ) {
+    public Renderer(Configuration configuration, Window window, Input input, RendererActivity activity ) {
         super(configuration);
         this.window = window;
+        this.input = input;
         this.activity = activity;
         this.instance = new VkInstance( configuration );
     }
@@ -119,10 +121,10 @@ public class Renderer extends TObject {
 
     public int acquire() throws ThemisException {
         try (MemoryStack stack = MemoryStack.stackPush() ) {
-            if (this.window.isResized() || this.swapChain.acquire(stack, getAcquireSemanphore( getCurrentFrame() ) ) ) {
+            if (this.window.isResized() || this.swapChain.acquire(stack, getAcquireSemaphore( getCurrentFrame() ) ) ) {
                 this.window.resetResized();
                 this.resize();
-                this.swapChain.acquire(stack, getAcquireSemanphore( getCurrentFrame() ) );
+                this.swapChain.acquire(stack, getAcquireSemaphore( getCurrentFrame() ) );
             }
         }
 
@@ -144,6 +146,10 @@ public class Renderer extends TObject {
 
     public Window getWindow() {
         return this.window;
+    }
+
+    public Input getInput() {
+        return this.input;
     }
 
     public VkDevice getDevice() {
@@ -190,7 +196,7 @@ public class Renderer extends TObject {
         return this.transfertCommandPool.create( primary );
     }
 
-    public VkSemaphore getAcquireSemanphore( int frame ) {
+    public VkSemaphore getAcquireSemaphore(int frame ) {
         return this.frames.get( frame, FK_ACQUIRE_SEMAPHORE );
     }
 

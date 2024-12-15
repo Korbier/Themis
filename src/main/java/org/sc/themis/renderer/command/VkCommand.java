@@ -99,13 +99,29 @@ public class VkCommand extends VkCommandSet {
         renderPass().endRenderPass();
     }
 
-    public void viewportAndScissor(VkExtent2D extent) throws ThemisException {
-        viewportAndScissor( extent.width(), extent.height() );
+    public void nextSubPass() throws ThemisException {
+        renderPass().nextSubPass();
+    }
+
+    public void viewport( VkExtent2D extent ) throws ThemisException {
+        renderPass().viewport( extent.width(), extent.height() );
+    }
+
+    public void viewport(int width, int height ) throws ThemisException {
+        renderPass().viewport( width, height );
+    }
+
+    public void scissor( int x, int y, int width, int height ) throws ThemisException {
+        renderPass().scissor( x, y, width, height );
     }
 
     public void viewportAndScissor(int width, int height) throws ThemisException {
-        renderPass().viewport( width, height );
-        renderPass().scissor( 0, 0, width, height  );
+        viewport( width, height );
+        scissor( 0, 0, width, height  );
+    }
+
+    public void viewportAndScissor(VkExtent2D extent) throws ThemisException {
+        viewportAndScissor( extent.width(), extent.height() );
     }
 
     public void bindBuffers(VkBuffer vertices, VkBuffer indices) throws ThemisException {
@@ -138,6 +154,10 @@ public class VkCommand extends VkCommandSet {
     }
 
     public void pushConstant( int shaderStage , int offset, float ... data  ) throws ThemisException {
+        pipeline().pushConstant(  shaderStage, offset, data  );
+    }
+
+    public void pushConstant( int shaderStage , int offset, int ... data  ) throws ThemisException {
         pipeline().pushConstant(  shaderStage, offset, data  );
     }
 

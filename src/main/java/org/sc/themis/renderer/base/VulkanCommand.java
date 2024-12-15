@@ -94,6 +94,10 @@ public class VulkanCommand extends Vulkan {
         vk( () -> vkCmdEndRenderPass( commandBuffer ) );
     }
 
+    public void nextSubPass(VkCommandBuffer commandBuffer) throws ThemisException {
+        vk( () -> vkCmdNextSubpass( commandBuffer, VK_SUBPASS_CONTENTS_INLINE ) );
+    }
+
     public void cmdSetViewport(VkCommandBuffer commandBuffer, VkViewport.Buffer viewports) throws ThemisException {
         vk( () -> vkCmdSetViewport( commandBuffer, 0, viewports ) );
     }

@@ -73,7 +73,7 @@ public class SceneCubeRendererActivity extends BaseRendererActivity {
 
         command.endRenderPass();
         command.end();
-        command.submit( fence, this.renderer.getAcquireSemanphore( frame ), this.renderer.getPresentSemaphore( frame ) );
+        command.submit( fence, this.renderer.getAcquireSemaphore( frame ), this.renderer.getPresentSemaphore( frame ) );
 
         fence.waitForAndReset();
 

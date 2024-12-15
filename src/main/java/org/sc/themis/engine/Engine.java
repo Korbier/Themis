@@ -30,7 +30,7 @@ public class Engine extends TObject {
         super(configuration);
         this.window = new Window( configuration );
         this.input = new Input( configuration, this.window );
-        this.renderer = new Renderer( configuration, this.window, activity );
+        this.renderer = new Renderer( configuration, this.window, this.input, activity );
         this.scene = new Scene( configuration );
     }
 

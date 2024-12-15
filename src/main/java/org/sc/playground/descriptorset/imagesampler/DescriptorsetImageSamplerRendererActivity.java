@@ -11,8 +11,6 @@ import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorPool;
 import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorSet;
 import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorSetBinding;
 import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorSetLayout;
-import org.sc.themis.renderer.resource.buffer.VkBuffer;
-import org.sc.themis.renderer.resource.buffer.VkBufferDescriptor;
 import org.sc.themis.renderer.resource.image.VkSampler;
 import org.sc.themis.renderer.resource.image.VkSamplerDescriptor;
 import org.sc.themis.renderer.resource.staging.VkStagingImage;
@@ -21,7 +19,6 @@ import org.sc.themis.scene.Scene;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.resource.Image;
-import org.sc.themis.shared.utils.MemorySizeUtils;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -72,7 +69,7 @@ public class DescriptorsetImageSamplerRendererActivity extends BaseRendererActiv
         command.draw( 6, 1, 0, 0);
         command.endRenderPass();
         command.end();
-        command.submit( fence, this.renderer.getAcquireSemanphore( frame ), this.renderer.getPresentSemaphore( frame ) );
+        command.submit( fence, this.renderer.getAcquireSemaphore( frame ), this.renderer.getPresentSemaphore( frame ) );
 
         fence.waitForAndReset();
 

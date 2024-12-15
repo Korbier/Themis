@@ -82,6 +82,10 @@ public class VkFrameBufferAttachment extends VulkanObject {
         if ( this.image != null ) this.image.cleanup();
     }
 
+    public int getFormat() {
+        return this.format;
+    }
+
     public VkFrameBufferAttachmentType getType() {
         return this.type;
     }
@@ -102,7 +106,11 @@ public class VkFrameBufferAttachment extends VulkanObject {
         return this.image;
     }
 
-    private int calculateUsage( int initialUsage ) {
+    public VkImageView getView() {
+         return this.imageView;
+    }
+
+    private int calculateUsage(int initialUsage ) {
 
         int usage = initialUsage | VK_IMAGE_USAGE_SAMPLED_BIT;
 

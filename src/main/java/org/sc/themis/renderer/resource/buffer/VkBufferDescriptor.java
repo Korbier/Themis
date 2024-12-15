@@ -1,7 +1,6 @@
 package org.sc.themis.renderer.resource.buffer;
 
-import static org.lwjgl.vulkan.VK10.VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-import static org.lwjgl.vulkan.VK10.VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
+import static org.lwjgl.vulkan.VK10.*;
 
 public record VkBufferDescriptor (
         boolean isAligned,
@@ -19,6 +18,10 @@ public record VkBufferDescriptor (
 
     public static VkBufferDescriptor descriptorsetDynamicUniform( long chunckSize, int chunckCount ) {
         return new VkBufferDescriptor(chunckSize, chunckCount, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, 0);
+    }
+
+    public static VkBufferDescriptor descriptorsetStorageBuffer( long size ) {
+        return new VkBufferDescriptor( size, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, VK_MEMORY_PROPERTY_HOST_CACHED_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT );
     }
 
     public VkBufferDescriptor( long size, int bufferUsage, int memoryUsage, int requiredFlags) {
