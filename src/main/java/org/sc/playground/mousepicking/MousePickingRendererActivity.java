@@ -1,5 +1,6 @@
 package org.sc.playground.mousepicking;
 
+import org.joml.Vector2f;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.util.shaderc.Shaderc;
 import org.sc.themis.renderer.Renderer;
@@ -116,7 +117,7 @@ public class MousePickingRendererActivity extends RendererActivity {
     @Override
     public void render(Scene scene, long tpf) throws ThemisException {
 
-        int frame = this.renderer.acquire();
+        int frame = this.renderer.acquire( scene );
 
         this.sceneDescriptorSet.update( frame, scene );
 
@@ -126,6 +127,7 @@ public class MousePickingRendererActivity extends RendererActivity {
         VkDescriptorSet sceneDescriptorSet = this.sceneDescriptorSet.getDescriptorSet( frame );
         VkDescriptorSet subpass1DescriptorSet = this.subpass1DescriptorSet.getDescriptorSet( frame );
         VkDescriptorSet mousePickingDescriptorSet = this.mousePickingDescriptorSet.getDescriptorSet( frame );
+        Vector2f        mouse = this.renderer.getInput().getMousePosition();
 
         command.begin();
         command.beginRenderPass( this.renderPass, framebuffer );
@@ -149,7 +151,7 @@ public class MousePickingRendererActivity extends RendererActivity {
 
         command.nextSubPass();
         command.viewport( this.renderer.getExtent() );
-        command.scissor( (int) this.renderer.getInput().getMousePosition().x, (int) this.renderer.getInput().getMousePosition().y, 1, 1 );
+        command.scissor( (int) mouse.x, (int) mouse.y, 1, 1 );
         command.bindPipeline( this.pipeline1 );
         command.bindDescriptorSets( new int[0], subpass1DescriptorSet, mousePickingDescriptorSet );
         command.draw( 3, 1, 0, 0 );
@@ -188,14 +190,21 @@ public class MousePickingRendererActivity extends RendererActivity {
         this.renderPass.cleanup();
         this.frameBufferAttachments.cleanup();
 
+        this.mousePickingDescriptorSet.cleanup();
+        this.sceneDescriptorSet.cleanup();
+        this.subpass1DescriptorSet.cleanup();
+
         setupFramebufferAttachments();
         setupRenderPass();
         setupFramebuffers();
+        setupDescriptorSets();
 
     }
 
     @Override
     public void cleanup() throws ThemisException {
+
+        this.renderer.waitIdle();
 
         this.pipeline2.cleanup();
         this.pipelineLayout2.cleanup();

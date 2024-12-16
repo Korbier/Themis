@@ -55,6 +55,8 @@ public class Renderer extends TObject {
 
     private Frames frames;
 
+    boolean isSceneConfigured = false;
+
     public Renderer(Configuration configuration, Window window, Input input, RendererActivity activity ) {
         super(configuration);
         this.window = window;
@@ -114,16 +116,23 @@ public class Renderer extends TObject {
     }
 
     public void render( Scene scene, long tpf ) throws ThemisException {
+
+        if ( !this.isSceneConfigured ) {
+            this.applyWindowSizingOnScene( scene );
+            this.isSceneConfigured = true;
+        }
+
         this.getResourceAllocator().commit();
         this.activity.render( scene, tpf );
         this.present( getPresentSemaphore( getCurrentFrame() ) );
     }
 
-    public int acquire() throws ThemisException {
+    public int acquire( Scene scene ) throws ThemisException {
+
         try (MemoryStack stack = MemoryStack.stackPush() ) {
             if (this.window.isResized() || this.swapChain.acquire(stack, getAcquireSemaphore( getCurrentFrame() ) ) ) {
                 this.window.resetResized();
-                this.resize();
+                this.resize( scene );
                 this.swapChain.acquire(stack, getAcquireSemaphore( getCurrentFrame() ) );
             }
         }
@@ -204,8 +213,21 @@ public class Renderer extends TObject {
         return this.frames.get( frame, FK_PRESENT_SEMAPHORE );
     }
 
-    private void resize() throws ThemisException {
+    private void resize(Scene scene) throws ThemisException {
+
+        //Recréation de la swapchain
+        this.swapChain.cleanup();
+        this.setupSwapChain();
+
+        //Application de la nouvelle taille ecran a la scene (Projection)
+        applyWindowSizingOnScene(scene);
+
+        //Dispatch de l'evenement a l'activity
         this.activity.resize();
+    }
+
+    private void applyWindowSizingOnScene( Scene scene ) {
+        scene.getProjection().resize( getWindow().getSize().x, getWindow().getSize().y );
     }
 
     private void setupSwapChain() throws ThemisException {

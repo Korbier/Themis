@@ -102,6 +102,8 @@ public class MousePickingDescriptorSet extends VulkanObject {
 
     @Override
     public void cleanup() throws ThemisException {
+        this.renderer.getFrames().remove( FK_BUFFER );
+        this.renderer.getFrames().remove( FK_DESCRIPTORSET );
         this.descriptorPool.cleanup();
         this.descriptorSetLayout.cleanup();
     }
