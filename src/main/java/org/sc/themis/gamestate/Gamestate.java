@@ -10,7 +10,12 @@ public interface Gamestate {
     void setup(Renderer renderer, Scene scene ) throws ThemisException; //Initialisation du gamestate => ajout des elements a la scene
     void cleanup( Renderer renderer, Scene scene ) throws ThemisException ; //Nettoyage du gamestate => Suppression des elements de la scene
 
-    void input( Scene scene, Input input, long tpf );
-    void update( Scene scene, long tpf );
+    default void input( Scene scene, Input input, long tpf ) {
+        scene.getControllers().forEach( ctrl -> ctrl.input( input, tpf ) );
+    }
+
+    default void update( Scene scene, long tpf ) {
+        scene.getControllers().forEach( ctrl -> ctrl.update( tpf ) );
+    }
 
 }

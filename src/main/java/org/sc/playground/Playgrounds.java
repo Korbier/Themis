@@ -1,5 +1,7 @@
 package org.sc.playground;
 
+import org.sc.playground.controller.fpscamera.ControllerFpsCameraGamestate;
+import org.sc.playground.controller.fpscamera.ControllerFpsCameraRendererActivity;
 import org.sc.playground.descriptorset.imagesampler.DescriptorsetImageSamplerRendererActivity;
 import org.sc.playground.descriptorset.uniform.DescriptorsetUniformRendererActivity;
 import org.sc.playground.mousepicking.MousePickingGamestate;
@@ -31,7 +33,8 @@ public enum Playgrounds {
     SCENE_TRIANGLE( "scene-triangle", new NoopGamestate(), SceneTriangleRendererActivity::new ),
     SCENE_TRIANGLE_2( "scene-triangle-2", new SceneTriangle2Gamestate(), SceneTriangle2RendererActivity::new ),
     SCENE_CUBE( "scene-cube", new SceneCubeGamestate(), SceneCubeRendererActivity::new ),
-    MOUSEPICKING( "mousepicking", new MousePickingGamestate(), MousePickingRendererActivity::new );
+    MOUSEPICKING( "mousepicking", new MousePickingGamestate(), MousePickingRendererActivity::new ),
+    CONTROLLER_FPS_CAMERA( "controller-fpscamera", new ControllerFpsCameraGamestate(), ControllerFpsCameraRendererActivity::new );
 
     final String name;
     final Gamestate gamestate;
