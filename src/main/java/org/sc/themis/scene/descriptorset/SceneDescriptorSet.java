@@ -73,8 +73,6 @@ public class SceneDescriptorSet extends VulkanObject {
 
     public void update( int frame, Scene scene ) {
 
-        scene.getProjection().resize( this.renderer.getWindow().getSize().x, this.renderer.getWindow().getSize().y );
-
         if ( this.utime == null ) {
             this.utime = System.currentTimeMillis();
         }
@@ -134,6 +132,8 @@ public class SceneDescriptorSet extends VulkanObject {
 
     @Override
     public void cleanup() throws ThemisException {
+        this.renderer.getFrames().remove( FK_BUFFER );
+        this.renderer.getFrames().remove( FK_DESCRIPTORSET );
         this.descriptorPool.cleanup();
         this.descriptorSetLayout.cleanup();
     }

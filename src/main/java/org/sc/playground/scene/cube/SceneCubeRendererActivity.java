@@ -43,7 +43,7 @@ public class SceneCubeRendererActivity extends BaseRendererActivity {
     @Override
     public void render(Scene scene, long tpf) throws ThemisException {
 
-        int frame = this.renderer.acquire();
+        int frame = this.renderer.acquire(scene);
 
         this.sceneDescriptorSet.update( frame, scene );
 

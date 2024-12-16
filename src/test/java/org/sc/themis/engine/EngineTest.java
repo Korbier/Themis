@@ -34,7 +34,7 @@ public class EngineTest {
 
         //When
         engine.setup();
-        engine.setGamestate( new EngineTestGamestate( engine, playground.getGamestate(), 5 ) ); //new EngineTestGamestate( engine, playground.getGamestate(), 5 )
+        engine.setGamestate( playground.getGamestate() ); //new EngineTestGamestate( engine, playground.getGamestate(), 5 )
         engine.run();
 
         //Then

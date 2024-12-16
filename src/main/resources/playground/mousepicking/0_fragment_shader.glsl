@@ -1,6 +1,6 @@
 #version 450
 
-layout(location = 0) out uvec4 outIdentifier;
+layout(location = 0) out vec4 outIdentifier;
 
 /******* 0 - Global Data ******************/
 layout(std140, set = 0, binding = 0) uniform Global {
@@ -15,7 +15,7 @@ layout(std140, set = 0, binding = 0) uniform Global {
 
 /******* PUSHCONSTANT - Instance Data ******************/
 layout(push_constant) uniform PushConstant {
-    layout( offset = 64 ) uvec4 identifier;
+    layout( offset = 64 ) vec4 identifier;
 } instance;
 
 void main() {

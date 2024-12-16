@@ -38,7 +38,7 @@ public class SceneTriangle2RendererActivity extends BaseRendererActivity {
     @Override
     public void render(Scene scene, long tpf) throws ThemisException {
 
-        int frame = this.renderer.acquire();
+        int frame = this.renderer.acquire(scene);
 
         VkCommand     command     = getCommand( frame );
         VkFence       fence       = getFence( frame );

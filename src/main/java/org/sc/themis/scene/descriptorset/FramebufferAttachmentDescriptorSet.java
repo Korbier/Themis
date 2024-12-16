@@ -1,6 +1,5 @@
 package org.sc.themis.scene.descriptorset;
 
-import org.joml.Matrix4f;
 import org.sc.themis.renderer.Renderer;
 import org.sc.themis.renderer.base.VulkanObject;
 import org.sc.themis.renderer.base.frame.FrameKey;
@@ -9,12 +8,8 @@ import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorPool;
 import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorSet;
 import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorSetBinding;
 import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorSetLayout;
-import org.sc.themis.renderer.resource.buffer.VkBuffer;
-import org.sc.themis.renderer.resource.buffer.VkBufferDescriptor;
-import org.sc.themis.scene.Scene;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
-import org.sc.themis.shared.utils.MemorySizeUtils;
 
 import static org.lwjgl.vulkan.VK10.*;
 
@@ -81,6 +76,7 @@ public class FramebufferAttachmentDescriptorSet extends VulkanObject {
 
     @Override
     public void cleanup() throws ThemisException {
+        this.renderer.getFrames().remove( FK_DESCRIPTORSET );
         this.descriptorPool.cleanup();
         this.descriptorSetLayout.cleanup();
     }
