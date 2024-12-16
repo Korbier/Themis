@@ -4,10 +4,7 @@ import org.jboss.logging.Logger;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.tobject.TObject;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class Scene extends TObject {
 
@@ -20,6 +17,9 @@ public class Scene extends TObject {
     /** Geometry **/
     private List<Instance> instances = new ArrayList<>();
     private Set<Model> models = new HashSet<>();
+
+    /** Controller **/
+    private final Set<Controller> controllers = new HashSet<>();
 
     public Scene( Configuration configuration ) {
         super(configuration);
@@ -44,6 +44,10 @@ public class Scene extends TObject {
         }
     }
 
+    public void add( Controller ... controllers ) {
+        Collections.addAll(this.controllers, controllers);
+    }
+
     private void add(Model model) {
         this.models.add( model );
     }
@@ -58,6 +62,10 @@ public class Scene extends TObject {
 
     public Camera getCamera() {
         return this.camera;
+    }
+
+    public Set<Controller> getControllers() {
+        return this.controllers;
     }
 
 }

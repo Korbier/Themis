@@ -8,6 +8,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.sc.playground.Playgrounds;
 import org.sc.playground.noop.NoopRendererActivity;
 import org.sc.themis.Profiles;
@@ -20,12 +21,9 @@ import org.sc.themis.shared.exception.ThemisException;
 @TestProfile(Profiles.TagWithUiTest.class)
 public class EngineTest {
 
-    @Inject
-    Configuration configuration;
-
     @ParameterizedTest
-    //@EnumSource(value=Playgrounds.class, names = "NOOP", mode = EnumSource.Mode.EXCLUDE)
-    @EnumSource(value=Playgrounds.class, names = "MOUSEPICKING")
+    @EnumSource(value=Playgrounds.class, names = "NOOP", mode = EnumSource.Mode.EXCLUDE)
+    //@EnumSource(value=Playgrounds.class, names = "CONTROLLER_FPS_CAMERA")
     void testRenderActivity( Playgrounds playground ) throws ThemisException {
 
         //Given
@@ -34,7 +32,7 @@ public class EngineTest {
 
         //When
         engine.setup();
-        engine.setGamestate( playground.getGamestate() ); //new EngineTestGamestate( engine, playground.getGamestate(), 5 )
+        engine.setGamestate(new EngineTestGamestate( engine, playground.getGamestate(), 5 )); //new EngineTestGamestate( engine, playground.getGamestate(), 5 )
         engine.run();
 
         //Then
@@ -43,6 +41,9 @@ public class EngineTest {
         engine.cleanup();
 
     }
+
+    @Inject
+    Configuration configuration;
 
     @Test
     @DisplayName("Create engine - no gamestate found")
