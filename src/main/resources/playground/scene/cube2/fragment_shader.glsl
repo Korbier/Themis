@@ -13,11 +13,11 @@ layout(std140, set = 0, binding = 0) uniform Global {
     uint utime;
 } global;
 
-/******* 0 - Global Data ******************/
+/******* 1 - Material ******************/
 layout(std140, set = 1, binding = 0) uniform Material {
-    vec4 baseColor;
+    vec4 color;
 } material;
 
 void main() {
-    outFragColor = material.baseColor;
+    outFragColor = material.color;
 }

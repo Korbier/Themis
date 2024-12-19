@@ -37,6 +37,7 @@ public enum Playgrounds {
     SCENE_TRIANGLE( "scene-triangle", new NoopGamestate(), SceneTriangleRendererActivity::new ),
     SCENE_TRIANGLE_2( "scene-triangle-2", new SceneTriangle2Gamestate(), SceneTriangle2RendererActivity::new ),
     SCENE_CUBE( "scene-cube", new SceneCubeGamestate(), SceneCubeRendererActivity::new ),
+    SCENE_CUBE_2( "scene-cube-2", new SceneCube2Gamestate(), SceneCube2RendererActivity::new ),
     SCENE_SPHERE( "scene-sphere", new SceneSphereGamestate(), SceneSphereRendererActivity::new ),
     MOUSEPICKING( "mousepicking", new MousePickingGamestate(), MousePickingRendererActivity::new ),
     CONTROLLER_FPS_CAMERA( "controller-fpscamera", new ControllerFpsCameraGamestate(), ControllerFpsCameraRendererActivity::new );
