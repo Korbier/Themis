@@ -2,6 +2,7 @@ package org.sc.themis.scene;
 
 import org.jboss.logging.Logger;
 import org.sc.themis.shared.Configuration;
+import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.tobject.TObject;
 
 import java.util.*;
@@ -15,8 +16,8 @@ public class Scene extends TObject {
     private final Camera camera;
 
     /** Geometry **/
-    private List<Instance> instances = new ArrayList<>();
-    private Set<Model> models = new HashSet<>();
+    private final List<Instance> instances = new ArrayList<>();
+    private final Set<Model> models = new HashSet<>();
 
     /** Controller **/
     private final Set<Controller> controllers = new HashSet<>();
@@ -33,8 +34,10 @@ public class Scene extends TObject {
     }
 
     @Override
-    public void cleanup() {
-
+    public void cleanup() throws ThemisException {
+        for (Model model : this.models) {
+            model.cleanup();
+        }
     }
 
     public void add( Instance ... instances ) {

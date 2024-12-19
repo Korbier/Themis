@@ -1,17 +1,16 @@
-package org.sc.playground.mousepicking;
+package org.sc.playground.scene.sphere;
 
 import org.sc.themis.gamestate.Gamestate;
-import org.sc.themis.input.Input;
 import org.sc.themis.renderer.Renderer;
-import org.sc.themis.scene.MeshFactory;
 import org.sc.themis.scene.Model;
 import org.sc.themis.scene.ModelFactory;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.shared.exception.ThemisException;
 
-public class MousePickingGamestate implements Gamestate {
+import java.nio.file.Path;
 
-    private final MeshFactory meshFactory = new MeshFactory();
+public class SceneSphereGamestate implements Gamestate {
+
     private final ModelFactory modelFactory = new ModelFactory();
 
     private Model model;
@@ -21,7 +20,7 @@ public class MousePickingGamestate implements Gamestate {
 
         scene.getCamera().setPosition( 0.0f, 0.0f, 7.0f );
 
-        this.model = createCubeModel(renderer);
+        this.model = createSphereModel(renderer);
         scene.add( this.model.create() );
         scene.add( this.model.create().position(  4.0f, 0.0f, 0.0f ).scale( 0.5f) );
         scene.add( this.model.create().position( -4.0f, 0.0f, 0.0f ).rotate( 45.0f, 1.0f, 0.0f, 0.0f ) );
@@ -33,18 +32,12 @@ public class MousePickingGamestate implements Gamestate {
         this.model.cleanup();
     }
 
-    @Override
-    public void input(Scene scene, Input input, long tpf) {
-
-    }
-
-    @Override
-    public void update(Scene scene, long tpf) {
-
-    }
-
-    private Model createCubeModel(Renderer renderer) throws ThemisException {
-        return this.modelFactory.create( "my-cube-model", this.meshFactory.createCube( renderer.getResourceAllocator(), "my-cube ") );
+    private Model createSphereModel(Renderer renderer) throws ThemisException {
+        return this.modelFactory.create(
+            "my-sphere-model",
+            renderer.getResourceAllocator(),
+            Path.of( "./src/main/resources/model/sphere/scene.gltf")
+        );
     }
 
 }

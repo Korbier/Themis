@@ -5,6 +5,7 @@ import org.sc.themis.input.Input;
 import org.sc.themis.renderer.Renderer;
 import org.sc.themis.scene.MeshFactory;
 import org.sc.themis.scene.Model;
+import org.sc.themis.scene.ModelFactory;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.scene.controller.FpsCameraController;
 import org.sc.themis.shared.exception.ThemisException;
@@ -12,6 +13,7 @@ import org.sc.themis.shared.exception.ThemisException;
 public class ControllerFpsCameraGamestate implements Gamestate {
 
     private final MeshFactory meshFactory = new MeshFactory();
+    private final ModelFactory modelFactory = new ModelFactory();
 
     private Model model;
 
@@ -34,7 +36,7 @@ public class ControllerFpsCameraGamestate implements Gamestate {
     }
 
     private Model createCubeModel(Renderer renderer) throws ThemisException {
-        return new Model( "my-cube-model", this.meshFactory.createCube( renderer.getResourceAllocator(), "my-cube ") );
+        return modelFactory.create( "my-cube-model", this.meshFactory.createCube( renderer.getResourceAllocator(), "my-cube ") );
     }
 
 }

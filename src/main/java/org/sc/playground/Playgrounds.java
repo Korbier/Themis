@@ -8,6 +8,10 @@ import org.sc.playground.mousepicking.MousePickingGamestate;
 import org.sc.playground.mousepicking.MousePickingRendererActivity;
 import org.sc.playground.scene.cube.SceneCubeGamestate;
 import org.sc.playground.scene.cube.SceneCubeRendererActivity;
+import org.sc.playground.scene.cube2.SceneCube2Gamestate;
+import org.sc.playground.scene.cube2.SceneCube2RendererActivity;
+import org.sc.playground.scene.sphere.SceneSphereGamestate;
+import org.sc.playground.scene.sphere.SceneSphereRendererActivity;
 import org.sc.playground.scene.triangle.SceneTriangleRendererActivity;
 import org.sc.playground.noop.NoopGamestate;
 import org.sc.playground.noop.NoopRendererActivity;
@@ -33,6 +37,7 @@ public enum Playgrounds {
     SCENE_TRIANGLE( "scene-triangle", new NoopGamestate(), SceneTriangleRendererActivity::new ),
     SCENE_TRIANGLE_2( "scene-triangle-2", new SceneTriangle2Gamestate(), SceneTriangle2RendererActivity::new ),
     SCENE_CUBE( "scene-cube", new SceneCubeGamestate(), SceneCubeRendererActivity::new ),
+    SCENE_SPHERE( "scene-sphere", new SceneSphereGamestate(), SceneSphereRendererActivity::new ),
     MOUSEPICKING( "mousepicking", new MousePickingGamestate(), MousePickingRendererActivity::new ),
     CONTROLLER_FPS_CAMERA( "controller-fpscamera", new ControllerFpsCameraGamestate(), ControllerFpsCameraRendererActivity::new );
 
