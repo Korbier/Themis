@@ -8,8 +8,7 @@ import org.sc.themis.shared.utils.MemorySizeUtils;
 
 import java.util.Objects;
 
-import static org.lwjgl.vulkan.VK10.VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
-import static org.lwjgl.vulkan.VK10.VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+import static org.lwjgl.vulkan.VK10.*;
 
 public class Mesh {
 
@@ -17,18 +16,25 @@ public class Mesh {
 
     private final VkStagingBuffer vertexBuffer;
     private final VkStagingBuffer indiceBuffer;
+    private String material;
 
+    private boolean renderable = false;
     private int vertexCount = 0;
     private int indiceCount = 0;
 
-    public Mesh( VkStagingResourceAllocator bufferAllocator, String identifier ) {
+    Mesh( VkStagingResourceAllocator resourceAllocator, String identifier ) {
         this.identifier = identifier;
-        this.vertexBuffer = bufferAllocator.allocateBuffer( VK_BUFFER_USAGE_VERTEX_BUFFER_BIT );
-        this.indiceBuffer = bufferAllocator.allocateBuffer( VK_BUFFER_USAGE_INDEX_BUFFER_BIT );
+        this.vertexBuffer = resourceAllocator.allocateBuffer( VK_BUFFER_USAGE_VERTEX_BUFFER_BIT );
+        this.indiceBuffer = resourceAllocator.allocateBuffer( VK_BUFFER_USAGE_INDEX_BUFFER_BIT );
     }
 
-    protected void setup( Vertex[] vertices, int [] indices ) throws ThemisException {
+    void set( Vertex[] vertices, int [] indices ) throws ThemisException {
+        set( vertices, indices, null );
+    }
 
+    void set( Vertex[] vertices, int [] indices, String material ) throws ThemisException {
+
+        this.material = material;
         this.vertexCount = vertices.length;
         this.indiceCount = indices.length;
 
@@ -40,6 +46,7 @@ public class Mesh {
     }
 
     public void cleanup() throws ThemisException {
+        this.renderable = false;
         this.vertexBuffer.cleanup();
         this.indiceBuffer.cleanup();
     }
@@ -71,7 +78,18 @@ public class Mesh {
     }
 
     public boolean isRenderable() {
-        return this.indiceBuffer.isRenderable() && this.vertexBuffer.isRenderable();
+
+        if ( this.renderable ) {
+            return true;
+        }
+
+        if ( !this.indiceBuffer.isRenderable() ) return false;
+        if ( !this.vertexBuffer.isRenderable() ) return false;
+
+        this.renderable = true;
+
+        return true;
+
     }
 
     public int getVertexCount() {
@@ -88,6 +106,10 @@ public class Mesh {
 
     public VkBuffer getIndicesBuffer() {
         return this.indiceBuffer.getBuffer();
+    }
+
+    public String getMaterial() {
+        return this.material;
     }
 
     @Override

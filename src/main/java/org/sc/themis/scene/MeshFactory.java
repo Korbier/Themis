@@ -6,12 +6,20 @@ import org.sc.themis.shared.exception.ThemisException;
 public class MeshFactory {
 
     public Mesh create( VkStagingResourceAllocator allocator, String identifier, Vertex [] vertices, int [] indices ) throws ThemisException {
+        return create( allocator, identifier, vertices, indices, null );
+    }
+
+    public Mesh create( VkStagingResourceAllocator allocator, String identifier, Vertex [] vertices, int [] indices, String material ) throws ThemisException {
         Mesh mesh = new Mesh( allocator, identifier );
-        mesh.setup( vertices, indices );
+        mesh.set( vertices, indices, material );
         return mesh;
     }
 
     public Mesh createTriangle( VkStagingResourceAllocator allocator, String identifier ) throws ThemisException {
+        return createTriangle( allocator, identifier, null );
+    }
+
+    public Mesh createTriangle( VkStagingResourceAllocator allocator, String identifier, String material ) throws ThemisException {
         return create(
             allocator,
             identifier,
@@ -20,11 +28,16 @@ public class MeshFactory {
                 Vertex.of(  1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f ),
                 Vertex.of(  0.0f,  1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f )
             },
-            new int[] { 0, 1, 2 }
+            new int[] { 0, 1, 2 },
+            material
         );
     }
 
     public Mesh createCube( VkStagingResourceAllocator allocator, String identifier ) throws ThemisException {
+        return createCube( allocator, identifier, null );
+    }
+
+    public Mesh createCube( VkStagingResourceAllocator allocator, String identifier, String material ) throws ThemisException {
         return create(
                 allocator,
                 identifier,
@@ -61,7 +74,8 @@ public class MeshFactory {
                     12, 13, 15, 15, 13, 14,
                     16, 17, 19, 19, 17, 18,
                     20, 21, 23, 23, 21, 22,
-                }
+                },
+                material
         );
     }
 

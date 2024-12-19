@@ -49,6 +49,8 @@ public class MousePickingDescriptorSet extends VulkanObject {
     private VkDescriptorSetLayout descriptorSetLayout;
     private VkDescriptorPool descriptorPool;
 
+    private final float [] identifier = new float[4];
+
     public MousePickingDescriptorSet(Configuration configuration, Renderer renderer ) {
         super( configuration );
         this.renderer = renderer;
@@ -72,9 +74,8 @@ public class MousePickingDescriptorSet extends VulkanObject {
 
     public float [] getSelection( int frame ) {
         VkBuffer buffer = this.renderer.getFrames().get( frame, FK_BUFFER );
-        float [] identifier = new float[4];
-        buffer.getMappedContent().rewind().asFloatBuffer().get( identifier );
-        return identifier;
+        buffer.getMappedContent().rewind().asFloatBuffer().get( this.identifier );
+        return this.identifier;
     }
 
     private void setupDescriptorSets() throws ThemisException {

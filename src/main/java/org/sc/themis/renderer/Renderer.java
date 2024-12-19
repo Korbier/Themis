@@ -88,8 +88,8 @@ public class Renderer extends TObject {
         this.setupActivity();
         this.setupSemaphores();
 
-
         LOG.trace( "Renderer initialized" );
+
     }
 
     private void setupResourceAllocator() throws ThemisException {
@@ -118,7 +118,7 @@ public class Renderer extends TObject {
     public void render( Scene scene, long tpf ) throws ThemisException {
 
         if ( !this.isSceneConfigured ) {
-            this.applyWindowSizingOnScene( scene );
+            this.configureScene( scene, false );
             this.isSceneConfigured = true;
         }
 
@@ -220,14 +220,20 @@ public class Renderer extends TObject {
         this.setupSwapChain();
 
         //Application de la nouvelle taille ecran a la scene (Projection)
-        applyWindowSizingOnScene(scene);
+        configureScene(scene, true);
 
         //Dispatch de l'evenement a l'activity
         this.activity.resize();
     }
 
-    private void applyWindowSizingOnScene( Scene scene ) {
+    private void configureScene( Scene scene, boolean isResizeConfiguration ) throws ThemisException {
+
         scene.getProjection().resize( getWindow().getSize().x, getWindow().getSize().y );
+
+        if ( !isResizeConfiguration ) {
+            this.activity.setup( scene );
+        }
+
     }
 
     private void setupSwapChain() throws ThemisException {
