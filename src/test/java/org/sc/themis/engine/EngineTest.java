@@ -8,7 +8,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.sc.playground.Playgrounds;
 import org.sc.playground.noop.NoopRendererActivity;
 import org.sc.themis.Profiles;
@@ -22,8 +21,8 @@ import org.sc.themis.shared.exception.ThemisException;
 public class EngineTest {
 
     @ParameterizedTest
-    //@EnumSource(value=Playgrounds.class, names = "NOOP", mode = EnumSource.Mode.EXCLUDE)
-    @EnumSource(value=Playgrounds.class, names = "SCENE_SPHERE")
+    @EnumSource(value=Playgrounds.class, names = "NOOP", mode = EnumSource.Mode.EXCLUDE)
+    //@EnumSource(value=Playgrounds.class, names = "SCENE_CUBE_2")
     void testRenderActivity( Playgrounds playground ) throws ThemisException {
 
         //Given
@@ -32,7 +31,7 @@ public class EngineTest {
 
         //When
         engine.setup();
-        engine.setGamestate(playground.getGamestate()); //new EngineTestGamestate( engine, playground.getGamestate(), 5 )
+        engine.setGamestate(new EngineTestGamestate( engine, playground.getGamestate(), 5 )); //new EngineTestGamestate( engine, playground.getGamestate(), 5 )
         engine.run();
 
         //Then
