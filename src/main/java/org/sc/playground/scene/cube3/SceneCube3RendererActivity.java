@@ -1,7 +1,8 @@
-package org.sc.playground.scene.cube2;
+package org.sc.playground.scene.cube3;
 
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.util.shaderc.Shaderc;
+import org.sc.playground.scene.cube2.SceneCube2ColorMaterial;
 import org.sc.playground.shared.BaseRendererActivity;
 import org.sc.themis.renderer.command.VkCommand;
 import org.sc.themis.renderer.framebuffer.VkFrameBuffer;
@@ -24,21 +25,21 @@ import java.util.List;
 
 import static org.lwjgl.vulkan.VK10.*;
 
-public class SceneCube2RendererActivity extends BaseRendererActivity {
+public class SceneCube3RendererActivity extends BaseRendererActivity {
 
-    private final static String SHADER_VERTEX_SOURCE = "src/main/resources/playground/scene/cube2/vertex_shader.glsl";
-    private final static String SHADER_VERTEX_COMPILED = "target/playground/scene/cube2/vertex_shader.spirv";
-    private final static String SHADER_FRAGMENT_SOURCE = "src/main/resources/playground/scene/cube2/fragment_shader.glsl";
-    private final static String SHADER_FRAGMENT_COMPILED = "target/playground/scene/cube2/fragment_shader.spirv";
+    private final static String SHADER_VERTEX_SOURCE = "src/main/resources/playground/scene/cube3/vertex_shader.glsl";
+    private final static String SHADER_VERTEX_COMPILED = "target/playground/scene/cube3/vertex_shader.spirv";
+    private final static String SHADER_FRAGMENT_SOURCE = "src/main/resources/playground/scene/cube3/fragment_shader.glsl";
+    private final static String SHADER_FRAGMENT_COMPILED = "target/playground/scene/cube3/fragment_shader.spirv";
 
     private VkShaderProgram shaderProgram;
     private VkPipelineLayout pipelineLayout;
     private VkPipeline pipeline;
 
     private SceneDescriptorSet sceneDescriptorSet;
-    private SceneCube2ColorMaterial baseColorDescriptorSet;
+    private SceneCube3ColorMaterial baseColorDescriptorSet;
 
-    public SceneCube2RendererActivity(Configuration configuration) {
+    public SceneCube3RendererActivity(Configuration configuration) {
         super(configuration);
     }
 
@@ -124,7 +125,7 @@ public class SceneCube2RendererActivity extends BaseRendererActivity {
         this.sceneDescriptorSet = new SceneDescriptorSet( getConfiguration(), this.renderer);
         this.sceneDescriptorSet.setup();
 
-        this.baseColorDescriptorSet = new SceneCube2ColorMaterial(getConfiguration(), this.renderer );
+        this.baseColorDescriptorSet = new SceneCube3ColorMaterial(getConfiguration(), this.renderer );
         this.baseColorDescriptorSet.setup();
 
     }
