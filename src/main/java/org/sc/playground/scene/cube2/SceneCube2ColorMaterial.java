@@ -8,7 +8,7 @@ import org.sc.themis.renderer.resource.buffer.VkBuffer;
 import org.sc.themis.renderer.resource.buffer.VkBufferDescriptor;
 import org.sc.themis.scene.Material;
 import org.sc.themis.scene.MaterialAttribute;
-import org.sc.themis.scene.descriptorset.MaterialDescriptorSet;
+import org.sc.themis.scene.descriptorset.VkMaterial;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.utils.MemorySizeUtils;
@@ -29,14 +29,14 @@ import static org.lwjgl.vulkan.VK10.*;
  * } material;
  *
  */
-public class ColorMaterial extends MaterialDescriptorSet {
+public class SceneCube2ColorMaterial extends VkMaterial {
 
     private final static int BUFFER_SIZE = MemorySizeUtils.VEC4F;
-    private final static VkBufferDescriptor BUFFER_DESCRIPTOR = new VkBufferDescriptor( BUFFER_SIZE, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, 0 );
+    private final static VkBufferDescriptor BUFFER_DESCRIPTOR = VkBufferDescriptor.descriptorsetUniform( BUFFER_SIZE );
 
     private final Map<String, FrameKey<VkBuffer>> fkBuffers = new HashMap<>();
 
-    public ColorMaterial(Configuration configuration, Renderer renderer ) {
+    public SceneCube2ColorMaterial(Configuration configuration, Renderer renderer ) {
         super( configuration, renderer );
     }
 
@@ -56,17 +56,17 @@ public class ColorMaterial extends MaterialDescriptorSet {
         this.fkBuffers.put(identifier, key);
 
         //Creation du back buffer du descriptorset
-        getRenderer().getFrames().create( key, () -> new VkBuffer(getConfiguration(), getRenderer().getDevice(), getRenderer().getMemoryAllocator(), BUFFER_DESCRIPTOR) );
+        getFrames().create( key, () -> new VkBuffer(getConfiguration(), getDevice(), getAllocator(), BUFFER_DESCRIPTOR) );
         //Mise a jour du contenu du buffer
-        getRenderer().getFrames().update(key, (buffer) -> buffer.set(0, material.getColor(MaterialAttribute.Color.BASE)));
+        getFrames().update(key, (buffer) -> buffer.set(0, material.getColor(MaterialAttribute.Color.BASE)));
         //Bind du buffer au descriptorset
-        getRenderer().getFrames().update(descriptorSetKey, (frame, descriptorset) -> descriptorset.bind(0, getRenderer().getFrames().get(frame, key) ) );
+        getFrames().update(descriptorSetKey, (frame, descriptorset) -> descriptorset.bind(0, getFrames().get(frame, key) ) );
 
     }
 
     @Override
     protected void cleanupMaterialLayout() throws ThemisException {
-        for ( FrameKey<VkBuffer> key : this.fkBuffers.values() ) getRenderer().getFrames().remove( key );
+        for ( FrameKey<VkBuffer> key : this.fkBuffers.values() ) getFrames().remove( key );
     }
 
 }

@@ -21,6 +21,7 @@ import org.sc.themis.scene.Scene;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.tobject.TObject;
+import org.sc.themis.shared.utils.Timer;
 import org.sc.themis.window.Window;
 
 public class Renderer extends TObject {
@@ -54,6 +55,7 @@ public class Renderer extends TObject {
     private VkCommandPool transfertCommandPool;
 
     private Frames frames;
+    private final Timer timer = new Timer();
 
     boolean isSceneConfigured = false;
 
@@ -122,9 +124,14 @@ public class Renderer extends TObject {
             this.isSceneConfigured = true;
         }
 
+        this.timer.start( "themis.renderer" );
+
         this.getResourceAllocator().commit();
         this.activity.render( scene, tpf );
         this.present( getPresentSemaphore( getCurrentFrame() ) );
+
+        this.timer.stopAndShow();
+
     }
 
     public int acquire( Scene scene ) throws ThemisException {
