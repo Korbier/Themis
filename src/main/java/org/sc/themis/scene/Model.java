@@ -10,21 +10,16 @@ public class Model {
 
     private final String identifier;
     private final Mesh [] meshes;
-    private final Material [] materials;
     private final List<Instance> instances = new ArrayList<>();
 
-    Model( String identifier, Mesh [] meshes, Material [] materials ) {
+    Model( String identifier, Mesh [] meshes ) {
         this.identifier = identifier;
         this.meshes = meshes;
-        this.materials = materials;
     }
 
     public void cleanup() throws ThemisException {
         for ( Mesh mesh : getMeshes() ) {
             mesh.cleanup();
-        }
-        for ( Material material : getMaterials() ) {
-            material.cleanup();
         }
     }
 
@@ -46,10 +41,6 @@ public class Model {
 
     public Mesh[] getMeshes() {
         return this.meshes;
-    }
-
-    public Material[] getMaterials() {
-        return this.materials;
     }
 
     public List<Instance> getInstances() {

@@ -14,7 +14,9 @@ import static org.lwjgl.assimp.Assimp.*;
 import java.nio.IntBuffer;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ModelFactory {
 
@@ -22,16 +24,11 @@ public class ModelFactory {
               aiProcess_GenSmoothNormals | aiProcess_JoinIdenticalVertices | aiProcess_Triangulate
             | aiProcess_FixInfacingNormals | aiProcess_CalcTangentSpace | aiProcess_PreTransformVertices;
 
-
-    public Model create( String identifier, Mesh [] meshes, Material [] materials ) {
-        return new Model( identifier, meshes, materials );
-    }
-
     public Model create( String identifier, Mesh ... meshes ) {
-        return new Model( identifier, meshes, new Material[0] );
+        return new Model( identifier, meshes);
     }
 
-    public Model create(String identifier, VkStagingResourceAllocator allocator, Path modelFile ) throws ThemisException {
+    public Model create(String identifier, VkStagingResourceAllocator allocator, Path modelFile, String material ) throws ThemisException {
 
         Assertions.isTrue( modelFile.toFile()::exists, new ModelFileNotFoundException( modelFile ) );
 
@@ -39,24 +36,20 @@ public class ModelFactory {
 
             Path workdir = modelFile.getParent();
 
-            Material [] materials = loadMaterials( allocator, identifier, scene, workdir );
-            Mesh [] meshes = loadMeshs( allocator, identifier, scene, materials );
+            List<MeshPropertiesMap> properties = loadProperties( scene, workdir );
+            Mesh [] meshes = loadMeshs( allocator, identifier, scene, material, properties );
 
-            return new Model( identifier, meshes, materials );
+            return new Model( identifier, meshes );
 
         }
 
-    }
-
-    private String getMaterialIdentifier( String modelIdentifier, int inc ) {
-        return modelIdentifier + ".material." + inc;
     }
 
     private String getMeshIdentifier( String modelIdentifier, int inc ) {
         return modelIdentifier + ".mesh." + inc;
     }
 
-    private Mesh[] loadMeshs( VkStagingResourceAllocator allocator, String modelIdentifier, AIScene scene, Material[] materials ) throws ThemisException {
+    private Mesh[] loadMeshs( VkStagingResourceAllocator allocator, String modelIdentifier, AIScene scene, String material, List<MeshPropertiesMap> properties ) throws ThemisException {
 
         PointerBuffer aiMeshesBuffer = scene.mMeshes();
         int numMeshes = scene.mNumMeshes();
@@ -71,7 +64,8 @@ public class ModelFactory {
             int [] indices = getIndices( aiMesh );
 
             meshes[i] = new Mesh( allocator, getMeshIdentifier(modelIdentifier, i) );
-            meshes[i].set( vertices, indices, getMaterialIdentifier(modelIdentifier, aiMesh.mMaterialIndex()) );
+            meshes[i].set( vertices, indices, material );
+            meshes[i].setProperties( properties.get( aiMesh.mMaterialIndex() ) );
 
         }
 
@@ -136,38 +130,43 @@ public class ModelFactory {
 
     }
 
-    private Material[] loadMaterials( VkStagingResourceAllocator allocator, String modelIdentifier, AIScene scene, Path workdir) {
+    private List<MeshPropertiesMap> loadProperties( AIScene scene, Path workdir ) {
+
+        List<MeshPropertiesMap> result = new ArrayList<>();
 
         PointerBuffer aiMaterialsBuffer = scene.mMaterials();
         int numMaterials = scene.mNumMaterials();
 
-        Material[] materials = new Material[numMaterials];
-
         for (int i = 0; i < numMaterials; i++) {
 
-            Material   material   = new Material( allocator, getMaterialIdentifier( modelIdentifier, i ) );
-            AIMaterial aiMaterial = AIMaterial.create(aiMaterialsBuffer.get(i));
+            MeshPropertiesMap properties = new MeshPropertiesMap();
+            AIMaterial        aiMaterial = AIMaterial.create(aiMaterialsBuffer.get(i));
 
-            setColor( aiMaterial, AI_MATKEY_BASE_COLOR, material, MaterialAttribute.Color.BASE );
-            setColor( aiMaterial, AI_MATKEY_COLOR_DIFFUSE, material, MaterialAttribute.Color.DIFFUSE );
-            setColor( aiMaterial, AI_MATKEY_COLOR_EMISSIVE, material, MaterialAttribute.Color.EMISSIVE );
-            setColor( aiMaterial, AI_MATKEY_COLOR_SPECULAR, material, MaterialAttribute.Color.SPECULAR );
-            setColor( aiMaterial, AI_MATKEY_SHININESS, material, MaterialAttribute.Color.SHININESS );
+            setColor( aiMaterial, AI_MATKEY_BASE_COLOR, properties, MeshProperties.COLOR_BASE );
+            setColor( aiMaterial, AI_MATKEY_COLOR_DIFFUSE, properties, MeshProperties.COLOR_DIFFUSE );
+            setColor( aiMaterial, AI_MATKEY_COLOR_EMISSIVE, properties, MeshProperties.COLOR_EMISSIVE );
+            setColor( aiMaterial, AI_MATKEY_COLOR_SPECULAR, properties, MeshProperties.COLOR_SPECULAR );
+            setFloat( aiMaterial, AI_MATKEY_SHININESS, properties, MeshProperties.COLOR_SHININESS );
 
-            materials[i] = material;
+            result.add( properties );
 
         }
 
-        return materials;
+        return result;
 
     }
 
-    private void setColor( AIMaterial assimpMaterial, String assimpAttr, Material material, MaterialAttribute attribute ) {
+    private void setColor( AIMaterial assimpMaterial, String assimpAttr, Map<MeshProperty<?>, Object> properties, MeshProperty<Vector4f> property ) {
         AIColor4D  workColor = AIColor4D.create();
         aiGetMaterialColor( assimpMaterial, assimpAttr, 0, 0, workColor );
         Vector4f color =  new Vector4f( workColor.r(), workColor.g(), workColor.b(), workColor.a() );
-        material.setColor( MaterialAttribute.Color.BASE, color );
+        properties.put( property, color );
     }
 
+    private void setFloat( AIMaterial assimpMaterial, String assimpAttr, Map<MeshProperty<?>, Object> properties, MeshProperty<Float> property ) {
+        AIColor4D  workColor = AIColor4D.create();
+        aiGetMaterialColor( assimpMaterial, assimpAttr, 0, 0, workColor );
+        properties.put( property, workColor.r() );
+    }
 
 }

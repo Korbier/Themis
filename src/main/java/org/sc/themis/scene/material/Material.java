@@ -1,4 +1,4 @@
-package org.sc.themis.scene.descriptorset;
+package org.sc.themis.scene.material;
 
 import org.sc.themis.renderer.Renderer;
 import org.sc.themis.renderer.base.VulkanObject;
@@ -10,18 +10,21 @@ import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorPool;
 import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorSet;
 import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorSetBinding;
 import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorSetLayout;
-import org.sc.themis.scene.Material;
+import org.sc.themis.scene.Mesh;
+import org.sc.themis.scene.Model;
+import org.sc.themis.scene.Scene;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Function;
 
 import static org.lwjgl.vulkan.VK10.VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
 
-public abstract class VkMaterial extends VulkanObject {
+public abstract class Material extends VulkanObject {
 
     private final Renderer renderer;
+    private final String identifier;
 
     private VkDescriptorSetLayout mainDescriptorSetLayout;
     private final FrameKey<VkDescriptorSet> fkMainDescriptorSet = FrameKey.of( VkDescriptorSet.class );
@@ -32,20 +35,30 @@ public abstract class VkMaterial extends VulkanObject {
     private VkDescriptorPool descriptorPool;
 
     private int [] wDynamicOffset = new int[0];
+    private Function<Mesh, String> descriptorSetIdentifierFunction = Mesh::getIdentifier;
 
-    public VkMaterial( Configuration configuration, Renderer renderer ) {
+    public Material( Configuration configuration, Renderer renderer, String identifier ) {
         super( configuration );
         this.renderer = renderer;
+        this.identifier = identifier;
     }
 
     protected VkDescriptorSetBinding [] getDescriptorSetBindings() { return new VkDescriptorSetBinding [0]; };
-    protected void setupMaterialLayout( FrameKey<VkDescriptorSet> descriptorSetKey, Material material ) throws ThemisException {};
+    protected void setupMaterialLayout( FrameKey<VkDescriptorSet> descriptorSetKey, Mesh mesh ) throws ThemisException {};
     protected int getBackBufferDynamicOffset(String material, int frame, int binding) { return -1; }
     protected void cleanupMaterialLayout() throws ThemisException {};
 
     protected VkDescriptorSetBinding [] getMainDescriptorSetBindings() { return new VkDescriptorSetBinding [0]; };
-    protected void setupMainMaterialLayout( FrameKey<VkDescriptorSet> descriptorSetKey, Material ...  materials ) throws ThemisException {};
+    protected void setupMainMaterialLayout( FrameKey<VkDescriptorSet> descriptorSetKey, Mesh ... meshes ) throws ThemisException {};
     protected void cleanupMainMaterialLayout() throws ThemisException {};
+
+    protected String getDescriptorsetIdentifier(Mesh mesh ) {
+        return this.descriptorSetIdentifierFunction.apply( mesh );
+    }
+
+    public String getIdentifier() {
+        return this.identifier;
+    }
 
     protected VkDevice getDevice() {
         return this.renderer.getDevice();
@@ -57,6 +70,10 @@ public abstract class VkMaterial extends VulkanObject {
 
     protected VkMemoryAllocator getAllocator() {
         return this.renderer.getMemoryAllocator();
+    }
+
+    public void setDescriptorsetIdentifier( Function<Mesh, String> function ) {
+        this.descriptorSetIdentifierFunction = function;
     }
 
     @Override
@@ -78,9 +95,20 @@ public abstract class VkMaterial extends VulkanObject {
 
     }
 
-    public void setMaterial( Material... materials ) throws ThemisException {
-        setupDescriptorPool( materials );
-        setupMaterials( materials );
+    public void setupScene( Scene scene ) throws ThemisException {
+
+        List<Mesh> meshes = new ArrayList<>();
+
+        for ( Model model : scene.getModels() ) {
+            for (Mesh mesh : model.getMeshes() ) {
+                if ( getIdentifier().equals( mesh.getMaterial() ) ) {
+                    meshes.add( mesh );
+                }
+            }
+        }
+
+        setupDescriptorPool( meshes );
+        setupDescriptorSets( meshes );
     }
 
     public VkDescriptorSetLayout [] getDescriptorSetLayout() {
@@ -97,24 +125,24 @@ public abstract class VkMaterial extends VulkanObject {
 
     }
 
-    public VkDescriptorSet [] getDescriptorSet(String material, int frame ) {
+    public VkDescriptorSet [] getDescriptorSet( Mesh mesh, int frame ) {
 
         int count = 0;
         if ( this.mainDescriptorSetLayout != null ) count++;
         if ( this.descriptorSetLayout != null ) count++;
 
         VkDescriptorSet [] descriptorsets = new VkDescriptorSet[count];
-        if ( this.descriptorSetLayout != null ) descriptorsets[--count] = getFrames().get( frame, this.fkDescriptorsets.get( material ) );
+        if ( this.descriptorSetLayout != null ) descriptorsets[--count] = getFrames().get( frame, this.fkDescriptorsets.get( getDescriptorsetIdentifier( mesh ) ) );
         if ( this.mainDescriptorSetLayout != null ) descriptorsets[--count] = getFrames().get( frame, this.fkMainDescriptorSet );
 
         return descriptorsets;
 
     }
 
-    public int [] getDynamicOffset( String material, int frame ) {
+    public int [] getDynamicOffset( Mesh mesh, int frame ) {
 
         for ( int i=0; i<this.wDynamicOffset.length; i++ ) {
-            this.wDynamicOffset[i] = getBackBufferDynamicOffset( material, frame, i );
+            this.wDynamicOffset[i] = getBackBufferDynamicOffset( getDescriptorsetIdentifier( mesh ), frame, i );
         }
 
         return this.wDynamicOffset;
@@ -153,10 +181,10 @@ public abstract class VkMaterial extends VulkanObject {
 
     }
 
-    private void setupDescriptorPool( Material ... materials ) throws ThemisException {
+    private void setupDescriptorPool( List<Mesh> meshes ) throws ThemisException {
 
         if ( this.descriptorSetLayout != null ) {
-            this.descriptorPool = new VkDescriptorPool(getConfiguration(), getDevice(), getFrames().getSize() * materials.length, this.descriptorSetLayout);
+            this.descriptorPool = new VkDescriptorPool(getConfiguration(), getDevice(), getFrames().getSize() * meshes.size(), this.descriptorSetLayout);
             this.descriptorPool.setup();
         }
 
@@ -167,23 +195,37 @@ public abstract class VkMaterial extends VulkanObject {
 
     }
 
-    private void setupMaterials( Material ... materials ) throws ThemisException {
+    private void setupDescriptorSets( List<Mesh> meshes ) throws ThemisException {
 
         if ( this.mainDescriptorSetLayout != null ) {
             getFrames().create(this.fkMainDescriptorSet, () -> new VkDescriptorSet(getConfiguration(), getDevice(), this.mainDescriptorPool, this.mainDescriptorSetLayout));
-            setupMainMaterialLayout(this.fkMainDescriptorSet, materials);
+            setupMainMaterialLayout(this.fkMainDescriptorSet, meshes.toArray(new Mesh[0]));
         }
 
         if ( this.descriptorSetLayout != null ) {
 
-            for (Material material : materials) {
+            for (Mesh mesh : meshes) {
                 FrameKey<VkDescriptorSet> key = FrameKey.of(VkDescriptorSet.class);
-                this.fkDescriptorsets.put(material.getIdentifier(), key);
+                this.fkDescriptorsets.put( getDescriptorsetIdentifier( mesh ), key);
                 getFrames().create(key, () -> new VkDescriptorSet(getConfiguration(), getDevice(), this.descriptorPool, this.descriptorSetLayout));
-                setupMaterialLayout(key, material);
+                setupMaterialLayout(key, mesh );
             }
 
         }
+
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Material mesh = (Material) o;
+        return Objects.equals(identifier, mesh.identifier);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(identifier);
     }
 
 }

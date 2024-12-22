@@ -10,6 +10,7 @@ import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorSet;
 import org.sc.themis.renderer.sync.VkFence;
 import org.sc.themis.scene.*;
 import org.sc.themis.scene.descriptorset.SceneDescriptorSet;
+import org.sc.themis.scene.material.SimpleColorMaterial;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.utils.ArrayUtils;
@@ -18,9 +19,6 @@ import org.sc.themis.shared.utils.MemorySizeUtils;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 import static org.lwjgl.vulkan.VK10.*;
 
@@ -36,7 +34,7 @@ public class SceneCube2RendererActivity extends BaseRendererActivity {
     private VkPipeline pipeline;
 
     private SceneDescriptorSet sceneDescriptorSet;
-    private SceneCube2ColorMaterial baseColorDescriptorSet;
+    private SimpleColorMaterial simpleColorMaterial;
 
     public SceneCube2RendererActivity(Configuration configuration) {
         super(configuration);
@@ -63,11 +61,11 @@ public class SceneCube2RendererActivity extends BaseRendererActivity {
             if ( model.isRenderable() ) {
                 for (Mesh mesh : model.getMeshes() ) {
 
-                    int [] dynamicOffsets = this.baseColorDescriptorSet.getDynamicOffset( mesh.getMaterial(), frame );
+                    int [] dynamicOffsets = this.simpleColorMaterial.getDynamicOffset( mesh, frame );
 
                     VkDescriptorSet [] descriptorSets = ArrayUtils.merge(
                         sceneDescriptorSet,
-                        this.baseColorDescriptorSet.getDescriptorSet( mesh.getMaterial(), frame )
+                        this.simpleColorMaterial.getDescriptorSet( mesh, frame )
                     );
 
                     command.bindDescriptorSets( dynamicOffsets, descriptorSets );
@@ -92,15 +90,7 @@ public class SceneCube2RendererActivity extends BaseRendererActivity {
 
     @Override
     public void setup( Scene scene ) throws ThemisException {
-
-        List<Material> materials = new ArrayList<>();
-
-        for ( Model model : scene.getModels() ) {
-            materials.addAll(Arrays.asList(model.getMaterials()));
-        }
-
-        this.baseColorDescriptorSet.setMaterial( materials.toArray( new Material[0] ) );
-
+        this.simpleColorMaterial.setupScene( scene );
     }
 
     @Override
@@ -115,7 +105,7 @@ public class SceneCube2RendererActivity extends BaseRendererActivity {
         this.pipeline.cleanup();
         this.pipelineLayout.cleanup();
         this.shaderProgram.cleanup();
-        this.baseColorDescriptorSet.cleanup();
+        this.simpleColorMaterial.cleanup();
         this.sceneDescriptorSet.cleanup();
     }
 
@@ -124,8 +114,8 @@ public class SceneCube2RendererActivity extends BaseRendererActivity {
         this.sceneDescriptorSet = new SceneDescriptorSet( getConfiguration(), this.renderer);
         this.sceneDescriptorSet.setup();
 
-        this.baseColorDescriptorSet = new SceneCube2ColorMaterial(getConfiguration(), this.renderer );
-        this.baseColorDescriptorSet.setup();
+        this.simpleColorMaterial = new SimpleColorMaterial( getConfiguration(), this.renderer );
+        this.simpleColorMaterial.setup();
 
     }
 
@@ -158,7 +148,7 @@ public class SceneCube2RendererActivity extends BaseRendererActivity {
             },
             ArrayUtils.merge(
                 this.sceneDescriptorSet.getDescriptorSetLayout(),
-                this.baseColorDescriptorSet.getDescriptorSetLayout()
+                this.simpleColorMaterial.getDescriptorSetLayout()
             )
         );
         this.pipelineLayout.setup();

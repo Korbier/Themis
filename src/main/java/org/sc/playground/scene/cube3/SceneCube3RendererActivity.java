@@ -2,7 +2,6 @@ package org.sc.playground.scene.cube3;
 
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.util.shaderc.Shaderc;
-import org.sc.playground.scene.cube2.SceneCube2ColorMaterial;
 import org.sc.playground.shared.BaseRendererActivity;
 import org.sc.themis.renderer.command.VkCommand;
 import org.sc.themis.renderer.framebuffer.VkFrameBuffer;
@@ -11,6 +10,7 @@ import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorSet;
 import org.sc.themis.renderer.sync.VkFence;
 import org.sc.themis.scene.*;
 import org.sc.themis.scene.descriptorset.SceneDescriptorSet;
+import org.sc.themis.scene.material.SimpleDynamicColorMaterial;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.utils.ArrayUtils;
@@ -37,7 +37,7 @@ public class SceneCube3RendererActivity extends BaseRendererActivity {
     private VkPipeline pipeline;
 
     private SceneDescriptorSet sceneDescriptorSet;
-    private SceneCube3ColorMaterial baseColorDescriptorSet;
+    private SimpleDynamicColorMaterial simpleDynamicColorMaterial;
 
     public SceneCube3RendererActivity(Configuration configuration) {
         super(configuration);
@@ -64,11 +64,11 @@ public class SceneCube3RendererActivity extends BaseRendererActivity {
             if ( model.isRenderable() ) {
                 for (Mesh mesh : model.getMeshes() ) {
 
-                    int [] dynamicOffsets = this.baseColorDescriptorSet.getDynamicOffset( mesh.getMaterial(), frame );
+                    int [] dynamicOffsets = this.simpleDynamicColorMaterial.getDynamicOffset( mesh, frame );
 
                     VkDescriptorSet [] descriptorSets = ArrayUtils.merge(
                         sceneDescriptorSet,
-                        this.baseColorDescriptorSet.getDescriptorSet( mesh.getMaterial(), frame )
+                        this.simpleDynamicColorMaterial.getDescriptorSet( mesh, frame )
                     );
 
                     command.bindDescriptorSets( dynamicOffsets, descriptorSets );
@@ -93,15 +93,7 @@ public class SceneCube3RendererActivity extends BaseRendererActivity {
 
     @Override
     public void setup( Scene scene ) throws ThemisException {
-
-        List<Material> materials = new ArrayList<>();
-
-        for ( Model model : scene.getModels() ) {
-            materials.addAll(Arrays.asList(model.getMaterials()));
-        }
-
-        this.baseColorDescriptorSet.setMaterial( materials.toArray( new Material[0] ) );
-
+        this.simpleDynamicColorMaterial.setupScene( scene );
     }
 
     @Override
@@ -116,7 +108,7 @@ public class SceneCube3RendererActivity extends BaseRendererActivity {
         this.pipeline.cleanup();
         this.pipelineLayout.cleanup();
         this.shaderProgram.cleanup();
-        this.baseColorDescriptorSet.cleanup();
+        this.simpleDynamicColorMaterial.cleanup();
         this.sceneDescriptorSet.cleanup();
     }
 
@@ -125,8 +117,8 @@ public class SceneCube3RendererActivity extends BaseRendererActivity {
         this.sceneDescriptorSet = new SceneDescriptorSet( getConfiguration(), this.renderer);
         this.sceneDescriptorSet.setup();
 
-        this.baseColorDescriptorSet = new SceneCube3ColorMaterial(getConfiguration(), this.renderer );
-        this.baseColorDescriptorSet.setup();
+        this.simpleDynamicColorMaterial = new SimpleDynamicColorMaterial(getConfiguration(), this.renderer );
+        this.simpleDynamicColorMaterial.setup();
 
     }
 
@@ -159,7 +151,7 @@ public class SceneCube3RendererActivity extends BaseRendererActivity {
             },
             ArrayUtils.merge(
                 this.sceneDescriptorSet.getDescriptorSetLayout(),
-                this.baseColorDescriptorSet.getDescriptorSetLayout()
+                this.simpleDynamicColorMaterial.getDescriptorSetLayout()
             )
         );
         this.pipelineLayout.setup();

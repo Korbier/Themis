@@ -21,8 +21,8 @@ import org.sc.themis.shared.exception.ThemisException;
 public class EngineTest {
 
     @ParameterizedTest
-    @EnumSource(value=Playgrounds.class, names = "NOOP", mode = EnumSource.Mode.EXCLUDE)
-    //@EnumSource(value=Playgrounds.class, names = "SCENE_CUBE_3")
+    //@EnumSource(value=Playgrounds.class, names = "NOOP", mode = EnumSource.Mode.EXCLUDE)
+    @EnumSource(value=Playgrounds.class, names = "SCENE_CUBE_2")
     void testRenderActivity( Playgrounds playground ) throws ThemisException {
 
         //Given
@@ -31,7 +31,7 @@ public class EngineTest {
 
         //When
         engine.setup();
-        engine.setGamestate( new EngineTestGamestate( engine, playground.getGamestate(), 5 ) ); //new EngineTestGamestate( engine, playground.getGamestate(), 5 )
+        engine.setGamestate( playground.getGamestate() ); //new EngineTestGamestate( engine, playground.getGamestate(), 5 )
         engine.run();
 
         //Then
