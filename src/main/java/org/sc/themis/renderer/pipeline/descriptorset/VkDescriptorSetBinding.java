@@ -1,5 +1,7 @@
 package org.sc.themis.renderer.pipeline.descriptorset;
 
+import org.sc.themis.renderer.resource.buffer.VkBufferDescriptor;
+
 import static org.lwjgl.vulkan.VK10.*;
 
 public class VkDescriptorSetBinding {
@@ -61,5 +63,4 @@ public class VkDescriptorSetBinding {
     public int getShaderStage() {
         return shaderStage;
     }
-
 }

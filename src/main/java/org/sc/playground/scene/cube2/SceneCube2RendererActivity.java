@@ -1,40 +1,21 @@
 package org.sc.playground.scene.cube2;
 
-import org.lwjgl.system.MemoryStack;
-import org.lwjgl.util.shaderc.Shaderc;
 import org.sc.playground.shared.BaseRendererActivity;
 import org.sc.themis.renderer.command.VkCommand;
 import org.sc.themis.renderer.framebuffer.VkFrameBuffer;
-import org.sc.themis.renderer.pipeline.*;
-import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorSet;
 import org.sc.themis.renderer.sync.VkFence;
 import org.sc.themis.scene.*;
 import org.sc.themis.scene.descriptorset.SceneDescriptorSet;
-import org.sc.themis.scene.material.SimpleColorMaterial;
+import org.sc.themis.scene.material.BaseColorMaterial;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
-import org.sc.themis.shared.utils.ArrayUtils;
-import org.sc.themis.shared.utils.MemorySizeUtils;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 import static org.lwjgl.vulkan.VK10.*;
 
 public class SceneCube2RendererActivity extends BaseRendererActivity {
 
-    private final static String SHADER_VERTEX_SOURCE = "src/main/resources/playground/scene/cube2/vertex_shader.glsl";
-    private final static String SHADER_VERTEX_COMPILED = "target/playground/scene/cube2/vertex_shader.spirv";
-    private final static String SHADER_FRAGMENT_SOURCE = "src/main/resources/playground/scene/cube2/fragment_shader.glsl";
-    private final static String SHADER_FRAGMENT_COMPILED = "target/playground/scene/cube2/fragment_shader.spirv";
-
-    private VkShaderProgram shaderProgram;
-    private VkPipelineLayout pipelineLayout;
-    private VkPipeline pipeline;
-
     private SceneDescriptorSet sceneDescriptorSet;
-    private SimpleColorMaterial simpleColorMaterial;
+    private BaseColorMaterial baseColorMaterial;
 
     public SceneCube2RendererActivity(Configuration configuration) {
         super(configuration);
@@ -50,25 +31,21 @@ public class SceneCube2RendererActivity extends BaseRendererActivity {
         VkCommand       command     = getCommand( frame );
         VkFence         fence       = getFence( frame );
         VkFrameBuffer   framebuffer = getFramebuffer( frame );
-        VkDescriptorSet sceneDescriptorSet = this.sceneDescriptorSet.getDescriptorSet( frame );
 
         command.begin();
         command.beginRenderPass( this.renderPass, framebuffer );
         command.viewportAndScissor( this.renderer.getExtent() );
-        command.bindPipeline(this.pipeline);
+        command.bindPipeline(this.baseColorMaterial.getPipeline());
 
         for ( Model model : scene.getModels() ) {
             if ( model.isRenderable() ) {
                 for (Mesh mesh : model.getMeshes() ) {
 
-                    int [] dynamicOffsets = this.simpleColorMaterial.getDynamicOffset( mesh, frame );
-
-                    VkDescriptorSet [] descriptorSets = ArrayUtils.merge(
-                        sceneDescriptorSet,
-                        this.simpleColorMaterial.getDescriptorSet( mesh, frame )
+                    command.bindDescriptorSets(
+                        new int[0],
+                        this.baseColorMaterial.getDescriptorSet( mesh, frame )
                     );
 
-                    command.bindDescriptorSets( dynamicOffsets, descriptorSets );
                     command.bindBuffers(mesh.getVerticesBuffer(), mesh.getIndicesBuffer());
 
                     for (Instance instance : model.getInstances() ) {
@@ -90,22 +67,17 @@ public class SceneCube2RendererActivity extends BaseRendererActivity {
 
     @Override
     public void setup( Scene scene ) throws ThemisException {
-        this.simpleColorMaterial.setupScene( scene );
+        this.baseColorMaterial.setupScene( scene );
     }
 
     @Override
     public void setupPipeline() throws ThemisException {
         this.setupSceneDescriptorSet();
-        this.setupShaderProgram();
-        this.setupPipelineAndLayout();
     }
 
     @Override
     public void cleanupPipeline() throws ThemisException {
-        this.pipeline.cleanup();
-        this.pipelineLayout.cleanup();
-        this.shaderProgram.cleanup();
-        this.simpleColorMaterial.cleanup();
+        this.baseColorMaterial.cleanup();
         this.sceneDescriptorSet.cleanup();
     }
 
@@ -114,69 +86,8 @@ public class SceneCube2RendererActivity extends BaseRendererActivity {
         this.sceneDescriptorSet = new SceneDescriptorSet( getConfiguration(), this.renderer);
         this.sceneDescriptorSet.setup();
 
-        this.simpleColorMaterial = new SimpleColorMaterial( getConfiguration(), this.renderer );
-        this.simpleColorMaterial.setup();
-
-    }
-
-    private void setupShaderProgram() throws ThemisException {
-
-        try {
-
-            VkShaderSourceCompiler.compileShaderIfChanged(SHADER_VERTEX_SOURCE, SHADER_VERTEX_COMPILED, Shaderc.shaderc_glsl_vertex_shader);
-            VkShaderSourceCompiler.compileShaderIfChanged(SHADER_FRAGMENT_SOURCE, SHADER_FRAGMENT_COMPILED, Shaderc.shaderc_glsl_fragment_shader);
-
-            VkShaderProgramStage vertexStage = new VkShaderProgramStage(VK_SHADER_STAGE_VERTEX_BIT, Files.readAllBytes(Paths.get(SHADER_VERTEX_COMPILED)));
-            VkShaderProgramStage fragmentStage = new VkShaderProgramStage(VK_SHADER_STAGE_FRAGMENT_BIT, Files.readAllBytes(Paths.get(SHADER_FRAGMENT_COMPILED)));
-
-            this.shaderProgram = new VkShaderProgram(getConfiguration(), renderer.getDevice(), vertexStage, fragmentStage);
-            this.shaderProgram.setup();
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-    }
-
-    private void setupPipelineAndLayout() throws ThemisException {
-
-        this.pipelineLayout = new VkPipelineLayout(
-            getConfiguration(),
-            this.renderer.getDevice(),
-            new VkPushConstantRange[] {
-                new VkPushConstantRange( VK_SHADER_STAGE_VERTEX_BIT, 0, MemorySizeUtils.MAT4x4F ),
-            },
-            ArrayUtils.merge(
-                this.sceneDescriptorSet.getDescriptorSetLayout(),
-                this.simpleColorMaterial.getDescriptorSetLayout()
-            )
-        );
-        this.pipelineLayout.setup();
-
-        try (MemoryStack stack = MemoryStack.stackPush() ) {
-
-            VkVertexInputStateDescriptor descriptor1 = new VkVertexInputStateDescriptor(VK_VERTEX_INPUT_RATE_VERTEX)
-                    .attribute( VK_FORMAT_R32G32B32_SFLOAT, MemorySizeUtils.VEC3F ) //Position
-                    .attribute( VK_FORMAT_R32G32B32_SFLOAT, MemorySizeUtils.VEC3F ) //Normal
-                    .attribute( VK_FORMAT_R32G32_SFLOAT, MemorySizeUtils.VEC2F ) //Texture
-                    .attribute( VK_FORMAT_R32G32B32_SFLOAT, MemorySizeUtils.VEC3F ) //Tangent
-                    .attribute( VK_FORMAT_R32G32B32_SFLOAT, MemorySizeUtils.VEC3F ); //Bitangent
-
-            VkVertexInputState inputState = new VkVertexInputState(descriptor1);
-            inputState.setup( stack );
-
-            this.pipeline = new VkPipeline(
-                getConfiguration(),
-                this.renderer.getDevice(),
-                new VkPipelineDescriptor(this.renderPass, 0, false, 1, false, 1, 1, 1),
-                this.shaderProgram,
-                this.pipelineLayout,
-                inputState
-            );
-
-            this.pipeline.setup();
-
-        }
+        this.baseColorMaterial = new BaseColorMaterial( getConfiguration(), this.renderer, this.renderPass, this.sceneDescriptorSet );
+        this.baseColorMaterial.setup();
 
     }
 

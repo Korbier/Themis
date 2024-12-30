@@ -5,20 +5,24 @@ import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.assimp.*;
+import org.lwjgl.system.MemoryStack;
+import org.sc.themis.renderer.resource.staging.VkStagingImage;
 import org.sc.themis.renderer.resource.staging.VkStagingResourceAllocator;
 import org.sc.themis.scene.exception.ModelFileNotFoundException;
 import org.sc.themis.shared.assertion.Assertions;
 import org.sc.themis.shared.exception.ThemisException;
 import static org.lwjgl.assimp.Assimp.*;
 
+import java.io.File;
 import java.nio.IntBuffer;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class ModelFactory {
+
+    private final static String DEFAULT_TEXTURE = "./src/main/resources/texture/default.png";
 
     final private static int flags =
               aiProcess_GenSmoothNormals | aiProcess_JoinIdenticalVertices | aiProcess_Triangulate
@@ -36,7 +40,7 @@ public class ModelFactory {
 
             Path workdir = modelFile.getParent();
 
-            List<MeshPropertiesMap> properties = loadProperties( scene, workdir );
+            List<MeshPropertiesMap> properties = loadProperties( scene, allocator, modelFile );
             Mesh [] meshes = loadMeshs( allocator, identifier, scene, material, properties );
 
             return new Model( identifier, meshes );
@@ -130,7 +134,7 @@ public class ModelFactory {
 
     }
 
-    private List<MeshPropertiesMap> loadProperties( AIScene scene, Path workdir ) {
+    private List<MeshPropertiesMap> loadProperties( AIScene scene, VkStagingResourceAllocator allocator, Path workdir ) {
 
         List<MeshPropertiesMap> result = new ArrayList<>();
 
@@ -148,11 +152,41 @@ public class ModelFactory {
             setColor( aiMaterial, AI_MATKEY_COLOR_SPECULAR, properties, MeshProperties.COLOR_SPECULAR );
             setFloat( aiMaterial, AI_MATKEY_SHININESS, properties, MeshProperties.COLOR_SHININESS );
 
+            setImage( workdir, allocator, aiMaterial, aiTextureType_BASE_COLOR, properties, MeshProperties.TEXTURE_BASE );
+
             result.add( properties );
 
         }
 
         return result;
+
+    }
+
+    private void setImage(Path workdir, VkStagingResourceAllocator allocator, AIMaterial aiMaterial, int assimpAttr, MeshPropertiesMap properties, MeshProperty<VkStagingImage> textureBase) {
+
+        String path = getTexturePath( workdir, aiMaterial, assimpAttr );
+        System.out.println( "Image path : " + path );
+
+    }
+
+    private String getTexturePath(Path workdir, AIMaterial aiMaterial, int assimpAttr) {
+
+        try (MemoryStack stack = MemoryStack.stackPush() ) {
+
+            AIString aiTexturePath = AIString.calloc(stack);
+            aiGetMaterialTexture(aiMaterial, assimpAttr, 0, aiTexturePath, (IntBuffer) null, null, null, null, null, null);
+
+            String texturePath = aiTexturePath.dataString();
+
+            if (texturePath.isBlank()) {
+                texturePath = DEFAULT_TEXTURE;
+            } else {
+                texturePath = workdir.resolve( texturePath ).toAbsolutePath().toString();
+            }
+
+            return texturePath;
+
+        }
 
     }
 

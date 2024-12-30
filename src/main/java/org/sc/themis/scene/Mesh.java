@@ -9,8 +9,6 @@ import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.resource.Image;
 import org.sc.themis.shared.utils.MemorySizeUtils;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 
 import static org.lwjgl.vulkan.VK10.*;
@@ -143,7 +141,7 @@ public class Mesh {
         return this.indiceBuffer.getBuffer();
     }
 
-    public String getMaterial() {
+    public String getMaterialIdentifier() {
         return this.material;
     }
 

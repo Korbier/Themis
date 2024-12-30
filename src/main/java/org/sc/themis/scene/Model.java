@@ -3,8 +3,10 @@ package org.sc.themis.scene;
 import org.sc.themis.shared.exception.ThemisException;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 public class Model {
 
@@ -41,6 +43,10 @@ public class Model {
 
     public Mesh[] getMeshes() {
         return this.meshes;
+    }
+
+    public Stream<Mesh> getMeshesAsStream() {
+        return Arrays.stream( getMeshes() );
     }
 
     public List<Instance> getInstances() {

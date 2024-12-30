@@ -1,11 +1,13 @@
 package org.sc.themis.scene;
 
 import org.jboss.logging.Logger;
+import org.sc.themis.scene.material.Material;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.tobject.TObject;
 
 import java.util.*;
+import java.util.stream.Stream;
 
 public class Scene extends TObject {
 
@@ -57,6 +59,10 @@ public class Scene extends TObject {
 
     public Set<Model> getModels() {
         return this.models;
+    }
+
+    public Stream<Model> getModels( Material material ) {
+        return getModels().stream().filter( m -> m.getMeshesAsStream().anyMatch( mesh -> material.getIdentifier().equals(mesh.getMaterialIdentifier()) ) );
     }
 
     public Projection getProjection() {

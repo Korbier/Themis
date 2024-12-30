@@ -2,6 +2,7 @@ package org.sc.themis.shared.assertion;
 
 import org.sc.themis.shared.exception.ThemisException;
 
+import java.util.Collection;
 import java.util.Objects;
 import java.util.function.BooleanSupplier;
 import java.util.function.Predicate;
@@ -15,6 +16,13 @@ public class Assertions {
             throw rejected;
         }
     }
+
+    public static <E extends ThemisException> void notEmpty( Collection<?> objToCheck, E rejected) throws E {
+        if ( objToCheck.isEmpty() ) {
+            throw rejected;
+        }
+    }
+
 
     public static <O, E extends ThemisException> void isValid(O objToCheck, Predicate<O> predicate, E rejected) throws E {
         if ( !predicate.test( objToCheck ) ) {
