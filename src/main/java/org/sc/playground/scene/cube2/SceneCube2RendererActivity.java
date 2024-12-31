@@ -67,7 +67,7 @@ public class SceneCube2RendererActivity extends BaseRendererActivity {
 
     @Override
     public void setup( Scene scene ) throws ThemisException {
-        this.baseColorMaterial.setupScene( scene );
+        this.baseColorMaterial.setup( scene );
     }
 
     @Override

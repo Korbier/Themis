@@ -106,7 +106,7 @@ public class BaseColorMaterial extends BaseMaterial {
             .attribute( VK_FORMAT_R32G32B32_SFLOAT, MemorySizeUtils.VEC3F ) //Tangent
             .attribute( VK_FORMAT_R32G32B32_SFLOAT, MemorySizeUtils.VEC3F )
         );
-        setPipelineDescriptor( new VkPipelineDescriptor(renderPass, 0, false, 1, false, 1, 1, 1) );
+        setPipelineDescriptor( new VkPipelineDescriptor(renderPass, 0, false, 1, true, 1, 1, 1) );
 
         /** Material content **/
         addVariantUniformBinding( 0, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, BUFFER_DESCRIPTOR );

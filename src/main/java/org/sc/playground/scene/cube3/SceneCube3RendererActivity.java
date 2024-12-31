@@ -70,7 +70,7 @@ public class SceneCube3RendererActivity extends BaseRendererActivity {
 
     @Override
     public void setup( Scene scene ) throws ThemisException {
-        this.material.setupScene( scene );
+        this.material.setup( scene );
     }
 
     @Override

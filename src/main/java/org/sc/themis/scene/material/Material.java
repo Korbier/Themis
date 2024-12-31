@@ -3,12 +3,12 @@ package org.sc.themis.scene.material;
 import org.lwjgl.system.MemoryStack;
 import org.sc.themis.renderer.Renderer;
 import org.sc.themis.renderer.base.VulkanObject;
-import org.sc.themis.renderer.base.frame.FrameKey;
 import org.sc.themis.renderer.base.frame.Frames;
 import org.sc.themis.renderer.device.VkDevice;
 import org.sc.themis.renderer.device.VkMemoryAllocator;
 import org.sc.themis.renderer.pipeline.*;
 import org.sc.themis.renderer.pipeline.descriptorset.*;
+import org.sc.themis.scene.Mesh;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.scene.exception.MaterialException;
 import org.sc.themis.shared.Configuration;
@@ -93,7 +93,7 @@ public abstract class Material extends VulkanObject {
 
     }
 
-    public void setupScene( Scene scene ) throws ThemisException {
+    public void setup(Scene scene ) throws ThemisException {
 
     }
 

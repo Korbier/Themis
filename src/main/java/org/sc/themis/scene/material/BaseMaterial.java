@@ -58,7 +58,7 @@ public abstract class BaseMaterial extends Material {
     }
 
     @Override
-    public void setupScene(Scene scene) throws ThemisException {
+    public void setup(Scene scene) throws ThemisException {
 
         List<Mesh> meshes = new ArrayList<>();
 
@@ -70,8 +70,10 @@ public abstract class BaseMaterial extends Material {
             }
         }
 
-        setupVariantDescriptorPool( meshes );
-        setupVariantDescriptorset( meshes );
+        if ( !meshes.isEmpty() ) {
+            setupVariantDescriptorPool(meshes);
+            setupVariantDescriptorset(meshes);
+        }
 
     }
 
@@ -88,8 +90,8 @@ public abstract class BaseMaterial extends Material {
             getFrames().remove( descKey );
         }
 
-        this.variantDescriptorPool.cleanup();
-        this.variantDescriptorSetLayout.cleanup();
+        if ( this.variantDescriptorPool != null ) this.variantDescriptorPool.cleanup();
+        if ( this.variantDescriptorSetLayout != null ) this.variantDescriptorSetLayout.cleanup();
 
     }
 
