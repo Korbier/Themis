@@ -23,6 +23,7 @@ import static org.lwjgl.vulkan.VK10.*;
 public abstract class BaseRendererActivity extends RendererActivity {
 
     private final static String FB_ATTACHMENT_COLOR = "framebuffer.attachment.color";
+    private final static String FB_ATTACHMENT_DEPTH = "framebuffer.attachment.depth";
 
     /*** Framed object ***/
     private final static FrameKey<VkFrameBuffer> FK_FRAMEBUFFER = FrameKey.of( VkFrameBuffer.class );
@@ -106,11 +107,16 @@ public abstract class BaseRendererActivity extends RendererActivity {
         this.frameBufferAttachments = new VkFrameBufferAttachments( getConfiguration(), renderer.getDevice(), this.renderer.getExtent() );
         this.frameBufferAttachments.setup();
         this.frameBufferAttachments.raw( FB_ATTACHMENT_COLOR, renderer.getImageFormat() );
+        this.frameBufferAttachments.depth( FB_ATTACHMENT_DEPTH, VK_FORMAT_D32_SFLOAT );
     }
 
     private void setupFramebuffers() throws ThemisException {
         getFrames().create( FK_FRAMEBUFFER, ( frame ) -> {
-            VkFrameBufferDescriptor descriptor = new VkFrameBufferDescriptor( this.renderer.getExtent(), this.renderPass.getHandle(), this.renderer.getImageView( frame ).getHandle() );
+            VkFrameBufferDescriptor descriptor = new VkFrameBufferDescriptor(
+                this.renderer.getExtent(), this.renderPass.getHandle(),
+                this.renderer.getImageView( frame ).getHandle(),
+                this.frameBufferAttachments.get( FB_ATTACHMENT_DEPTH ).getView().getHandle()
+            );
             return new VkFrameBuffer( getConfiguration(), this.renderer.getDevice(), descriptor );
         });
     }
@@ -118,10 +124,12 @@ public abstract class BaseRendererActivity extends RendererActivity {
     private VkRenderPassDescriptor createSubPassDescriptor(VkDevice device) {
 
         VkRenderPassLayout layout = new VkRenderPassLayout()
-                .add( 0, VK_FORMAT_B8G8R8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE );
+                .add( 0, VK_FORMAT_B8G8R8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE )
+                .add(1, this.frameBufferAttachments.get( FB_ATTACHMENT_DEPTH ).getFormat(), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE);
 
         VkSubpass subpass = new VkSubpass( device, VK_PIPELINE_BIND_POINT_GRAPHICS );
         subpass.color( 0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL );
+        subpass.depth( 1, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL );
 
         VkRenderPassDescriptor descriptor = new VkRenderPassDescriptor( layout );
         descriptor.subpass( subpass );

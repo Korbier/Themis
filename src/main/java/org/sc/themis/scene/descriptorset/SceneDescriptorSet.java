@@ -4,10 +4,7 @@ import org.joml.Matrix4f;
 import org.sc.themis.renderer.Renderer;
 import org.sc.themis.renderer.base.VulkanObject;
 import org.sc.themis.renderer.base.frame.FrameKey;
-import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorPool;
-import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorSet;
-import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorSetBinding;
-import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorSetLayout;
+import org.sc.themis.renderer.pipeline.descriptorset.*;
 import org.sc.themis.renderer.resource.buffer.VkBuffer;
 import org.sc.themis.renderer.resource.buffer.VkBufferDescriptor;
 import org.sc.themis.scene.Scene;
@@ -42,7 +39,7 @@ import static org.lwjgl.vulkan.VK10.VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
  *
  *
  */
-public class SceneDescriptorSet extends VulkanObject {
+public class SceneDescriptorSet extends VulkanObject implements VkDescriptorSetProvider {
 
     private final static FrameKey<VkBuffer>        FK_BUFFER = FrameKey.of( VkBuffer.class );
     private final static FrameKey<VkDescriptorSet> FK_DESCRIPTORSET = FrameKey.of( VkDescriptorSet.class );

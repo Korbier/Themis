@@ -74,4 +74,6 @@
   * ✅ Resource : Staging image
   * ✅ Scene : Mesh : Triangle
   * ✅ Scene : Model : Triangle
-  * ✅ Scene : Instance : Cube      
+  * ✅ Scene : Instance : Cube
+  * ✅ Scene : Material BaseColor : Cube2
+  * ✅ Scene : Material BaseTexture : Cube3

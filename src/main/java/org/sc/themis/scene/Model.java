@@ -3,28 +3,25 @@ package org.sc.themis.scene;
 import org.sc.themis.shared.exception.ThemisException;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 public class Model {
 
     private final String identifier;
     private final Mesh [] meshes;
-    private final Material [] materials;
     private final List<Instance> instances = new ArrayList<>();
 
-    Model( String identifier, Mesh [] meshes, Material [] materials ) {
+    Model( String identifier, Mesh [] meshes ) {
         this.identifier = identifier;
         this.meshes = meshes;
-        this.materials = materials;
     }
 
     public void cleanup() throws ThemisException {
         for ( Mesh mesh : getMeshes() ) {
             mesh.cleanup();
-        }
-        for ( Material material : getMaterials() ) {
-            material.cleanup();
         }
     }
 
@@ -48,8 +45,8 @@ public class Model {
         return this.meshes;
     }
 
-    public Material[] getMaterials() {
-        return this.materials;
+    public Stream<Mesh> getMeshesAsStream() {
+        return Arrays.stream( getMeshes() );
     }
 
     public List<Instance> getInstances() {

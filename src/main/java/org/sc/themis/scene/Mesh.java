@@ -2,8 +2,11 @@ package org.sc.themis.scene;
 
 import org.sc.themis.renderer.resource.buffer.VkBuffer;
 import org.sc.themis.renderer.resource.staging.VkStagingBuffer;
+import org.sc.themis.renderer.resource.staging.VkStagingImage;
+import org.sc.themis.renderer.resource.staging.VkStagingResource;
 import org.sc.themis.renderer.resource.staging.VkStagingResourceAllocator;
 import org.sc.themis.shared.exception.ThemisException;
+import org.sc.themis.shared.resource.Image;
 import org.sc.themis.shared.utils.MemorySizeUtils;
 
 import java.util.Objects;
@@ -12,10 +15,13 @@ import static org.lwjgl.vulkan.VK10.*;
 
 public class Mesh {
 
+    private final VkStagingResourceAllocator resourceAllocator;
     private final String identifier;
 
     private final VkStagingBuffer vertexBuffer;
     private final VkStagingBuffer indiceBuffer;
+    private MeshPropertiesMap properties = new MeshPropertiesMap();
+
     private String material;
 
     private boolean renderable = false;
@@ -23,6 +29,7 @@ public class Mesh {
     private int indiceCount = 0;
 
     Mesh( VkStagingResourceAllocator resourceAllocator, String identifier ) {
+        this.resourceAllocator = resourceAllocator;
         this.identifier = identifier;
         this.vertexBuffer = resourceAllocator.allocateBuffer( VK_BUFFER_USAGE_VERTEX_BUFFER_BIT );
         this.indiceBuffer = resourceAllocator.allocateBuffer( VK_BUFFER_USAGE_INDEX_BUFFER_BIT );
@@ -43,6 +50,28 @@ public class Mesh {
         this.vertexBuffer.load( aVertices.length * MemorySizeUtils.FLOAT, 0, aVertices  );
         this.indiceBuffer.load( indices.length * MemorySizeUtils.INT, 0, indices );
 
+    }
+
+    public void setProperties( MeshPropertiesMap properties ) {
+        this.properties = properties;
+    }
+
+    public void setProperty( MeshProperty<VkStagingImage> property, Image image ) throws ThemisException {
+        VkStagingImage vkImage = this.resourceAllocator.allocateImage(VK_FORMAT_R8G8B8A8_SRGB);
+        vkImage.load( image );
+        setProperty( property, vkImage );
+    }
+
+    public <T> void setProperty( MeshProperty<T> property, T value ) {
+        this.properties.put( property, value );
+    }
+
+    public <T> T getProperty( MeshProperty<T> property ) {
+        return (T) this.properties.get( property );
+    }
+
+    public MeshPropertiesMap getProperties() {
+        return this.properties;
     }
 
     public void cleanup() throws ThemisException {
@@ -86,6 +115,10 @@ public class Mesh {
         if ( !this.indiceBuffer.isRenderable() ) return false;
         if ( !this.vertexBuffer.isRenderable() ) return false;
 
+        for ( Object property : this.properties.values() ) {
+            if ( property instanceof VkStagingResource resource && !resource.isRenderable() ) return false;
+        }
+
         this.renderable = true;
 
         return true;
@@ -108,7 +141,7 @@ public class Mesh {
         return this.indiceBuffer.getBuffer();
     }
 
-    public String getMaterial() {
+    public String getMaterialIdentifier() {
         return this.material;
     }
 

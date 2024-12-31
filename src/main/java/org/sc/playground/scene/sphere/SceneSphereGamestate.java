@@ -36,7 +36,8 @@ public class SceneSphereGamestate implements Gamestate {
         return this.modelFactory.create(
             "my-sphere-model",
             renderer.getResourceAllocator(),
-            Path.of( "./src/main/resources/model/sphere/scene.gltf")
+            Path.of( "./src/main/resources/model/sphere/scene.gltf"),
+            "none"
         );
     }
 
