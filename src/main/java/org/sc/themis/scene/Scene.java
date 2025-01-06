@@ -61,6 +61,8 @@ public class Scene extends TObject {
             return;
         }
 
+        LOG.tracef( "Allocating %d materials", this.meshPropertiesMaps.size() );
+
         for ( MeshPropertiesMap properties : this.meshPropertiesMaps ) {
             materialAllocator.allocate( properties );
         }

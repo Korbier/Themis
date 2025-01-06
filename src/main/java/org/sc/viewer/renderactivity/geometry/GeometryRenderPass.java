@@ -18,8 +18,7 @@ import org.sc.themis.scene.Model;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.scene.material.BaseColorMaterial;
 import org.sc.themis.scene.material.BaseMaterial;
-import org.sc.themis.scene.material.Material;
-import org.sc.themis.scene.material.MaterialManager;
+import org.sc.themis.scene.material.MaterialAllocator;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.viewer.renderactivity.RenderPass;
@@ -42,7 +41,7 @@ public class GeometryRenderPass extends RenderPass {
     private VkRenderPass renderPass;
 
     /** Materials **/
-    private MaterialManager materialManager;
+    private MaterialAllocator materialAllocator;
 
     public GeometryRenderPass(Configuration configuration) {
         super(configuration);
@@ -55,18 +54,18 @@ public class GeometryRenderPass extends RenderPass {
         setupFramebuffers();
         setupCommand();
         setupFence();
-        setupMaterialManager();
+        setupMaterialAllocator();
     }
 
     @Override
     public void setup(Scene scene) throws ThemisException {
-        this.materialManager.setup( scene );
+        scene.allocateMaterial( this.materialAllocator );
     }
 
     @Override
     public void cleanup() throws ThemisException {
         getRenderer().waitIdle();
-        this.materialManager.cleanup();
+        this.materialAllocator.cleanup();
         this.renderPass.cleanup();
         this.frameBufferAttachments.cleanup();
     }
@@ -83,24 +82,22 @@ public class GeometryRenderPass extends RenderPass {
         command.viewportAndScissor( getExtent2D() );
 
         /*** bind pipeline, descriptorset, etc **/
-        for (BaseMaterial material : this.materialManager.getMaterials() ) {
+        for (BaseMaterial material : this.materialAllocator.materials() ) {
 
             command.bindPipeline( material.getPipeline() );
 
             for ( Model model : scene.getModels() ) {
                 if (model.isRenderable()) {
                     for ( Mesh mesh : model.getMeshes() ) {
-                        if ( mesh.getMaterialIdentifier().equals( material.getIdentifier() ) ) {
 
-                            command.bindDescriptorSets( new int[0], material.getDescriptorSet( mesh, frame ) );
-                            command.bindBuffers(mesh.getVerticesBuffer(), mesh.getIndicesBuffer());
+                        command.bindDescriptorSets( new int[0], this.materialAllocator.getDescriptorSets( material, mesh.getProperties(), frame ) );
+                        command.bindBuffers(mesh.getVerticesBuffer(), mesh.getIndicesBuffer());
 
-                            for (Instance instance : model.getInstances() ) {
-                                command.pushConstant( VK_SHADER_STAGE_VERTEX_BIT, 0, instance.matrix() );
-                                command.drawIndexed(mesh.getIndiceCount());
-                            }
-
+                        for (Instance instance : model.getInstances() ) {
+                            command.pushConstant( VK_SHADER_STAGE_VERTEX_BIT, 0, instance.matrix() );
+                            command.drawIndexed(mesh.getIndiceCount());
                         }
+
                     }
                 }
             }
@@ -180,8 +177,14 @@ public class GeometryRenderPass extends RenderPass {
 
     }
 
-    private void setupMaterialManager() throws ThemisException {
-        this.materialManager = new MaterialManager( getConfiguration(), getRenderer(), this.renderPass, getViewerActivity().getSceneDescriptorset(), getViewerActivity().getMousePickingDescriptorset() );
-        this.materialManager.setup();
+    private void setupMaterialAllocator() throws ThemisException {
+
+        this.materialAllocator = new MaterialAllocator();
+
+        BaseMaterial color = new BaseColorMaterial( getConfiguration(), getRenderer(), this.renderPass, getViewerActivity().getSceneDescriptorset() );
+        color.setup();
+
+        this.materialAllocator.add( color );
+
     }
 }
