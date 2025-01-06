@@ -12,6 +12,7 @@ import org.sc.themis.renderer.resource.buffer.VkBufferDescriptor;
 import org.sc.themis.renderer.resource.image.VkSampler;
 import org.sc.themis.scene.Mesh;
 import org.sc.themis.scene.MeshProperties;
+import org.sc.themis.scene.MeshPropertiesMap;
 import org.sc.themis.scene.descriptorset.SceneDescriptorSet;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.utils.MemorySizeUtils;
@@ -93,7 +94,7 @@ public class BaseColorMaterial extends BaseMaterial {
         super( configuration, renderer, MATERIAL_ID, sceneDescriptorSet );
 
         /** Descriptorset identifier **/
-        setVariantIdentifierFunction( mesh -> mesh.getProperty(MeshProperties.COLOR_BASE).toString() );
+        setVariantIdentifierFunction( props -> props.get(MeshProperties.COLOR_BASE).toString() );
 
         /** Pipeline **/
         addShader( VK_SHADER_STAGE_VERTEX_BIT, VkShaderSourceCompiler.compileShader(VERTEX_SOURCE, Shaderc.shaderc_glsl_vertex_shader));
@@ -106,7 +107,7 @@ public class BaseColorMaterial extends BaseMaterial {
             .attribute( VK_FORMAT_R32G32B32_SFLOAT, MemorySizeUtils.VEC3F ) //Tangent
             .attribute( VK_FORMAT_R32G32B32_SFLOAT, MemorySizeUtils.VEC3F )
         );
-        setPipelineDescriptor( new VkPipelineDescriptor(renderPass, 0, false, 1, false, 1, 1, 1) );
+        setPipelineDescriptor( new VkPipelineDescriptor(renderPass, 0, false, 1, true, 1, 1, 1) );
 
         /** Material content **/
         addVariantUniformBinding( 0, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, BUFFER_DESCRIPTOR );
@@ -114,12 +115,12 @@ public class BaseColorMaterial extends BaseMaterial {
     }
 
     @Override
-    public void set(int binding, VkBuffer buffer, Mesh mesh){
-        buffer.set( binding, mesh.getProperty(MeshProperties.COLOR_BASE) );
+    public void set(int binding, VkBuffer buffer, MeshPropertiesMap props){
+        buffer.set( binding, props.getProperty(MeshProperties.COLOR_BASE) );
     }
 
     @Override
-    public void set(int binding, VkDescriptorSet descriptorset, VkSampler sampler, Mesh mesh) {
+    public void set(int binding, VkDescriptorSet descriptorset, VkSampler sampler, MeshPropertiesMap props) {
 
     }
 

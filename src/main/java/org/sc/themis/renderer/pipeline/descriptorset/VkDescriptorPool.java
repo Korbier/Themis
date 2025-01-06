@@ -5,7 +5,9 @@ import org.lwjgl.vulkan.VkDescriptorPoolCreateInfo;
 import org.lwjgl.vulkan.VkDescriptorPoolSize;
 import org.sc.themis.renderer.base.VulkanObject;
 import org.sc.themis.renderer.device.VkDevice;
+import org.sc.themis.renderer.exception.FullDescriptorsetPoolException;
 import org.sc.themis.shared.Configuration;
+import org.sc.themis.shared.assertion.Assertions;
 import org.sc.themis.shared.exception.ThemisException;
 
 import java.nio.LongBuffer;
@@ -19,13 +21,14 @@ public class VkDescriptorPool extends VulkanObject {
 
     private final VkDevice device;
     private final VkDescriptorSetLayout [] layouts;
-    private final int ratio;
+    private final int size;
+    private int created = 0;
     private long handle;
 
-    public VkDescriptorPool(Configuration configuration, VkDevice device, int ratio, VkDescriptorSetLayout ... layouts ) {
+    public VkDescriptorPool(Configuration configuration, VkDevice device, int size, VkDescriptorSetLayout ... layouts ) {
         super(configuration);
         this.device = device;
-        this.ratio = ratio;
+        this.size = size;
         this.layouts = layouts;
     }
 
@@ -43,6 +46,19 @@ public class VkDescriptorPool extends VulkanObject {
     @Override
     public void cleanup() throws ThemisException {
         vkPipeline().destroyDescriptorPool( this.device.getHandle(), this.handle );
+    }
+
+    public VkDescriptorSet create() throws FullDescriptorsetPoolException {
+
+        Assertions.isFalse( this::isFull, new FullDescriptorsetPoolException() );
+
+        this.created++;
+        return new VkDescriptorSet( getConfiguration(), this.device, this, this.layouts );
+
+    }
+
+    public boolean isFull() {
+        return this.created >= this.size;
     }
 
     public long getHandle() {
@@ -81,9 +97,9 @@ public class VkDescriptorPool extends VulkanObject {
                 VkDescriptorSetBinding binding = layout.getBinding( i );
 
                 if ( counters.containsKey( binding.getDescriptorType() ) ) {
-                    counters.compute( binding.getDescriptorType() , (k, value) -> value + this.ratio);
+                    counters.compute( binding.getDescriptorType() , (k, value) -> value + this.size);
                 } else {
-                    counters.put( binding.getDescriptorType(), this.ratio );
+                    counters.put( binding.getDescriptorType(), this.size );
                 }
 
             }
