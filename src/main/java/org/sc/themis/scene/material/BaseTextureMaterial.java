@@ -12,6 +12,7 @@ import org.sc.themis.renderer.resource.image.VkSampler;
 import org.sc.themis.renderer.resource.image.VkSamplerDescriptor;
 import org.sc.themis.scene.Mesh;
 import org.sc.themis.scene.MeshProperties;
+import org.sc.themis.scene.MeshPropertiesMap;
 import org.sc.themis.scene.descriptorset.SceneDescriptorSet;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.utils.MemorySizeUtils;
@@ -113,12 +114,12 @@ public class BaseTextureMaterial extends BaseMaterial {
     }
 
     @Override
-    public void set(int binding, VkBuffer buffer, Mesh mesh){
+    public void set(int binding, VkBuffer buffer, MeshPropertiesMap mesh){
     }
 
     @Override
-    public void set(int binding, VkDescriptorSet descriptorset, VkSampler sampler, Mesh mesh) {
-        descriptorset.bind( binding, mesh.getProperty(MeshProperties.TEXTURE_BASE).getView(), sampler );
+    public void set(int binding, VkDescriptorSet descriptorset, VkSampler sampler, MeshPropertiesMap props) {
+        descriptorset.bind( binding, props.getProperty(MeshProperties.TEXTURE_BASE).getView(), sampler );
     }
 
 }

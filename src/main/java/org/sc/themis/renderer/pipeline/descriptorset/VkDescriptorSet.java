@@ -23,15 +23,15 @@ public class VkDescriptorSet extends VulkanObject {
 
     private final VkDevice device;
     private final VkDescriptorPool descriptorPool;
-    private final VkDescriptorSetLayout descriptorSetLayout;
+    private final VkDescriptorSetLayout [] descriptorSetLayouts;
 
     private long handle;
 
-    public VkDescriptorSet(Configuration configuration, VkDevice device, VkDescriptorPool descriptorPool, VkDescriptorSetLayout descriptorSetLayout ) {
+    public VkDescriptorSet(Configuration configuration, VkDevice device, VkDescriptorPool descriptorPool, VkDescriptorSetLayout ... descriptorSetLayouts ) {
         super(configuration);
         this.device = device;
         this.descriptorPool = descriptorPool;
-        this.descriptorSetLayout = descriptorSetLayout;
+        this.descriptorSetLayouts = descriptorSetLayouts;
     }
 
     @Override
@@ -60,8 +60,12 @@ public class VkDescriptorSet extends VulkanObject {
 
     private VkDescriptorSetAllocateInfo createDescriptorSetAllocateInfo(MemoryStack stack) {
 
-        LongBuffer pDescriptorSetLayout = stack.mallocLong(1);
-        pDescriptorSetLayout.put( 0, this.descriptorSetLayout.getHandle());
+        LongBuffer pDescriptorSetLayout = stack.mallocLong(this.descriptorSetLayouts.length);
+        int i = 0;
+
+        for ( VkDescriptorSetLayout layout : this.descriptorSetLayouts ) {
+            pDescriptorSetLayout.put(i++, layout.getHandle());
+        }
 
         return VkDescriptorSetAllocateInfo.calloc(stack)
                 .sType(VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO)
@@ -79,15 +83,19 @@ public class VkDescriptorSet extends VulkanObject {
                     .offset(0)
                     .range( buffer.isAligned() ? buffer.getAlignedSize() : buffer.getRequestedSize());
 
-            VkWriteDescriptorSet.Buffer descrBuffer = VkWriteDescriptorSet.calloc(1, stack);
+            VkWriteDescriptorSet.Buffer descrBuffer = VkWriteDescriptorSet.calloc(this.descriptorSetLayouts.length, stack);
 
-            descrBuffer.get(0)
-                    .sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET)
-                    .dstSet( getHandle() )
-                    .dstBinding( this.descriptorSetLayout.getBinding( binding ).getBinding() )
-                    .descriptorType( this.descriptorSetLayout.getBinding( binding ).getDescriptorType() )
-                    .descriptorCount(1)
-                    .pBufferInfo(bufferInfo);
+            int i = 0;
+
+            for ( VkDescriptorSetLayout layout : this.descriptorSetLayouts ) {
+                descrBuffer.get(0)
+                        .sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET)
+                        .dstSet( getHandle() )
+                        .dstBinding( layout.getBinding( binding ).getBinding() )
+                        .descriptorType( layout.getBinding( binding ).getDescriptorType() )
+                        .descriptorCount(1)
+                        .pBufferInfo(bufferInfo);
+            }
 
             vkUpdateDescriptorSets(this.device.getHandle(), descrBuffer, null);
 

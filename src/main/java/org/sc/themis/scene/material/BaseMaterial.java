@@ -9,9 +9,7 @@ import org.sc.themis.renderer.resource.buffer.VkBuffer;
 import org.sc.themis.renderer.resource.buffer.VkBufferDescriptor;
 import org.sc.themis.renderer.resource.image.VkSampler;
 import org.sc.themis.renderer.resource.image.VkSamplerDescriptor;
-import org.sc.themis.scene.Mesh;
-import org.sc.themis.scene.Model;
-import org.sc.themis.scene.Scene;
+import org.sc.themis.scene.*;
 import org.sc.themis.scene.exception.MaterialException;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.assertion.Assertions;
@@ -28,9 +26,11 @@ import static org.lwjgl.vulkan.VK10.VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 
 public abstract class BaseMaterial extends Material {
 
+    public final static int DESCRIPTORPOOL_SIZE = 10;
+
     private final VkDescriptorSetProvider [] descriptorSetProviders;
 
-    private Function<Mesh,String> variantIdentifierFunction = Mesh::getIdentifier;
+    private Function<MeshPropertiesMap,String> variantIdentifierFunction = MeshPropertiesMap::toString;
 
     /** Variant inputs **/
     private final Map<Integer, VkDescriptorSetBinding> variantBindings = new HashMap<>();
@@ -40,6 +40,7 @@ public abstract class BaseMaterial extends Material {
     /** Variant descriptorsets data **/
     private VkDescriptorSetLayout variantDescriptorSetLayout;
     private VkDescriptorPool variantDescriptorPool;
+    private final List<VkDescriptorPool> fullVariantDescriptorPools = new ArrayList<>();
     private final Map<String, FrameKey<VkDescriptorSet>> variantDescriptorsets = new HashMap<>();
 
     /** Variant backends **/
@@ -54,27 +55,8 @@ public abstract class BaseMaterial extends Material {
     @Override
     public void setup() throws ThemisException {
         setupVariantDescriptorLayout();
+        setupVariantDescriptorPool();
         super.setup();
-    }
-
-    @Override
-    public void setup(Scene scene) throws ThemisException {
-
-        List<Mesh> meshes = new ArrayList<>();
-
-        for ( Model model : scene.getModels() ) {
-            for (Mesh mesh : model.getMeshes() ) {
-                if ( getIdentifier().equals( mesh.getMaterialIdentifier() ) ) {
-                    meshes.add( mesh );
-                }
-            }
-        }
-
-        if ( !meshes.isEmpty() ) {
-            setupVariantDescriptorPool(meshes);
-            setupVariantDescriptorset(meshes);
-        }
-
     }
 
     @Override
@@ -90,16 +72,38 @@ public abstract class BaseMaterial extends Material {
             getFrames().remove( descKey );
         }
 
-        if ( this.variantDescriptorPool != null ) this.variantDescriptorPool.cleanup();
-        if ( this.variantDescriptorSetLayout != null ) this.variantDescriptorSetLayout.cleanup();
+        for ( VkDescriptorPool pool : this.fullVariantDescriptorPools ) {
+            pool.cleanup();
+        }
+
+        this.variantDescriptorPool.cleanup();
+        this.variantDescriptorSetLayout.cleanup();
 
     }
 
-    public abstract void set( int binding, VkBuffer buffer, Mesh mesh );
-    public abstract void set( int binding, VkDescriptorSet descriptorset, VkSampler sampler, Mesh mesh );
+    public abstract void set( int binding, VkBuffer buffer, MeshPropertiesMap meshProperties );
+    public abstract void set( int binding, VkDescriptorSet descriptorset, VkSampler sampler, MeshPropertiesMap meshProperties );
 
-    public String getVariantIdentifier( Mesh mesh ) {
-        return this.variantIdentifierFunction.apply( mesh );
+    public String add( MeshPropertiesMap props ) throws ThemisException {
+
+        String variantIdentifier = getVariantIdentifier( props );
+
+        if ( !this.variantDescriptorsets.containsKey( variantIdentifier ) ) {
+            FrameKey<VkDescriptorSet> key = createVariantDescriptorset( variantIdentifier );
+            for ( VkDescriptorSetBinding binding : this.variantBindings.values() ) {
+                switch( binding.getDescriptorType() ) {
+                    case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER -> setupVariantUniform( variantIdentifier, key, binding.getBinding(), props );
+                    case VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER -> setupVariantCombinedImageSampler( variantIdentifier, key, binding.getBinding(), props );
+                }
+            }
+        }
+
+        return variantIdentifier;
+
+    }
+
+    public String getVariantIdentifier( MeshPropertiesMap meshProperties ) {
+        return this.variantIdentifierFunction.apply( meshProperties );
     }
 
     public VkDescriptorSetLayout [] getDescriptorSetLayout() {
@@ -117,14 +121,14 @@ public abstract class BaseMaterial extends Material {
 
     }
 
-    public VkDescriptorSet [] getDescriptorSet( Mesh mesh, int frame ) {
+    public VkDescriptorSet [] getDescriptorSet( MeshPropertiesMap meshProperties, int frame ) {
 
         int count = this.descriptorSetProviders.length;
         //if ( this.mainDescriptorSetLayout != null ) count++;
         if ( this.variantDescriptorSetLayout != null ) count++;
 
         VkDescriptorSet [] descriptorsets = new VkDescriptorSet[count];
-        if ( this.variantDescriptorSetLayout != null ) descriptorsets[--count] = getFrames().get( frame, this.variantDescriptorsets.get( getVariantIdentifier( mesh ) ) );
+        if ( this.variantDescriptorSetLayout != null ) descriptorsets[--count] = getFrames().get( frame, this.variantDescriptorsets.get( getVariantIdentifier( meshProperties ) ) );
         //if ( this.mainDescriptorSetLayout != null ) descriptorsets[--count] = getFrames().get( frame, this.fkMainDescriptorSet );
         for ( int i = count - 1; i >= 0; i-- ) descriptorsets[i] = this.descriptorSetProviders[i].getDescriptorSet( frame );
 
@@ -132,7 +136,7 @@ public abstract class BaseMaterial extends Material {
 
     }
 
-    protected void setVariantIdentifierFunction( Function<Mesh,String> variantIdentifierFunction ) {
+    protected void setVariantIdentifierFunction( Function<MeshPropertiesMap,String> variantIdentifierFunction ) {
         this.variantIdentifierFunction = variantIdentifierFunction;
     }
 
@@ -154,36 +158,16 @@ public abstract class BaseMaterial extends Material {
         }
     }
 
-    private void setupVariantDescriptorPool( List<Mesh> meshes ) throws ThemisException {
+    private void setupVariantDescriptorPool() throws ThemisException {
         if ( this.variantDescriptorSetLayout != null ) {
-            this.variantDescriptorPool = new VkDescriptorPool(getConfiguration(), getDevice(), getFrames().getSize() * meshes.size(), this.variantDescriptorSetLayout );
+            this.variantDescriptorPool = new VkDescriptorPool(getConfiguration(), getDevice(), getFrames().getSize() * BaseMaterial.DESCRIPTORPOOL_SIZE, this.variantDescriptorSetLayout );
             this.variantDescriptorPool.setup();
         }
     }
 
-    private void setupVariantDescriptorset(List<Mesh> meshes) throws ThemisException {
-
-        for ( Mesh mesh : meshes ) {
-
-            String variantIdentifier = getVariantIdentifier( mesh );
-
-            if ( !this.variantDescriptorsets.containsKey( variantIdentifier ) ) {
-                FrameKey<VkDescriptorSet> key = createVariantDescriptorset( variantIdentifier );
-                for ( VkDescriptorSetBinding binding : this.variantBindings.values() ) {
-                    switch( binding.getDescriptorType() ) {
-                        case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER -> setupVariantUniform( variantIdentifier, key, binding.getBinding(), mesh );
-                        case VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER -> setupVariantCombinedImageSampler( variantIdentifier, key, binding.getBinding(), mesh );
-                    }
-                }
-            }
-
-        }
-
-    }
-
     /** UNIFORM **/
 
-    private void setupVariantUniform(String variantIdentifier, FrameKey<VkDescriptorSet> key, int binding, Mesh mesh ) throws ThemisException {
+    private void setupVariantUniform(String variantIdentifier, FrameKey<VkDescriptorSet> key, int binding, MeshPropertiesMap mesh ) throws ThemisException {
 
         Assertions.notNull( this.variantBufferDescriptors.get( binding ), new MaterialException("No buffer descriptor set for binding " + binding + " of type VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER" ) );
 
@@ -209,7 +193,7 @@ public abstract class BaseMaterial extends Material {
 
     }
 
-    private void variantBufferSet( String variantIdentifier, int binding, Mesh mesh ) throws ThemisException {
+    private void variantBufferSet( String variantIdentifier, int binding, MeshPropertiesMap mesh ) throws ThemisException {
 
         VariantBuffers     buffers   = this.variantBuffers.get( variantIdentifier );
         FrameKey<VkBuffer> bufferKey = buffers.getBufferKey( binding );
@@ -220,12 +204,12 @@ public abstract class BaseMaterial extends Material {
 
     /** COMBINED IMAGE SAMPLER **/
 
-    private void setupVariantCombinedImageSampler(String variantIdentifier, FrameKey<VkDescriptorSet> key, int binding, Mesh mesh) throws ThemisException {
+    private void setupVariantCombinedImageSampler(String variantIdentifier, FrameKey<VkDescriptorSet> key, int binding, MeshPropertiesMap meshProperties) throws ThemisException {
 
         Assertions.notNull( this.variantSamplerDescriptors.get( binding ), new MaterialException("No sampler descriptor set for binding " + binding + " of type VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER" ) );
 
         createVariantBindingSampler(variantIdentifier, key, binding, this.variantSamplerDescriptors.get( binding ) );
-        variantImageSet( variantIdentifier, key, binding, mesh );
+        variantImageSet( variantIdentifier, key, binding, meshProperties );
 
     }
 
@@ -246,22 +230,38 @@ public abstract class BaseMaterial extends Material {
 
     }
 
-    private void variantImageSet( String variantIdentifier, FrameKey<VkDescriptorSet> key, int binding, Mesh mesh ) throws ThemisException {
+    private void variantImageSet( String variantIdentifier, FrameKey<VkDescriptorSet> key, int binding, MeshPropertiesMap meshProperties ) throws ThemisException {
 
         VariantSamplers     samplers   = this.variantSamplers.get( variantIdentifier );
         FrameKey<VkSampler> samplerKey = samplers.getSamplerKey( binding );
 
         //Bind du buffer au descriptorset
-        getFrames().update( key, (frame, descriptorset) -> this.set( binding, descriptorset, getFrames().get(frame, samplerKey), mesh ) );
+        getFrames().update( key, (frame, descriptorset) -> this.set( binding, descriptorset, getFrames().get(frame, samplerKey), meshProperties ) );
 
     }
 
 
     private FrameKey<VkDescriptorSet> createVariantDescriptorset( String variantIdentifier ) throws ThemisException {
-        FrameKey<VkDescriptorSet> key = FrameKey.of(VkDescriptorSet.class);
+
+        VkDescriptorPool          pool = selectDescriptorPool();
+        FrameKey<VkDescriptorSet> key  = FrameKey.of(VkDescriptorSet.class);
+
         this.variantDescriptorsets.put( variantIdentifier, key );
-        getFrames().create( key, () -> new VkDescriptorSet( getConfiguration(), getDevice(), this.variantDescriptorPool, this.variantDescriptorSetLayout ) );
+        getFrames().create( key, pool::create );
+
         return key;
+
+    }
+
+    private VkDescriptorPool selectDescriptorPool() throws ThemisException {
+
+        if ( this.variantDescriptorPool.isFull() ) {
+            this.fullVariantDescriptorPools.add( this.variantDescriptorPool );
+            setupVariantDescriptorPool();
+        }
+
+        return this.variantDescriptorPool;
+
     }
 
     private static class VariantBuffers {

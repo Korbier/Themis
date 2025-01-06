@@ -8,8 +8,6 @@ import org.sc.themis.renderer.device.VkDevice;
 import org.sc.themis.renderer.device.VkMemoryAllocator;
 import org.sc.themis.renderer.pipeline.*;
 import org.sc.themis.renderer.pipeline.descriptorset.*;
-import org.sc.themis.scene.Mesh;
-import org.sc.themis.scene.Scene;
 import org.sc.themis.scene.exception.MaterialException;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.assertion.Assertions;
@@ -90,10 +88,6 @@ public abstract class Material extends VulkanObject {
         this.pipeline.cleanup();
         this.layout.cleanup();
         this.program.cleanup();
-
-    }
-
-    public void setup(Scene scene ) throws ThemisException {
 
     }
 

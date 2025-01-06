@@ -2,6 +2,7 @@ package org.sc.themis.scene;
 
 import org.jboss.logging.Logger;
 import org.sc.themis.scene.material.Material;
+import org.sc.themis.scene.material.MaterialAllocator;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.tobject.TObject;
@@ -20,6 +21,7 @@ public class Scene extends TObject {
     /** Geometry **/
     private final List<Instance> instances = new ArrayList<>();
     private final Set<Model> models = new HashSet<>();
+    private final List<MeshPropertiesMap> meshPropertiesMaps = new ArrayList<>();
 
     /** Controller **/
     private final Set<Controller> controllers = new HashSet<>();
@@ -53,8 +55,28 @@ public class Scene extends TObject {
         Collections.addAll(this.controllers, controllers);
     }
 
+    public void allocateMaterial( MaterialAllocator materialAllocator ) throws ThemisException {
+
+        if ( this.meshPropertiesMaps.isEmpty() ) {
+            return;
+        }
+
+        for ( MeshPropertiesMap properties : this.meshPropertiesMaps ) {
+            materialAllocator.allocate( properties );
+        }
+
+        this.meshPropertiesMaps.clear();
+
+    }
+
     private void add(Model model) {
+
         this.models.add( model );
+
+        for ( Mesh mesh : model.getMeshes() ) {
+            this.meshPropertiesMaps.add( mesh.getProperties() );
+        }
+
     }
 
     public Set<Model> getModels() {

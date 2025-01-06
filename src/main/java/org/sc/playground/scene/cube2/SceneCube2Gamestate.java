@@ -28,7 +28,7 @@ public class SceneCube2Gamestate implements Gamestate {
         this.model2 = createCubeModel("cube2", renderer, new Vector4f(0.0f, 1.0f, 0.5f, 1.0f ));
         scene.add( this.model2.create().position(  4.0f, 0.0f, 0.0f ).scale( 0.5f) );
 
-        this.model3 = createCubeModel("cube3", renderer, new Vector4f(0.0f, 1.0f, 0.5f, 1.0f ));
+        this.model3 = createCubeModel("cube3", renderer, new Vector4f(0.20f, 0.4f, 0.5f, 1.0f ));
         scene.add( this.model3.create().position( -4.0f, 0.0f, 0.0f ).rotate( 45.0f, 1.0f, 0.0f, 0.0f ) );
 
     }
