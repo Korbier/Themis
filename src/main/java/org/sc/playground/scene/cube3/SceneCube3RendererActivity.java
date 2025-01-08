@@ -9,7 +9,7 @@ import org.sc.themis.scene.Mesh;
 import org.sc.themis.scene.Model;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.scene.descriptorset.SceneDescriptorSet;
-import org.sc.themis.scene.material.BaseTextureMaterial;
+import org.sc.themis.scene.material.TextureMaterial;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 
@@ -18,7 +18,7 @@ import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_VERTEX_BIT;
 public class SceneCube3RendererActivity extends BaseRendererActivity {
 
     private SceneDescriptorSet sceneDescriptorSet;
-    private BaseTextureMaterial material;
+    private TextureMaterial material;
 
     public SceneCube3RendererActivity(Configuration configuration) {
         super(configuration);
@@ -46,7 +46,7 @@ public class SceneCube3RendererActivity extends BaseRendererActivity {
 
                     command.bindDescriptorSets(
                         new int[0],
-                        this.material.getDescriptorSet( mesh.getProperties(), frame )
+                        this.material.getDescriptorSets( frame, mesh.getProperties() )
                     );
 
                     command.bindBuffers(mesh.getVerticesBuffer(), mesh.getIndicesBuffer());
@@ -93,7 +93,7 @@ public class SceneCube3RendererActivity extends BaseRendererActivity {
         this.sceneDescriptorSet = new SceneDescriptorSet( getConfiguration(), this.renderer);
         this.sceneDescriptorSet.setup();
 
-        this.material = new BaseTextureMaterial( getConfiguration(), this.renderer, this.renderPass, this.sceneDescriptorSet );
+        this.material = new TextureMaterial( getConfiguration(), this.renderer, this.renderPass, this.sceneDescriptorSet );
         this.material.setup();
 
     }
