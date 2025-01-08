@@ -1,64 +1,144 @@
 package org.sc.themis.scene.material;
 
-import org.lwjgl.system.MemoryStack;
 import org.sc.themis.renderer.Renderer;
 import org.sc.themis.renderer.base.VulkanObject;
-import org.sc.themis.renderer.base.frame.FrameKey;
 import org.sc.themis.renderer.base.frame.Frames;
 import org.sc.themis.renderer.device.VkDevice;
 import org.sc.themis.renderer.device.VkMemoryAllocator;
 import org.sc.themis.renderer.pipeline.*;
 import org.sc.themis.renderer.pipeline.descriptorset.*;
-import org.sc.themis.scene.Scene;
-import org.sc.themis.scene.exception.MaterialException;
+import org.sc.themis.renderer.resource.buffer.VkBuffer;
+import org.sc.themis.renderer.resource.buffer.VkBufferDescriptor;
+import org.sc.themis.renderer.resource.image.VkSampler;
+import org.sc.themis.renderer.resource.image.VkSamplerDescriptor;
 import org.sc.themis.shared.Configuration;
-import org.sc.themis.shared.assertion.Assertions;
 import org.sc.themis.shared.exception.ThemisException;
 
 import java.util.*;
+import java.util.function.Function;
 
 public abstract class Material extends VulkanObject {
+
+    private static final int DESCRIPTORPOOL_SIZE = 10;
+
+    @FunctionalInterface
+    public interface UniformSetter {
+        void set(int binding, VkBuffer buffer, MaterialProperties properties );
+    }
+
+    @FunctionalInterface
+    public interface CombinedImageSamplerSetter {
+        void set(int binding, VkDescriptorSet descriptorset, VkSampler sampler, MaterialProperties meshProperties );
+    }
 
     private final Renderer renderer;
     private final String identifier;
 
-    private final List<VkShaderProgramStage> shaderProgramStages = new ArrayList<>();
-    private final List<VkPushConstantRange>  pushConstantRanges = new ArrayList<>();
-    private VkVertexInputStateDescriptor vertexInputStateDescriptor = null;
-    private VkPipelineDescriptor pipelineDescriptor = null;
+    /** Variant identifier function **/
+    private Function<MaterialProperties,String> variantIdentifierFunction = MaterialProperties::toString;
 
-    private VkShaderProgram program;
-    private VkPipelineLayout layout;
-    private VkPipeline pipeline;
+    /** Pipeline **/
+    private final MaterialPipeline pipeline;
+
+    /** Variants **/
+    private final Map<String, MaterialVariant> variants = new HashMap<>();
+    private final MaterialVariantDescriptor variantsDescriptor = new MaterialVariantDescriptor();
+    private VkDescriptorSetLayout variantsDescriptorSetLayout;
+    private VkDescriptorPool variantsDescriptorPool;
+    private final List<VkDescriptorPool> oldVariantsDescriptorPools = new ArrayList<>();
+    private UniformSetter variantsUniformSetter;
+    private CombinedImageSamplerSetter variantsCombinedImageSamplerSetter;
+
+    /** Others Descriptorset and descriptorsetLayout **/
+    private VkDescriptorSetProvider [] descriptorsetProviders;
 
     public Material( Configuration configuration, Renderer renderer, String identifier ) {
         super( configuration );
         this.renderer = renderer;
         this.identifier = identifier;
+        this.pipeline = new MaterialPipeline( configuration, renderer, this );
     }
 
-    public abstract VkDescriptorSetLayout [] getDescriptorSetLayout();
-
-    /**
-     * Material building methods
-     **/
-
-    /** Pipeline **/
-    protected void addShader( int shaderStage, byte [] source ) {
-        this.shaderProgramStages.add( new VkShaderProgramStage( shaderStage, source ) );
+    @Override
+    public void setup() throws ThemisException {
+        this.setupVariantsDescriptorsetLayout();
+        this.setupVariantsDescriptorPool();
+        this.pipeline.setup( collectDescriptorsetLayouts() );
     }
 
-    protected void addConstantRange( int stage, int offset, int size ) {
-        this.pushConstantRanges.add( new VkPushConstantRange( stage, offset, size ) );
+    @Override
+    public void cleanup() throws ThemisException {
+        this.pipeline.cleanup();
+        for ( VkDescriptorPool pool : this.oldVariantsDescriptorPools ) pool.cleanup();
+        for ( MaterialVariant variant : this.variants.values() ) variant.cleanup();
+        this.variantsDescriptorPool.cleanup();
+        this.variantsDescriptorSetLayout.cleanup();
     }
 
-    protected void setVertexInputDescriptor( VkVertexInputStateDescriptor descriptor ) {
-        this.vertexInputStateDescriptor = descriptor;
+    /** Material usage methods - create and store variant for provided properties **/
+    public String add( MaterialProperties properties ) throws ThemisException {
+
+        String variantIdentifier = getVariantIdentifier( properties );
+
+        if ( this.variants.containsKey( variantIdentifier ) ) {
+            return variantIdentifier;
+        }
+
+        MaterialVariant variant = new MaterialVariant( getConfiguration(), this, variantIdentifier );
+        variant.setup();
+        variant.setProperties( properties );
+
+        this.variants.put( variantIdentifier, variant );
+
+        return variantIdentifier;
+
     }
 
-    protected void setPipelineDescriptor( VkPipelineDescriptor descriptor) {
-        this.pipelineDescriptor = descriptor;
+    /** Material building methods - Variant Identifier function **/
+    protected void setVariantsIdentifierFunction( Function<MaterialProperties,String> variantIdentifierFunction ) {
+        this.variantIdentifierFunction = variantIdentifierFunction;
     }
+
+    /** Material building methods - Pipeline **/
+    public void addShader( int shaderStage, byte [] source ) {
+        this.pipeline.addShader( shaderStage, source );
+    }
+
+    public void addConstantRange( int stage, int offset, int size ) {
+        this.pipeline.addConstantRange( stage, offset, size );
+    }
+
+    public void setVertexInputDescriptor( VkVertexInputStateDescriptor descriptor ) {
+        this.pipeline.setVertexInputDescriptor( descriptor );
+    }
+
+    public void setPipelineDescriptor( VkPipelineDescriptor descriptor) {
+        this.pipeline.setPipelineDescriptor( descriptor );
+    }
+
+    /** Material building methods - Variant **/
+    protected void addVariantsUniformBinding( int binding, int shaderStage, VkBufferDescriptor bufferDescriptor ) {
+        this.variantsDescriptor.addUniformBinding( binding, shaderStage, bufferDescriptor );
+    }
+
+    protected void addVariantsCombinedImageSamplerBinding( int binding, int shaderStage, VkSamplerDescriptor samplerDescriptor ) {
+        this.variantsDescriptor.addCombinedImageSamplerBinding( binding, shaderStage, samplerDescriptor );
+    }
+
+    protected void setVariantsUniformSetter( UniformSetter uniformSetter ) {
+        this.variantsUniformSetter = uniformSetter;
+    }
+
+    protected void setVariantsCombinedImageSamplerSetter( CombinedImageSamplerSetter combinedImageSamplerSetter ) {
+        this.variantsCombinedImageSamplerSetter = combinedImageSamplerSetter;
+    }
+
+    /** Others Descriptorsets and descriptorsetLayouts **/
+    public void setDescriptorsetProviders( VkDescriptorSetProvider ... providers ) {
+        this.descriptorsetProviders = providers;
+    }
+
+    /** Getters **/
 
     public String getIdentifier() {
         return this.identifier;
@@ -76,156 +156,49 @@ public abstract class Material extends VulkanObject {
         return this.renderer.getMemoryAllocator();
     }
 
-    @Override
-    public void setup() throws ThemisException {
-
-        setupShaderProgram();
-        setupPipelineLayout();
-        setupPipeline();
-    }
-
-    @Override
-    public void cleanup() throws ThemisException {
-
-        this.pipeline.cleanup();
-        this.layout.cleanup();
-        this.program.cleanup();
-
-    }
-
-    public void setupScene( Scene scene ) throws ThemisException {
-
-    }
-
     public VkPipeline getPipeline() {
-        return this.pipeline;
-    }
-/**
-    public VkDescriptorSetLayout [] getDescriptorSetLayout() {
-
-        int count = this.descriptorSetProviders.length;
-        if ( this.mainDescriptorSetLayout != null ) count++;
-        if ( this.descriptorSetLayout != null ) count++;
-
-        VkDescriptorSetLayout [] layouts = new VkDescriptorSetLayout[count];
-        if ( this.descriptorSetLayout != null ) layouts[--count] = this.descriptorSetLayout;
-        if ( this.mainDescriptorSetLayout != null ) layouts[--count] = this.mainDescriptorSetLayout;
-        for ( int i = count - 1; i >= 0; i-- ) layouts[i] = this.descriptorSetProviders[i].getDescriptorSetLayout();
-
-        return layouts;
-
+        return this.pipeline.getPipeline();
     }
 
-    public VkDescriptorSet [] getDescriptorSet( Mesh mesh, int frame ) {
+    public UniformSetter getVariantsUniformSetter() {
+        return this.variantsUniformSetter;
+    }
 
-        int count = this.descriptorSetProviders.length;
-        if ( this.mainDescriptorSetLayout != null ) count++;
-        if ( this.descriptorSetLayout != null ) count++;
+    public CombinedImageSamplerSetter getVariantsCombinedImageSamplerSetter() {
+        return this.variantsCombinedImageSamplerSetter;
+    }
+
+    public VkDescriptorPool getVariantsDescriptorPool() throws ThemisException {
+
+        if ( this.variantsDescriptorPool.isFull() ) {
+            this.oldVariantsDescriptorPools.add( this.variantsDescriptorPool );
+            setupVariantsDescriptorPool();
+        }
+
+        return this.variantsDescriptorPool;
+
+    }
+
+    public MaterialVariantDescriptor getVariantsDescriptor() {
+        return this.variantsDescriptor;
+    }
+
+    public VkDescriptorSet [] getDescriptorSets( int frame, MaterialProperties properties ) {
+
+        String variantIdentifier = getVariantIdentifier( properties );
+
+        int count = this.descriptorsetProviders.length;
+        if ( this.variantsDescriptorSetLayout != null ) count++;
 
         VkDescriptorSet [] descriptorsets = new VkDescriptorSet[count];
-        if ( this.descriptorSetLayout != null ) descriptorsets[--count] = getFrames().get( frame, this.fkDescriptorsets.get( getMaterialInstanceIdentifier( mesh ) ) );
-        if ( this.mainDescriptorSetLayout != null ) descriptorsets[--count] = getFrames().get( frame, this.fkMainDescriptorSet );
-        for ( int i = count - 1; i >= 0; i-- ) descriptorsets[i] = this.descriptorSetProviders[i].getDescriptorSet( frame );
+        if ( this.variantsDescriptorSetLayout != null ) descriptorsets[--count] = this.variants.get( variantIdentifier ).getDescriptorSet( frame );
+        //if ( this.mainDescriptorSetLayout != null ) descriptorsets[--count] = getFrames().get( frame, this.fkMainDescriptorSet );
+        for ( int i = count - 1; i >= 0; i-- ) descriptorsets[i] = this.descriptorsetProviders[i].getDescriptorSet( frame );
 
         return descriptorsets;
 
     }
 
-    public int [] getDynamicOffset( Mesh mesh, int frame ) {
-
-        for ( int i=0; i<this.wDynamicOffset.length; i++ ) {
-            this.wDynamicOffset[i] = getBackBufferDynamicOffset( getMaterialInstanceIdentifier( mesh ), frame, i );
-        }
-
-        return this.wDynamicOffset;
-
-    }
-
-    private void setupMainDescriptorLayout() throws ThemisException {
-
-        VkDescriptorSetBinding [] bindings = getMainDescriptorSetBindings();
-
-        if ( bindings.length > 0 ) {
-
-            this.mainDescriptorSetLayout = new VkDescriptorSetLayout( getConfiguration(), getDevice(),bindings );
-            this.mainDescriptorSetLayout.setup();
-
-            int countDynamics = 0;
-
-            for ( VkDescriptorSetBinding b : bindings ) {
-                if ( b.getDescriptorType() == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC ) countDynamics++;
-            }
-
-            this.wDynamicOffset = new int[countDynamics];
-
-        }
-
-    }
-
-    private void setupDescriptorPool( List<Mesh> meshes ) throws ThemisException {
-
-        if ( this.mainDescriptorSetLayout != null ) {
-            this.mainDescriptorPool = new VkDescriptorPool(getConfiguration(), getDevice(), getFrames().getSize(), this.mainDescriptorSetLayout);
-            this.mainDescriptorPool.setup();
-        }
-
-    }
-
-    private void setupDescriptorSets( List<Mesh> meshes ) throws ThemisException {
-
-        if ( this.mainDescriptorSetLayout != null ) {
-            getFrames().create(this.fkMainDescriptorSet, () -> new VkDescriptorSet(getConfiguration(), getDevice(), this.mainDescriptorPool, this.mainDescriptorSetLayout));
-            setupMainMaterialLayout(this.fkMainDescriptorSet, meshes.toArray(new Mesh[0]));
-        }
-
-    }
-**/
-    private void setupPipeline() throws ThemisException {
-
-        Assertions.notNull( this.pipelineDescriptor, new MaterialException("No Pipeline Descriptor defined (call method setPipelineDescriptor)") );
-        Assertions.notNull( this.vertexInputStateDescriptor, new MaterialException("No Vertex InputState defined (call method setVertexInputDescriptor)") );
-
-        try (MemoryStack stack = MemoryStack.stackPush() ) {
-
-            VkVertexInputState inputState = new VkVertexInputState(this.vertexInputStateDescriptor);
-            inputState.setup( stack );
-
-            this.pipeline = new VkPipeline(
-                    getConfiguration(),
-                    this.renderer.getDevice(),
-                    this.pipelineDescriptor,
-                    this.program,
-                    this.layout,
-                    inputState
-            );
-
-            this.pipeline.setup();
-
-        }
-
-    }
-
-    private void setupShaderProgram() throws ThemisException {
-
-        Assertions.notEmpty( this.shaderProgramStages, new MaterialException("No Shader Program Stage provided (call method addShader)") );
-
-        this.program = new VkShaderProgram(getConfiguration(), renderer.getDevice(), this.shaderProgramStages.toArray(new VkShaderProgramStage[0] ) );
-        this.program.setup();
-
-    }
-
-    private void setupPipelineLayout() throws ThemisException {
-
-        this.layout = new VkPipelineLayout(
-            getConfiguration(),
-            this.renderer.getDevice(),
-            this.pushConstantRanges.toArray( new VkPushConstantRange[0] ),
-            getDescriptorSetLayout()
-        );
-
-        this.layout.setup();
-
-    }
 
     @Override
     public boolean equals(Object o) {
@@ -238,6 +211,40 @@ public abstract class Material extends VulkanObject {
     @Override
     public int hashCode() {
         return Objects.hashCode(identifier);
+    }
+
+    private String getVariantIdentifier( MaterialProperties properties ) {
+        return this.variantIdentifierFunction.apply(properties);
+    }
+
+    private void setupVariantsDescriptorsetLayout() throws ThemisException {
+        VkDescriptorSetBinding[] bindings = this.variantsDescriptor.getBindings().values().toArray(new VkDescriptorSetBinding[0]);
+        if ( bindings.length > 0 ) {
+            this.variantsDescriptorSetLayout = new VkDescriptorSetLayout(getConfiguration(), getDevice(), bindings);
+            this.variantsDescriptorSetLayout.setup();
+        }
+    }
+
+    private void setupVariantsDescriptorPool() throws ThemisException {
+        if ( this.variantsDescriptorSetLayout != null ) {
+            this.variantsDescriptorPool = new VkDescriptorPool(getConfiguration(), getDevice(), getFrames().getSize() * Material.DESCRIPTORPOOL_SIZE, this.variantsDescriptorSetLayout );
+            this.variantsDescriptorPool.setup();
+        }
+    }
+
+    private VkDescriptorSetLayout [] collectDescriptorsetLayouts() {
+
+        int count = this.descriptorsetProviders != null ? this.descriptorsetProviders.length : 0;
+        if ( this.variantsDescriptorSetLayout != null ) count++;
+
+        VkDescriptorSetLayout [] layouts = new VkDescriptorSetLayout[count];
+        if ( this.variantsDescriptorSetLayout != null ) layouts[--count] = this.variantsDescriptorSetLayout;
+        if ( this.descriptorsetProviders != null )  {
+            for ( int i = count - 1; i >= 0; i-- ) layouts[i] = this.descriptorsetProviders[i].getDescriptorSetLayout();
+        }
+
+        return layouts;
+
     }
 
 }

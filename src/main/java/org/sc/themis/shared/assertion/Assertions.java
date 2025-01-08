@@ -36,4 +36,11 @@ public class Assertions {
         }
     }
 
+    public static <E extends ThemisException> void isFalse(BooleanSupplier predicate, E rejected) throws E {
+        if ( predicate.getAsBoolean() ) {
+            throw rejected;
+        }
+    }
+
+
 }

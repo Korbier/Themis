@@ -5,7 +5,9 @@ import org.sc.themis.gamestate.Gamestate;
 import org.sc.themis.input.Input;
 import org.sc.themis.renderer.Renderer;
 import org.sc.themis.scene.*;
-import org.sc.themis.scene.material.BaseColorMaterial;
+import org.sc.themis.scene.material.ColorMaterial;
+import org.sc.themis.scene.material.MaterialProperties;
+import org.sc.themis.scene.material.MaterialProperty;
 import org.sc.themis.shared.exception.ThemisException;
 
 public class SceneCube2Gamestate implements Gamestate {
@@ -28,7 +30,7 @@ public class SceneCube2Gamestate implements Gamestate {
         this.model2 = createCubeModel("cube2", renderer, new Vector4f(0.0f, 1.0f, 0.5f, 1.0f ));
         scene.add( this.model2.create().position(  4.0f, 0.0f, 0.0f ).scale( 0.5f) );
 
-        this.model3 = createCubeModel("cube3", renderer, new Vector4f(0.0f, 1.0f, 0.5f, 1.0f ));
+        this.model3 = createCubeModel("cube3", renderer, new Vector4f(0.20f, 0.4f, 0.5f, 1.0f ));
         scene.add( this.model3.create().position( -4.0f, 0.0f, 0.0f ).rotate( 45.0f, 1.0f, 0.0f, 0.0f ) );
 
     }
@@ -52,8 +54,12 @@ public class SceneCube2Gamestate implements Gamestate {
 
     private Model createCubeModel(String prefix, Renderer renderer, Vector4f color) throws ThemisException {
 
-        Mesh cube = this.meshFactory.createCube( renderer.getResourceAllocator(), prefix + "my-cube ", BaseColorMaterial.MATERIAL_ID );
-        cube.setProperty( MeshProperties.COLOR_BASE, color );
+        MaterialProperties material = new MaterialProperties();
+        material.put( MaterialProperty.COLOR_BASE, color );
+
+
+        Mesh cube = this.meshFactory.createCube( renderer.getResourceAllocator(), prefix + "my-cube ", ColorMaterial.IDENTIFIER );
+        cube.setProperties( material );
 
         return this.modelFactory.create( prefix + "my-cube-model", cube );
 
