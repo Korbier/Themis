@@ -20,6 +20,9 @@ import org.sc.themis.shared.exception.ThemisException;
 @TestProfile(Profiles.TagWithUiTest.class)
 public class EngineTest {
 
+    @Inject
+    Configuration configuration;
+
     @ParameterizedTest
     @EnumSource(value=Playgrounds.class, names = "NOOP", mode = EnumSource.Mode.EXCLUDE)
     //@EnumSource(value=Playgrounds.class, names = "SCENE_CUBE_3")
@@ -40,9 +43,6 @@ public class EngineTest {
         engine.cleanup();
 
     }
-
-    @Inject
-    Configuration configuration;
 
     @Test
     @DisplayName("Create engine - no gamestate found")
