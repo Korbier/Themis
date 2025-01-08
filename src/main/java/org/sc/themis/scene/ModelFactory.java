@@ -9,11 +9,12 @@ import org.lwjgl.system.MemoryStack;
 import org.sc.themis.renderer.resource.staging.VkStagingImage;
 import org.sc.themis.renderer.resource.staging.VkStagingResourceAllocator;
 import org.sc.themis.scene.exception.ModelFileNotFoundException;
+import org.sc.themis.scene.material.MaterialProperties;
+import org.sc.themis.scene.material.MaterialProperty;
 import org.sc.themis.shared.assertion.Assertions;
 import org.sc.themis.shared.exception.ThemisException;
 import static org.lwjgl.assimp.Assimp.*;
 
-import java.io.File;
 import java.nio.IntBuffer;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -40,7 +41,7 @@ public class ModelFactory {
 
             Path workdir = modelFile.getParent();
 
-            List<MeshPropertiesMap> properties = loadProperties( scene, allocator, modelFile );
+            List<MaterialProperties> properties = loadProperties( scene, allocator, modelFile );
             Mesh [] meshes = loadMeshs( allocator, identifier, scene, material, properties );
 
             return new Model( identifier, meshes );
@@ -53,7 +54,7 @@ public class ModelFactory {
         return modelIdentifier + ".mesh." + inc;
     }
 
-    private Mesh[] loadMeshs( VkStagingResourceAllocator allocator, String modelIdentifier, AIScene scene, String material, List<MeshPropertiesMap> properties ) throws ThemisException {
+    private Mesh[] loadMeshs( VkStagingResourceAllocator allocator, String modelIdentifier, AIScene scene, String material, List<MaterialProperties> properties ) throws ThemisException {
 
         PointerBuffer aiMeshesBuffer = scene.mMeshes();
         int numMeshes = scene.mNumMeshes();
@@ -134,25 +135,25 @@ public class ModelFactory {
 
     }
 
-    private List<MeshPropertiesMap> loadProperties( AIScene scene, VkStagingResourceAllocator allocator, Path workdir ) {
+    private List<MaterialProperties> loadProperties(AIScene scene, VkStagingResourceAllocator allocator, Path workdir ) {
 
-        List<MeshPropertiesMap> result = new ArrayList<>();
+        List<MaterialProperties> result = new ArrayList<>();
 
         PointerBuffer aiMaterialsBuffer = scene.mMaterials();
         int numMaterials = scene.mNumMaterials();
 
         for (int i = 0; i < numMaterials; i++) {
 
-            MeshPropertiesMap properties = new MeshPropertiesMap();
+            MaterialProperties properties = new MaterialProperties();
             AIMaterial        aiMaterial = AIMaterial.create(aiMaterialsBuffer.get(i));
 
-            setColor( aiMaterial, AI_MATKEY_BASE_COLOR, properties, MeshProperties.COLOR_BASE );
-            setColor( aiMaterial, AI_MATKEY_COLOR_DIFFUSE, properties, MeshProperties.COLOR_DIFFUSE );
-            setColor( aiMaterial, AI_MATKEY_COLOR_EMISSIVE, properties, MeshProperties.COLOR_EMISSIVE );
-            setColor( aiMaterial, AI_MATKEY_COLOR_SPECULAR, properties, MeshProperties.COLOR_SPECULAR );
-            setFloat( aiMaterial, AI_MATKEY_SHININESS, properties, MeshProperties.COLOR_SHININESS );
+            setColor( aiMaterial, AI_MATKEY_BASE_COLOR, properties, MaterialProperty.COLOR_BASE );
+            setColor( aiMaterial, AI_MATKEY_COLOR_DIFFUSE, properties, MaterialProperty.COLOR_DIFFUSE );
+            setColor( aiMaterial, AI_MATKEY_COLOR_EMISSIVE, properties, MaterialProperty.COLOR_EMISSIVE );
+            setColor( aiMaterial, AI_MATKEY_COLOR_SPECULAR, properties, MaterialProperty.COLOR_SPECULAR );
+            setFloat( aiMaterial, AI_MATKEY_SHININESS, properties, MaterialProperty.COLOR_SHININESS );
 
-            setImage( workdir, allocator, aiMaterial, aiTextureType_BASE_COLOR, properties, MeshProperties.TEXTURE_BASE );
+            setImage( workdir, allocator, aiMaterial, aiTextureType_BASE_COLOR, properties, MaterialProperty.TEXTURE_BASE );
 
             result.add( properties );
 
@@ -162,7 +163,7 @@ public class ModelFactory {
 
     }
 
-    private void setImage(Path workdir, VkStagingResourceAllocator allocator, AIMaterial aiMaterial, int assimpAttr, MeshPropertiesMap properties, MeshProperty<VkStagingImage> textureBase) {
+    private void setImage(Path workdir, VkStagingResourceAllocator allocator, AIMaterial aiMaterial, int assimpAttr, MaterialProperties properties, MaterialProperty<VkStagingImage> textureBase) {
 
         String path = getTexturePath( workdir, aiMaterial, assimpAttr );
         System.out.println( "Image path : " + path );
@@ -190,14 +191,14 @@ public class ModelFactory {
 
     }
 
-    private void setColor( AIMaterial assimpMaterial, String assimpAttr, Map<MeshProperty<?>, Object> properties, MeshProperty<Vector4f> property ) {
+    private void setColor(AIMaterial assimpMaterial, String assimpAttr, Map<MaterialProperty<?>, Object> properties, MaterialProperty<Vector4f> property ) {
         AIColor4D  workColor = AIColor4D.create();
         aiGetMaterialColor( assimpMaterial, assimpAttr, 0, 0, workColor );
         Vector4f color =  new Vector4f( workColor.r(), workColor.g(), workColor.b(), workColor.a() );
         properties.put( property, color );
     }
 
-    private void setFloat( AIMaterial assimpMaterial, String assimpAttr, Map<MeshProperty<?>, Object> properties, MeshProperty<Float> property ) {
+    private void setFloat(AIMaterial assimpMaterial, String assimpAttr, Map<MaterialProperty<?>, Object> properties, MaterialProperty<Float> property ) {
         AIColor4D  workColor = AIColor4D.create();
         aiGetMaterialColor( assimpMaterial, assimpAttr, 0, 0, workColor );
         properties.put( property, workColor.r() );

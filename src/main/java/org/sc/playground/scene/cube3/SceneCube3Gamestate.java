@@ -6,7 +6,9 @@ import org.sc.themis.input.Input;
 import org.sc.themis.renderer.Renderer;
 import org.sc.themis.renderer.resource.staging.VkStagingImage;
 import org.sc.themis.scene.*;
-import org.sc.themis.scene.material.BaseTextureMaterial;
+import org.sc.themis.scene.material.MaterialProperties;
+import org.sc.themis.scene.material.MaterialProperty;
+import org.sc.themis.scene.material.TextureMaterial;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.resource.Image;
 
@@ -63,8 +65,11 @@ public class SceneCube3Gamestate implements Gamestate {
 
     private Model createCubeModel(String prefix, Renderer renderer, Vector4f color) throws ThemisException {
 
-        Mesh cube = this.meshFactory.createCube( renderer.getResourceAllocator(), prefix + "my-cube ", BaseTextureMaterial.MATERIAL_ID );
-        cube.setProperty( MeshProperties.TEXTURE_BASE, vkImage );
+        MaterialProperties material = new MaterialProperties();
+        material.put( MaterialProperty.TEXTURE_BASE, vkImage );
+
+        Mesh cube = this.meshFactory.createCube( renderer.getResourceAllocator(), prefix + "my-cube ", TextureMaterial.IDENTIFIER );
+        cube.setProperties( material );
 
         return this.modelFactory.create( prefix + "my-cube-model", cube );
 

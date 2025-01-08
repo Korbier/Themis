@@ -3,6 +3,7 @@ package org.sc.themis.scene;
 import org.jboss.logging.Logger;
 import org.sc.themis.scene.material.Material;
 import org.sc.themis.scene.material.MaterialAllocator;
+import org.sc.themis.scene.material.MaterialProperties;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.tobject.TObject;
@@ -21,7 +22,7 @@ public class Scene extends TObject {
     /** Geometry **/
     private final List<Instance> instances = new ArrayList<>();
     private final Set<Model> models = new HashSet<>();
-    private final List<MeshPropertiesMap> meshPropertiesMaps = new ArrayList<>();
+    private final List<MaterialProperties> materialProperties = new ArrayList<>();
 
     /** Controller **/
     private final Set<Controller> controllers = new HashSet<>();
@@ -57,17 +58,15 @@ public class Scene extends TObject {
 
     public void allocateMaterial( MaterialAllocator materialAllocator ) throws ThemisException {
 
-        if ( this.meshPropertiesMaps.isEmpty() ) {
+        if ( this.materialProperties.isEmpty() ) {
             return;
         }
 
-        LOG.tracef( "Allocating %d materials", this.meshPropertiesMaps.size() );
-
-        for ( MeshPropertiesMap properties : this.meshPropertiesMaps ) {
+        for ( MaterialProperties properties : this.materialProperties) {
             materialAllocator.allocate( properties );
         }
 
-        this.meshPropertiesMaps.clear();
+        this.materialProperties.clear();
 
     }
 
@@ -76,7 +75,7 @@ public class Scene extends TObject {
         this.models.add( model );
 
         for ( Mesh mesh : model.getMeshes() ) {
-            this.meshPropertiesMaps.add( mesh.getProperties() );
+            this.materialProperties.add( mesh.getProperties() );
         }
 
     }
