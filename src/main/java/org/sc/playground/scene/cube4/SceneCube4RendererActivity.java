@@ -1,4 +1,4 @@
-package org.sc.playground.scene.cube3;
+package org.sc.playground.scene.cube4;
 
 import org.sc.playground.shared.BaseRendererActivity;
 import org.sc.themis.renderer.command.VkCommand;
@@ -14,12 +14,12 @@ import org.sc.themis.shared.exception.ThemisException;
 
 import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_VERTEX_BIT;
 
-public class SceneCube3RendererActivity extends BaseRendererActivity {
+public class SceneCube4RendererActivity extends BaseRendererActivity {
 
     private SceneDescriptorSet sceneDescriptorSet;
-    private TextureMaterial material;
+    private ColorMaterial colorMaterial;
 
-    public SceneCube3RendererActivity(Configuration configuration) {
+    public SceneCube4RendererActivity(Configuration configuration) {
         super(configuration);
     }
 
@@ -37,15 +37,15 @@ public class SceneCube3RendererActivity extends BaseRendererActivity {
         command.begin();
         command.beginRenderPass( this.renderPass, framebuffer );
         command.viewportAndScissor( this.renderer.getExtent() );
-        command.bindPipeline(this.material.getPipeline());
+        command.bindPipeline(this.colorMaterial.getPipeline());
 
         for ( Model model : scene.getModels() ) {
             if ( model.isRenderable() ) {
                 for (Mesh mesh : model.getMeshes() ) {
 
                     command.bindDescriptorSets(
-                        new int[0],
-                        this.material.getDescriptorSets( frame, mesh.getProperties() )
+                        this.colorMaterial.getDynamicOffset( frame, mesh.getProperties() ),
+                        this.colorMaterial.getDescriptorSets( frame, mesh.getProperties())
                     );
 
                     command.bindBuffers(mesh.getVerticesBuffer(), mesh.getIndicesBuffer());
@@ -71,7 +71,7 @@ public class SceneCube3RendererActivity extends BaseRendererActivity {
     public void setup( Scene scene ) throws ThemisException {
         for ( Model model : scene.getModels() ) {
             for ( Mesh mesh : model.getMeshes() ) {
-                this.material.add( mesh.getProperties() );
+                this.colorMaterial.add( mesh.getProperties() );
             }
         }
     }
@@ -83,7 +83,7 @@ public class SceneCube3RendererActivity extends BaseRendererActivity {
 
     @Override
     public void cleanupPipeline() throws ThemisException {
-        this.material.cleanup();
+        this.colorMaterial.cleanup();
         this.sceneDescriptorSet.cleanup();
     }
 
@@ -92,8 +92,8 @@ public class SceneCube3RendererActivity extends BaseRendererActivity {
         this.sceneDescriptorSet = new SceneDescriptorSet( getConfiguration(), this.renderer);
         this.sceneDescriptorSet.setup();
 
-        this.material = new TextureMaterial( getConfiguration(), this.renderer, this.renderPass, this.sceneDescriptorSet );
-        this.material.setup();
+        this.colorMaterial = new ColorMaterial( getConfiguration(), this.renderer, this.renderPass, this.sceneDescriptorSet );
+        this.colorMaterial.setup();
 
     }
 

@@ -1,4 +1,4 @@
-package org.sc.themis.scene.material;
+package org.sc.themis.renderer.material;
 
 import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorSetBinding;
 import org.sc.themis.renderer.resource.buffer.VkBufferDescriptor;
@@ -7,11 +7,16 @@ import org.sc.themis.renderer.resource.image.VkSamplerDescriptor;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MaterialVariantDescriptor {
+public class MaterialDescriptor {
 
     private final Map<Integer, VkDescriptorSetBinding> bindings = new HashMap<>();
     private final Map<Integer, VkBufferDescriptor> bufferDescriptors = new HashMap<>();
     private final Map<Integer, VkSamplerDescriptor> samplerBufferDescriptors = new HashMap<>();
+
+    public void addUniformDynamicBinding( int binding, int shaderStage, VkBufferDescriptor bufferDescriptor ) {
+        this.bindings.put( binding, VkDescriptorSetBinding.dynamicUniform( binding, shaderStage) );
+        this.bufferDescriptors.put( binding, bufferDescriptor );
+    }
 
     public void addUniformBinding( int binding, int shaderStage, VkBufferDescriptor bufferDescriptor ) {
         this.bindings.put( binding, VkDescriptorSetBinding.uniform( binding, shaderStage) );

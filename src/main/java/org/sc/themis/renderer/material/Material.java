@@ -1,4 +1,4 @@
-package org.sc.themis.scene.material;
+package org.sc.themis.renderer.material;
 
 import org.sc.themis.renderer.Renderer;
 import org.sc.themis.renderer.base.VulkanObject;
@@ -22,6 +22,11 @@ public abstract class Material extends VulkanObject {
     private static final int DESCRIPTORPOOL_SIZE = 10;
 
     @FunctionalInterface
+    public interface UniformDynamicSetter {
+        void set(int binding, VkBuffer buffer, int offset, MaterialProperties properties );
+    }
+
+    @FunctionalInterface
     public interface UniformSetter {
         void set(int binding, VkBuffer buffer, MaterialProperties properties );
     }
@@ -40,9 +45,17 @@ public abstract class Material extends VulkanObject {
     /** Pipeline **/
     private final MaterialPipeline pipeline;
 
+    /** Main **/
+    private final Map<String, Integer> variantOffsets = new HashMap<>();
+    private final MaterialDescriptor mainDescriptor = new MaterialDescriptor();
+    private VkDescriptorSetLayout mainDescriptorSetLayout;
+    private VkDescriptorPool mainDescriptorPool;
+    private MaterialMainVariant mainVariant;
+    private UniformDynamicSetter mainUniformSetter;
+
     /** Variants **/
     private final Map<String, MaterialVariant> variants = new HashMap<>();
-    private final MaterialVariantDescriptor variantsDescriptor = new MaterialVariantDescriptor();
+    private final MaterialDescriptor variantsDescriptor = new MaterialDescriptor();
     private VkDescriptorSetLayout variantsDescriptorSetLayout;
     private VkDescriptorPool variantsDescriptorPool;
     private final List<VkDescriptorPool> oldVariantsDescriptorPools = new ArrayList<>();
@@ -56,39 +69,83 @@ public abstract class Material extends VulkanObject {
         super( configuration );
         this.renderer = renderer;
         this.identifier = identifier;
-        this.pipeline = new MaterialPipeline( configuration, renderer, this );
+        this.pipeline = new MaterialPipeline( configuration, renderer );
     }
 
     @Override
     public void setup() throws ThemisException {
         this.setupVariantsDescriptorsetLayout();
         this.setupVariantsDescriptorPool();
+        this.setupMainDescriptorsetLayout();
+        this.setupMainDescriptorPool();
         this.pipeline.setup( collectDescriptorsetLayouts() );
     }
 
     @Override
     public void cleanup() throws ThemisException {
-        this.pipeline.cleanup();
+
         for ( VkDescriptorPool pool : this.oldVariantsDescriptorPools ) pool.cleanup();
         for ( MaterialVariant variant : this.variants.values() ) variant.cleanup();
-        this.variantsDescriptorPool.cleanup();
-        this.variantsDescriptorSetLayout.cleanup();
+
+        if ( this.variantsDescriptorSetLayout != null ) {
+            this.variantsDescriptorPool.cleanup();
+            this.variantsDescriptorSetLayout.cleanup();
+        }
+
+        if ( this.mainDescriptorSetLayout != null ) {
+            this.mainDescriptorPool.cleanup();
+            this.mainDescriptorSetLayout.cleanup();
+        }
+
+        this.pipeline.cleanup();
+
     }
 
     /** Material usage methods - create and store variant for provided properties **/
     public String add( MaterialProperties properties ) throws ThemisException {
 
-        String variantIdentifier = getVariantIdentifier( properties );
+        String variantIdentifier = getVariantIdentifier(properties);
 
-        if ( this.variants.containsKey( variantIdentifier ) ) {
-            return variantIdentifier;
+        boolean exists = this.variantOffsets.containsKey( variantIdentifier );
+
+        if ( !exists ) {
+
+            int offset = this.variantOffsets.size();
+
+            if (this.variantsDescriptorSetLayout != null) {
+
+                if (this.variants.containsKey(variantIdentifier)) {
+                    return variantIdentifier;
+                }
+
+                MaterialVariant variant = new MaterialVariant(getConfiguration(), this, variantIdentifier);
+                variant.setup();
+                variant.setProperties(properties);
+
+                this.variants.put(variantIdentifier, variant);
+
+            }
+
+            if ( this.mainDescriptorSetLayout != null ) {
+
+                //Si il existe déjà un variant principal, on le détruit afin de le recréer en ajoutant
+                //les nouvelles propriétés
+                if ( this.mainVariant != null ) {
+                    this.mainDescriptorPool.cleanup();
+                    this.mainVariant.cleanup();
+                }
+
+                this.setupMainDescriptorPool();
+
+                this.mainVariant = new MaterialMainVariant(getConfiguration(), this, getIdentifier() + ".main" );
+                this.mainVariant.setup();
+               // this.mainVariant.setProperties(offset, properties);
+
+            }
+
+            this.variantOffsets.put( variantIdentifier, offset );
+
         }
-
-        MaterialVariant variant = new MaterialVariant( getConfiguration(), this, variantIdentifier );
-        variant.setup();
-        variant.setProperties( properties );
-
-        this.variants.put( variantIdentifier, variant );
 
         return variantIdentifier;
 
@@ -114,6 +171,15 @@ public abstract class Material extends VulkanObject {
 
     public void setPipelineDescriptor( VkPipelineDescriptor descriptor) {
         this.pipeline.setPipelineDescriptor( descriptor );
+    }
+
+    /** Material building methods - Main **/
+    protected void addMainUniformDynamicBinding( int binding, int shaderStage, VkBufferDescriptor bufferDescriptor ) {
+        this.mainDescriptor.addUniformDynamicBinding( binding, shaderStage, bufferDescriptor );
+    }
+
+    protected void setMainUniformSetter( UniformDynamicSetter uniformSetter ) {
+        this.mainUniformSetter = uniformSetter;
     }
 
     /** Material building methods - Variant **/
@@ -168,6 +234,18 @@ public abstract class Material extends VulkanObject {
         return this.variantsCombinedImageSamplerSetter;
     }
 
+    public UniformDynamicSetter getMainUniformSetter() {
+        return this.mainUniformSetter;
+    }
+
+    public VkDescriptorPool getMainDescriptorPool() {
+        return this.mainDescriptorPool;
+    }
+
+    public MaterialDescriptor getMainDescriptor() {
+        return this.mainDescriptor;
+    }
+
     public VkDescriptorPool getVariantsDescriptorPool() throws ThemisException {
 
         if ( this.variantsDescriptorPool.isFull() ) {
@@ -179,8 +257,22 @@ public abstract class Material extends VulkanObject {
 
     }
 
-    public MaterialVariantDescriptor getVariantsDescriptor() {
+    public MaterialDescriptor getVariantsDescriptor() {
         return this.variantsDescriptor;
+    }
+
+    public int [] getDynamicOffset( int frame, MaterialProperties properties ) {
+
+        String variantIdentifier = getVariantIdentifier( properties );
+
+        int [] offsets = new int[this.mainDescriptorSetLayout.size()];
+
+        for ( int i = 0; i < this.mainDescriptorSetLayout.size(); i++ ) {
+            offsets[i] = this.mainVariant.getAlignedOffset( frame, i, this.variantOffsets.get( variantIdentifier ) );
+        }
+
+        return offsets;
+
     }
 
     public VkDescriptorSet [] getDescriptorSets( int frame, MaterialProperties properties ) {
@@ -188,11 +280,12 @@ public abstract class Material extends VulkanObject {
         String variantIdentifier = getVariantIdentifier( properties );
 
         int count = this.descriptorsetProviders.length;
+        if ( this.mainDescriptorSetLayout != null ) count++;
         if ( this.variantsDescriptorSetLayout != null ) count++;
 
         VkDescriptorSet [] descriptorsets = new VkDescriptorSet[count];
         if ( this.variantsDescriptorSetLayout != null ) descriptorsets[--count] = this.variants.get( variantIdentifier ).getDescriptorSet( frame );
-        //if ( this.mainDescriptorSetLayout != null ) descriptorsets[--count] = getFrames().get( frame, this.fkMainDescriptorSet );
+        if ( this.mainDescriptorSetLayout != null ) descriptorsets[--count] = this.mainVariant.getDescriptorSet( frame );
         for ( int i = count - 1; i >= 0; i-- ) descriptorsets[i] = this.descriptorsetProviders[i].getDescriptorSet( frame );
 
         return descriptorsets;
@@ -217,6 +310,20 @@ public abstract class Material extends VulkanObject {
         return this.variantIdentifierFunction.apply(properties);
     }
 
+    private void setupMainDescriptorsetLayout() throws ThemisException {
+        VkDescriptorSetBinding[] bindings = this.mainDescriptor.getBindings().values().toArray(new VkDescriptorSetBinding[0]);
+        if ( bindings.length > 0 ) {
+            this.mainDescriptorSetLayout = new VkDescriptorSetLayout(getConfiguration(), getDevice(), bindings);
+            this.mainDescriptorSetLayout.setup();
+        }
+    }
+
+    private void setupMainDescriptorPool() throws ThemisException {
+        if ( this.mainDescriptorSetLayout != null ) {
+            this.mainDescriptorPool = new VkDescriptorPool(getConfiguration(), getDevice(), getFrames().getSize(), this.mainDescriptorSetLayout );
+            this.mainDescriptorPool.setup();
+        }
+    }
     private void setupVariantsDescriptorsetLayout() throws ThemisException {
         VkDescriptorSetBinding[] bindings = this.variantsDescriptor.getBindings().values().toArray(new VkDescriptorSetBinding[0]);
         if ( bindings.length > 0 ) {
@@ -232,13 +339,16 @@ public abstract class Material extends VulkanObject {
         }
     }
 
+
     private VkDescriptorSetLayout [] collectDescriptorsetLayouts() {
 
         int count = this.descriptorsetProviders != null ? this.descriptorsetProviders.length : 0;
+        if ( this.mainDescriptorSetLayout != null ) count++;
         if ( this.variantsDescriptorSetLayout != null ) count++;
 
         VkDescriptorSetLayout [] layouts = new VkDescriptorSetLayout[count];
         if ( this.variantsDescriptorSetLayout != null ) layouts[--count] = this.variantsDescriptorSetLayout;
+        if ( this.mainDescriptorSetLayout != null ) layouts[--count] = this.mainDescriptorSetLayout;
         if ( this.descriptorsetProviders != null )  {
             for ( int i = count - 1; i >= 0; i-- ) layouts[i] = this.descriptorsetProviders[i].getDescriptorSetLayout();
         }

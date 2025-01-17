@@ -1,11 +1,10 @@
-package org.sc.themis.scene.material;
+package org.sc.themis.renderer.material;
 
 import org.lwjgl.system.MemoryStack;
 import org.sc.themis.renderer.Renderer;
-import org.sc.themis.renderer.base.VulkanObject;
 import org.sc.themis.renderer.pipeline.*;
 import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorSetLayout;
-import org.sc.themis.scene.exception.MaterialException;
+import org.sc.themis.renderer.exception.MaterialException;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.assertion.Assertions;
 import org.sc.themis.shared.exception.ThemisException;
@@ -17,7 +16,6 @@ public class MaterialPipeline {
 
     private final Configuration configuration;
     private final Renderer renderer;
-    private final Material material;
 
     private final List<VkShaderProgramStage> shaderProgramStages = new ArrayList<>();
     private final List<VkPushConstantRange>  pushConstantRanges = new ArrayList<>();
@@ -28,10 +26,9 @@ public class MaterialPipeline {
     private VkPipelineLayout layout;
     private VkPipeline pipeline;
 
-    public MaterialPipeline(Configuration configuration, Renderer renderer, Material material) {
+    public MaterialPipeline(Configuration configuration, Renderer renderer) {
         this.configuration = configuration;
         this.renderer = renderer;
-        this.material = material;
     }
 
     public void setup( VkDescriptorSetLayout ... layouts ) throws ThemisException {

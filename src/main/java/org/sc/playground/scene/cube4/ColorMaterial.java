@@ -1,7 +1,9 @@
-package org.sc.themis.scene.material;
+package org.sc.playground.scene.cube4;
 
 import org.lwjgl.util.shaderc.Shaderc;
 import org.sc.themis.renderer.Renderer;
+import org.sc.themis.renderer.material.Material;
+import org.sc.themis.renderer.material.MaterialProperty;
 import org.sc.themis.renderer.pipeline.VkPipelineDescriptor;
 import org.sc.themis.renderer.pipeline.VkShaderSourceCompiler;
 import org.sc.themis.renderer.pipeline.VkVertexInputStateDescriptor;
@@ -12,7 +14,6 @@ import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.utils.MemorySizeUtils;
 
 import static org.lwjgl.vulkan.VK10.*;
-import static org.lwjgl.vulkan.VK10.VK_FORMAT_R32G32B32_SFLOAT;
 
 public class ColorMaterial extends Material {
 
@@ -77,7 +78,7 @@ public class ColorMaterial extends Material {
             """;
 
     private final static int BUFFER_SIZE = MemorySizeUtils.VEC4F;
-    private final static VkBufferDescriptor BUFFER_DESCRIPTOR = VkBufferDescriptor.descriptorsetUniform( BUFFER_SIZE );
+    private final static VkBufferDescriptor BUFFER_DESCRIPTOR = VkBufferDescriptor.descriptorsetDynamicUniform( BUFFER_SIZE, 3 );
 
     public ColorMaterial(Configuration configuration, Renderer renderer, VkRenderPass renderPass, SceneDescriptorSet sceneDescriptorSet) {
 
@@ -94,13 +95,13 @@ public class ColorMaterial extends Material {
                 .attribute( VK_FORMAT_R32G32B32_SFLOAT, MemorySizeUtils.VEC3F ) //Normal
                 .attribute( VK_FORMAT_R32G32_SFLOAT, MemorySizeUtils.VEC2F ) //Texture
                 .attribute( VK_FORMAT_R32G32B32_SFLOAT, MemorySizeUtils.VEC3F ) //Tangent
-                .attribute( VK_FORMAT_R32G32B32_SFLOAT, MemorySizeUtils.VEC3F ) //Bitangent
+                .attribute( VK_FORMAT_R32G32B32_SFLOAT, MemorySizeUtils.VEC3F ) //Bitangentr
         );
         setPipelineDescriptor( new VkPipelineDescriptor(renderPass, 0, false, 1, true, 1, 1, 1) );
 
         /** Variant layout **/
-        addVariantsUniformBinding(0, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, BUFFER_DESCRIPTOR  );
-        setVariantsUniformSetter( (binding, buffer, props) -> buffer.set(0, props.getProperty(MaterialProperty.COLOR_BASE) ) );
+        addMainUniformDynamicBinding(0, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, BUFFER_DESCRIPTOR  );
+        setMainUniformSetter( (binding, buffer, offset, props) -> buffer.set(offset, props.getProperty(MaterialProperty.COLOR_BASE) ) );
 
         /** Other descriptorsets **/
         setDescriptorsetProviders( sceneDescriptorSet );

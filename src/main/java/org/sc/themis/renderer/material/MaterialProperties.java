@@ -1,4 +1,4 @@
-package org.sc.themis.scene.material;
+package org.sc.themis.renderer.material;
 
 import java.util.HashMap;
 

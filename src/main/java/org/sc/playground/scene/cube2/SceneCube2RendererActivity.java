@@ -6,7 +6,6 @@ import org.sc.themis.renderer.framebuffer.VkFrameBuffer;
 import org.sc.themis.renderer.sync.VkFence;
 import org.sc.themis.scene.*;
 import org.sc.themis.scene.descriptorset.SceneDescriptorSet;
-import org.sc.themis.scene.material.ColorMaterial;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 

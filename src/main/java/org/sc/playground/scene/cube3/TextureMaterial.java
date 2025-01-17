@@ -1,12 +1,13 @@
-package org.sc.themis.scene.material;
+package org.sc.playground.scene.cube3;
 
 import org.lwjgl.util.shaderc.Shaderc;
 import org.sc.themis.renderer.Renderer;
+import org.sc.themis.renderer.material.Material;
+import org.sc.themis.renderer.material.MaterialProperty;
 import org.sc.themis.renderer.pipeline.VkPipelineDescriptor;
 import org.sc.themis.renderer.pipeline.VkShaderSourceCompiler;
 import org.sc.themis.renderer.pipeline.VkVertexInputStateDescriptor;
 import org.sc.themis.renderer.renderpass.VkRenderPass;
-import org.sc.themis.renderer.resource.buffer.VkBufferDescriptor;
 import org.sc.themis.renderer.resource.image.VkSamplerDescriptor;
 import org.sc.themis.scene.descriptorset.SceneDescriptorSet;
 import org.sc.themis.shared.Configuration;

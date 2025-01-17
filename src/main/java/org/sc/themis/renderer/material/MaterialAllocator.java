@@ -1,4 +1,4 @@
-package org.sc.themis.scene.material;
+package org.sc.themis.renderer.material;
 
 import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorSet;
 import org.sc.themis.shared.exception.ThemisException;
