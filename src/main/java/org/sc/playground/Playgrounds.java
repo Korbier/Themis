@@ -12,6 +12,8 @@ import org.sc.playground.scene.cube2.SceneCube2Gamestate;
 import org.sc.playground.scene.cube2.SceneCube2RendererActivity;
 import org.sc.playground.scene.cube3.SceneCube3Gamestate;
 import org.sc.playground.scene.cube3.SceneCube3RendererActivity;
+import org.sc.playground.scene.cube4.SceneCube4Gamestate;
+import org.sc.playground.scene.cube4.SceneCube4RendererActivity;
 import org.sc.playground.scene.sphere.SceneSphereGamestate;
 import org.sc.playground.scene.sphere.SceneSphereRendererActivity;
 import org.sc.playground.scene.triangle.SceneTriangleRendererActivity;
@@ -41,7 +43,7 @@ public enum Playgrounds {
     SCENE_CUBE( "scene-cube", new SceneCubeGamestate(), SceneCubeRendererActivity::new ),
     SCENE_CUBE_2( "scene-cube-2", new SceneCube2Gamestate(), SceneCube2RendererActivity::new ),
     SCENE_CUBE_3( "scene-cube-3", new SceneCube3Gamestate(), SceneCube3RendererActivity::new ),
-    SCENE_CUBE_4( "scene-cube-4", new SceneCube3Gamestate(), SceneCube3RendererActivity::new ),
+    //SCENE_CUBE_4( "scene-cube-4", new SceneCube4Gamestate(), SceneCube4RendererActivity::new ),
     SCENE_SPHERE( "scene-sphere", new SceneSphereGamestate(), SceneSphereRendererActivity::new ),
     MOUSEPICKING( "mousepicking", new MousePickingGamestate(), MousePickingRendererActivity::new ),
     CONTROLLER_FPS_CAMERA( "controller-fpscamera", new ControllerFpsCameraGamestate(), ControllerFpsCameraRendererActivity::new );

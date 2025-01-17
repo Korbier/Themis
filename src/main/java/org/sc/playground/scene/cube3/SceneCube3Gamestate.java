@@ -6,9 +6,8 @@ import org.sc.themis.input.Input;
 import org.sc.themis.renderer.Renderer;
 import org.sc.themis.renderer.resource.staging.VkStagingImage;
 import org.sc.themis.scene.*;
-import org.sc.themis.scene.material.MaterialProperties;
-import org.sc.themis.scene.material.MaterialProperty;
-import org.sc.themis.scene.material.TextureMaterial;
+import org.sc.themis.renderer.material.MaterialProperties;
+import org.sc.themis.renderer.material.MaterialProperty;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.resource.Image;
 

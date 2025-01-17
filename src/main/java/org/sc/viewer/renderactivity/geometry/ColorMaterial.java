@@ -1,7 +1,9 @@
-package org.sc.themis.scene.material;
+package org.sc.viewer.renderactivity.geometry;
 
 import org.lwjgl.util.shaderc.Shaderc;
 import org.sc.themis.renderer.Renderer;
+import org.sc.themis.renderer.material.Material;
+import org.sc.themis.renderer.material.MaterialProperty;
 import org.sc.themis.renderer.pipeline.VkPipelineDescriptor;
 import org.sc.themis.renderer.pipeline.VkShaderSourceCompiler;
 import org.sc.themis.renderer.pipeline.VkVertexInputStateDescriptor;
@@ -12,7 +14,6 @@ import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.utils.MemorySizeUtils;
 
 import static org.lwjgl.vulkan.VK10.*;
-import static org.lwjgl.vulkan.VK10.VK_FORMAT_R32G32B32_SFLOAT;
 
 public class ColorMaterial extends Material {
 
@@ -94,7 +95,7 @@ public class ColorMaterial extends Material {
                 .attribute( VK_FORMAT_R32G32B32_SFLOAT, MemorySizeUtils.VEC3F ) //Normal
                 .attribute( VK_FORMAT_R32G32_SFLOAT, MemorySizeUtils.VEC2F ) //Texture
                 .attribute( VK_FORMAT_R32G32B32_SFLOAT, MemorySizeUtils.VEC3F ) //Tangent
-                .attribute( VK_FORMAT_R32G32B32_SFLOAT, MemorySizeUtils.VEC3F ) //Bitangent
+                .attribute( VK_FORMAT_R32G32B32_SFLOAT, MemorySizeUtils.VEC3F ) //Bitangentr
         );
         setPipelineDescriptor( new VkPipelineDescriptor(renderPass, 0, false, 1, true, 1, 1, 1) );
 

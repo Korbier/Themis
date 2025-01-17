@@ -1,4 +1,4 @@
-package org.sc.themis.scene.exception;
+package org.sc.themis.renderer.exception;
 
 import org.sc.themis.shared.exception.ThemisException;
 

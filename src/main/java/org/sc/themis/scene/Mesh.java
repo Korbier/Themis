@@ -4,7 +4,7 @@ import org.sc.themis.renderer.resource.buffer.VkBuffer;
 import org.sc.themis.renderer.resource.staging.VkStagingBuffer;
 import org.sc.themis.renderer.resource.staging.VkStagingResource;
 import org.sc.themis.renderer.resource.staging.VkStagingResourceAllocator;
-import org.sc.themis.scene.material.MaterialProperties;
+import org.sc.themis.renderer.material.MaterialProperties;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.utils.MemorySizeUtils;
 

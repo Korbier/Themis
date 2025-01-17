@@ -1,9 +1,9 @@
 package org.sc.themis.scene;
 
 import org.jboss.logging.Logger;
-import org.sc.themis.scene.material.Material;
-import org.sc.themis.scene.material.MaterialAllocator;
-import org.sc.themis.scene.material.MaterialProperties;
+import org.sc.themis.renderer.material.Material;
+import org.sc.themis.renderer.material.MaterialAllocator;
+import org.sc.themis.renderer.material.MaterialProperties;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.tobject.TObject;

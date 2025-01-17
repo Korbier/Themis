@@ -1,4 +1,4 @@
-package org.sc.themis.scene.material;
+package org.sc.themis.renderer.material;
 
 import org.joml.Vector4f;
 import org.sc.themis.renderer.resource.staging.VkStagingImage;
