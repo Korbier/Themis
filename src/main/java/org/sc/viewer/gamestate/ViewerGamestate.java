@@ -4,8 +4,9 @@ import org.joml.Vector4f;
 import org.sc.themis.gamestate.Gamestate;
 import org.sc.themis.input.Input;
 import org.sc.themis.renderer.Renderer;
+import org.sc.themis.renderer.material.MaterialProperties;
+import org.sc.themis.renderer.material.MaterialProperty;
 import org.sc.themis.scene.*;
-import org.sc.themis.scene.material.BaseColorMaterial;
 import org.sc.themis.shared.exception.ThemisException;
 
 public class ViewerGamestate implements Gamestate {
@@ -47,8 +48,11 @@ public class ViewerGamestate implements Gamestate {
     }
 
     private Model createCubeModel(Renderer renderer, Vector4f color) throws ThemisException {
-        Mesh mCube = this.meshFactory.createCube( renderer.getResourceAllocator(), "my-cube-" + color.toString(), BaseColorMaterial.MATERIAL_ID );
-        mCube.setProperty( MeshProperties.COLOR_BASE, color );
+        MaterialProperties props = new MaterialProperties();
+        props.put(MaterialProperty.COLOR_BASE, new Vector4f(1.0f, 0.0f, 0.0f, 1.0f ) );
+
+        Mesh mCube = this.meshFactory.createCube( renderer.getResourceAllocator(), "my-cube-" + color.toString(), "" );
+        mCube.setProperties( props );
         return this.modelFactory.create( "my-cube-model-" + color.toString(), mCube );
     }
 

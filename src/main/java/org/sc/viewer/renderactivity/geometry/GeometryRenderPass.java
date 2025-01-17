@@ -6,6 +6,8 @@ import org.sc.themis.renderer.device.VkDevice;
 import org.sc.themis.renderer.framebuffer.VkFrameBuffer;
 import org.sc.themis.renderer.framebuffer.VkFrameBufferAttachments;
 import org.sc.themis.renderer.framebuffer.VkFrameBufferDescriptor;
+import org.sc.themis.renderer.material.Material;
+import org.sc.themis.renderer.material.MaterialAllocator;
 import org.sc.themis.renderer.renderpass.VkRenderPass;
 import org.sc.themis.renderer.renderpass.VkRenderPassDescriptor;
 import org.sc.themis.renderer.renderpass.VkRenderPassLayout;
@@ -16,9 +18,6 @@ import org.sc.themis.scene.Instance;
 import org.sc.themis.scene.Mesh;
 import org.sc.themis.scene.Model;
 import org.sc.themis.scene.Scene;
-import org.sc.themis.scene.material.BaseColorMaterial;
-import org.sc.themis.scene.material.BaseMaterial;
-import org.sc.themis.scene.material.MaterialAllocator;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.viewer.renderactivity.RenderPass;
@@ -82,7 +81,7 @@ public class GeometryRenderPass extends RenderPass {
         command.viewportAndScissor( getExtent2D() );
 
         /*** bind pipeline, descriptorset, etc **/
-        for (BaseMaterial material : this.materialAllocator.materials() ) {
+        for (Material material : this.materialAllocator.materials() ) {
 
             command.bindPipeline( material.getPipeline() );
 
@@ -181,7 +180,7 @@ public class GeometryRenderPass extends RenderPass {
 
         this.materialAllocator = new MaterialAllocator();
 
-        BaseMaterial color = new BaseColorMaterial( getConfiguration(), getRenderer(), this.renderPass, getViewerActivity().getSceneDescriptorset() );
+        ColorMaterial color = new ColorMaterial( getConfiguration(), getRenderer(), this.renderPass, getViewerActivity().getSceneDescriptorset() );
         color.setup();
 
         this.materialAllocator.add( color );
