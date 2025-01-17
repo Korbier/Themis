@@ -67,6 +67,10 @@ public class ViewerRendererActivity extends RendererActivity {
         return this.dsMousePicking;
     }
 
+    public GeometryRenderPass getGeometryRenderPass() {
+        return this.geometryRenderPass;
+    }
+
     @Override
     public void setup(Renderer renderer) throws ThemisException {
 
@@ -174,7 +178,8 @@ public class ViewerRendererActivity extends RendererActivity {
         this.postProcessRenderPass.render(  frame, scene, getFrames().get( frame, this.semGeometryPassCompleted ),    getFrames().get( frame, this.semPostProcessPassCompleted ) );
         this.uiRenderPass.render(           frame, scene, getFrames().get( frame, this.semPostProcessPassCompleted ), this.renderer.getPresentSemaphore( frame ) );
         **/
-        this.geometryRenderPass.render( frame, scene, this.renderer.getAcquireSemaphore( frame ), this.renderer.getPresentSemaphore( frame ) );
+        this.geometryRenderPass.render(     frame, scene, this.renderer.getAcquireSemaphore( frame ), getFrames().get( frame, this.semGeometryPassCompleted ) );
+        this.postProcessRenderPass.render(  frame, scene, getFrames().get( frame, this.semGeometryPassCompleted ), this.renderer.getPresentSemaphore( frame ) );
     }
 
 }

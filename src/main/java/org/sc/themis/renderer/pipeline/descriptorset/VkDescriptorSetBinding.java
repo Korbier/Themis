@@ -18,6 +18,13 @@ public class VkDescriptorSetBinding {
         return descriptorSetBinding;
     }
 
+    public static VkDescriptorSetBinding attachment( int shaderStage ) {
+        VkDescriptorSetBinding binding = new VkDescriptorSetBinding();
+        binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        binding.shaderStage = shaderStage;
+        return binding;
+    }
+
     public static VkDescriptorSetBinding uniform( int binding, int shaderStage ) {
         VkDescriptorSetBinding descriptorSetBinding = new VkDescriptorSetBinding();
         descriptorSetBinding.binding = binding;

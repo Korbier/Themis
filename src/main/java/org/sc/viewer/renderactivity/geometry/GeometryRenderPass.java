@@ -28,8 +28,8 @@ import static org.lwjgl.vulkan.VK10.*;
 
 public class GeometryRenderPass extends RenderPass {
 
-    private final static String FB_ATTACHMENT_COLOR = "framebuffer.attachment.color";
-    private final static String FB_ATTACHMENT_DEPTH = "framebuffer.attachment.depth";
+    public final static String FB_ATTACHMENT_COLOR = "geometry.framebuffer.attachment.color";
+    public final static String FB_ATTACHMENT_DEPTH = "geometry.framebuffer.attachment.depth";
 
     /*** Framed object ***/
     private final static FrameKey<VkFrameBuffer> FK_FRAMEBUFFER = FrameKey.of( VkFrameBuffer.class );
@@ -125,12 +125,15 @@ public class GeometryRenderPass extends RenderPass {
 
     }
 
+    public VkFrameBufferAttachments getFramebufferAttachments() {
+        return this.frameBufferAttachments;
+    }
 
     private void setupFramebufferAttachments() throws ThemisException {
         this.frameBufferAttachments = new VkFrameBufferAttachments( getConfiguration(), getDevice(), getExtent2D() );
         this.frameBufferAttachments.setup();
-        this.frameBufferAttachments.raw( FB_ATTACHMENT_COLOR, getImageFormat() );
-        this.frameBufferAttachments.depth( FB_ATTACHMENT_DEPTH, VK_FORMAT_D32_SFLOAT );
+        this.frameBufferAttachments.depth( FB_ATTACHMENT_DEPTH, VK_FORMAT_D32_SFLOAT, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT );
+        this.frameBufferAttachments.color( FB_ATTACHMENT_COLOR, VK_FORMAT_R16G16B16A16_UNORM, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_SAMPLE_COUNT_1_BIT );
     }
 
     private void setupRenderPass() throws ThemisException {
@@ -144,8 +147,8 @@ public class GeometryRenderPass extends RenderPass {
             VkFrameBufferDescriptor descriptor = new VkFrameBufferDescriptor(
                 getExtent2D(),
                 this.renderPass.getHandle(),
-                getImageView( frame ).getHandle(),
-                this.frameBufferAttachments.get( FB_ATTACHMENT_DEPTH ).getView().getHandle()
+                this.frameBufferAttachments.get( FB_ATTACHMENT_DEPTH ).getView().getHandle(),
+                this.frameBufferAttachments.get( FB_ATTACHMENT_COLOR ).getView().getHandle()
             );
             return new VkFrameBuffer( getConfiguration(), getDevice(), descriptor );
         });
@@ -162,12 +165,12 @@ public class GeometryRenderPass extends RenderPass {
     private VkRenderPassDescriptor createSubPassDescriptor(VkDevice device) {
 
         VkRenderPassLayout layout = new VkRenderPassLayout()
-                .add( 0, VK_FORMAT_B8G8R8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE )
-                .add( 1, this.frameBufferAttachments.get( FB_ATTACHMENT_DEPTH ).getFormat(), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE);
+                .add( 0, this.frameBufferAttachments.get( FB_ATTACHMENT_DEPTH ).getFormat(), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE )
+                .add( 1, this.frameBufferAttachments.get( FB_ATTACHMENT_COLOR ).getFormat(), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE);
 
         VkSubpass subpass = new VkSubpass( device, VK_PIPELINE_BIND_POINT_GRAPHICS );
-        subpass.color( 0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL );
-        subpass.depth( 1, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL );
+        subpass.depth( 0, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL );
+        subpass.color( 1, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL );
 
         VkRenderPassDescriptor descriptor = new VkRenderPassDescriptor( layout );
         descriptor.subpass( subpass );
