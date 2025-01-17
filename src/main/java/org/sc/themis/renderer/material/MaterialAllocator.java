@@ -15,6 +15,22 @@ public class MaterialAllocator {
         this.materials.put( material.getIdentifier(), material );
     }
 
+    public void cleanup() throws ThemisException {
+        for ( BaseMaterial material : materials() ) {
+            material.cleanup();
+        }
+    }
+  
+    public void allocate(MaterialProperties properties) throws ThemisException {
+        for ( Material material : materials() ) {
+
+
+    public void cleanup() throws ThemisException {
+        for ( BaseMaterial material : materials() ) {
+            material.cleanup();
+        }
+    }
+  
     public void allocate(MaterialProperties properties) throws ThemisException {
         for ( Material material : materials() ) {
             String variantIdentifier = material.add( properties );
