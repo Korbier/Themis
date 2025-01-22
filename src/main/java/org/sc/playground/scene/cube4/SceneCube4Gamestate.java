@@ -57,7 +57,7 @@ public class SceneCube4Gamestate implements Gamestate {
         material.put( MaterialProperty.COLOR_BASE, color );
 
 
-        Mesh cube = this.meshFactory.createCube( renderer.getResourceAllocator(), prefix + "my-cube ", ColorMaterial.IDENTIFIER );
+        Mesh cube = this.meshFactory.createCube( renderer.getResourceAllocator(), prefix + "my-cube " );
         cube.setProperties( material );
 
         return this.modelFactory.create( prefix + "my-cube-model", cube );

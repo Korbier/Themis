@@ -67,7 +67,7 @@ public class SceneCube3Gamestate implements Gamestate {
         MaterialProperties material = new MaterialProperties();
         material.put( MaterialProperty.TEXTURE_BASE, vkImage );
 
-        Mesh cube = this.meshFactory.createCube( renderer.getResourceAllocator(), prefix + "my-cube ", TextureMaterial.IDENTIFIER );
+        Mesh cube = this.meshFactory.createCube( renderer.getResourceAllocator(), prefix + "my-cube " );
         cube.setProperties( material );
 
         return this.modelFactory.create( prefix + "my-cube-model", cube );

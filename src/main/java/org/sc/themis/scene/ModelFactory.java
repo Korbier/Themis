@@ -33,7 +33,7 @@ public class ModelFactory {
         return new Model( identifier, meshes);
     }
 
-    public Model create(String identifier, VkStagingResourceAllocator allocator, Path modelFile, String material ) throws ThemisException {
+    public Model create(String identifier, VkStagingResourceAllocator allocator, Path modelFile ) throws ThemisException {
 
         Assertions.isTrue( modelFile.toFile()::exists, new ModelFileNotFoundException( modelFile ) );
 
@@ -42,7 +42,7 @@ public class ModelFactory {
             Path workdir = modelFile.getParent();
 
             List<MaterialProperties> properties = loadProperties( scene, allocator, modelFile );
-            Mesh [] meshes = loadMeshs( allocator, identifier, scene, material, properties );
+            Mesh [] meshes = loadMeshs( allocator, identifier, scene, properties );
 
             return new Model( identifier, meshes );
 
@@ -54,7 +54,7 @@ public class ModelFactory {
         return modelIdentifier + ".mesh." + inc;
     }
 
-    private Mesh[] loadMeshs( VkStagingResourceAllocator allocator, String modelIdentifier, AIScene scene, String material, List<MaterialProperties> properties ) throws ThemisException {
+    private Mesh[] loadMeshs( VkStagingResourceAllocator allocator, String modelIdentifier, AIScene scene, List<MaterialProperties> properties ) throws ThemisException {
 
         PointerBuffer aiMeshesBuffer = scene.mMeshes();
         int numMeshes = scene.mNumMeshes();
@@ -69,7 +69,7 @@ public class ModelFactory {
             int [] indices = getIndices( aiMesh );
 
             meshes[i] = new Mesh( allocator, getMeshIdentifier(modelIdentifier, i) );
-            meshes[i].set( vertices, indices, material );
+            meshes[i].set( vertices, indices );
             meshes[i].setProperties( properties.get( aiMesh.mMaterialIndex() ) );
 
         }

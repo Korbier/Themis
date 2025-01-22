@@ -1,9 +1,7 @@
 package org.sc.themis.renderer.base;
 
-import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
 import org.sc.themis.renderer.exception.*;
-import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorSet;
 import org.sc.themis.shared.exception.ThemisException;
 
 import java.nio.IntBuffer;
@@ -90,6 +88,7 @@ public class VulkanPipeline extends Vulkan {
                 if ( errno == org.lwjgl.vulkan.VK10.VK_ERROR_OUT_OF_HOST_MEMORY ) throw new VkOutOfHostMemoryException();
                 if ( errno == org.lwjgl.vulkan.VK10.VK_ERROR_OUT_OF_DEVICE_MEMORY ) throw new VkOutOfDeviceMemoryException();
                 if ( errno == org.lwjgl.vulkan.VK10.VK_ERROR_FRAGMENTED_POOL ) throw new VkFragmentedPoolException();
+                if ( errno == org.lwjgl.vulkan.VK11.VK_ERROR_OUT_OF_POOL_MEMORY ) throw new VkOutOfPoolMemoryException();
             }
         );
     }

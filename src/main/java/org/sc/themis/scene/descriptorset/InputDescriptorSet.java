@@ -20,11 +20,12 @@ import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_FRAGMENT_BIT;
 public class InputDescriptorSet extends VulkanObject {
 
     private final Renderer renderer;
+    private final FrameKey<VkDescriptorSet> descriptorSets = FrameKey.of( VkDescriptorSet.class );
+
     private VkFrameBufferAttachments[] inputAttachments;
 
     private VkDescriptorSetLayout descriptorSetLayout;
     private VkDescriptorPool descriptorPool;
-    private FrameKey<VkDescriptorSet> descriptorSets = FrameKey.of( VkDescriptorSet.class );
 
     private org.sc.themis.renderer.resource.image.VkSampler sampler;
 
@@ -98,11 +99,7 @@ public class InputDescriptorSet extends VulkanObject {
     }
 
     private void createDescriptorSets( VkDescriptorPool pool, VkDescriptorSetLayout layout ) throws ThemisException {
-        this.renderer.getFrames().create( this.descriptorSets, () -> {
-            VkDescriptorSet descriptor = new VkDescriptorSet( getConfiguration(), this.renderer.getDevice(), pool, layout );
-            descriptor.setup();
-            return descriptor;
-        });
+        this.renderer.getFrames().create( this.descriptorSets, pool::create );
     }
 
     private VkSampler createDefaultSampler() throws ThemisException {

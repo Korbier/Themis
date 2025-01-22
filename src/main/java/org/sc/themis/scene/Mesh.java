@@ -20,8 +20,6 @@ public class Mesh {
     private final VkStagingBuffer indiceBuffer;
     private MaterialProperties properties = new MaterialProperties();
 
-    private String material;
-
     private boolean renderable = false;
     private int vertexCount = 0;
     private int indiceCount = 0;
@@ -33,12 +31,7 @@ public class Mesh {
     }
 
     void set( Vertex[] vertices, int [] indices ) throws ThemisException {
-        set( vertices, indices, null );
-    }
 
-    void set( Vertex[] vertices, int [] indices, String material ) throws ThemisException {
-
-        this.material = material;
         this.vertexCount = vertices.length;
         this.indiceCount = indices.length;
 
@@ -122,10 +115,6 @@ public class Mesh {
 
     public VkBuffer getIndicesBuffer() {
         return this.indiceBuffer.getBuffer();
-    }
-
-    public String getMaterialIdentifier() {
-        return this.material;
     }
 
     @Override

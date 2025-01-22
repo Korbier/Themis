@@ -22,11 +22,15 @@ public class ColorMaterial extends Material {
     public final static String VERTEX_SOURCE = """
             #version 450
             
-            layout(location = 0) in vec3 position;
-            layout(location = 1) in vec3 normal;
-            layout(location = 2) in vec2 texture;
-            layout(location = 3) in vec3 tangent;
-            layout(location = 4) in vec3 bitangent;
+            layout(location = 0) out vec2 outTexture;
+            layout(location = 1) out vec3 outPosition;
+            layout(location = 2) out mat3 outTBNMatrix;
+            
+            layout(location = 0) in vec3 inPosition;
+            layout(location = 1) in vec3 inNormal;
+            layout(location = 2) in vec2 inTexture;
+            layout(location = 3) in vec3 inTangent;
+            layout(location = 4) in vec3 inBitangent;
             
             /******* 0 - Global Data ******************/
             layout(std140, set = 0, binding = 0) uniform Global {
@@ -39,22 +43,40 @@ public class ColorMaterial extends Material {
                 uint utime;
             } global;
             
-            
             /******* PUSH - Instance Data ******************/
             layout(push_constant) uniform pushConstant {
                 layout( offset = 0 ) mat4 matrix;
             } instance;
             
+            vec3 _normalize( mat3 normalMatrix, vec3 toNormalize ) {
+                return normalize(normalMatrix * toNormalize);
+            }
+            
             void main()
             {
-                gl_Position = global.projection * global.view * instance.matrix * vec4(position, 1.0f);
+                gl_Position = global.projection * global.view * instance.matrix * vec4(inPosition, 1.0f);
+            
+                outTexture  = inTexture;
+                outPosition = (instance.matrix * vec4(inPosition, 1.0f)).xyz;
+            
+                mat3 normalMatrix = mat3( transpose( inverse( instance.matrix ) ) );
+                vec3 T = _normalize( normalMatrix, inTangent );
+                vec3 B = _normalize( normalMatrix, inBitangent );
+                vec3 N = _normalize( normalMatrix, inNormal );
+        
+                outTBNMatrix = mat3(T, B, N);
+            
             }
             """;
 
     public final static String FRAGMENT_SOURCE = """
             #version 450
             
-            layout(location = 0) out vec4 outFragColor;
+            layout(location = 0) in vec2 inTexture;
+            layout(location = 1) in vec3 inPosition;
+            layout(location = 2) in mat3 inTBNMatrix;
+            
+            layout(location = 0) out vec4 outColor;
             
             /******* 0 - Global Data ******************/
             layout(std140, set = 0, binding = 0) uniform Global {
@@ -73,7 +95,7 @@ public class ColorMaterial extends Material {
             } material;
             
             void main() {
-                outFragColor = material.color;
+                outColor = material.color;
             }
             """;
 
@@ -86,7 +108,6 @@ public class ColorMaterial extends Material {
 
         setVariantsIdentifierFunction( props -> props.get(MaterialProperty.COLOR_BASE).toString() );
 
-        /** Pipeline **/
         addShader( VK_SHADER_STAGE_VERTEX_BIT, VkShaderSourceCompiler.compileShader(VERTEX_SOURCE, Shaderc.shaderc_glsl_vertex_shader));
         addShader( VK_SHADER_STAGE_FRAGMENT_BIT, VkShaderSourceCompiler.compileShader(FRAGMENT_SOURCE, Shaderc.shaderc_glsl_fragment_shader));
         addConstantRange( VK_SHADER_STAGE_VERTEX_BIT, 0, MemorySizeUtils.MAT4x4F );
@@ -99,11 +120,9 @@ public class ColorMaterial extends Material {
         );
         setPipelineDescriptor( new VkPipelineDescriptor(renderPass, 0, false, 1, true, 1, 1, 1) );
 
-        /** Variant layout **/
         addVariantsUniformBinding(0, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, BUFFER_DESCRIPTOR  );
         setVariantsUniformSetter( (binding, buffer, props) -> buffer.set(0, props.getProperty(MaterialProperty.COLOR_BASE) ) );
 
-        /** Other descriptorsets **/
         setDescriptorsetProviders( sceneDescriptorSet );
 
     }

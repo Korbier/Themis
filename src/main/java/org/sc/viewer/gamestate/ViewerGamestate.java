@@ -1,41 +1,32 @@
 package org.sc.viewer.gamestate;
 
-import org.joml.Vector4f;
 import org.sc.themis.gamestate.Gamestate;
 import org.sc.themis.input.Input;
 import org.sc.themis.renderer.Renderer;
 import org.sc.themis.scene.*;
-import org.sc.themis.scene.material.ColorMaterial;
-import org.sc.themis.scene.material.MaterialProperties;
-import org.sc.themis.scene.material.MaterialProperty;
 import org.sc.themis.shared.exception.ThemisException;
+
+import java.nio.file.Path;
 
 public class ViewerGamestate implements Gamestate {
 
-    private final MeshFactory meshFactory = new MeshFactory();
     private final ModelFactory modelFactory = new ModelFactory();
 
     private Model model;
-    private Model model2;
 
     @Override
     public void setup(Renderer renderer, Scene scene) throws ThemisException {
 
-        scene.getCamera().setPosition( 0.0f, 0.0f, 7.0f );
+        scene.getCamera().setPosition( 0.0f, 1.0f, 5.0f );
 
-        this.model = createCubeModel(renderer, new Vector4f(1.0f, 0.0f, 0.0f, 1.0f));
+        this.model = createSphere(renderer, "sphere-1");
         scene.add( this.model.create() );
-        scene.add( this.model.create().position(  4.0f, 0.0f, 0.0f ).scale( 0.5f) );
-
-        this.model2 = createCubeModel(renderer, new Vector4f(1.0f, 1.0f, 0.0f, 1.0f));
-        scene.add( this.model2.create().position( -4.0f, 0.0f, 0.0f ).rotate( 45.0f, 1.0f, 0.0f, 0.0f ) );
 
     }
 
     @Override
     public void cleanup(Renderer renderer, Scene scene) throws ThemisException {
         this.model.cleanup();
-        this.model2.cleanup();
     }
 
     @Override
@@ -48,15 +39,8 @@ public class ViewerGamestate implements Gamestate {
 
     }
 
-    private Model createCubeModel(Renderer renderer, Vector4f color) throws ThemisException {
-
-        MaterialProperties props = new MaterialProperties();
-        props.put( MaterialProperty.COLOR_BASE, color );
-
-        Mesh mCube = this.meshFactory.createCube( renderer.getResourceAllocator(), "my-cube-" + color.toString(), ColorMaterial.IDENTIFIER );
-        mCube.setProperties( props );
-
-        return this.modelFactory.create( "my-cube-model-" + color.toString(), mCube );
+    private Model createSphere(Renderer renderer, String id) throws ThemisException {
+        return this.modelFactory.create( id, renderer.getResourceAllocator(), Path.of( "./src/main/resources/model/sphere/scene.gltf") );
     }
 
 }

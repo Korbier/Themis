@@ -6,6 +6,8 @@ import org.sc.themis.renderer.device.VkDevice;
 import org.sc.themis.renderer.framebuffer.VkFrameBuffer;
 import org.sc.themis.renderer.framebuffer.VkFrameBufferAttachments;
 import org.sc.themis.renderer.framebuffer.VkFrameBufferDescriptor;
+import org.sc.themis.renderer.material.Material;
+import org.sc.themis.renderer.material.MaterialAllocator;
 import org.sc.themis.renderer.renderpass.VkRenderPass;
 import org.sc.themis.renderer.renderpass.VkRenderPassDescriptor;
 import org.sc.themis.renderer.renderpass.VkRenderPassLayout;
@@ -16,9 +18,6 @@ import org.sc.themis.scene.Instance;
 import org.sc.themis.scene.Mesh;
 import org.sc.themis.scene.Model;
 import org.sc.themis.scene.Scene;
-import org.sc.themis.scene.material.ColorMaterial;
-import org.sc.themis.scene.material.Material;
-import org.sc.themis.scene.material.MaterialAllocator;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.viewer.renderactivity.RenderPass;
@@ -28,7 +27,7 @@ import static org.lwjgl.vulkan.VK10.*;
 
 public class GeometryRenderPass extends RenderPass {
 
-    public final static String FB_ATTACHMENT_COLOR = "geometry.framebuffer.attachment.color";
+    public final static String FB_ATTACHMENT_PRESENT = "geometry.framebuffer.attachment.present";
     public final static String FB_ATTACHMENT_DEPTH = "geometry.framebuffer.attachment.depth";
 
     /*** Framed object ***/
@@ -81,7 +80,6 @@ public class GeometryRenderPass extends RenderPass {
         command.beginRenderPass( this.renderPass, frameBuffer );
         command.viewportAndScissor( getExtent2D() );
 
-        /*** bind pipeline, descriptorset, etc **/
         for (Material material : this.materialAllocator.materials() ) {
 
             command.bindPipeline( material.getPipeline() );
@@ -132,8 +130,8 @@ public class GeometryRenderPass extends RenderPass {
     private void setupFramebufferAttachments() throws ThemisException {
         this.frameBufferAttachments = new VkFrameBufferAttachments( getConfiguration(), getDevice(), getExtent2D() );
         this.frameBufferAttachments.setup();
-        this.frameBufferAttachments.depth( FB_ATTACHMENT_DEPTH, VK_FORMAT_D32_SFLOAT, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT );
-        this.frameBufferAttachments.color( FB_ATTACHMENT_COLOR, VK_FORMAT_R16G16B16A16_UNORM, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_SAMPLE_COUNT_1_BIT );
+        this.frameBufferAttachments.depth( FB_ATTACHMENT_DEPTH, VK_FORMAT_D32_SFLOAT, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, 1 );
+        this.frameBufferAttachments.raw( FB_ATTACHMENT_PRESENT, getRenderer().getImageFormat() );
     }
 
     private void setupRenderPass() throws ThemisException {
@@ -148,7 +146,7 @@ public class GeometryRenderPass extends RenderPass {
                 getExtent2D(),
                 this.renderPass.getHandle(),
                 this.frameBufferAttachments.get( FB_ATTACHMENT_DEPTH ).getView().getHandle(),
-                this.frameBufferAttachments.get( FB_ATTACHMENT_COLOR ).getView().getHandle()
+                getImageView( frame ).getHandle()
             );
             return new VkFrameBuffer( getConfiguration(), getDevice(), descriptor );
         });
@@ -165,8 +163,8 @@ public class GeometryRenderPass extends RenderPass {
     private VkRenderPassDescriptor createSubPassDescriptor(VkDevice device) {
 
         VkRenderPassLayout layout = new VkRenderPassLayout()
-                .add( 0, this.frameBufferAttachments.get( FB_ATTACHMENT_DEPTH ).getFormat(), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE )
-                .add( 1, this.frameBufferAttachments.get( FB_ATTACHMENT_COLOR ).getFormat(), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE);
+                .add( 0, this.frameBufferAttachments.get( FB_ATTACHMENT_DEPTH ).getFormat(), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE )
+                .add( 1, VK_FORMAT_B8G8R8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE);
 
         VkSubpass subpass = new VkSubpass( device, VK_PIPELINE_BIND_POINT_GRAPHICS );
         subpass.depth( 0, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL );
