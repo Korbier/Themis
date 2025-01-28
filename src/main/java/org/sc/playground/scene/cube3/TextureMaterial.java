@@ -86,7 +86,7 @@ public class TextureMaterial extends Material {
 
         super(configuration, renderer, MATERIAL_ID);
 
-        setVariantsIdentifierFunction( props -> props.get(MaterialProperty.TEXTURE_BASE).toString() );
+        setVariantsIdentifierFunction( props -> props.get(MaterialProperty.Texture.BASE).toString() );
 
         /** Pipeline **/
         addShader( VK_SHADER_STAGE_VERTEX_BIT, VkShaderSourceCompiler.compileShader(VERTEX_SOURCE, Shaderc.shaderc_glsl_vertex_shader));
@@ -103,7 +103,7 @@ public class TextureMaterial extends Material {
 
         /** Variant layout **/
         addVariantsCombinedImageSamplerBinding( 0, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, DESCRIPTOR );
-        setVariantsCombinedImageSamplerSetter( (binding, descriptorset, sampler, props) -> descriptorset.bind( binding, props.getProperty(MaterialProperty.TEXTURE_BASE).getView(), sampler ) );
+        setVariantsCombinedImageSamplerSetter( (binding, descriptorset, sampler, props) -> descriptorset.bind( binding, props.getProperty(MaterialProperty.Texture.BASE).getView(), sampler ) );
 
         /** Other descriptorsets **/
         setDescriptorsetProviders( sceneDescriptorSet );

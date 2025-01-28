@@ -18,19 +18,19 @@ public class Mesh {
 
     private final VkStagingBuffer vertexBuffer;
     private final VkStagingBuffer indiceBuffer;
-    private MaterialProperties properties = new MaterialProperties();
+    private MaterialProperties properties = null;
 
     private boolean renderable = false;
     private int vertexCount = 0;
     private int indiceCount = 0;
 
-    Mesh( VkStagingResourceAllocator resourceAllocator, String identifier ) {
+    public Mesh( VkStagingResourceAllocator resourceAllocator, String identifier ) {
         this.identifier = identifier;
         this.vertexBuffer = resourceAllocator.allocateBuffer( VK_BUFFER_USAGE_VERTEX_BUFFER_BIT );
         this.indiceBuffer = resourceAllocator.allocateBuffer( VK_BUFFER_USAGE_INDEX_BUFFER_BIT );
     }
 
-    void set( Vertex[] vertices, int [] indices ) throws ThemisException {
+    public void set( Vertex[] vertices, int [] indices ) throws ThemisException {
 
         this.vertexCount = vertices.length;
         this.indiceCount = indices.length;

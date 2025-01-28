@@ -3,6 +3,8 @@ package org.sc.viewer.gamestate;
 import org.sc.themis.gamestate.Gamestate;
 import org.sc.themis.renderer.Renderer;
 import org.sc.themis.scene.*;
+import org.sc.themis.scene.factory.MaterialFactory;
+import org.sc.themis.scene.factory.ModelFactory;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.viewer.gamestate.controller.PostProcessorController;
 import org.sc.viewer.renderactivity.postprocess.postprocessor.ShowTBNPostprocessor;
@@ -15,6 +17,7 @@ public class ViewerGamestate implements Gamestate {
 
     private final PostProcessorContext ppContext = new PostProcessorContext();
     private final ModelFactory modelFactory = new ModelFactory();
+    private final MaterialFactory materialFactory = new MaterialFactory();
 
     private Model model;
 
@@ -51,11 +54,12 @@ public class ViewerGamestate implements Gamestate {
 
     private void setupScene(Renderer renderer, Scene scene) throws ThemisException {
         this.model = createSphere(renderer, "sphere-1");
-        scene.add( this.model.create() );
+        this.model.setDefaultMaterialProperties( this.materialFactory.colored( 1.0f, 0.0f, 0.0f ) );
+        scene.add( this.model.create());
     }
 
     private Model createSphere(Renderer renderer, String id) throws ThemisException {
-        return this.modelFactory.create( id, renderer.getResourceAllocator(), Path.of( "./src/main/resources/model/sphere/scene.gltf") );
+        return this.modelFactory.create( id, renderer.getResourceAllocator(), Path.of( "./src/main/resources/model/cube/cube.obj") );
     }
 
 }

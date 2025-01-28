@@ -4,6 +4,8 @@ import org.sc.themis.gamestate.Gamestate;
 import org.sc.themis.input.Input;
 import org.sc.themis.renderer.Renderer;
 import org.sc.themis.scene.*;
+import org.sc.themis.scene.factory.MeshFactory;
+import org.sc.themis.scene.factory.ModelFactory;
 import org.sc.themis.shared.exception.ThemisException;
 
 public class SceneTriangle2Gamestate implements Gamestate {

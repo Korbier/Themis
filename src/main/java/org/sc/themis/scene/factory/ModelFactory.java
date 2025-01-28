@@ -1,4 +1,4 @@
-package org.sc.themis.scene;
+package org.sc.themis.scene.factory;
 
 import org.joml.Vector2f;
 import org.joml.Vector3f;
@@ -8,6 +8,9 @@ import org.lwjgl.assimp.*;
 import org.lwjgl.system.MemoryStack;
 import org.sc.themis.renderer.resource.staging.VkStagingImage;
 import org.sc.themis.renderer.resource.staging.VkStagingResourceAllocator;
+import org.sc.themis.scene.Mesh;
+import org.sc.themis.scene.Model;
+import org.sc.themis.scene.Vertex;
 import org.sc.themis.scene.exception.ModelFileNotFoundException;
 import org.sc.themis.renderer.material.MaterialProperties;
 import org.sc.themis.renderer.material.MaterialProperty;
@@ -29,7 +32,7 @@ public class ModelFactory {
               aiProcess_GenSmoothNormals | aiProcess_JoinIdenticalVertices | aiProcess_Triangulate
             | aiProcess_FixInfacingNormals | aiProcess_CalcTangentSpace | aiProcess_PreTransformVertices;
 
-    public Model create( String identifier, Mesh ... meshes ) {
+    public Model create(String identifier, Mesh... meshes ) {
         return new Model( identifier, meshes);
     }
 
@@ -65,7 +68,7 @@ public class ModelFactory {
 
             AIMesh aiMesh = AIMesh.create( aiMeshesBuffer.get(i) );
 
-            Vertex [] vertices = getVertices( aiMesh );
+            Vertex[] vertices = getVertices( aiMesh );
             int [] indices = getIndices( aiMesh );
 
             meshes[i] = new Mesh( allocator, getMeshIdentifier(modelIdentifier, i) );
@@ -98,13 +101,13 @@ public class ModelFactory {
             AIVector3D bitangent = aiBitangents != null ? aiBitangents.get() : null;
 
             vertices.add(
-                    Vertex.of(
-                            new Vector3f( aiVertex.x(),aiVertex.y(),aiVertex.z() ),
-                            normal != null ? new Vector3f( normal.x(),normal.y(),normal.z() ) : new Vector3f(),
-                            textCoord != null ? new Vector2f( textCoord.x(), 1 - textCoord.y() ) : new Vector2f(),
-                            tangent != null ? new Vector3f( tangent.x(),tangent.y(),tangent.z() ) : new Vector3f(),
-                            bitangent != null ? new Vector3f( bitangent.x(),bitangent.y(),bitangent.z() ) : new Vector3f()
-                    )
+                Vertex.of(
+                    new Vector3f( aiVertex.x(),aiVertex.y(),aiVertex.z() ),
+                    normal != null ? new Vector3f( normal.x(),normal.y(),normal.z() ) : new Vector3f(),
+                    textCoord != null ? new Vector2f( textCoord.x(), 1 - textCoord.y() ) : new Vector2f(),
+                    tangent != null ? new Vector3f( tangent.x(),tangent.y(),tangent.z() ) : new Vector3f(),
+                    bitangent != null ? new Vector3f( bitangent.x(),bitangent.y(),bitangent.z() ) : new Vector3f()
+                )
             );
 
         }
@@ -144,16 +147,16 @@ public class ModelFactory {
 
         for (int i = 0; i < numMaterials; i++) {
 
+            AIMaterial aiMaterial = AIMaterial.create(aiMaterialsBuffer.get(i));
             MaterialProperties properties = new MaterialProperties();
-            AIMaterial        aiMaterial = AIMaterial.create(aiMaterialsBuffer.get(i));
 
-            setColor( aiMaterial, AI_MATKEY_BASE_COLOR, properties, MaterialProperty.COLOR_BASE );
-            setColor( aiMaterial, AI_MATKEY_COLOR_DIFFUSE, properties, MaterialProperty.COLOR_DIFFUSE );
-            setColor( aiMaterial, AI_MATKEY_COLOR_EMISSIVE, properties, MaterialProperty.COLOR_EMISSIVE );
-            setColor( aiMaterial, AI_MATKEY_COLOR_SPECULAR, properties, MaterialProperty.COLOR_SPECULAR );
-            setFloat( aiMaterial, AI_MATKEY_SHININESS, properties, MaterialProperty.COLOR_SHININESS );
+            setColor( aiMaterial, AI_MATKEY_BASE_COLOR, properties, MaterialProperty.Color.BASE );
+            setColor( aiMaterial, AI_MATKEY_COLOR_DIFFUSE, properties, MaterialProperty.Color.DIFFUSE );
+            setColor( aiMaterial, AI_MATKEY_COLOR_EMISSIVE, properties, MaterialProperty.Color.EMISSIVE );
+            setColor( aiMaterial, AI_MATKEY_COLOR_SPECULAR, properties, MaterialProperty.Color.SPECULAR );
+            setFloat( aiMaterial, AI_MATKEY_SHININESS, properties, MaterialProperty.Property.SHININESS );
 
-            setImage( workdir, allocator, aiMaterial, aiTextureType_BASE_COLOR, properties, MaterialProperty.TEXTURE_BASE );
+            setImage( workdir, allocator, aiMaterial, aiTextureType_BASE_COLOR, properties, MaterialProperty.Texture.BASE );
 
             result.add( properties );
 
@@ -192,10 +195,15 @@ public class ModelFactory {
     }
 
     private void setColor(AIMaterial assimpMaterial, String assimpAttr, Map<MaterialProperty<?>, Object> properties, MaterialProperty<Vector4f> property ) {
+
         AIColor4D  workColor = AIColor4D.create();
         aiGetMaterialColor( assimpMaterial, assimpAttr, 0, 0, workColor );
-        Vector4f color =  new Vector4f( workColor.r(), workColor.g(), workColor.b(), workColor.a() );
-        properties.put( property, color );
+
+        if ( workColor.r() != 0.0f || workColor.g() != 0.0f && workColor.b() != 0.0f || workColor.a() != 0.0f ) {
+            Vector4f color = new Vector4f(workColor.r(), workColor.g(), workColor.b(), workColor.a());
+            properties.put(property, color);
+        }
+
     }
 
     private void setFloat(AIMaterial assimpMaterial, String assimpAttr, Map<MaterialProperty<?>, Object> properties, MaterialProperty<Float> property ) {

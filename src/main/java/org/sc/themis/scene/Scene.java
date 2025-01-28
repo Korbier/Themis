@@ -1,7 +1,6 @@
 package org.sc.themis.scene;
 
 import org.jboss.logging.Logger;
-import org.sc.themis.renderer.material.MaterialAllocator;
 import org.sc.themis.renderer.material.MaterialProperties;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
@@ -25,6 +24,9 @@ public class Scene extends TObject {
     /** Controller **/
     private final Set<Controller> controllers = new HashSet<>();
 
+    /** Material **/
+    private final Map<String, String> materials = new HashMap<>();
+
     public Scene( Configuration configuration ) {
         super(configuration);
         this.projection = new Projection( configuration );
@@ -44,8 +46,12 @@ public class Scene extends TObject {
     }
 
     public void add( Instance ... instances ) {
+        add( null, instances );
+    }
+
+    public void add( String defaultMaterial, Instance ... instances ) {
         for ( Instance instance : instances ) {
-            add( instance.getModel() );
+            add( instance.getModel(), defaultMaterial );
             this.instances.add( instance );
         }
     }
@@ -54,23 +60,13 @@ public class Scene extends TObject {
         Collections.addAll(this.controllers, controllers);
     }
 
-    public void allocateMaterial( MaterialAllocator materialAllocator ) throws ThemisException {
-
-        if ( this.materialProperties.isEmpty() ) {
-            return;
-        }
-
-        for ( MaterialProperties properties : this.materialProperties) {
-            materialAllocator.allocate( properties );
-        }
-
-        this.materialProperties.clear();
-
-    }
-
-    private void add(Model model) {
+    private void add( Model model, String material ) {
 
         this.models.add( model );
+
+        if ( material != null ) {
+            this.materials.put( model.getIdentifier(), material );
+        }
 
         for ( Mesh mesh : model.getMeshes() ) {
             this.materialProperties.add( mesh.getProperties() );
@@ -92,6 +88,28 @@ public class Scene extends TObject {
 
     public Set<Controller> getControllers() {
         return this.controllers;
+    }
+
+    public String getMaterial( Model model ) {
+        return this.materials.get( model.getIdentifier() );
+    }
+
+    public MaterialProperties [] getMaterialsProperties() {
+
+        Set<MaterialProperties> materialProperties = new HashSet<>();
+
+        for ( Model model : getModels() ) {
+
+            materialProperties.add( model.getMaterialProperties() );
+
+            for ( Mesh mesh : model.getMeshes() ) {
+                materialProperties.add( mesh.getProperties() );
+            }
+
+        }
+
+        return materialProperties.toArray( new MaterialProperties[0] );
+
     }
 
 }

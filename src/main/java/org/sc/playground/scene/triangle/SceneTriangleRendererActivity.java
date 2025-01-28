@@ -8,7 +8,7 @@ import org.sc.themis.renderer.framebuffer.VkFrameBuffer;
 import org.sc.themis.renderer.pipeline.*;
 import org.sc.themis.renderer.sync.VkFence;
 import org.sc.themis.scene.Mesh;
-import org.sc.themis.scene.MeshFactory;
+import org.sc.themis.scene.factory.MeshFactory;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;

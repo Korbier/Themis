@@ -1,5 +1,6 @@
 package org.sc.themis.renderer.material;
 
+import org.jboss.logging.Logger;
 import org.sc.themis.renderer.Renderer;
 import org.sc.themis.renderer.base.VulkanObject;
 import org.sc.themis.renderer.base.frame.Frames;
@@ -16,8 +17,11 @@ import org.sc.themis.shared.exception.ThemisException;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 public abstract class Material extends VulkanObject {
+
+    private static final org.jboss.logging.Logger LOG = Logger.getLogger(Material.class);
 
     private static final int DESCRIPTORPOOL_SIZE = 10;
 
@@ -41,6 +45,7 @@ public abstract class Material extends VulkanObject {
 
     /** Variant identifier function **/
     private Function<MaterialProperties,String> variantIdentifierFunction = MaterialProperties::toString;
+    private Predicate<MaterialProperties> materialPropertiesPredicate = (m) -> true;
 
     /** Pipeline **/
     private final MaterialPipeline pipeline;
@@ -104,6 +109,14 @@ public abstract class Material extends VulkanObject {
     /** Material usage methods - create and store variant for provided properties **/
     public String add( MaterialProperties properties ) throws ThemisException {
 
+
+        if ( !this.materialPropertiesPredicate.test( properties ) ) {
+            LOG.warnf( "Properties not compatible with material %s", this.getIdentifier() );
+            return null;
+        }
+
+        LOG.infof( "New variant for material %s", this.getIdentifier() );
+
         String variantIdentifier = getVariantIdentifier(properties);
 
         boolean exists = this.variantOffsets.containsKey( variantIdentifier );
@@ -152,6 +165,9 @@ public abstract class Material extends VulkanObject {
     }
 
     /** Material building methods - Variant Identifier function **/
+    protected void setMaterialPropertiesValidator(Predicate<MaterialProperties> materialPropertiesPredicate ) {
+        this.materialPropertiesPredicate = materialPropertiesPredicate;
+    }
     protected void setVariantsIdentifierFunction( Function<MaterialProperties,String> variantIdentifierFunction ) {
         this.variantIdentifierFunction = variantIdentifierFunction;
     }
@@ -277,7 +293,7 @@ public abstract class Material extends VulkanObject {
 
     public VkDescriptorSet [] getDescriptorSets( int frame, MaterialProperties properties ) {
 
-        String variantIdentifier = getVariantIdentifier( properties );
+        String variantIdentifier = properties.getVariantIdentifier( this );// getVariantIdentifier( properties );
 
         int count = this.descriptorsetProviders.length;
         if ( this.mainDescriptorSetLayout != null ) count++;

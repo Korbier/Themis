@@ -5,14 +5,21 @@ import org.sc.themis.renderer.resource.staging.VkStagingImage;
 
 public interface MaterialProperty<D> {
 
-    MaterialProperty<Vector4f> COLOR_BASE      = MaterialProperty.of( Vector4f.class );
-    MaterialProperty<Vector4f> COLOR_DIFFUSE   = MaterialProperty.of( Vector4f.class );
-    MaterialProperty<Vector4f> COLOR_EMISSIVE  = MaterialProperty.of( Vector4f.class );
-    MaterialProperty<Vector4f> COLOR_SPECULAR  = MaterialProperty.of( Vector4f.class );
-    MaterialProperty<Float>    COLOR_SHININESS = MaterialProperty.of( Float.class );
 
-    MaterialProperty<VkStagingImage> TEXTURE_BASE = MaterialProperty.of( VkStagingImage.class );
+    interface Color {
+        MaterialProperty<Vector4f> BASE      = MaterialProperty.of( Vector4f.class );
+        MaterialProperty<Vector4f> DIFFUSE   = MaterialProperty.of( Vector4f.class );
+        MaterialProperty<Vector4f> EMISSIVE  = MaterialProperty.of( Vector4f.class );
+        MaterialProperty<Vector4f> SPECULAR  = MaterialProperty.of( Vector4f.class );
+    }
 
+    interface Texture {
+        MaterialProperty<VkStagingImage> BASE = MaterialProperty.of( VkStagingImage.class );
+    }
+
+    interface Property {
+        MaterialProperty<Float>    SHININESS = MaterialProperty.of( Float.class );
+    }
 
     static <T> MaterialProperty<T> of(Class<T> clazz ) {
         return () -> clazz;

@@ -7,7 +7,8 @@ import org.sc.themis.renderer.framebuffer.VkFrameBuffer;
 import org.sc.themis.renderer.framebuffer.VkFrameBufferAttachments;
 import org.sc.themis.renderer.framebuffer.VkFrameBufferDescriptor;
 import org.sc.themis.renderer.material.Material;
-import org.sc.themis.renderer.material.MaterialAllocator;
+import org.sc.themis.renderer.material.MaterialManager;
+import org.sc.themis.renderer.material.MaterialProperties;
 import org.sc.themis.renderer.renderpass.VkRenderPass;
 import org.sc.themis.renderer.renderpass.VkRenderPassDescriptor;
 import org.sc.themis.renderer.renderpass.VkRenderPassLayout;
@@ -18,6 +19,7 @@ import org.sc.themis.scene.Instance;
 import org.sc.themis.scene.Mesh;
 import org.sc.themis.scene.Model;
 import org.sc.themis.scene.Scene;
+import org.sc.themis.scene.descriptorset.SceneDescriptorSet;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.viewer.renderactivity.RenderPass;
@@ -39,8 +41,9 @@ public class GeometryRenderPass extends RenderPass {
     private VkFrameBufferAttachments frameBufferAttachments;
     private VkRenderPass renderPass;
 
-    /** Materials **/
-    private MaterialAllocator materialAllocator;
+    /** Material **/
+    private ColorMaterial defaultMaterial;
+    private MaterialManager materialManager;
 
     public GeometryRenderPass(Configuration configuration) {
         super(configuration);
@@ -53,18 +56,18 @@ public class GeometryRenderPass extends RenderPass {
         setupFramebuffers();
         setupCommand();
         setupFence();
-        setupMaterialAllocator();
+        setupMaterialManager();
     }
 
     @Override
     public void setup(Scene scene) throws ThemisException {
-        scene.allocateMaterial( this.materialAllocator );
+        this.materialManager.compile( scene.getMaterialsProperties() );
     }
 
     @Override
     public void cleanup() throws ThemisException {
         getRenderer().waitIdle();
-        this.materialAllocator.cleanup();
+        this.defaultMaterial.cleanup();
         this.renderPass.cleanup();
         this.frameBufferAttachments.cleanup();
     }
@@ -80,26 +83,30 @@ public class GeometryRenderPass extends RenderPass {
         command.beginRenderPass( this.renderPass, frameBuffer );
         command.viewportAndScissor( getExtent2D() );
 
-        for (Material material : this.materialAllocator.materials() ) {
+        for ( Model model : scene.getModels() ) {
+            if (model.isRenderable()) {
 
-            command.bindPipeline( material.getPipeline() );
+                this.materialManager.bindMaterial( command, model );
 
-            for ( Model model : scene.getModels() ) {
-                if (model.isRenderable()) {
-                    for ( Mesh mesh : model.getMeshes() ) {
+                for ( Mesh mesh : model.getMeshes() ) {
 
-                        command.bindDescriptorSets( new int[0], this.materialAllocator.getDescriptorSets( material, mesh.getProperties(), frame ) );
-                        command.bindBuffers(mesh.getVerticesBuffer(), mesh.getIndicesBuffer());
+                    MaterialProperties materialProperties = mesh.getProperties();
 
-                        for (Instance instance : model.getInstances() ) {
-                            command.pushConstant( VK_SHADER_STAGE_VERTEX_BIT, 0, instance.matrix() );
-                            command.drawIndexed(mesh.getIndiceCount());
-                        }
-
+                    if ( !this.materialManager.isValid( materialProperties ) ) {
+                        materialProperties = model.getMaterialProperties();
                     }
+
+                    this.materialManager.bindMaterialVariant( command, materialProperties, frame );
+
+                    command.bindBuffers(mesh.getVerticesBuffer(), mesh.getIndicesBuffer());
+
+                    for (Instance instance : model.getInstances() ) {
+                        command.pushConstant( VK_SHADER_STAGE_VERTEX_BIT, 0, instance.matrix() );
+                        command.drawIndexed(mesh.getIndiceCount());
+                    }
+
                 }
             }
-
         }
 
         command.endRenderPass();
@@ -178,14 +185,14 @@ public class GeometryRenderPass extends RenderPass {
 
     }
 
-    private void setupMaterialAllocator() throws ThemisException {
+    private void setupMaterialManager() throws ThemisException {
 
-        this.materialAllocator = new MaterialAllocator();
+        this.defaultMaterial = new ColorMaterial( getConfiguration(), getRenderer(), this.renderPass, this.getViewerActivity().getSceneDescriptorset() );
+        this.defaultMaterial.setup();
 
-        Material color = new ColorMaterial( getConfiguration(), getRenderer(), this.renderPass, getViewerActivity().getSceneDescriptorset() );
-        color.setup();
-
-        this.materialAllocator.add( color );
+        this.materialManager = new MaterialManager( this.defaultMaterial );
 
     }
+
+
 }

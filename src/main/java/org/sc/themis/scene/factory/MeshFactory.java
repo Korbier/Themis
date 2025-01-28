@@ -1,11 +1,13 @@
-package org.sc.themis.scene;
+package org.sc.themis.scene.factory;
 
 import org.sc.themis.renderer.resource.staging.VkStagingResourceAllocator;
+import org.sc.themis.scene.Mesh;
+import org.sc.themis.scene.Vertex;
 import org.sc.themis.shared.exception.ThemisException;
 
 public class MeshFactory {
 
-    public Mesh create( VkStagingResourceAllocator allocator, String identifier, Vertex [] vertices, int [] indices ) throws ThemisException {
+    public Mesh create(VkStagingResourceAllocator allocator, String identifier, Vertex[] vertices, int [] indices ) throws ThemisException {
         Mesh mesh = new Mesh( allocator, identifier );
         mesh.set( vertices, indices );
         return mesh;

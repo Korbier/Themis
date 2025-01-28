@@ -166,7 +166,6 @@ public class ViewerRendererActivity extends RendererActivity {
         this.geometryRenderPass.resize();
         this.postProcessRenderPass.resize();
         this.uiRenderPass.resize();
-
     }
 
     private void update( int frame, Scene scene) {

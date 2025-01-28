@@ -84,7 +84,7 @@ public class ColorMaterial extends Material {
 
         super(configuration, renderer, IDENTIFIER);
 
-        setVariantsIdentifierFunction( props -> props.get(MaterialProperty.COLOR_BASE).toString() );
+        setVariantsIdentifierFunction( props -> props.get(MaterialProperty.Color.BASE).toString() );
 
         /** Pipeline **/
         addShader( VK_SHADER_STAGE_VERTEX_BIT, VkShaderSourceCompiler.compileShader(VERTEX_SOURCE, Shaderc.shaderc_glsl_vertex_shader));
@@ -101,7 +101,7 @@ public class ColorMaterial extends Material {
 
         /** Variant layout **/
         addMainUniformDynamicBinding(0, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, BUFFER_DESCRIPTOR  );
-        setMainUniformSetter( (binding, buffer, offset, props) -> buffer.set(offset, props.getProperty(MaterialProperty.COLOR_BASE) ) );
+        setMainUniformSetter( (binding, buffer, offset, props) -> buffer.set(offset, props.getProperty(MaterialProperty.Color.BASE) ) );
 
         /** Other descriptorsets **/
         setDescriptorsetProviders( sceneDescriptorSet );
