@@ -5,10 +5,6 @@ import org.sc.themis.renderer.Renderer;
 import org.sc.themis.renderer.command.VkCommand;
 import org.sc.themis.renderer.pipeline.*;
 import org.sc.themis.renderer.renderpass.VkRenderPass;
-import org.sc.themis.scene.Instance;
-import org.sc.themis.scene.Mesh;
-import org.sc.themis.scene.Model;
-import org.sc.themis.scene.Scene;
 import org.sc.themis.scene.descriptorset.InputDescriptorSet;
 import org.sc.themis.scene.descriptorset.SceneDescriptorSet;
 import org.sc.themis.shared.Configuration;
@@ -22,9 +18,9 @@ public class PostProcessorPipeline {
     private final Configuration configuration;
     private final Renderer renderer;
     private final PostProcessor postProcessor;
-    private final VkRenderPass renderpass;
-    private final SceneDescriptorSet sceneDescriptorset;
-    private final InputDescriptorSet geometryAttachmentDescriptorset;
+    private SceneDescriptorSet sceneDescriptorset;
+    private InputDescriptorSet geometryAttachmentDescriptorset;
+    private VkRenderPass renderpass;
     private VkShaderProgram shaderProgram;
     private VkPipelineLayout pipelineLayout;
     private VkPipeline pipeline;
@@ -55,29 +51,21 @@ public class PostProcessorPipeline {
         this.shaderProgram.cleanup();
     }
 
-    public void render(Scene scene, VkCommand command, int frame ) throws ThemisException {
+    public void resize( VkRenderPass renderpass, SceneDescriptorSet sceneDescriptorset, InputDescriptorSet geometryAttachmentDescriptorset) throws ThemisException {
+        this.renderpass = renderpass;
+        this.sceneDescriptorset = sceneDescriptorset;
+        this.geometryAttachmentDescriptorset = geometryAttachmentDescriptorset;
+        this.pipeline.cleanup();
+        setupPipeline();
+    }
 
+    public void bind( VkCommand command, int frame ) throws ThemisException {
         command.bindPipeline( this.pipeline );
-
         command.bindDescriptorSets(
             new int[0],
             this.sceneDescriptorset.getDescriptorSet( frame ),
             this.geometryAttachmentDescriptorset.getDescriptorSet( frame )
         );
-
-        for ( Model model : scene.getModels() ) {
-            if (model.isRenderable()) {
-                for (Mesh mesh : model.getMeshes()) {
-                    command.bindBuffers(mesh.getVerticesBuffer(), mesh.getIndicesBuffer());
-                    for (Instance instance : model.getInstances() ) {
-                        command.pushConstant( VK_SHADER_STAGE_VERTEX_BIT, 0, instance.matrix() );
-                        command.drawIndexed(mesh.getIndiceCount());
-                    }
-                }
-            }
-        }
-
-
     }
 
     private void setupShaderProgram() throws ThemisException {

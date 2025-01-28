@@ -11,6 +11,7 @@ import org.sc.themis.scene.descriptorset.MousePickingDescriptorSet;
 import org.sc.themis.scene.descriptorset.SceneDescriptorSet;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
+import org.sc.viewer.gamestate.ViewerGamestate;
 import org.sc.viewer.renderactivity.geometry.GeometryRenderPass;
 import org.sc.viewer.renderactivity.picking.MousePickingRenderPass;
 import org.sc.viewer.renderactivity.postprocess.PostProcessRenderPass;
@@ -19,6 +20,7 @@ import org.sc.viewer.renderactivity.ui.UiRenderPass;
 
 public class ViewerRendererActivity extends RendererActivity {
 
+    private final ViewerGamestate gamestate;
     private Renderer renderer;
 
     /** Renderpasses **/
@@ -38,12 +40,13 @@ public class ViewerRendererActivity extends RendererActivity {
     private SceneDescriptorSet dsScene;
     private MousePickingDescriptorSet dsMousePicking;
 
-    public ViewerRendererActivity(Configuration configuration) {
+    public ViewerRendererActivity(Configuration configuration, ViewerGamestate gamestate) {
         super(configuration);
+        this.gamestate              = gamestate;
         this.mousePickingRenderPass = new MousePickingRenderPass( configuration );
         this.shadowRenderPass       = new ShadowRenderPass( configuration );
         this.geometryRenderPass     = new GeometryRenderPass( configuration );
-        this.postProcessRenderPass  = new PostProcessRenderPass( configuration );
+        this.postProcessRenderPass  = new PostProcessRenderPass( configuration, gamestate.getPostProcessorContext() );
         this.uiRenderPass           = new UiRenderPass( configuration );
     }
 

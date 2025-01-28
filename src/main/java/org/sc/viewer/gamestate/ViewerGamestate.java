@@ -1,27 +1,28 @@
 package org.sc.viewer.gamestate;
 
 import org.sc.themis.gamestate.Gamestate;
-import org.sc.themis.input.Input;
 import org.sc.themis.renderer.Renderer;
 import org.sc.themis.scene.*;
 import org.sc.themis.shared.exception.ThemisException;
+import org.sc.viewer.gamestate.controller.PostProcessorController;
+import org.sc.viewer.renderactivity.postprocess.postprocessor.ShowTBNPostprocessor;
 
 import java.nio.file.Path;
 
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_F1;
+
 public class ViewerGamestate implements Gamestate {
 
+    private final PostProcessorContext ppContext = new PostProcessorContext();
     private final ModelFactory modelFactory = new ModelFactory();
 
     private Model model;
 
     @Override
     public void setup(Renderer renderer, Scene scene) throws ThemisException {
-
-        scene.getCamera().setPosition( 0.0f, 1.0f, 5.0f );
-
-        this.model = createSphere(renderer, "sphere-1");
-        scene.add( this.model.create() );
-
+        setupPostProcessors(scene);
+        setupCamera(scene);
+        setupScene(renderer, scene);
     }
 
     @Override
@@ -29,14 +30,28 @@ public class ViewerGamestate implements Gamestate {
         this.model.cleanup();
     }
 
-    @Override
-    public void input(Scene scene, Input input, long tpf) {
+    public PostProcessorContext getPostProcessorContext() {
+        return this.ppContext;
+    }
+
+    private void setupPostProcessors(Scene scene) {
+
+        this.ppContext.add(ShowTBNPostprocessor.IDENTIFIER);
+
+        PostProcessorController ppController = new PostProcessorController( this.ppContext );
+        ppController.map( GLFW_KEY_F1, ShowTBNPostprocessor.IDENTIFIER );
+
+        scene.add( ppController );
 
     }
 
-    @Override
-    public void update(Scene scene, long tpf) {
+    private void setupCamera(Scene scene) {
+        scene.getCamera().setPosition( 0.0f, 1.0f, 5.0f );
+    }
 
+    private void setupScene(Renderer renderer, Scene scene) throws ThemisException {
+        this.model = createSphere(renderer, "sphere-1");
+        scene.add( this.model.create() );
     }
 
     private Model createSphere(Renderer renderer, String id) throws ThemisException {

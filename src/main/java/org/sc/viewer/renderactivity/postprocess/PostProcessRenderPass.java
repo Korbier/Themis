@@ -12,13 +12,16 @@ import org.sc.themis.renderer.renderpass.VkRenderPassLayout;
 import org.sc.themis.renderer.renderpass.VkSubpass;
 import org.sc.themis.renderer.sync.VkFence;
 import org.sc.themis.renderer.sync.VkSemaphore;
+import org.sc.themis.scene.Instance;
+import org.sc.themis.scene.Mesh;
+import org.sc.themis.scene.Model;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.scene.descriptorset.InputDescriptorSet;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
+import org.sc.viewer.gamestate.PostProcessorContext;
 import org.sc.viewer.renderactivity.RenderPass;
 import org.sc.viewer.renderactivity.geometry.GeometryRenderPass;
-import org.sc.viewer.renderactivity.postprocess.postprocessor.ShowTBNPostprocessor;
 
 import static org.lwjgl.vulkan.KHRSwapchain.VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 import static org.lwjgl.vulkan.VK10.*;
@@ -27,7 +30,7 @@ public class PostProcessRenderPass extends RenderPass {
 
     private final static String FB_ATTACHMENT_COLOR = "postprocess.framebuffer.attachment.color";
 
-    private final static PostProcessor SHOW_TBN_POSTPROCESSOR = new ShowTBNPostprocessor();
+    private final PostProcessorContext context;
 
     /*** Framed object ***/
     private final static FrameKey<VkFrameBuffer> FK_FRAMEBUFFER = FrameKey.of( VkFrameBuffer.class );
@@ -41,25 +44,25 @@ public class PostProcessRenderPass extends RenderPass {
     private InputDescriptorSet geometryAttachmentDescriptorset;
     private PostProcessors postProcessors;
 
-    public PostProcessRenderPass(Configuration configuration) {
+    public PostProcessRenderPass(Configuration configuration, PostProcessorContext context) {
         super(configuration);
+        this.context = context;
     }
 
     @Override
     public void setup() throws ThemisException {
-
         setupFramebufferAttachments();
         setupRenderPass();
         setupFramebuffers();
         setupCommand();
         setupFence();
         setupGeometryAttachmentDescriptorset();
+        setupPostProcessors();
+    }
 
-
+    private void setupPostProcessors() throws ThemisException {
         this.postProcessors = new PostProcessors( getConfiguration(), getRenderer(), this.renderPass, getViewerActivity().getSceneDescriptorset(), this.geometryAttachmentDescriptorset  );
-        this.postProcessors.addPostProcessor( SHOW_TBN_POSTPROCESSOR, true );
         this.postProcessors.setup();
-
     }
 
     @Override
@@ -87,8 +90,11 @@ public class PostProcessRenderPass extends RenderPass {
         command.beginRenderPass( this.renderPass, frameBuffer );
         command.viewportAndScissor( getExtent2D() );
 
-        for ( PostProcessorPipeline pipeline : this.postProcessors.getEnabled( PostProcessor.Frequency.PER_VERTEX ) ) {
-            pipeline.render( scene, command, frame );
+        for ( String postprocessor : this.postProcessors.get( PostProcessor.Frequency.PER_VERTEX ) ) {
+            if ( this.context.isEnabled( postprocessor ) ) {
+                this.postProcessors.getPipeline(postprocessor).bind(command, frame);
+                this.renderPerVertex(scene, command);
+            }
         }
 
         command.endRenderPass();
@@ -97,6 +103,20 @@ public class PostProcessRenderPass extends RenderPass {
 
         fence.waitForAndReset();
 
+    }
+
+    private void renderPerVertex(Scene scene, VkCommand command) throws ThemisException {
+        for ( Model model : scene.getModels() ) {
+            if (model.isRenderable()) {
+                for (Mesh mesh : model.getMeshes()) {
+                    command.bindBuffers(mesh.getVerticesBuffer(), mesh.getIndicesBuffer());
+                    for (Instance instance : model.getInstances() ) {
+                        command.pushConstant( VK_SHADER_STAGE_VERTEX_BIT, 0, instance.matrix() );
+                        command.drawIndexed(mesh.getIndiceCount());
+                    }
+                }
+            }
+        }
     }
 
     @Override
@@ -111,6 +131,8 @@ public class PostProcessRenderPass extends RenderPass {
         setupRenderPass();
         setupFramebuffers();
         setupGeometryAttachmentDescriptorset();
+
+        this.postProcessors.resize( this.renderPass, getViewerActivity().getSceneDescriptorset(), this.geometryAttachmentDescriptorset  );
 
     }
 

@@ -22,11 +22,12 @@ public class ViewerTest {
     void runViewer() throws ThemisException {
 
         //Given
-        Engine engine = new Engine( configuration, new ViewerRendererActivity( this.configuration ) );
+        ViewerGamestate gamestate = new ViewerGamestate();
+        Engine engine = new Engine( configuration, new ViewerRendererActivity( this.configuration, gamestate ) );
 
         //When
         engine.setup();
-        engine.setGamestate( new ViewerGamestate() );
+        engine.setGamestate( gamestate );
         engine.run();
 
         //Then

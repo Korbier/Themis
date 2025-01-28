@@ -6,6 +6,7 @@ import org.sc.themis.scene.descriptorset.InputDescriptorSet;
 import org.sc.themis.scene.descriptorset.SceneDescriptorSet;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
+import org.sc.viewer.renderactivity.postprocess.postprocessor.ShowTBNPostprocessor;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -20,21 +21,18 @@ public class PostProcessors {
     private final VkRenderPass renderpass;
 
     private final Map<String, PostProcessor> postprocessors = new HashMap<>();
-    private final Map<String, Boolean> enabled = new HashMap<>();
     private final Map<String, PostProcessorPipeline> pipelines = new HashMap<>();
 
     public PostProcessors(Configuration configuration, Renderer renderer, VkRenderPass renderpass, SceneDescriptorSet sceneDescriptorset, InputDescriptorSet geometryAttachmentDescriptorset) {
+
         this.configuration = configuration;
         this.renderer = renderer;
         this.renderpass = renderpass;
         this.sceneDescriptorSet = sceneDescriptorset;
         this.geometryAttachmentDescriptorset = geometryAttachmentDescriptorset;
-    }
 
-    public void addPostProcessor( PostProcessor postprocessor, boolean bEnabled ) {
-        postprocessors.put( postprocessor.getIdentifier(), postprocessor );
-        enabled.put( postprocessor.getIdentifier(), bEnabled );
-        pipelines.put( postprocessor.getIdentifier(), new PostProcessorPipeline( this.configuration, this.renderer, this.renderpass, this.sceneDescriptorSet, this.geometryAttachmentDescriptorset, postprocessor ) );
+        addPostProcessor(ShowTBNPostprocessor.INSTANCE);
+
     }
 
     public void setup() throws ThemisException {
@@ -49,25 +47,31 @@ public class PostProcessors {
         }
     }
 
-    public void enablePostProcessor( String identifier ) {
-        enabled.put( identifier, true );
-    }
-
-    public void disablePostProcessor( String identifier ) {
-        enabled.put( identifier, false );
-    }
-
     public Collection<PostProcessor> getAll() {
         return this.postprocessors.values();
     }
 
-    public Collection<PostProcessorPipeline> getEnabled(PostProcessor.Frequency frequency) {
+    public Collection<String> get(PostProcessor.Frequency frequency) {
         return this.postprocessors
                 .values()
                 .stream()
-                .filter( p -> p.getFrequency() == frequency && enabled.get( p.getIdentifier() ) )
-                .map( p -> pipelines.get( p.getIdentifier() ) )
+                .filter( p -> p.getFrequency() == frequency )
+                .map(PostProcessor::getIdentifier)
                 .toList();
     }
 
+    public PostProcessorPipeline getPipeline(String identifier) {
+        return this.pipelines.get( identifier );
+    }
+
+    private void addPostProcessor( PostProcessor postprocessor ) {
+        postprocessors.put( postprocessor.getIdentifier(), postprocessor );
+        pipelines.put( postprocessor.getIdentifier(), new PostProcessorPipeline( this.configuration, this.renderer, this.renderpass, this.sceneDescriptorSet, this.geometryAttachmentDescriptorset, postprocessor ) );
+    }
+
+    public void resize(VkRenderPass renderpass, SceneDescriptorSet sceneDescriptorset, InputDescriptorSet geometryAttachmentDescriptorset) throws ThemisException {
+        for ( PostProcessorPipeline pipeline : this.pipelines.values() ) {
+            pipeline.resize(renderpass,sceneDescriptorset,geometryAttachmentDescriptorset);
+        }
+    }
 }

@@ -6,6 +6,8 @@ import org.sc.viewer.renderactivity.postprocess.PostProcessor;
 
 public class ShowTBNPostprocessor implements PostProcessor {
 
+    public final static PostProcessor INSTANCE = new ShowTBNPostprocessor();
+
     public final static String IDENTIFIER = "postprocessor.showTBN";
 
     private final static String VERTEX_SOURCE = """
