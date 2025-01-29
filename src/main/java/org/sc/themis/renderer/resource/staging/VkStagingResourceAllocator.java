@@ -9,6 +9,8 @@ import org.sc.themis.renderer.sync.VkFence;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 
@@ -22,6 +24,8 @@ public class VkStagingResourceAllocator extends VulkanObject {
     private final VkMemoryAllocator allocator;
     private final VkCommand command;
     private final Queue<VkStagingResource> resources = new ArrayBlockingQueue<>(QUEUE_SIZE);
+
+    private final List<VkStagingResource> tracked = new ArrayList<>();
 
     private VkFence commitFence;
 
@@ -42,6 +46,9 @@ public class VkStagingResourceAllocator extends VulkanObject {
     public void cleanup() throws ThemisException {
         this.commitFence.cleanup();
         for (VkStagingResource resource : this.resources) {
+            resource.cleanup();
+        }
+        for (VkStagingResource resource : this.tracked ) {
             resource.cleanup();
         }
     }
@@ -70,10 +77,21 @@ public class VkStagingResourceAllocator extends VulkanObject {
         return buffer;
     }
 
-    public VkStagingImage allocateImage(int imageFormat ) {
+    public VkStagingImage allocateImage( int imageFormat ) {
+        return this.allocateImage( imageFormat, false );
+    }
+
+    public VkStagingImage allocateImage( int imageFormat, boolean track) {
+
         VkStagingImage image = new VkStagingImage( getConfiguration(), this, this.device, this.allocator, imageFormat );
         image.setup();
+
+        if ( track ) {
+            this.tracked.add( image );
+        }
+
         return image;
+
     }
 
     public void signalResourceChanged( VkStagingResource vkStagingResource ) {

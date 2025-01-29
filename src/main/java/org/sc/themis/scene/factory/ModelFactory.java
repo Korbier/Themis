@@ -30,7 +30,6 @@ import java.util.Map;
 
 public class ModelFactory {
 
-    private final static String DEFAULT_TEXTURE = "./src/main/resources/texture/default.png";
     private static final org.jboss.logging.Logger LOG = Logger.getLogger(ModelFactory.class);
 
     final private static int flags =
@@ -152,6 +151,8 @@ public class ModelFactory {
 
         for (int i = 0; i < numMaterials; i++) {
 
+            LOG.infof("Loading material #%d", i );
+
             AIMaterial aiMaterial = AIMaterial.create(aiMaterialsBuffer.get(i));
             MaterialProperties properties = new MaterialProperties();
 
@@ -162,6 +163,7 @@ public class ModelFactory {
             setFloat( aiMaterial, AI_MATKEY_SHININESS, properties, MaterialProperty.Property.SHININESS );
 
             setImage( workdir, allocator, aiMaterial, aiTextureType_BASE_COLOR, properties, MaterialProperty.Texture.BASE );
+            setImage( workdir, allocator, aiMaterial, aiTextureType_NORMALS, properties, MaterialProperty.Texture.NORMALS );
 
             result.add( properties );
 
@@ -177,7 +179,7 @@ public class ModelFactory {
 
         if ( path != null ) {
             LOG.infof("Loading texture property %s (%s)", property.getName(), path );
-            VkStagingImage stgImage = allocator.allocateImage( VK_FORMAT_R8G8B8A8_SRGB );
+            VkStagingImage stgImage = allocator.allocateImage( VK_FORMAT_R8G8B8A8_SRGB, true );
             stgImage.load( Image.of( path ) );
             properties.put( property, stgImage );
         }

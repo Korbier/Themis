@@ -91,10 +91,11 @@ public class TextureMaterial extends Material {
             } global;
             
             /******* 1 - Material ******************/
-            layout(set = 1, binding = 0) uniform sampler2D textureSampler;
+            layout(set = 1, binding = 0) uniform sampler2D baseSampler;
+            layout(set = 1, binding = 1) uniform sampler2D normalSampler;
             
             void main() {
-                outColor = texture(textureSampler, inTexture);
+                outColor = texture(baseSampler, inTexture);
             }
             """;
 
@@ -122,8 +123,14 @@ public class TextureMaterial extends Material {
         setPipelineDescriptor( new VkPipelineDescriptor(renderPass, 0, false, 1, true, 1, 1, 1) );
 
         /** Variant layout **/
-        addVariantsCombinedImageSamplerBinding( 0, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, DESCRIPTOR );
-        setVariantsCombinedImageSamplerSetter( (binding, descriptorset, sampler, props) -> descriptorset.bind( binding, props.getProperty(MaterialProperty.Texture.BASE).getView(), sampler ) );
+        addVariantsCombinedImageSamplerBinding( 0, VK_SHADER_STAGE_FRAGMENT_BIT, DESCRIPTOR );
+        addVariantsCombinedImageSamplerBinding( 1, VK_SHADER_STAGE_FRAGMENT_BIT, DESCRIPTOR );
+        setVariantsCombinedImageSamplerSetter( (binding, descriptorset, sampler, props) -> {
+            switch ( binding ) {
+                case 0 -> descriptorset.bind(binding, props.getProperty(MaterialProperty.Texture.BASE).getView(), sampler);
+                case 1 -> descriptorset.bind(binding, props.getProperty(MaterialProperty.Texture.NORMALS).getView(), sampler);
+            }
+        } );
 
         /** Other descriptorsets **/
         setDescriptorsetProviders( sceneDescriptorSet );
