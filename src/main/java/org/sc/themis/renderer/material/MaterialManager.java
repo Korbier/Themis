@@ -53,4 +53,15 @@ public class MaterialManager {
         return this.defaultMaterial;
     }
 
+    public MaterialProperties select( MaterialProperties ... properties ) {
+
+        for ( MaterialProperties materialProperties : properties ) {
+            if ( materialProperties.getVariantIdentifier( this.lastUsedMaterial ) != null ) {
+                return materialProperties;
+            }
+        }
+
+        return null;
+
+    }
 }

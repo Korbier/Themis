@@ -1,5 +1,6 @@
 package org.sc.themis.scene.factory;
 
+import org.jboss.logging.Logger;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -16,7 +17,10 @@ import org.sc.themis.renderer.material.MaterialProperties;
 import org.sc.themis.renderer.material.MaterialProperty;
 import org.sc.themis.shared.assertion.Assertions;
 import org.sc.themis.shared.exception.ThemisException;
+import org.sc.themis.shared.resource.Image;
+
 import static org.lwjgl.assimp.Assimp.*;
+import static org.lwjgl.vulkan.VK10.VK_FORMAT_R8G8B8A8_SRGB;
 
 import java.nio.IntBuffer;
 import java.nio.file.Path;
@@ -27,6 +31,7 @@ import java.util.Map;
 public class ModelFactory {
 
     private final static String DEFAULT_TEXTURE = "./src/main/resources/texture/default.png";
+    private static final org.jboss.logging.Logger LOG = Logger.getLogger(ModelFactory.class);
 
     final private static int flags =
               aiProcess_GenSmoothNormals | aiProcess_JoinIdenticalVertices | aiProcess_Triangulate
@@ -38,13 +43,13 @@ public class ModelFactory {
 
     public Model create(String identifier, VkStagingResourceAllocator allocator, Path modelFile ) throws ThemisException {
 
+        LOG.infof("Loading model from file %s", modelFile.toAbsolutePath().toString() );
+
         Assertions.isTrue( modelFile.toFile()::exists, new ModelFileNotFoundException( modelFile ) );
 
         try ( AIScene scene = aiImportFile( modelFile.toAbsolutePath().toString(), flags ) ) {
 
-            Path workdir = modelFile.getParent();
-
-            List<MaterialProperties> properties = loadProperties( scene, allocator, modelFile );
+            List<MaterialProperties> properties = loadProperties( scene, allocator, modelFile.getParent() );
             Mesh [] meshes = loadMeshs( allocator, identifier, scene, properties );
 
             return new Model( identifier, meshes );
@@ -138,7 +143,7 @@ public class ModelFactory {
 
     }
 
-    private List<MaterialProperties> loadProperties(AIScene scene, VkStagingResourceAllocator allocator, Path workdir ) {
+    private List<MaterialProperties> loadProperties( AIScene scene, VkStagingResourceAllocator allocator, Path workdir ) throws ThemisException {
 
         List<MaterialProperties> result = new ArrayList<>();
 
@@ -166,10 +171,16 @@ public class ModelFactory {
 
     }
 
-    private void setImage(Path workdir, VkStagingResourceAllocator allocator, AIMaterial aiMaterial, int assimpAttr, MaterialProperties properties, MaterialProperty<VkStagingImage> textureBase) {
+    private void setImage(Path workdir, VkStagingResourceAllocator allocator, AIMaterial aiMaterial, int assimpAttr, MaterialProperties properties, MaterialProperty<VkStagingImage> property) throws ThemisException {
 
         String path = getTexturePath( workdir, aiMaterial, assimpAttr );
-        System.out.println( "Image path : " + path );
+
+        if ( path != null ) {
+            LOG.infof("Loading texture property %s (%s)", property.getName(), path );
+            VkStagingImage stgImage = allocator.allocateImage( VK_FORMAT_R8G8B8A8_SRGB );
+            stgImage.load( Image.of( path ) );
+            properties.put( property, stgImage );
+        }
 
     }
 
@@ -182,13 +193,11 @@ public class ModelFactory {
 
             String texturePath = aiTexturePath.dataString();
 
-            if (texturePath.isBlank()) {
-                texturePath = DEFAULT_TEXTURE;
+            if ( !texturePath.isBlank() ) {
+                return workdir.resolve( texturePath ).toAbsolutePath().toString();
             } else {
-                texturePath = workdir.resolve( texturePath ).toAbsolutePath().toString();
+                return null;
             }
-
-            return texturePath;
 
         }
 
@@ -201,6 +210,7 @@ public class ModelFactory {
 
         if ( workColor.r() != 0.0f || workColor.g() != 0.0f && workColor.b() != 0.0f || workColor.a() != 0.0f ) {
             Vector4f color = new Vector4f(workColor.r(), workColor.g(), workColor.b(), workColor.a());
+            LOG.infof("Loading color property %s (%s)", property.getName(), color );
             properties.put(property, color);
         }
 

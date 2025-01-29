@@ -1,12 +1,12 @@
 package org.sc.viewer.renderactivity.geometry;
 
+import org.jboss.logging.Logger;
 import org.sc.themis.renderer.base.frame.FrameKey;
 import org.sc.themis.renderer.command.VkCommand;
 import org.sc.themis.renderer.device.VkDevice;
 import org.sc.themis.renderer.framebuffer.VkFrameBuffer;
 import org.sc.themis.renderer.framebuffer.VkFrameBufferAttachments;
 import org.sc.themis.renderer.framebuffer.VkFrameBufferDescriptor;
-import org.sc.themis.renderer.material.Material;
 import org.sc.themis.renderer.material.MaterialManager;
 import org.sc.themis.renderer.material.MaterialProperties;
 import org.sc.themis.renderer.renderpass.VkRenderPass;
@@ -19,7 +19,6 @@ import org.sc.themis.scene.Instance;
 import org.sc.themis.scene.Mesh;
 import org.sc.themis.scene.Model;
 import org.sc.themis.scene.Scene;
-import org.sc.themis.scene.descriptorset.SceneDescriptorSet;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.viewer.renderactivity.RenderPass;
@@ -32,6 +31,8 @@ public class GeometryRenderPass extends RenderPass {
     public final static String FB_ATTACHMENT_PRESENT = "geometry.framebuffer.attachment.present";
     public final static String FB_ATTACHMENT_DEPTH = "geometry.framebuffer.attachment.depth";
 
+    private static final org.jboss.logging.Logger LOG = Logger.getLogger(GeometryRenderPass.class);
+
     /*** Framed object ***/
     private final static FrameKey<VkFrameBuffer> FK_FRAMEBUFFER = FrameKey.of( VkFrameBuffer.class );
     private final static FrameKey<VkCommand>     FK_COMMAND = FrameKey.of( VkCommand.class );
@@ -43,6 +44,7 @@ public class GeometryRenderPass extends RenderPass {
 
     /** Material **/
     private ColorMaterial defaultMaterial;
+    private TextureMaterial defaultMaterial2;
     private MaterialManager materialManager;
 
     public GeometryRenderPass(Configuration configuration) {
@@ -68,6 +70,7 @@ public class GeometryRenderPass extends RenderPass {
     public void cleanup() throws ThemisException {
         getRenderer().waitIdle();
         this.defaultMaterial.cleanup();
+        this.defaultMaterial2.cleanup();
         this.renderPass.cleanup();
         this.frameBufferAttachments.cleanup();
     }
@@ -90,10 +93,10 @@ public class GeometryRenderPass extends RenderPass {
 
                 for ( Mesh mesh : model.getMeshes() ) {
 
-                    MaterialProperties materialProperties = mesh.getProperties();
+                    MaterialProperties materialProperties = this.materialManager.select( mesh.getProperties(), model.getMaterialProperties() ) ;
 
-                    if ( !this.materialManager.isValid( materialProperties ) ) {
-                        materialProperties = model.getMaterialProperties();
+                    if ( materialProperties == null ) {
+                        LOG.errorf("No suitable MaterialProperties Struct found for mesh {} (model {})", mesh, model.getIdentifier() );
                     }
 
                     this.materialManager.bindMaterialVariant( command, materialProperties, frame );
@@ -190,7 +193,10 @@ public class GeometryRenderPass extends RenderPass {
         this.defaultMaterial = new ColorMaterial( getConfiguration(), getRenderer(), this.renderPass, this.getViewerActivity().getSceneDescriptorset() );
         this.defaultMaterial.setup();
 
-        this.materialManager = new MaterialManager( this.defaultMaterial );
+        this.defaultMaterial2 = new TextureMaterial( getConfiguration(), getRenderer(), this.renderPass, this.getViewerActivity().getSceneDescriptorset() );
+        this.defaultMaterial2.setup();
+
+        this.materialManager = new MaterialManager( this.defaultMaterial2 );
 
     }
 

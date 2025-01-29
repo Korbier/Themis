@@ -60,7 +60,7 @@ public class Model {
         return this.instances;
     }
 
-    public void setDefaultMaterialProperties( MaterialProperties properties ) {
+    public void setMaterialProperties(MaterialProperties properties ) {
         this.materialProperties = properties;
     }
 

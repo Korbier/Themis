@@ -279,7 +279,7 @@ public abstract class Material extends VulkanObject {
 
     public int [] getDynamicOffset( int frame, MaterialProperties properties ) {
 
-        String variantIdentifier = getVariantIdentifier( properties );
+        String variantIdentifier = properties.getVariantIdentifier( this );
 
         int [] offsets = new int[this.mainDescriptorSetLayout.size()];
 
@@ -293,7 +293,7 @@ public abstract class Material extends VulkanObject {
 
     public VkDescriptorSet [] getDescriptorSets( int frame, MaterialProperties properties ) {
 
-        String variantIdentifier = properties.getVariantIdentifier( this );// getVariantIdentifier( properties );
+        String variantIdentifier = properties.getVariantIdentifier( this );
 
         int count = this.descriptorsetProviders.length;
         if ( this.mainDescriptorSetLayout != null ) count++;

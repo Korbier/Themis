@@ -54,12 +54,12 @@ public class ViewerGamestate implements Gamestate {
 
     private void setupScene(Renderer renderer, Scene scene) throws ThemisException {
         this.model = createSphere(renderer, "sphere-1");
-        this.model.setDefaultMaterialProperties( this.materialFactory.colored( 1.0f, 0.0f, 0.0f ) );
-        scene.add( this.model.create());
+        this.model.setMaterialProperties( this.materialFactory.colored( 1.0f, 0.0f, 0.0f ) );
+        scene.add( this.model.create().scale( 8.0f ));
     }
 
     private Model createSphere(Renderer renderer, String id) throws ThemisException {
-        return this.modelFactory.create( id, renderer.getResourceAllocator(), Path.of( "./src/main/resources/model/cube/cube.obj") );
+        return this.modelFactory.create( id, renderer.getResourceAllocator(), Path.of( "./src/main/resources/model/waterbottle/WaterBottle.gltf") );
     }
 
 }
