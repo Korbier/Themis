@@ -3,9 +3,9 @@ package org.sc.playground.scene.cube;
 import org.sc.themis.gamestate.Gamestate;
 import org.sc.themis.input.Input;
 import org.sc.themis.renderer.Renderer;
-import org.sc.themis.scene.MeshFactory;
+import org.sc.themis.scene.factory.MeshFactory;
 import org.sc.themis.scene.Model;
-import org.sc.themis.scene.ModelFactory;
+import org.sc.themis.scene.factory.ModelFactory;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.shared.exception.ThemisException;
 

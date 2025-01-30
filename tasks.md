@@ -6,17 +6,14 @@
 
 In progress : 🔲 Done : ✅
 
+* Viewer
+  * 🔲 PostProcessing pass
+    * 🔲 PostProcessor showGrid
 * Scene
   * 🔲 ModelLoading
-    * ✅ Vertices & indices
     * 🔲 Properties
-  * 🔲 Material
-    * ✅ Material BaseColor => Uniform
-    * ✅ Material BaseTexture => Combined image sampler
-    * 🔲 Dynamic Uniform
-    * 🔲 Storage Buffer
   
-### to do / Ideas
+### to do / ideas
 
 * Playgrounds
   * Deferred rendering

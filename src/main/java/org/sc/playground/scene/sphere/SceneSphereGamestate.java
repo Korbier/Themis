@@ -3,7 +3,7 @@ package org.sc.playground.scene.sphere;
 import org.sc.themis.gamestate.Gamestate;
 import org.sc.themis.renderer.Renderer;
 import org.sc.themis.scene.Model;
-import org.sc.themis.scene.ModelFactory;
+import org.sc.themis.scene.factory.ModelFactory;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.shared.exception.ThemisException;
 
@@ -36,8 +36,7 @@ public class SceneSphereGamestate implements Gamestate {
         return this.modelFactory.create(
             "my-sphere-model",
             renderer.getResourceAllocator(),
-            Path.of( "./src/main/resources/model/sphere/scene.gltf"),
-            "none"
+            Path.of( "./src/main/resources/model/sphere/scene.gltf")
         );
     }
 

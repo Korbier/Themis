@@ -117,7 +117,7 @@ public class SceneDescriptorSet extends VulkanObject implements VkDescriptorSetP
         this.descriptorSetLayout = new VkDescriptorSetLayout(
             getConfiguration(),
             this.renderer.getDevice(),
-            VkDescriptorSetBinding.uniform(0, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
+            VkDescriptorSetBinding.uniform(0, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_GEOMETRY_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
         );
         this.descriptorSetLayout.setup();
     }

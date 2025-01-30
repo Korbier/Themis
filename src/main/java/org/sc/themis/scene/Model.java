@@ -1,5 +1,6 @@
 package org.sc.themis.scene;
 
+import org.sc.themis.renderer.material.MaterialProperties;
 import org.sc.themis.shared.exception.ThemisException;
 
 import java.util.ArrayList;
@@ -14,9 +15,15 @@ public class Model {
     private final Mesh [] meshes;
     private final List<Instance> instances = new ArrayList<>();
 
-    Model( String identifier, Mesh [] meshes ) {
+    private MaterialProperties materialProperties = null;
+
+    public Model( String identifier, Mesh [] meshes ) {
         this.identifier = identifier;
         this.meshes = meshes;
+    }
+
+    public String getIdentifier() {
+        return this.identifier;
     }
 
     public void cleanup() throws ThemisException {
@@ -51,6 +58,14 @@ public class Model {
 
     public List<Instance> getInstances() {
         return this.instances;
+    }
+
+    public void setMaterialProperties(MaterialProperties properties ) {
+        this.materialProperties = properties;
+    }
+
+    public MaterialProperties getMaterialProperties() {
+        return this.materialProperties;
     }
 
     @Override

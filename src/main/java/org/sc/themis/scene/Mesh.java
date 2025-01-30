@@ -4,7 +4,7 @@ import org.sc.themis.renderer.resource.buffer.VkBuffer;
 import org.sc.themis.renderer.resource.staging.VkStagingBuffer;
 import org.sc.themis.renderer.resource.staging.VkStagingResource;
 import org.sc.themis.renderer.resource.staging.VkStagingResourceAllocator;
-import org.sc.themis.scene.material.MaterialProperties;
+import org.sc.themis.renderer.material.MaterialProperties;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.utils.MemorySizeUtils;
 
@@ -18,27 +18,20 @@ public class Mesh {
 
     private final VkStagingBuffer vertexBuffer;
     private final VkStagingBuffer indiceBuffer;
-    private MaterialProperties properties = new MaterialProperties();
-
-    private String material;
+    private MaterialProperties properties = null;
 
     private boolean renderable = false;
     private int vertexCount = 0;
     private int indiceCount = 0;
 
-    Mesh( VkStagingResourceAllocator resourceAllocator, String identifier ) {
+    public Mesh( VkStagingResourceAllocator resourceAllocator, String identifier ) {
         this.identifier = identifier;
         this.vertexBuffer = resourceAllocator.allocateBuffer( VK_BUFFER_USAGE_VERTEX_BUFFER_BIT );
         this.indiceBuffer = resourceAllocator.allocateBuffer( VK_BUFFER_USAGE_INDEX_BUFFER_BIT );
     }
 
-    void set( Vertex[] vertices, int [] indices ) throws ThemisException {
-        set( vertices, indices, null );
-    }
+    public void set( Vertex[] vertices, int [] indices ) throws ThemisException {
 
-    void set( Vertex[] vertices, int [] indices, String material ) throws ThemisException {
-
-        this.material = material;
         this.vertexCount = vertices.length;
         this.indiceCount = indices.length;
 
@@ -122,10 +115,6 @@ public class Mesh {
 
     public VkBuffer getIndicesBuffer() {
         return this.indiceBuffer.getBuffer();
-    }
-
-    public String getMaterialIdentifier() {
-        return this.material;
     }
 
     @Override

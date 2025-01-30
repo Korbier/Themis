@@ -9,7 +9,6 @@ import org.sc.themis.scene.Mesh;
 import org.sc.themis.scene.Model;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.scene.descriptorset.SceneDescriptorSet;
-import org.sc.themis.scene.material.TextureMaterial;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 

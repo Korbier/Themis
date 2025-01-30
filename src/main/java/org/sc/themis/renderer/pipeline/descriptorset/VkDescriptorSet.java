@@ -127,6 +127,10 @@ public class VkDescriptorSet extends VulkanObject {
 
     }
 
+    public void bind( int binding, VkFrameBufferAttachment attachment, VkSampler sampler ) {
+
+    }
+
     public void bind( int binding, VkFrameBufferAttachment attachment  ) {
 
         try (MemoryStack stack = MemoryStack.stackPush()) {
