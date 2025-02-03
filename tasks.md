@@ -9,7 +9,7 @@ In progress : 🔲 Done : ✅
 * Scene
   * 🔲 Lights
     * ✅ Common attributes
-    * 🔲 Directional light
+    * ✅ Directional light
     * 🔲 Point light
     * 🔲 Spot light
 * Viewer

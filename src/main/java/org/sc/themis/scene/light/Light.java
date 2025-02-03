@@ -16,9 +16,9 @@ public abstract class Light {
     private boolean visible = true;
 
     public Light( Vector3f ambient, Vector3f diffuse, Vector3f specular ) {
-        this.ambient = ambient;
-        this.diffuse = diffuse;
-        this.specular = specular;
+        setAmbient( ambient );
+        setDiffuse( diffuse );
+        setSpecular( specular );
     }
 
     public boolean isVisible() {
