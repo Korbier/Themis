@@ -6,6 +6,11 @@
 
 In progress : 🔲 Done : ✅
 
+* Scene
+  * Lights
+    * 🔲 Directional light
+    * 🔲 Point light
+    * 🔲 Spot light
 * Viewer
   * 🔲 PostProcessing pass
     * 🔲 PostProcessor showGrid
