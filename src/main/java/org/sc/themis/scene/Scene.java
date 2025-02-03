@@ -3,6 +3,7 @@ package org.sc.themis.scene;
 import org.jboss.logging.Logger;
 import org.sc.themis.renderer.material.MaterialProperties;
 import org.sc.themis.scene.light.DirectionalLight;
+import org.sc.themis.scene.light.SpotLight;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.tobject.TObject;
@@ -24,6 +25,7 @@ public class Scene extends TObject {
 
     /** Light casters **/
     private final List<DirectionalLight> directionalLights = new ArrayList<>();
+    private final List<SpotLight> spotLights = new ArrayList<>();
 
     /** Controller **/
     private final Set<Controller> controllers = new HashSet<>();
@@ -68,6 +70,10 @@ public class Scene extends TObject {
         this.directionalLights.add( light );
     }
 
+    public void add( SpotLight light ) {
+        this.spotLights.add( light );
+    }
+
     private void add( Model model, String material ) {
 
         this.models.add( model );
@@ -104,6 +110,10 @@ public class Scene extends TObject {
 
     public List<DirectionalLight> getDirectionalLights() {
         return Collections.unmodifiableList( this.directionalLights );
+    }
+
+    public List<SpotLight> getSpotLights() {
+        return Collections.unmodifiableList( this.spotLights );
     }
 
     public MaterialProperties [] getMaterialsProperties() {
