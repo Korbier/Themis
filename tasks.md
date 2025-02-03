@@ -7,7 +7,8 @@
 In progress : 🔲 Done : ✅
 
 * Scene
-  * Lights
+  * 🔲 Lights
+    * ✅ Common attributes
     * 🔲 Directional light
     * 🔲 Point light
     * 🔲 Spot light
