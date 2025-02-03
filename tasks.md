@@ -12,6 +12,7 @@ In progress : 🔲 Done : ✅
 * Scene
   * 🔲 ModelLoading
     * 🔲 Properties
+  * 🔲 KeyMapping
   
 ### to do / ideas
 
