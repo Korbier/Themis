@@ -10,8 +10,8 @@ In progress : 🔲 Done : ✅
   * 🔲 Lights
     * ✅ Common attributes
     * ✅ Directional light
-    * 🔲 Point light
     * ✅ Spot light
+    * 🔲 Point light
 * Viewer
   * 🔲 PostProcessing pass
     * 🔲 PostProcessor showGrid
