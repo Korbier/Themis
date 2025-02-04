@@ -22,6 +22,4 @@ In progress : 🔲 Done : ✅
   
 ### to do / ideas
 
-* Playgrounds
-  * Deferred rendering
-  * Msaa
+Write all to jira project
