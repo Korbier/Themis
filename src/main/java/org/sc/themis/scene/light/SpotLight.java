@@ -7,19 +7,20 @@ public class SpotLight extends Light {
 
     public final static int SIZE = Light.SIZE + MemorySizeUtils.VEC3F + MemorySizeUtils.VEC3F + MemorySizeUtils.VEC3F + MemorySizeUtils.FLOAT + MemorySizeUtils.FLOAT;
 
-    private Vector3f position;
-    private Vector3f direction;
-    private Vector3f attenuation;
+    private final Vector3f position;
+    private final Vector3f direction;
+    private final Vector3f attenuation;
     private float innerCutOff;
     private float outerCutOff;
 
     public SpotLight(Vector3f ambient, Vector3f diffuse, Vector3f specular, Vector3f position, Vector3f direction, Vector3f attenuation, float innerCutOff, float outerCutOff ) {
         super(ambient, diffuse, specular);
-        setPosition( position );
-        setDirection( direction );
-        setAttenuation( attenuation );
+        this.position = new Vector3f(position);
+        this.direction = new Vector3f(direction);
+        this.attenuation = new Vector3f(attenuation);
         setInnerCutOff( innerCutOff );
         setOuterCutOff( outerCutOff );
+        setDirty();
     }
 
     public Vector3f getPosition() {
@@ -43,17 +44,17 @@ public class SpotLight extends Light {
     }
 
     public void setPosition(Vector3f position) {
-        this.position = position;
+        this.position.set(position);
         setDirty();
     }
 
     public void setDirection(Vector3f direction) {
-        this.direction = direction;
+        this.direction.set(direction);
         setDirty();
     }
 
     public void setAttenuation(Vector3f attenuation) {
-        this.attenuation = attenuation;
+        this.attenuation.set(attenuation);
         setDirty();
     }
 
