@@ -9,16 +9,17 @@ public abstract class Light {
 
     private boolean dirty = true;
 
-    private Vector3f ambient;
-    private Vector3f diffuse;
-    private Vector3f specular;
+    private final Vector3f ambient;
+    private final Vector3f diffuse;
+    private final Vector3f specular;
 
     private boolean visible = true;
 
     public Light( Vector3f ambient, Vector3f diffuse, Vector3f specular ) {
-        setAmbient( ambient );
-        setDiffuse( diffuse );
-        setSpecular( specular );
+        this.ambient = new Vector3f( ambient );
+        this.diffuse = new Vector3f( diffuse );
+        this.specular = new Vector3f( specular );
+        setDirty();
     }
 
     public boolean isVisible() {
@@ -34,7 +35,7 @@ public abstract class Light {
     }
 
     public void setAmbient(Vector3f ambient) {
-        this.ambient = ambient;
+        this.ambient.set(ambient);
         setDirty();
     }
 
@@ -43,7 +44,7 @@ public abstract class Light {
     }
 
     public void setDiffuse(Vector3f diffuse) {
-        this.diffuse = diffuse;
+        this.diffuse.set(diffuse);
         setDirty();
     }
 
@@ -52,7 +53,7 @@ public abstract class Light {
     }
 
     public void setSpecular(Vector3f specular) {
-        this.specular = specular;
+        this.specular.set(specular);
         setDirty();
     }
 
