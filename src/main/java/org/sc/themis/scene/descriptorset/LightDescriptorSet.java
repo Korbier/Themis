@@ -1,13 +1,11 @@
 package org.sc.themis.scene.descriptorset;
 
-import org.joml.Matrix4f;
 import org.sc.themis.renderer.Renderer;
-import org.sc.themis.renderer.base.VulkanObject;
 import org.sc.themis.renderer.base.frame.FrameKey;
-import org.sc.themis.renderer.base.frame.Frames;
 import org.sc.themis.renderer.pipeline.descriptorset.*;
 import org.sc.themis.renderer.resource.buffer.VkBuffer;
 import org.sc.themis.renderer.resource.buffer.VkBufferDescriptor;
+import org.sc.themis.renderer.resource.buffer.VkBufferFiller;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.scene.light.DirectionalLight;
 import org.sc.themis.scene.light.PointLight;
@@ -36,40 +34,34 @@ import static org.lwjgl.vulkan.VK10.*;
  * <p>Shader source.</p>
  *
  * <pre>
+ *
  *  struct DirectionalLight {
- *      vec4 direction;
- *      vec3 ambient;
- *      float visible;
+ *      vec4 ambient;
  *      vec4 diffuse;
- *      vec3 specular;
- *      float shininess;
+ *      vec4 specular;
+ *      vec4 visible;
+ *      vec4 direction;
  *  };
  *
  *  struct PointLight {
- *      vec4 position;
- *      float attenuationType;
- *      float attenuation1;
- *      float attenuation2;
- *      float attenuation3;
- *      vec3 ambient;
- *      float visible;
+ *      vec4 ambient;
  *      vec4 diffuse;
- *      vec3 specular;
- *      float shininess;
+ *      vec4 specular;
+ *      vec4 visible;
+ *      vec4 position;
+ *      vec4 attenuation;
  *  };
  *
  *  struct SpotLight {
+ *      vec4 ambient;
+ *      vec4 diffuse;
+ *      vec4 specular;
+ *      vec4 visible;
  *      vec4 position;
  *      vec4 direction;
- *      vec4 attenuation; //x=constant, y=linear, z=quadratic
+ *      vec4 attenuation;
  *      float innerCutOff; //cos(rad(angle))
  *      float outerCutOff; //cos(rad(angle))
- *      vec2 pad;
- *      vec3 ambient;
- *      float visible;
- *      vec4 diffuse;
- *      vec3 specular;
- *      float shininess;
  *  };
  *
  *  layout(std140, set = 3, binding = 0) uniform Lights {
@@ -105,10 +97,6 @@ public class LightDescriptorSet extends TObject implements VkDescriptorSetProvid
     private VkDescriptorSetLayout descriptorSetLayout;
     private VkDescriptorPool descriptorPool;
 
-    private final Matrix4f workInvProjection = new Matrix4f();
-    private final Matrix4f workInvView = new Matrix4f();
-    private Long utime = null;
-
     /**
      * Constructor.
      *
@@ -126,6 +114,9 @@ public class LightDescriptorSet extends TObject implements VkDescriptorSetProvid
      * @param scene scene
      */
     public void updateAll(Scene scene) throws ThemisException {
+        for (int frame = 0; frame < renderer.getFrames().getSize(); frame++) {
+            update(frame, scene);
+        }
     }
 
     /**
@@ -134,9 +125,9 @@ public class LightDescriptorSet extends TObject implements VkDescriptorSetProvid
      * @param scene scene
      */
     public void update(int frame, Scene scene) {
-        updateDirectionalLights(getDescriptorSet(idx), scene.getDirectionalLights());
-        updatePointLights(getDescriptorSet(idx), scene.getPointLights());
-        updateSpotLights(getDescriptorSet(idx), scene.getSpotLights());
+        updateDirectionalLights(frame, scene.getDirectionalLights());
+        updatePointLights(frame, scene.getPointLights());
+        updateSpotLights(frame, scene.getSpotLights());
     }
 
     public VkDescriptorSetLayout getDescriptorSetLayout() {
@@ -257,6 +248,7 @@ public class LightDescriptorSet extends TObject implements VkDescriptorSetProvid
                         descriptorset.bind(3, this.renderer.getFrames().get(frame, FK_BUFFER_SPOT_LIGHTS)));
 
     }
+
     private void setupDescriptorLayout() throws ThemisException {
         this.descriptorSetLayout = new VkDescriptorSetLayout(
             getConfiguration(),
@@ -283,55 +275,52 @@ public class LightDescriptorSet extends TObject implements VkDescriptorSetProvid
         this.descriptorSetLayout.cleanup();
     }
 
-    private void updateDirectionalLights(int frame, List<DirectionalLight> lights) throws ThemisException {
+    private void updateDirectionalLights(int frame, List<DirectionalLight> lights) {
 
-        int offset = 0;
-        VkBuffer buffer = this.renderer.getFrames().get(frame, FK_BUFFER_DIRECTIONAL_LIGHTS);
-        
+        VkBufferFiller buffer = this.renderer.getFrames().get(frame, FK_BUFFER_DIRECTIONAL_LIGHTS).filler();
+
         for (DirectionalLight light : lights) {
-            buffer.set(offset, light.getDirection());
-            offset += MemorySizeUtils.VEC4F;
-            buffer.set(offset, light.getAmbient());
-            offset += MemorySizeUtils.VEC4F;
-            buffer.set(offset, light.isVisible() ? 1.0f : 0.0f);
-            offset += MemorySizeUtils.FLOAT;
-            buffer.set(offset, light.getDiffuse());
-            offset += MemorySizeUtils.VEC4F;
-            buffer.set(offset, light.getSpecular());
-            offset += MemorySizeUtils.VEC4F;
+            buffer.put(light.getAmbient(), MemorySizeUtils.VEC4F);
+            buffer.put(light.getDiffuse(), MemorySizeUtils.VEC4F);
+            buffer.put(light.getSpecular(), MemorySizeUtils.VEC4F);
+            buffer.put(light.isVisible() ? 1.0f : 0.0f, MemorySizeUtils.VEC4F);
+            buffer.put(light.getDirection(), MemorySizeUtils.VEC4F);
         }
 
     }
 
-    private void updatePointLights(VkDescriptorSet descriptorSet, List<PointLight> lights) throws CoreException {
-        int offset = 0;
+    private void updatePointLights(int frame, List<PointLight> lights) {
+
+        VkBufferFiller buffer = this.renderer.getFrames().get(frame, FK_BUFFER_POINT_LIGHTS).filler();
+
         for (PointLight light : lights) {
-            descriptorSet.set(2, offset, light.getPosition()); offset += VkSize.VEC4;
-            descriptorSet.set(2, offset, light.getAttenuation().data()); offset += VkSize.VEC4;
-            descriptorSet.set(2, offset, light.getAmbient());  offset += VkSize.VEC3;
-            descriptorSet.set(2, offset, light.isVisible() ? 1.0f : 0.0f);  offset += VkSize.FLOAT;
-            descriptorSet.set(2, offset, light.getDiffuse());  offset += VkSize.VEC4;
-            descriptorSet.set(2, offset, light.getSpecular()); offset += VkSize.VEC3;
-            descriptorSet.set(2, offset, light.getShininess()); offset += VkSize.FLOAT;
+            buffer.put(light.getAmbient(), MemorySizeUtils.VEC4F);
+            buffer.put(light.getDiffuse(), MemorySizeUtils.VEC4F);
+            buffer.put(light.getSpecular(), MemorySizeUtils.VEC4F);
+            buffer.put(light.isVisible() ? 1.0f : 0.0f, MemorySizeUtils.VEC4F);
+            buffer.put(light.getPosition(), MemorySizeUtils.VEC4F);
+            buffer.put(light.getAttenuation().data(), MemorySizeUtils.VEC4F);
         }
+
     }
 
-    private void updateSpotLights(VkDescriptorSet descriptorSet, List<SpotLight> lights) throws CoreException {
-        int offset = 0;
+    private void updateSpotLights(int frame, List<SpotLight> lights) {
+
+        VkBufferFiller buffer = this.renderer.getFrames().get(frame, FK_BUFFER_SPOT_LIGHTS).filler();
+
         for (SpotLight light : lights) {
-            descriptorSet.set(3, offset, light.getPosition());  offset += VkSize.VEC4;
-            descriptorSet.set(3, offset, light.getDirection()); offset += VkSize.VEC4;
-            descriptorSet.set(3, offset, light.getAttenuation()); offset += VkSize.VEC4;
-            descriptorSet.set(3, offset, (float) Math.cos(Math.toRadians(light.getInnerCutOff()))); offset += VkSize.FLOAT;
-            descriptorSet.set(3, offset, (float) Math.cos(Math.toRadians(light.getOuterCutOff()))); offset += VkSize.FLOAT;
-            offset += VkSize.VEC2;
-            descriptorSet.set(3, offset, light.getAmbient());  offset += VkSize.VEC3;
-            descriptorSet.set(3, offset, light.isVisible() ? 1.0f : 0.0f);  offset += VkSize.FLOAT;
-            descriptorSet.set(3, offset, light.getDiffuse());   offset += VkSize.VEC4;
-            descriptorSet.set(3, offset, light.getSpecular());  offset += VkSize.VEC3;
-            descriptorSet.set(3, offset, light.getShininess()); offset += VkSize.FLOAT;
+            buffer.put(light.getAmbient(), MemorySizeUtils.VEC4F);
+            buffer.put(light.getDiffuse(), MemorySizeUtils.VEC4F);
+            buffer.put(light.getSpecular(), MemorySizeUtils.VEC4F);
+            buffer.put(light.isVisible() ? 1.0f : 0.0f, MemorySizeUtils.VEC4F);
+            buffer.put(light.getPosition(), MemorySizeUtils.VEC4F);
+            buffer.put(light.getAttenuation().data(), MemorySizeUtils.VEC4F);
+            buffer.put(light.getInnerCutOff());
+            buffer.put(light.getOuterCutOff(), MemorySizeUtils.VEC3F);
         }
+
     }
+
     private long getDirectionalLightsBufferSize(Scene scene) {
         return scene.getDirectionalLights().isEmpty() ? 1L : (long) scene.getDirectionalLights().size() * DirectionalLight.SIZE;
     }

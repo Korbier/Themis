@@ -7,6 +7,7 @@ import org.sc.themis.renderer.base.frame.Frames;
 import org.sc.themis.renderer.device.VkDevice;
 import org.sc.themis.renderer.sync.VkSemaphore;
 import org.sc.themis.scene.Scene;
+import org.sc.themis.scene.descriptorset.LightDescriptorSet;
 import org.sc.themis.scene.descriptorset.MousePickingDescriptorSet;
 import org.sc.themis.scene.descriptorset.SceneDescriptorSet;
 import org.sc.themis.shared.Configuration;
@@ -39,15 +40,16 @@ public class ViewerRendererActivity extends RendererActivity {
     /** Common descriptorsets **/
     private SceneDescriptorSet dsScene;
     private MousePickingDescriptorSet dsMousePicking;
+    private LightDescriptorSet dsLight;
 
     public ViewerRendererActivity(Configuration configuration, ViewerGamestate gamestate) {
         super(configuration);
         this.gamestate              = gamestate;
-        this.mousePickingRenderPass = new MousePickingRenderPass( configuration );
-        this.shadowRenderPass       = new ShadowRenderPass( configuration );
-        this.geometryRenderPass     = new GeometryRenderPass( configuration );
-        this.postProcessRenderPass  = new PostProcessRenderPass( configuration, gamestate.getPostProcessorContext() );
-        this.uiRenderPass           = new UiRenderPass( configuration );
+        this.mousePickingRenderPass = new MousePickingRenderPass(configuration);
+        this.shadowRenderPass       = new ShadowRenderPass(configuration);
+        this.geometryRenderPass     = new GeometryRenderPass(configuration);
+        this.postProcessRenderPass  = new PostProcessRenderPass(configuration, gamestate.getPostProcessorContext());
+        this.uiRenderPass           = new UiRenderPass(configuration);
     }
 
     public Renderer getRenderer() {
@@ -70,6 +72,10 @@ public class ViewerRendererActivity extends RendererActivity {
         return this.dsMousePicking;
     }
 
+    public LightDescriptorSet getLighDescriptorset() {
+        return this.dsLight;
+    }
+
     public GeometryRenderPass getGeometryRenderPass() {
         return this.geometryRenderPass;
     }
@@ -88,56 +94,62 @@ public class ViewerRendererActivity extends RendererActivity {
     @Override
     public void setup(Scene scene) throws ThemisException {
 
-        this.mousePickingRenderPass.setup( scene );
-        this.shadowRenderPass.setup( scene );
-        this.geometryRenderPass.setup( scene );
-        this.postProcessRenderPass.setup( scene );
-        this.uiRenderPass.setup( scene );
+        this.dsLight.setup( scene );
+
+        this.mousePickingRenderPass.setup(scene);
+        this.shadowRenderPass.setup(scene);
+        this.geometryRenderPass.setup(scene);
+        this.postProcessRenderPass.setup(scene);
+        this.uiRenderPass.setup(scene);
 
     }
 
     private void setupDescriptorsets() throws ThemisException {
 
-        this.dsScene = new SceneDescriptorSet(getConfiguration(), renderer );
+        this.dsScene = new SceneDescriptorSet(getConfiguration(), renderer);
         this.dsScene.setup();
 
         this.dsMousePicking = new MousePickingDescriptorSet(getConfiguration(), renderer);
         this.dsMousePicking.setup();
 
+        this.dsLight = new LightDescriptorSet(getConfiguration(), renderer);
+        this.dsLight.setup();
+
     }
 
     private void setupRenderPasses() throws ThemisException {
-        this.mousePickingRenderPass.setup( this );
-        this.shadowRenderPass.setup( this );
-        this.geometryRenderPass.setup( this );
-        this.postProcessRenderPass.setup( this );
-        this.uiRenderPass.setup( this );
+        this.mousePickingRenderPass.setup(this);
+        this.shadowRenderPass.setup(this);
+        this.geometryRenderPass.setup(this);
+        this.postProcessRenderPass.setup(this);
+        this.uiRenderPass.setup(this);
     }
 
     private void setupSemaphores() throws ThemisException {
 
-        this.semPickingPassCompleted = FrameKey.of( VkSemaphore.class );
-        getFrames().create( this.semPickingPassCompleted, () -> new VkSemaphore(getConfiguration(), getDevice() ) );
+        this.semPickingPassCompleted = FrameKey.of(VkSemaphore.class);
+        getFrames().create(this.semPickingPassCompleted, () -> new VkSemaphore(getConfiguration(), getDevice()));
 
-        this.semShadowPassCompleted = FrameKey.of( VkSemaphore.class );
-        getFrames().create( this.semShadowPassCompleted, () -> new VkSemaphore(getConfiguration(), getDevice() ) );
+        this.semShadowPassCompleted = FrameKey.of(VkSemaphore.class);
+        getFrames().create(this.semShadowPassCompleted, () -> new VkSemaphore(getConfiguration(), getDevice()));
 
-        this.semGeometryPassCompleted = FrameKey.of( VkSemaphore.class );
-        getFrames().create( this.semGeometryPassCompleted, () -> new VkSemaphore(getConfiguration(), getDevice() ) );
+        this.semGeometryPassCompleted = FrameKey.of(VkSemaphore.class);
+        getFrames().create(this.semGeometryPassCompleted, () -> new VkSemaphore(getConfiguration(), getDevice()));
 
-        this.semPostProcessPassCompleted = FrameKey.of( VkSemaphore.class );
-        getFrames().create( this.semPostProcessPassCompleted, () -> new VkSemaphore(getConfiguration(), getDevice() ) );
+        this.semPostProcessPassCompleted = FrameKey.of(VkSemaphore.class);
+        getFrames().create(this.semPostProcessPassCompleted, () -> new VkSemaphore(getConfiguration(), getDevice()));
 
     }
 
     @Override
     public void cleanup() throws ThemisException {
 
-        getFrames().remove( this.semPostProcessPassCompleted );
-        getFrames().remove( this.semGeometryPassCompleted );
-        getFrames().remove( this.semShadowPassCompleted );
-        getFrames().remove( this.semPickingPassCompleted );
+        getFrames().remove(this.semPostProcessPassCompleted);
+        getFrames().remove(this.semGeometryPassCompleted);
+        getFrames().remove(this.semShadowPassCompleted);
+        getFrames().remove(this.semPickingPassCompleted);
 
+        this.dsLight.cleanup();
         this.dsMousePicking.cleanup();
         this.dsScene.cleanup();
 
@@ -150,12 +162,12 @@ public class ViewerRendererActivity extends RendererActivity {
     }
 
     @Override
-    public void render( Scene scene, long tpf ) throws ThemisException {
+    public void render(Scene scene, long tpf) throws ThemisException {
 
-        int frame = this.renderer.acquire( scene );
+        int frame = this.renderer.acquire(scene);
 
-        this.update( frame, scene);
-        this.render( frame, scene );
+        this.update(frame, scene);
+        this.render(frame, scene);
 
     }
 
@@ -168,20 +180,21 @@ public class ViewerRendererActivity extends RendererActivity {
         this.uiRenderPass.resize();
     }
 
-    private void update( int frame, Scene scene) {
-        this.dsScene.update( frame, scene );
+    private void update(int frame, Scene scene) {
+        this.dsScene.update(frame, scene);
+        this.dsLight.update(frame, scene);
     }
 
     private void render(int frame, Scene scene) throws ThemisException {
         /** Cas nominal
-        this.mousePickingRenderPass.render( frame, scene, this.renderer.getAcquireSemaphore( frame ),                 getFrames().get( frame, this.semPickingPassCompleted ) );
-        this.shadowRenderPass.render(       frame, scene, getFrames().get( frame, this.semPickingPassCompleted ),     getFrames().get( frame, this.semShadowPassCompleted ) );
-        this.geometryRenderPass.render(     frame, scene, getFrames().get( frame, this.semShadowPassCompleted ),      getFrames().get( frame, this.semGeometryPassCompleted ) );
-        this.postProcessRenderPass.render(  frame, scene, getFrames().get( frame, this.semGeometryPassCompleted ),    getFrames().get( frame, this.semPostProcessPassCompleted ) );
-        this.uiRenderPass.render(           frame, scene, getFrames().get( frame, this.semPostProcessPassCompleted ), this.renderer.getPresentSemaphore( frame ) );
+        this.mousePickingRenderPass.render(frame, scene, this.renderer.getAcquireSemaphore(frame),                 getFrames().get(frame, this.semPickingPassCompleted));
+        this.shadowRenderPass.render(      frame, scene, getFrames().get(frame, this.semPickingPassCompleted),     getFrames().get(frame, this.semShadowPassCompleted));
+        this.geometryRenderPass.render(    frame, scene, getFrames().get(frame, this.semShadowPassCompleted),      getFrames().get(frame, this.semGeometryPassCompleted));
+        this.postProcessRenderPass.render( frame, scene, getFrames().get(frame, this.semGeometryPassCompleted),    getFrames().get(frame, this.semPostProcessPassCompleted));
+        this.uiRenderPass.render(          frame, scene, getFrames().get(frame, this.semPostProcessPassCompleted), this.renderer.getPresentSemaphore(frame));
         **/
-        this.geometryRenderPass.render(     frame, scene, this.renderer.getAcquireSemaphore( frame ), getFrames().get( frame, this.semGeometryPassCompleted ) );
-        this.postProcessRenderPass.render(  frame, scene, getFrames().get( frame, this.semGeometryPassCompleted ), this.renderer.getPresentSemaphore( frame ) );
+        this.geometryRenderPass.render(    frame, scene, this.renderer.getAcquireSemaphore(frame), getFrames().get(frame, this.semGeometryPassCompleted));
+        this.postProcessRenderPass.render( frame, scene, getFrames().get(frame, this.semGeometryPassCompleted), this.renderer.getPresentSemaphore(frame));
     }
 
 }
