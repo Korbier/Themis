@@ -5,6 +5,7 @@ import org.joml.Vector3f;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.sc.themis.scene.light.Attenuation;
 import org.sc.themis.scene.light.DirectionalLight;
 import org.sc.themis.scene.light.SpotLight;
 import org.sc.themis.shared.Configuration;
@@ -24,7 +25,7 @@ public class SpotLightTest {
         Vector3f specularColor = new Vector3f( 0.0f, 0.0f, 1.0f );
         Vector3f direction = new Vector3f( 1.0f, 1.0f, 1.0f );
         Vector3f position = new Vector3f( 1.0f, 1.0f, 1.0f );
-        Vector3f attenuation = new Vector3f( 1.0f, 1.0f, 1.0f );
+        Attenuation attenuation = Attenuation.type1(10.0f, 10.0f);
         float innerCutOff = 12.0f;
         float outerCutOff = 20.0f;
 
@@ -53,7 +54,7 @@ public class SpotLightTest {
         Vector3f specularColor = new Vector3f( 0.0f, 0.0f, 1.0f );
         Vector3f direction = new Vector3f( 1.0f, 1.0f, 1.0f );
         Vector3f position = new Vector3f( 1.0f, 1.0f, 1.0f );
-        Vector3f attenuation = new Vector3f( 1.0f, 1.0f, 1.0f );
+        Attenuation attenuation = Attenuation.type1(10.0f, 10.0f);
         float innerCutOff = 12.0f;
         float outerCutOff = 20.0f;
 

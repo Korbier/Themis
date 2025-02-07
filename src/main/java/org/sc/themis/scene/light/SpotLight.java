@@ -5,34 +5,34 @@ import org.sc.themis.shared.utils.MemorySizeUtils;
 
 public class SpotLight extends Light {
 
-    public final static int SIZE = Light.SIZE + MemorySizeUtils.VEC3F + MemorySizeUtils.VEC3F + MemorySizeUtils.VEC3F + MemorySizeUtils.FLOAT + MemorySizeUtils.FLOAT;
+    public static final int SIZE = Light.SIZE + MemorySizeUtils.VEC3F + MemorySizeUtils.VEC3F + MemorySizeUtils.VEC3F + MemorySizeUtils.FLOAT + MemorySizeUtils.FLOAT;
 
     private final Vector3f position;
     private final Vector3f direction;
-    private final Vector3f attenuation;
+    private final Attenuation attenuation;
     private float innerCutOff;
     private float outerCutOff;
 
-    public SpotLight(Vector3f ambient, Vector3f diffuse, Vector3f specular, Vector3f position, Vector3f direction, Vector3f attenuation, float innerCutOff, float outerCutOff ) {
+    public SpotLight(Vector3f ambient, Vector3f diffuse, Vector3f specular, Vector3f position, Vector3f direction, Attenuation attenuation, float innerCutOff, float outerCutOff) {
         super(ambient, diffuse, specular);
         this.position = new Vector3f(position);
         this.direction = new Vector3f(direction);
-        this.attenuation = new Vector3f(attenuation);
-        setInnerCutOff( innerCutOff );
-        setOuterCutOff( outerCutOff );
+        this.attenuation = Attenuation.of(attenuation);
+        setInnerCutOff(innerCutOff);
+        setOuterCutOff(outerCutOff);
         setDirty();
     }
 
     public Vector3f getPosition() {
-        return new Vector3f( position );
+        return new Vector3f(position);
     }
 
     public Vector3f getDirection() {
-        return new Vector3f( direction );
+        return new Vector3f(direction);
     }
 
-    public Vector3f getAttenuation() {
-        return new Vector3f( attenuation );
+    public Attenuation getAttenuation() {
+        return Attenuation.of(attenuation);
     }
 
     public float getInnerCutOff() {
@@ -53,7 +53,7 @@ public class SpotLight extends Light {
         setDirty();
     }
 
-    public void setAttenuation(Vector3f attenuation) {
+    public void setAttenuation(Attenuation attenuation) {
         this.attenuation.set(attenuation);
         setDirty();
     }

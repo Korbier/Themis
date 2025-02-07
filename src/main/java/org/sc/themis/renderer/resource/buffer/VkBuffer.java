@@ -49,7 +49,7 @@ public class VkBuffer extends VulkanObject {
     @Override
     public void setup() throws ThemisException {
 
-        try (MemoryStack stack = MemoryStack.stackPush() ) {
+        try (MemoryStack stack = MemoryStack.stackPush()) {
 
             if (this.descriptor.isAligned()) {
                 this.alignedSize = calcAlignedSize(this.device, this.descriptor.chunckSize());
@@ -73,13 +73,17 @@ public class VkBuffer extends VulkanObject {
     @Override
     public void cleanup() throws ThemisException {
         unmap();
-        vkMemoryAllocator().destroyBuffer( this.allocator.getHandle(), this.handle, this.allocation );
+        vkMemoryAllocator().destroyBuffer(this.allocator.getHandle(), this.handle, this.allocation);
+    }
+
+    public VkBufferFiller filler() {
+        return VkBufferFiller.of( this );
     }
 
     private void setupBuffer(MemoryStack stack, VkBufferCreateInfo bufferCreateInfo, VmaAllocationCreateInfo allocInfo) throws ThemisException {
         PointerBuffer pAllocation = stack.callocPointer(1);
         LongBuffer pBuffer = stack.mallocLong(1);
-        vkMemoryAllocator().createBuffer( this.allocator.getHandle(), bufferCreateInfo, allocInfo, pBuffer, pAllocation );
+        vkMemoryAllocator().createBuffer(this.allocator.getHandle(), bufferCreateInfo, allocInfo, pBuffer, pAllocation);
         this.handle = pBuffer.get(0);
         this.allocation = pAllocation.get(0);
 
@@ -94,8 +98,8 @@ public class VkBuffer extends VulkanObject {
     @Override
     public String toString() {
         return getClass().getSimpleName()
-                + "{handle=" + Long.toHexString( getHandle() )
-                + " mapped_memory_handle=" + (isMapped() ? Long.toHexString( this.mappedMemoryHandle ) : "NULL" )
+                + "{handle=" + Long.toHexString(getHandle())
+                + " mapped_memory_handle=" + (isMapped() ? Long.toHexString(this.mappedMemoryHandle) : "NULL")
                 + "}";
     }
 
@@ -115,7 +119,7 @@ public class VkBuffer extends VulkanObject {
         return this.descriptor.isAligned();
     }
 
-    public int getAlignedOffset( int index ) {
+    public int getAlignedOffset(int index) {
         return getAlignedSize() * index;
     }
 
@@ -124,17 +128,17 @@ public class VkBuffer extends VulkanObject {
     }
 
     public void map() throws ThemisException {
-        if ( isMappable() ) {
-            vkMemoryAllocator().mapMemory( this.allocator.getHandle(), this.allocation, this.mappingPointer );
+        if (isMappable()) {
+            vkMemoryAllocator().mapMemory(this.allocator.getHandle(), this.allocation, this.mappingPointer);
             this.mappedMemoryHandle = this.mappingPointer.get(0);
-            this.mappedContent = MemoryUtil.memByteBuffer( this.mappedMemoryHandle, (int) getRequestedSize() );
+            this.mappedContent = MemoryUtil.memByteBuffer(this.mappedMemoryHandle, (int) getRequestedSize());
         }
     }
 
     public void unmap() throws ThemisException {
-        if ( isMapped() ) {
+        if (isMapped()) {
             this.mappedContent = null;
-            vkMemoryAllocator().unmapMemory( this.allocator.getHandle(), this.allocation );
+            vkMemoryAllocator().unmapMemory(this.allocator.getHandle(), this.allocation);
         }
     }
 
@@ -147,42 +151,42 @@ public class VkBuffer extends VulkanObject {
     }
 
     public void compact() {
-        if ( isMapped() ) this.mappedContent.compact();
+        if (isMapped()) this.mappedContent.compact();
     }
 
-    public void set( ByteBuffer data ) {
-        if ( isMapped() ) this.mappedContent.put( data );
+    public void set(ByteBuffer data) {
+        if (isMapped()) this.mappedContent.put(data);
     }
 
-    public void set( int offset, Vector3f value ) {
-        if ( isMapped() ) value.get( offset, this.mappedContent );
+    public void set(int offset, Vector3f value) {
+        if (isMapped()) value.get(offset, this.mappedContent);
     }
 
-    public void set( int offset, Vector4f value ) {
-        if ( isMapped() ) value.get( offset, this.mappedContent );
+    public void set(int offset, Vector4f value) {
+        if (isMapped()) value.get(offset, this.mappedContent);
     }
 
-    public void set( int offset, Matrix4f value ) {
-        if ( isMapped() ) value.get( offset, this.mappedContent );
+    public void set(int offset, Matrix4f value) {
+        if (isMapped()) value.get(offset, this.mappedContent);
     }
 
-    public void set( int offset, Vector2i value ) {
-        if ( isMapped() ) value.get( offset, this.mappedContent );
+    public void set(int offset, Vector2i value) {
+        if (isMapped()) value.get(offset, this.mappedContent);
     }
 
-    public void set( int offset, float value ) {
-        if ( isMapped() ) this.mappedContent.putFloat( offset, value );
+    public void set(int offset, float value) {
+        if (isMapped()) this.mappedContent.putFloat(offset, value);
     }
 
-    public void set( int offset, int value ) {
-        if ( isMapped() ) this.mappedContent.putInt( offset, value );
+    public void set(int offset, int value) {
+        if (isMapped()) this.mappedContent.putInt(offset, value);
     }
 
-    public void set( int offset, float ... values ) {
-        if ( isMapped() ) this.mappedContent.asFloatBuffer().put( offset / MemorySizeUtils.FLOAT, values );
+    public void set(int offset, float ... values) {
+        if (isMapped()) this.mappedContent.asFloatBuffer().put(offset / MemorySizeUtils.FLOAT, values);
     }
 
-    public void set( int offset, int ... values ) {
+    public void set(int offset, int ... values) {
         if (isMapped()) this.mappedContent.asIntBuffer().put(offset, values);
     }
 
@@ -194,13 +198,13 @@ public class VkBuffer extends VulkanObject {
             .sharingMode(VK_SHARING_MODE_EXCLUSIVE);
     }
 
-    private int calcAlignedSize( VkDevice device, long originalSize ) {
+    private int calcAlignedSize(VkDevice device, long originalSize) {
 
         VkPhysicalDevice physDevice = device.getPhysicalDevice();
         long minUboAlignment = physDevice.getVkPhysicalDeviceProperties().limits().minUniformBufferOffsetAlignment();
         long alignedSize     = originalSize;
 
-        if ( minUboAlignment > 0 ) {
+        if (minUboAlignment > 0) {
             alignedSize = ((originalSize / minUboAlignment) + 1) * minUboAlignment;
         }
 
