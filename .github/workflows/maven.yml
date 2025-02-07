@@ -22,7 +22,9 @@ jobs:
     steps:
     
     - name: Prepare
-      run: mkdir staging && cp target/*.jar staging  
+      run: | 
+        mkdir staging
+        cp target/*.jar staging  
       
     - uses: actions/checkout@v4
     
