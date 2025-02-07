@@ -93,7 +93,7 @@ public class GeometryRenderPass extends RenderPass {
 
                 for (Mesh mesh : model.getMeshes()) {
 
-                    MaterialProperties materialProperties = this.materialManager.select(mesh.getProperties(), model.getMaterialProperties());
+                    MaterialProperties materialProperties = this.materialManager.select(model.getMaterialProperties());//mesh.getProperties(),
 
                     if (materialProperties == null) {
                         LOG.errorf("No suitable MaterialProperties Struct found for mesh {} (model {})", mesh, model.getIdentifier());
@@ -200,7 +200,7 @@ public class GeometryRenderPass extends RenderPass {
                 this.getViewerActivity().getSceneDescriptorset(), this.getViewerActivity().getLighDescriptorset());
         this.defaultMaterial2.setup();
 
-        this.materialManager = new MaterialManager(this.defaultMaterial2);
+        this.materialManager = new MaterialManager(this.defaultMaterial);
 
     }
 

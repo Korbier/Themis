@@ -10,17 +10,17 @@ public class MaterialManager {
     private final Material defaultMaterial;
     private Material lastUsedMaterial = null;
 
-    public MaterialManager( Material defaultMaterial ) {
+    public MaterialManager(Material defaultMaterial) {
         this.defaultMaterial = defaultMaterial;
     }
 
-    public void compile( MaterialProperties ... properties ) throws ThemisException {
+    public void compile(MaterialProperties ... properties) throws ThemisException {
 
-        for ( MaterialProperties mProperties : properties ) {
+        for (MaterialProperties mProperties : properties) {
 
-            String variantIdentifier = this.defaultMaterial.add( mProperties );
+            String variantIdentifier = this.defaultMaterial.add(mProperties);
 
-            if ( variantIdentifier != null ) {
+            if (variantIdentifier != null) {
                 mProperties.setVariantIdentifier(this.defaultMaterial, variantIdentifier);
             }
 
@@ -29,34 +29,34 @@ public class MaterialManager {
 
     public void bindMaterial(VkCommand command, Model model) throws ThemisException {
 
-        Material material = select( model );
+        Material material = select(model);
 
-        if ( this.lastUsedMaterial == null || !this.lastUsedMaterial.equals(material) ) {
+        if (this.lastUsedMaterial == null || !this.lastUsedMaterial.equals(material)) {
             this.lastUsedMaterial = material;
         }
 
-        command.bindPipeline( this.lastUsedMaterial.getPipeline() );
+        command.bindPipeline(this.lastUsedMaterial.getPipeline());
 
     }
 
-    public void bindMaterialVariant( VkCommand command, MaterialProperties properties, int frame) throws ThemisException {
+    public void bindMaterialVariant(VkCommand command, MaterialProperties properties, int frame) throws ThemisException {
         int[] indexedOffest = new int[0];
         VkDescriptorSet [] descriptorsets = this.lastUsedMaterial.getDescriptorSets(frame, properties);
-        command.bindDescriptorSets( indexedOffest, descriptorsets );
+        command.bindDescriptorSets(indexedOffest, descriptorsets);
     }
 
-    public boolean isValid( MaterialProperties properties ) {
-        return properties.getVariantIdentifier( this.lastUsedMaterial ) != null;
+    public boolean isValid(MaterialProperties properties) {
+        return properties.getVariantIdentifier(this.lastUsedMaterial) != null;
     }
 
     private Material select(Model model) {
         return this.defaultMaterial;
     }
 
-    public MaterialProperties select( MaterialProperties ... properties ) {
+    public MaterialProperties select(MaterialProperties ... properties) {
 
-        for ( MaterialProperties materialProperties : properties ) {
-            if ( materialProperties.getVariantIdentifier( this.lastUsedMaterial ) != null ) {
+        for (MaterialProperties materialProperties : properties) {
+            if (materialProperties.getVariantIdentifier(this.lastUsedMaterial) != null) {
                 return materialProperties;
             }
         }

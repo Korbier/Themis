@@ -23,9 +23,8 @@ public class ColorMaterial extends Material {
     public static final String VERTEX_SOURCE = """
             #version 450
             
-            layout(location = 0) out vec2 outTexture;
-            layout(location = 1) out vec3 outPosition;
-            layout(location = 2) out mat3 outTBNMatrix;
+            layout(location = 0) out vec3 outPosition;
+            layout(location = 1) out vec3 outNormal;
             
             layout(location = 0) in vec3 inPosition;
             layout(location = 1) in vec3 inNormal;
@@ -49,33 +48,19 @@ public class ColorMaterial extends Material {
                 layout(offset = 0) mat4 matrix;
             } instance;
             
-            vec3 _normalize(mat3 normalMatrix, vec3 toNormalize) {
-                return normalize(normalMatrix * toNormalize);
-            }
-            
             void main()
             {
                 gl_Position = global.projection * global.view * instance.matrix * vec4(inPosition, 1.0f);
-            
-                outTexture  = inTexture;
                 outPosition = (instance.matrix * vec4(inPosition, 1.0f)).xyz;
-            
-                mat3 normalMatrix = mat3(transpose(inverse(instance.matrix)));
-                vec3 T = _normalize(normalMatrix, inTangent);
-                vec3 B = _normalize(normalMatrix, inBitangent);
-                vec3 N = _normalize(normalMatrix, inNormal);
-        
-                outTBNMatrix = mat3(T, B, N);
-            
+                outNormal  = inNormal;
             }
             """;
 
     public static final String FRAGMENT_SOURCE = """
             #version 450
             
-            layout(location = 0) in vec2 inTexture;
-            layout(location = 1) in vec3 inPosition;
-            layout(location = 2) in mat3 inTBNMatrix;
+            layout(location = 0) in vec3 inPosition;
+            layout(location = 1) in vec3 inNormal;
             
             layout(location = 0) out vec4 outColor;
             
@@ -141,8 +126,44 @@ public class ColorMaterial extends Material {
                 vec4 color;
             } material;
             
+            vec3 ambient(vec3 lightAmbientColor, vec3 materialColor) {
+                return lightAmbientColor * materialColor;
+            }
+            
+            vec3 diffuseDirectional( vec3 nlNormal, vec3 lightDirection, vec3 lightDiffuseColor, vec3 materialColor ) {
+                vec3 oppLightDirection  = normalize( -lightDirection );
+                float diff = max( dot( nlNormal, oppLightDirection), 0.0 );
+                return lightDiffuseColor * materialColor * diff;
+            }
+            
+            vec3 directional( vec3 nlNormal, vec3 materialColor, DirectionalLight light ) {
+                vec3 ambientColor = ambient( light.ambient.rgb, materialColor );
+                vec3 diffuseColor = diffuseDirectional( nlNormal, light.direction.xyz, light.diffuse.rgb, materialColor );
+                // vec3 specularColor = specularDirectional( fragPosition, normal, light.direction.xyz, light.specular.rgb, diffuse, light.shininess );
+                return /*ambientColor +*/ diffuseColor;
+            }
+            
+            vec3 directionals( vec3 nlNormal, vec3 materialColor) {
+                vec3 color = vec3(0.0f);
+                for (int i = 0; i<lights.directionalLightCount; i++ ) {
+                   // if ( directionalLights.lights[i].visible.x == 1.0f ) {
+                        color += directional(nlNormal, materialColor, directionalLights.lights[i]);
+                   // }
+                }
+                return color;
+            }
+            
+            
             void main() {
-                outColor = material.color;
+            
+                vec3 nlNormal = normalize(inNormal);
+                vec3 materialColor = material.color.rgb;
+    
+                vec3 finalColor = vec3(0.0f);
+                finalColor += directional(nlNormal, materialColor, directionalLights.lights[0]);//  directionals( inPosition.xyz, nlNormal, materialColor);
+
+                outColor = vec4( finalColor, 1.0f );
+
             }
             """;
 
