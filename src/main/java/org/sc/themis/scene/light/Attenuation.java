@@ -2,6 +2,8 @@ package org.sc.themis.scene.light;
 
 import org.joml.Vector4f;
 
+import java.util.Objects;
+
 /**
  * Light attenuation.
  */
@@ -127,4 +129,17 @@ public class Attenuation {
         return this.data;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Attenuation that = (Attenuation) o;
+        return Objects.equals(data, that.data);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(data);
+    }
 }
