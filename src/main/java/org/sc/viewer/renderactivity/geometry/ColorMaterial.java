@@ -68,22 +68,24 @@ public class ColorMaterial extends Material {
                 vec4 ambient;
                 vec4 diffuse;
                 vec4 specular;
-                vec4 visible;
+                vec4 data;
                 vec4 direction;
             };
+            
             struct PointLight {
                 vec4 ambient;
                 vec4 diffuse;
                 vec4 specular;
-                vec4 visible;
+                vec4 data;
                 vec4 position;
                 vec4 attenuation;
             };
+            
             struct SpotLight {
                 vec4 ambient;
                 vec4 diffuse;
                 vec4 specular;
-                vec4 visible;
+                vec4 data;
                 vec4 position;
                 vec4 direction;
                 vec4 attenuation;
@@ -104,9 +106,10 @@ public class ColorMaterial extends Material {
             
             /******* 1 - Lights ******************/
             layout(std140, set = 1, binding = 0) uniform Lights {
-                uint directionalLightCount;
-                uint pointLightCount;
-                uint spotLightCount;
+                float directionalLightCount;
+                float pointLightCount;
+                float spotLightCount;
+                float pad;
             } lights;
             
             layout(std430, set = 1, binding = 1) readonly buffer DirectionalLights {
@@ -130,7 +133,7 @@ public class ColorMaterial extends Material {
                 return lightAmbientColor * materialColor;
             }
             
-            vec3 diffuseDirectional( vec3 nlNormal, vec3 lightDirection, vec3 lightDiffuseColor, vec3 materialColor ) {
+            vec3 diffuseDirectional( vec3 nlNormal, vec3 materialColor, vec3 lightDiffuseColor, vec3 lightDirection ) {
                 vec3 oppLightDirection  = normalize( -lightDirection );
                 float diff = max( dot( nlNormal, oppLightDirection), 0.0 );
                 return lightDiffuseColor * materialColor * diff;
@@ -138,32 +141,27 @@ public class ColorMaterial extends Material {
             
             vec3 directional( vec3 nlNormal, vec3 materialColor, DirectionalLight light ) {
                 vec3 ambientColor = ambient( light.ambient.rgb, materialColor );
-                vec3 diffuseColor = diffuseDirectional( nlNormal, light.direction.xyz, light.diffuse.rgb, materialColor );
+                vec3 diffuseColor = diffuseDirectional( nlNormal, materialColor, light.diffuse.rgb, light.direction.xyz );
                 // vec3 specularColor = specularDirectional( fragPosition, normal, light.direction.xyz, light.specular.rgb, diffuse, light.shininess );
-                return /*ambientColor +*/ diffuseColor;
+                return ambientColor + diffuseColor;
             }
             
             vec3 directionals( vec3 nlNormal, vec3 materialColor) {
                 vec3 color = vec3(0.0f);
                 for (int i = 0; i<lights.directionalLightCount; i++ ) {
-                   // if ( directionalLights.lights[i].visible.x == 1.0f ) {
+                    if ( directionalLights.lights[i].data.x == 1.0f ) {
                         color += directional(nlNormal, materialColor, directionalLights.lights[i]);
-                   // }
+                    }
                 }
                 return color;
             }
-            
-            
+                        
             void main() {
-            
                 vec3 nlNormal = normalize(inNormal);
                 vec3 materialColor = material.color.rgb;
-    
                 vec3 finalColor = vec3(0.0f);
-                finalColor += directional(nlNormal, materialColor, directionalLights.lights[0]);//  directionals( inPosition.xyz, nlNormal, materialColor);
-
+                finalColor += directionals(nlNormal, materialColor);
                 outColor = vec4( finalColor, 1.0f );
-
             }
             """;
 

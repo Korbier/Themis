@@ -125,6 +125,7 @@ public class LightDescriptorSet extends TObject implements VkDescriptorSetProvid
      * @param scene scene
      */
     public void update(int frame, Scene scene) {
+        updateData(frame, scene);
         updateDirectionalLights(frame, scene.getDirectionalLights());
         updatePointLights(frame, scene.getPointLights());
         updateSpotLights(frame, scene.getSpotLights());
@@ -165,7 +166,7 @@ public class LightDescriptorSet extends TObject implements VkDescriptorSetProvid
     private void setupBuffersData(Scene scene) throws ThemisException {
 
         VkBufferDescriptor descriptor = new VkBufferDescriptor(
-                MemorySizeUtils.FLOAT * 3,
+                MemorySizeUtils.VEC4F,
                 VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
                 0);
@@ -230,7 +231,7 @@ public class LightDescriptorSet extends TObject implements VkDescriptorSetProvid
     private void setupBuffersSpotLights(Scene scene) throws ThemisException {
 
         VkBufferDescriptor descriptor = new VkBufferDescriptor(
-                getPointLightsBufferSize(scene),
+                getSpotLightsBufferSize(scene),
                 VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_CACHED_BIT,
                 VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
@@ -275,6 +276,11 @@ public class LightDescriptorSet extends TObject implements VkDescriptorSetProvid
         this.descriptorSetLayout.cleanup();
     }
 
+    private void updateData(int frame, Scene scene) {
+        VkBufferFiller buffer = this.renderer.getFrames().get(frame, FK_BUFFER_DATA).filler();
+        buffer.put(scene.getLightData());
+    }
+
     private void updateDirectionalLights(int frame, List<DirectionalLight> lights) {
 
         VkBufferFiller buffer = this.renderer.getFrames().get(frame, FK_BUFFER_DIRECTIONAL_LIGHTS).filler();
@@ -283,7 +289,7 @@ public class LightDescriptorSet extends TObject implements VkDescriptorSetProvid
             buffer.put(light.getAmbient(), MemorySizeUtils.VEC4F);
             buffer.put(light.getDiffuse(), MemorySizeUtils.VEC4F);
             buffer.put(light.getSpecular(), MemorySizeUtils.VEC4F);
-            buffer.put(light.isVisible() ? 1.0f : 0.0f, MemorySizeUtils.VEC4F);
+            buffer.put(light.getData(), MemorySizeUtils.VEC4F);
             buffer.put(light.getDirection(), MemorySizeUtils.VEC4F);
         }
 
@@ -294,10 +300,10 @@ public class LightDescriptorSet extends TObject implements VkDescriptorSetProvid
         VkBufferFiller buffer = this.renderer.getFrames().get(frame, FK_BUFFER_POINT_LIGHTS).filler();
 
         for (PointLight light : lights) {
-            buffer.put(light.getAmbient(), MemorySizeUtils.VEC4F);
-            buffer.put(light.getDiffuse(), MemorySizeUtils.VEC4F);
+            buffer.put(light.getAmbient(),  MemorySizeUtils.VEC4F);
+            buffer.put(light.getDiffuse(),  MemorySizeUtils.VEC4F);
             buffer.put(light.getSpecular(), MemorySizeUtils.VEC4F);
-            buffer.put(light.isVisible() ? 1.0f : 0.0f, MemorySizeUtils.VEC4F);
+            buffer.put(light.getData(),     MemorySizeUtils.VEC4F);
             buffer.put(light.getPosition(), MemorySizeUtils.VEC4F);
             buffer.put(light.getAttenuation().data(), MemorySizeUtils.VEC4F);
         }
@@ -312,7 +318,7 @@ public class LightDescriptorSet extends TObject implements VkDescriptorSetProvid
             buffer.put(light.getAmbient(), MemorySizeUtils.VEC4F);
             buffer.put(light.getDiffuse(), MemorySizeUtils.VEC4F);
             buffer.put(light.getSpecular(), MemorySizeUtils.VEC4F);
-            buffer.put(light.isVisible() ? 1.0f : 0.0f, MemorySizeUtils.VEC4F);
+            buffer.put(light.getData(), MemorySizeUtils.VEC4F);
             buffer.put(light.getPosition(), MemorySizeUtils.VEC4F);
             buffer.put(light.getAttenuation().data(), MemorySizeUtils.VEC4F);
             buffer.put(light.getInnerCutOff());

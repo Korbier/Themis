@@ -94,13 +94,13 @@ public class ViewerRendererActivity extends RendererActivity {
     @Override
     public void setup(Scene scene) throws ThemisException {
 
-        this.dsLight.setup( scene );
-
         this.mousePickingRenderPass.setup(scene);
         this.shadowRenderPass.setup(scene);
         this.geometryRenderPass.setup(scene);
         this.postProcessRenderPass.setup(scene);
         this.uiRenderPass.setup(scene);
+
+        this.dsLight.setup(scene);
 
     }
 
@@ -181,8 +181,8 @@ public class ViewerRendererActivity extends RendererActivity {
     }
 
     private void update(int frame, Scene scene) {
-        this.dsScene.update(frame, scene);
         this.dsLight.update(frame, scene);
+        this.dsScene.update(frame, scene);
     }
 
     private void render(int frame, Scene scene) throws ThemisException {
@@ -193,8 +193,8 @@ public class ViewerRendererActivity extends RendererActivity {
         this.postProcessRenderPass.render( frame, scene, getFrames().get(frame, this.semGeometryPassCompleted),    getFrames().get(frame, this.semPostProcessPassCompleted));
         this.uiRenderPass.render(          frame, scene, getFrames().get(frame, this.semPostProcessPassCompleted), this.renderer.getPresentSemaphore(frame));
         **/
-        this.geometryRenderPass.render(    frame, scene, this.renderer.getAcquireSemaphore(frame), getFrames().get(frame, this.semGeometryPassCompleted));
-        this.postProcessRenderPass.render( frame, scene, getFrames().get(frame, this.semGeometryPassCompleted), this.renderer.getPresentSemaphore(frame));
+        this.geometryRenderPass.render(frame, scene, this.renderer.getAcquireSemaphore(frame), getFrames().get(frame, this.semGeometryPassCompleted));
+        this.postProcessRenderPass.render(frame, scene, getFrames().get(frame, this.semGeometryPassCompleted), this.renderer.getPresentSemaphore(frame));
     }
 
 }

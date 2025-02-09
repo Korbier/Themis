@@ -31,8 +31,8 @@ public class Renderer extends TObject {
     protected final static int DEFAULT_QUEUE_INDEX = 0;
 
     /*** Framed object ***/
-    private final static FrameKey<VkSemaphore> FK_ACQUIRE_SEMAPHORE = FrameKey.of( VkSemaphore.class );
-    private final static FrameKey<VkSemaphore> FK_PRESENT_SEMAPHORE = FrameKey.of( VkSemaphore.class );
+    private final static FrameKey<VkSemaphore> FK_ACQUIRE_SEMAPHORE = FrameKey.of(VkSemaphore.class);
+    private final static FrameKey<VkSemaphore> FK_PRESENT_SEMAPHORE = FrameKey.of(VkSemaphore.class);
 
     private final Window window;
     private final Input input;
@@ -59,12 +59,12 @@ public class Renderer extends TObject {
 
     boolean isSceneConfigured = false;
 
-    public Renderer(Configuration configuration, Window window, Input input, RendererActivity activity ) {
+    public Renderer(Configuration configuration, Window window, Input input, RendererActivity activity) {
         super(configuration);
         this.window = window;
         this.input = input;
         this.activity = activity;
-        this.instance = new VkInstance( configuration );
+        this.instance = new VkInstance(configuration);
     }
 
     @Override
@@ -86,16 +86,16 @@ public class Renderer extends TObject {
         this.setupResourceAllocator();
 
         /** Frame dependent setups **/
-        this.frames = new Frames( getFrameCount(), true, true );
+        this.frames = new Frames(getFrameCount(), true, true);
         this.setupActivity();
         this.setupSemaphores();
 
-        LOG.trace( "Renderer initialized" );
+        LOG.trace("Renderer initialized");
 
     }
 
     private void setupResourceAllocator() throws ThemisException {
-        this.resourceAllocator = new VkStagingResourceAllocator( getConfiguration(), this.device, this.memoryAllocator, createTransfertCommand( true ));
+        this.resourceAllocator = new VkStagingResourceAllocator(getConfiguration(), this.device, this.memoryAllocator, createTransfertCommand(true));
         this.resourceAllocator.setup();
     }
 
@@ -117,30 +117,30 @@ public class Renderer extends TObject {
         this.instance.cleanup();
     }
 
-    public void render( Scene scene, long tpf ) throws ThemisException {
+    public void render(Scene scene, long tpf) throws ThemisException {
 
-        if ( !this.isSceneConfigured ) {
-            this.configureScene( scene, false );
+        if (!this.isSceneConfigured) {
+            this.configureScene(scene, false);
             this.isSceneConfigured = true;
         }
 
-        this.timer.start( "themis.renderer" );
+        this.timer.start("themis.renderer");
 
         this.getResourceAllocator().commit();
-        this.activity.render( scene, tpf );
-        this.present( getPresentSemaphore( getCurrentFrame() ) );
+        this.activity.render(scene, tpf);
+        this.present(getPresentSemaphore(getCurrentFrame()));
 
         this.timer.stopAndShow();
 
     }
 
-    public int acquire( Scene scene ) throws ThemisException {
+    public int acquire(Scene scene) throws ThemisException {
 
-        try (MemoryStack stack = MemoryStack.stackPush() ) {
-            if (this.window.isResized() || this.swapChain.acquire(stack, getAcquireSemaphore( getCurrentFrame() ) ) ) {
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            if (this.window.isResized() || this.swapChain.acquire(stack, getAcquireSemaphore(getCurrentFrame()))) {
                 this.window.resetResized();
-                this.resize( scene );
-                this.swapChain.acquire(stack, getAcquireSemaphore( getCurrentFrame() ) );
+                this.resize(scene);
+                this.swapChain.acquire(stack, getAcquireSemaphore(getCurrentFrame()));
             }
         }
 
@@ -148,10 +148,10 @@ public class Renderer extends TObject {
 
     }
 
-    public void present( VkSemaphore presentSemaphore ) throws ThemisException {
-        try (MemoryStack stack = MemoryStack.stackPush() ) {
-            if ( this.swapChain.present( stack, presentSemaphore ) ) {
-                this.window.setResized( true );
+    public void present(VkSemaphore presentSemaphore) throws ThemisException {
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            if (this.swapChain.present(stack, presentSemaphore)) {
+                this.window.setResized(true);
             }
         }
     }
@@ -196,28 +196,28 @@ public class Renderer extends TObject {
         return this.swapChain.getExtent();
     }
 
-    public VkImageView getImageView( int frame ) {
-        return this.swapChain.getImageView( frame );
+    public VkImageView getImageView(int frame) {
+        return this.swapChain.getImageView(frame);
     }
 
     public int getImageFormat() {
         return this.swapChain.getSurfaceFormat().imageFormat();
     }
 
-    public VkCommand createGraphicCommand( boolean primary ) throws ThemisException {
-        return this.graphicCommandPool.create( primary );
+    public VkCommand createGraphicCommand(boolean primary) throws ThemisException {
+        return this.graphicCommandPool.create(primary);
     }
 
-    public VkCommand createTransfertCommand( boolean primary ) throws ThemisException {
-        return this.transfertCommandPool.create( primary );
+    public VkCommand createTransfertCommand(boolean primary) throws ThemisException {
+        return this.transfertCommandPool.create(primary);
     }
 
-    public VkSemaphore getAcquireSemaphore(int frame ) {
-        return this.frames.get( frame, FK_ACQUIRE_SEMAPHORE );
+    public VkSemaphore getAcquireSemaphore(int frame) {
+        return this.frames.get(frame, FK_ACQUIRE_SEMAPHORE);
     }
 
-    public VkSemaphore getPresentSemaphore( int frame ) {
-        return this.frames.get( frame, FK_PRESENT_SEMAPHORE );
+    public VkSemaphore getPresentSemaphore(int frame) {
+        return this.frames.get(frame, FK_PRESENT_SEMAPHORE);
     }
 
     private void resize(Scene scene) throws ThemisException {
@@ -233,12 +233,12 @@ public class Renderer extends TObject {
         this.activity.resize();
     }
 
-    private void configureScene( Scene scene, boolean isResizeConfiguration ) throws ThemisException {
+    private void configureScene(Scene scene, boolean isResizeConfiguration) throws ThemisException {
 
-        scene.getProjection().resize( getWindow().getSize().x, getWindow().getSize().y );
+        scene.getProjection().resize(getWindow().getSize().x, getWindow().getSize().y);
 
-        if ( !isResizeConfiguration ) {
-            this.activity.setup( scene );
+        if (!isResizeConfiguration) {
+            this.activity.setup(scene);
         }
 
     }
@@ -249,34 +249,34 @@ public class Renderer extends TObject {
     }
 
     private void setupSurface() throws ThemisException {
-        this.surface = new VkSurface(getConfiguration(), this.instance, this.window );
+        this.surface = new VkSurface(getConfiguration(), this.instance, this.window);
         this.surface.setup();
     }
 
     private void setupActivity() throws ThemisException {
-        this.activity.setup( this );
+        this.activity.setup(this);
     }
 
     private void setupCommandPool() throws ThemisException {
-        this.graphicCommandPool = new VkCommandPool( getConfiguration(), this.device, this.graphicQueue );
+        this.graphicCommandPool = new VkCommandPool(getConfiguration(), this.device, this.graphicQueue);
         this.graphicCommandPool.setup();
-        this.transfertCommandPool = new VkCommandPool( getConfiguration(), this.device, this.transfertQueue );
+        this.transfertCommandPool = new VkCommandPool(getConfiguration(), this.device, this.transfertQueue);
         this.transfertCommandPool.setup();
     }
 
     private void setupQueues() throws ThemisException {
-        this.graphicQueue = this.device.selectQueue( DEFAULT_QUEUE_INDEX, VkQueueSelectors.SELECTOR_GRAPHIC_QUEUE );
-        this.transfertQueue = this.device.selectQueue( DEFAULT_QUEUE_INDEX, VkQueueSelectors.SELECTOR_TRANSFERT_QUEUE );
-        this.presentQueue = this.device.selectPresentQueue( DEFAULT_QUEUE_INDEX, this.surface );
+        this.graphicQueue = this.device.selectQueue(DEFAULT_QUEUE_INDEX, VkQueueSelectors.SELECTOR_GRAPHIC_QUEUE);
+        this.transfertQueue = this.device.selectQueue(DEFAULT_QUEUE_INDEX, VkQueueSelectors.SELECTOR_TRANSFERT_QUEUE);
+        this.presentQueue = this.device.selectPresentQueue(DEFAULT_QUEUE_INDEX, this.surface);
     }
 
     private void setupMemoryAllocator() throws ThemisException {
-        this.memoryAllocator = new VkMemoryAllocator( getConfiguration(), this.physicalDevice, this.device, this.instance );
+        this.memoryAllocator = new VkMemoryAllocator(getConfiguration(), this.physicalDevice, this.device, this.instance);
         this.memoryAllocator.setup();
     }
 
     private void setupDevice() throws ThemisException {
-        this.device = new VkDevice( getConfiguration(), this.physicalDevice );
+        this.device = new VkDevice(getConfiguration(), this.physicalDevice);
         this.device.setup();
     }
 
@@ -291,8 +291,8 @@ public class Renderer extends TObject {
     }
 
     private void setupSemaphores() throws ThemisException {
-        this.frames.create( FK_ACQUIRE_SEMAPHORE, () -> new VkSemaphore(getConfiguration(), this.device) );
-        this.frames.create( FK_PRESENT_SEMAPHORE, () -> new VkSemaphore(getConfiguration(), this.device) );
+        this.frames.create(FK_ACQUIRE_SEMAPHORE, () -> new VkSemaphore(getConfiguration(), this.device));
+        this.frames.create(FK_PRESENT_SEMAPHORE, () -> new VkSemaphore(getConfiguration(), this.device));
     }
 
 }

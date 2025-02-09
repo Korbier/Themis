@@ -1,6 +1,7 @@
 package org.sc.themis.scene;
 
 import org.jboss.logging.Logger;
+import org.joml.Vector4f;
 import org.sc.themis.renderer.material.MaterialProperties;
 import org.sc.themis.scene.light.DirectionalLight;
 import org.sc.themis.scene.light.PointLight;
@@ -112,6 +113,15 @@ public class Scene extends TObject {
 
     public String getMaterial( Model model ) {
         return this.materials.get( model.getIdentifier() );
+    }
+
+    public Vector4f getLightData() {
+        return new Vector4f(
+            (float) getDirectionalLights().size(),
+            (float) getDirectionalLights().size(),
+            (float) getDirectionalLights().size(),
+            0.0f
+        );
     }
 
     public List<DirectionalLight> getDirectionalLights() {

@@ -66,9 +66,9 @@ public class ViewerGamestate implements Gamestate {
 
         scene.add(new DirectionalLight(
             new Vector3f(0.01f),
-            new Vector3f(1.0f, 1.0f, 1.0f),
+            new Vector3f(0.3f),
             new Vector3f(0.0f),
-            new Vector3f(0.0f, -2f, -2.0f))
+            new Vector3f(-3.0f, -3.0f, -3.0f))
         );
 
     }

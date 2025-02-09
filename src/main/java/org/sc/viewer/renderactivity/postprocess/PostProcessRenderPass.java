@@ -33,9 +33,9 @@ public class PostProcessRenderPass extends RenderPass {
     private final PostProcessorContext context;
 
     /*** Framed object ***/
-    private final static FrameKey<VkFrameBuffer> FK_FRAMEBUFFER = FrameKey.of( VkFrameBuffer.class );
-    private final static FrameKey<VkCommand>     FK_COMMAND = FrameKey.of( VkCommand.class );
-    private final static FrameKey<VkFence>       FK_FENCE = FrameKey.of( VkFence.class );
+    private static final FrameKey<VkFrameBuffer> FK_FRAMEBUFFER = FrameKey.of( VkFrameBuffer.class );
+    private static final FrameKey<VkCommand>     FK_COMMAND = FrameKey.of( VkCommand.class );
+    private static final FrameKey<VkFence>       FK_FENCE = FrameKey.of( VkFence.class );
 
     /*** Renderpass **/
     private VkFrameBufferAttachments frameBufferAttachments;
@@ -99,7 +99,7 @@ public class PostProcessRenderPass extends RenderPass {
 
         command.endRenderPass();
         command.end();
-        command.submit( fence, waitSemaphore, signalSemaphore );
+        command.submit(fence, waitSemaphore, signalSemaphore);
 
         fence.waitForAndReset();
 
