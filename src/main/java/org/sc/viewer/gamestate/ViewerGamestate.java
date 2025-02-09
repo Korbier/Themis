@@ -3,7 +3,6 @@ package org.sc.viewer.gamestate;
 import org.joml.Vector3f;
 import org.sc.themis.gamestate.Gamestate;
 import org.sc.themis.renderer.Renderer;
-import org.sc.themis.renderer.material.MaterialProperties;
 import org.sc.themis.scene.*;
 import org.sc.themis.scene.controller.FpsCameraController;
 import org.sc.themis.scene.factory.MaterialFactory;
@@ -60,15 +59,15 @@ public class ViewerGamestate implements Gamestate {
     private void setupScene(Renderer renderer, Scene scene) throws ThemisException {
 
         this.model = createSphere(renderer, "sphere-1");
-        this.model.setMaterialProperties(this.materialFactory.colored(0.5f, 0.5f, 0.5f));
+        this.model.setMaterialProperties(this.materialFactory.colored(1.0f, 0.0f, 0.0f, 128.0f));
 
         scene.add(this.model.create());
 
         scene.add(new DirectionalLight(
             new Vector3f(0.01f),
             new Vector3f(0.3f),
-            new Vector3f(0.0f),
-            new Vector3f(-3.0f, -3.0f, -3.0f))
+            new Vector3f(0.9f),
+            new Vector3f(0.0f, 0.0f, -2.0f))
         );
 
     }

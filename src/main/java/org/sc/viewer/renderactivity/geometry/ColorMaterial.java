@@ -126,7 +126,10 @@ public class ColorMaterial extends Material {
             
             /******* 2 - Material ******************/
             layout(std140, set = 2, binding = 0) uniform Material {
-                vec4 color;
+                vec4 ambient;
+                vec4 diffuse;
+                vec4 specular;
+                float shininess;
             } material;
             
             vec3 ambient(vec3 lightAmbientColor, vec3 materialColor) {
@@ -139,33 +142,54 @@ public class ColorMaterial extends Material {
                 return lightDiffuseColor * materialColor * diff;
             }
             
-            vec3 directional( vec3 nlNormal, vec3 materialColor, DirectionalLight light ) {
-                vec3 ambientColor = ambient( light.ambient.rgb, materialColor );
-                vec3 diffuseColor = diffuseDirectional( nlNormal, materialColor, light.diffuse.rgb, light.direction.xyz );
-                // vec3 specularColor = specularDirectional( fragPosition, normal, light.direction.xyz, light.specular.rgb, diffuse, light.shininess );
-                return ambientColor + diffuseColor;
+            vec3 specularDirectional( vec3 fragPosition, vec3 normal, vec3 materialSpecular, float materialShininess, vec3 lightSpecularColor, vec3 lightDirection ) {
+            
+                vec3 oppLightDirection  = normalize( -lightDirection );
+                vec3 viewDirection = normalize( global.camera.xyz - fragPosition );
+                vec3 reflectDirection = reflect( -oppLightDirection, normal );
+            
+                float specularFactor = max(dot(viewDirection, reflectDirection), 0.0);
+            
+                //https://stackoverflow.com/questions/37051358/opengl-es-2-0-specular-light-generates-black-border
+                if ( specularFactor > 0.0 ) {
+                    float spec = pow(specularFactor, materialShininess);
+                    return lightSpecularColor * spec * materialSpecular;
+                } else {
+                    return vec3(0.0f);
+                }
+            
             }
             
-            vec3 directionals( vec3 nlNormal, vec3 materialColor) {
+            vec3 directional( vec3 nlNormal, vec3 position, DirectionalLight light ) {
+                vec3 ambientColor = ambient( light.ambient.rgb, material.ambient.rgb );
+                vec3 diffuseColor = diffuseDirectional( nlNormal, material.diffuse.rgb, light.diffuse.rgb, light.direction.xyz );
+                vec3 specularColor = specularDirectional( position, nlNormal, material.specular.rgb, material.shininess, light.specular.rgb, light.direction.xyz );
+                return ambientColor + diffuseColor + specularColor;
+            }
+            
+            vec3 directionals( vec3 nlNormal, vec3 position) {
                 vec3 color = vec3(0.0f);
                 for (int i = 0; i<lights.directionalLightCount; i++ ) {
                     if ( directionalLights.lights[i].data.x == 1.0f ) {
-                        color += directional(nlNormal, materialColor, directionalLights.lights[i]);
+                        color += directional(nlNormal, position, directionalLights.lights[i]);
                     }
                 }
                 return color;
             }
-                        
+            
             void main() {
                 vec3 nlNormal = normalize(inNormal);
-                vec3 materialColor = material.color.rgb;
+                vec3 position = inPosition;
                 vec3 finalColor = vec3(0.0f);
-                finalColor += directionals(nlNormal, materialColor);
+                finalColor += directionals(nlNormal, position);
                 outColor = vec4( finalColor, 1.0f );
             }
             """;
 
-    private static final int BUFFER_SIZE = MemorySizeUtils.VEC4F;
+    private static final int BUFFER_SIZE = MemorySizeUtils.VEC4F    //Ambient component
+                                           + MemorySizeUtils.VEC4F  //Diffuse component
+                                           + MemorySizeUtils.VEC4F  //Specular component
+                                           + MemorySizeUtils.FLOAT; //Shininess
     private static final VkBufferDescriptor BUFFER_DESCRIPTOR = VkBufferDescriptor.descriptorsetUniform(BUFFER_SIZE);
 
     public ColorMaterial(
@@ -186,11 +210,16 @@ public class ColorMaterial extends Material {
                 .attribute(VK_FORMAT_R32G32_SFLOAT, MemorySizeUtils.VEC2F) //Texture
                 .attribute(VK_FORMAT_R32G32B32_SFLOAT, MemorySizeUtils.VEC3F) //Tangent
                 .attribute(VK_FORMAT_R32G32B32_SFLOAT, MemorySizeUtils.VEC3F) //Bitangentr
-       );
+        );
         setPipelineDescriptor(new VkPipelineDescriptor(renderPass, 0, false, 1, true, 1, 1, 1));
 
         addVariantsUniformBinding(0, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, BUFFER_DESCRIPTOR );
-        setVariantsUniformSetter((binding, buffer, props) -> buffer.set(0, props.getProperty(MaterialProperty.Color.BASE)));
+        setVariantsUniformSetter((binding, buffer, props) -> {
+            buffer.set(0, props.getProperty(MaterialProperty.Color.BASE));
+            buffer.set(MemorySizeUtils.VEC4F, props.getProperty(MaterialProperty.Color.DIFFUSE));
+            buffer.set(MemorySizeUtils.VEC4F + MemorySizeUtils.VEC4F, props.getProperty(MaterialProperty.Color.SPECULAR));
+            buffer.set(MemorySizeUtils.VEC4F + MemorySizeUtils.VEC4F + MemorySizeUtils.VEC4F, props.getProperty(MaterialProperty.Property.SHININESS));
+        });
 
         setDescriptorsetProviders(sceneDescriptorSet, lightDescriptorSet);
 
