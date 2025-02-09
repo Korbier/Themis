@@ -198,8 +198,23 @@ public class ColorMaterial extends Material {
 
         super(configuration, renderer, IDENTIFIER);
 
-        setMaterialPropertiesValidator(props -> props.containsKey(MaterialProperty.Color.BASE));
-        setVariantsIdentifierFunction(props -> props.get(MaterialProperty.Color.BASE).toString());
+        setMaterialPropertiesValidator(
+            props -> props.containsKeys(
+                    MaterialProperty.Color.BASE,
+                    MaterialProperty.Color.DIFFUSE,
+                    MaterialProperty.Color.SPECULAR,
+                    MaterialProperty.Property.SHININESS
+            )
+        );
+
+        setVariantsIdentifierFunction(
+            props -> props.generateVariantIdentifier(
+                    MaterialProperty.Color.BASE,
+                    MaterialProperty.Color.DIFFUSE,
+                    MaterialProperty.Color.SPECULAR,
+                    MaterialProperty.Property.SHININESS
+            )
+        );
 
         addShader(VK_SHADER_STAGE_VERTEX_BIT, VkShaderSourceCompiler.compileShader(VERTEX_SOURCE, Shaderc.shaderc_glsl_vertex_shader));
         addShader(VK_SHADER_STAGE_FRAGMENT_BIT, VkShaderSourceCompiler.compileShader(FRAGMENT_SOURCE, Shaderc.shaderc_glsl_fragment_shader));
