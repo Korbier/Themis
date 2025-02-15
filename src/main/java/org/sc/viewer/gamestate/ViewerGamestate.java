@@ -11,7 +11,9 @@ import org.sc.themis.scene.Scene;
 import org.sc.themis.scene.controller.FpsCameraController;
 import org.sc.themis.scene.factory.MaterialFactory;
 import org.sc.themis.scene.factory.ModelFactory;
+import org.sc.themis.scene.light.Attenuation;
 import org.sc.themis.scene.light.DirectionalLight;
+import org.sc.themis.scene.light.PointLight;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.viewer.gamestate.controller.PostProcessorController;
 import org.sc.viewer.renderactivity.postprocess.postprocessor.ShowTBNPostprocessor;
@@ -53,29 +55,54 @@ public class ViewerGamestate implements Gamestate {
     }
 
     private void setupCamera(Scene scene) {
-        scene.getCamera().setPosition(0.0f, 1.0f, 5.0f);
+        scene.getCamera().setPosition(0.0f, 1.0f, 8.0f);
     }
 
     private void setupScene(Renderer renderer, Scene scene) throws ThemisException {
 
         this.model = createSphere(renderer, "sphere-1");
-        this.model.setMaterialProperties(this.materialFactory.color(0.2f, 0.2f, 0.7f, 128.0f));
+        this.model.setMaterialProperties(this.materialFactory.color(1.0f, 1.0f, 1.0f, 128.0f));
 
-        scene.add(this.model.create());
+        scene.add(this.model.create().position(-3.0f,  3.0f, 0.0f));
+        scene.add(this.model.create().position(-3.0f,  0.0f, 0.0f));
+        scene.add(this.model.create().position(-3.0f, -3.0f, 0.0f));
+
+        scene.add(this.model.create().position(3.0f,  3.0f, 0.0f));
+        scene.add(this.model.create().position(3.0f,  0.0f, 0.0f));
+        scene.add(this.model.create().position(3.0f, -3.0f, 0.0f));
+
+        scene.add(this.model.create().position(0.0f,  3.0f, 0.0f));
+        scene.add(this.model.create().position(0.0f, -3.0f, 0.0f));
 
         scene.add(new DirectionalLight(
             new Vector3f(0.01f),
+            new Vector3f(0.1f),
             new Vector3f(0.3f),
-            new Vector3f(0.9f),
-            new Vector3f(-1.0f, -1.0f, -2.0f))
+            new Vector3f(0f, 0.0f, -1.0f))
         );
+
+        scene.add(new PointLight(
+            new Vector3f(0.01f),
+            new Vector3f(0.4f, 0.0f, 0.0f),
+            new Vector3f(0.9f, 0.0f, 0.0f),
+            new Vector3f(5.0f, 5.0f, 5.0f),
+            Attenuation.type1(128.0f, 64.0f)
+        ));
+
+        scene.add(new PointLight(
+            new Vector3f(0.01f),
+            new Vector3f(0.0f, 0.0f, 0.4f),
+            new Vector3f(0.0f, 0.0f, 0.9f),
+            new Vector3f(-5.0f, 5.0f, 5.0f),
+            Attenuation.type1(128.0f, 64.0f)
+        ));
 
     }
 
     private Model createSphere(Renderer renderer, String id) throws ThemisException {
         return this.modelFactory.create(id,
-                renderer.getResourceAllocator(),
-                Path.of("./src/main/resources/model/sphere/scene.gltf"));
+            renderer.getResourceAllocator(),
+            Path.of("./src/main/resources/model/sphere/scene.gltf"));
     }
 
 }

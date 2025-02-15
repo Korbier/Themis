@@ -36,15 +36,15 @@ public class Scene extends TObject {
     /** Material **/
     private final Map<String, String> materials = new HashMap<>();
 
-    public Scene( Configuration configuration ) {
+    public Scene(Configuration configuration) {
         super(configuration);
-        this.projection = new Projection( configuration );
+        this.projection = new Projection(configuration);
         this.camera = new Camera();
     }
 
     @Override
     public void setup() {
-        LOG.trace( "Scene initialized" );
+        LOG.trace("Scene initialized");
     }
 
     @Override
@@ -54,43 +54,43 @@ public class Scene extends TObject {
         }
     }
 
-    public void add( Instance ... instances ) {
-        add( null, instances );
+    public void add(Instance ... instances) {
+        add(null, instances);
     }
 
-    public void add( String defaultMaterial, Instance ... instances ) {
-        for ( Instance instance : instances ) {
-            add( instance.getModel(), defaultMaterial );
-            this.instances.add( instance );
+    public void add(String defaultMaterial, Instance ... instances) {
+        for (Instance instance : instances) {
+            add(instance.getModel(), defaultMaterial);
+            this.instances.add(instance);
         }
     }
 
-    public void add( Controller ... controllers ) {
+    public void add(Controller ... controllers) {
         Collections.addAll(this.controllers, controllers);
     }
 
-    public void add( DirectionalLight light ) {
-        this.directionalLights.add( light );
+    public void add(DirectionalLight light) {
+        this.directionalLights.add(light);
     }
 
-    public void add( SpotLight light ) {
-        this.spotLights.add( light );
+    public void add(SpotLight light) {
+        this.spotLights.add(light);
     }
 
-    public void add( PointLight light ) {
-        this.pointLights.add( light );
+    public void add(PointLight light) {
+        this.pointLights.add(light);
     }
 
-    private void add( Model model, String material ) {
+    private void add(Model model, String material) {
 
-        this.models.add( model );
+        this.models.add(model);
 
-        if ( material != null ) {
-            this.materials.put( model.getIdentifier(), material );
+        if (material != null) {
+            this.materials.put(model.getIdentifier(), material);
         }
 
-        for ( Mesh mesh : model.getMeshes() ) {
-            this.materialProperties.add( mesh.getProperties() );
+        for (Mesh mesh : model.getMeshes()) {
+            this.materialProperties.add(mesh.getProperties());
         }
 
     }
@@ -111,46 +111,46 @@ public class Scene extends TObject {
         return this.controllers;
     }
 
-    public String getMaterial( Model model ) {
-        return this.materials.get( model.getIdentifier() );
+    public String getMaterial(Model model) {
+        return this.materials.get(model.getIdentifier());
     }
 
     public Vector4f getLightData() {
         return new Vector4f(
             (float) getDirectionalLights().size(),
-            (float) getDirectionalLights().size(),
-            (float) getDirectionalLights().size(),
+            (float) getPointLights().size(),
+            (float) getSpotLights().size(),
             0.0f
-        );
+       );
     }
 
     public List<DirectionalLight> getDirectionalLights() {
-        return Collections.unmodifiableList( this.directionalLights );
+        return Collections.unmodifiableList(this.directionalLights);
     }
 
     public List<SpotLight> getSpotLights() {
-        return Collections.unmodifiableList( this.spotLights );
+        return Collections.unmodifiableList(this.spotLights);
     }
 
     public List<PointLight> getPointLights() {
-        return Collections.unmodifiableList( this.pointLights );
+        return Collections.unmodifiableList(this.pointLights);
     }
 
     public MaterialProperties [] getMaterialsProperties() {
 
         Set<MaterialProperties> materialProperties = new HashSet<>();
 
-        for ( Model model : getModels() ) {
+        for (Model model : getModels()) {
 
-            materialProperties.add( model.getMaterialProperties() );
+            materialProperties.add(model.getMaterialProperties());
 
-            for ( Mesh mesh : model.getMeshes() ) {
-                materialProperties.add( mesh.getProperties() );
+            for (Mesh mesh : model.getMeshes()) {
+                materialProperties.add(mesh.getProperties());
             }
 
         }
 
-        return materialProperties.toArray( new MaterialProperties[0] );
+        return materialProperties.toArray(new MaterialProperties[0]);
 
     }
 

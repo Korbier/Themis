@@ -93,6 +93,13 @@ public class ColorMaterial extends Material {
                 float outerCutOff; //cos(rad(angle))
             };
             
+            struct Material {
+                vec4 ambient;
+                vec4 diffuse;
+                vec4 specular;
+                float shininess;
+            };
+            
             /******* 0 - Global Data ******************/
             layout(std140, set = 0, binding = 0) uniform Global {
                 mat4 projection;
@@ -125,12 +132,41 @@ public class ColorMaterial extends Material {
             } spotLights;
             
             /******* 2 - Material ******************/
-            layout(std140, set = 2, binding = 0) uniform Material {
-                vec4 ambient;
-                vec4 diffuse;
-                vec4 specular;
-                float shininess;
+            layout(std140, set = 2, binding = 0) uniform MaterialUni {
+                Material content;
             } material;
+            
+            
+            /**** FUNCTIONS **** Attenuation ****/
+            float attenuationType1( vec3 fragPosition, vec3 lightPosition, float radius, float falloff ) {
+                float distance = length( lightPosition - fragPosition );
+                float s = distance / radius;
+                if (s >= 1.0) return 0.0;
+                return (1 - s * s) * (1 - s * s) / (1 + falloff * s);
+            }
+            
+            float attenuationType2( vec3 fragPosition, vec3 lightPosition, float radius, float falloff ) {
+                float distance = length( lightPosition - fragPosition );
+                float s = distance / radius;
+                if (s >= 1.0) return 0.0;
+                return (1 - s * s) + (1 - s * s) / (1 + falloff * s * s);
+            }
+            
+            float attenuation( vec3 fragPosition, vec3 normal, vec3 lightPosition, vec4 attenuation ) {
+            
+                if ( attenuation.x == 1.0f ) {
+                    return attenuationType1( fragPosition, lightPosition, attenuation.y, attenuation.z );
+                }
+            
+                if ( attenuation.x == 2.0f ) {
+                    return attenuationType2( fragPosition, lightPosition, attenuation.y, attenuation.z );
+                }
+            
+                return 1.0f;
+            
+            }
+            
+            /**** FUNCTIONS **** Light ****/
             
             vec3 ambient(vec3 lightAmbientColor, vec3 materialColor) {
                 return lightAmbientColor * materialColor;
@@ -138,6 +174,12 @@ public class ColorMaterial extends Material {
             
             vec3 diffuseDirectional( vec3 nlNormal, vec3 materialColor, vec3 lightDiffuseColor, vec3 lightDirection ) {
                 vec3 oppLightDirection  = normalize( -lightDirection );
+                float diff = max( dot( nlNormal, oppLightDirection), 0.0 );
+                return lightDiffuseColor * materialColor * diff;
+            }
+            
+            vec3 diffuse( vec3 fragPosition, vec3 nlNormal, vec3 materialColor, vec3 lightDiffuseColor, vec3 lightPosition ) {
+                vec3 oppLightDirection  = normalize( lightPosition - fragPosition );
                 float diff = max( dot( nlNormal, oppLightDirection), 0.0 );
                 return lightDiffuseColor * materialColor * diff;
             }
@@ -160,29 +202,73 @@ public class ColorMaterial extends Material {
             
             }
             
-            vec3 directional( vec3 nlNormal, vec3 position, DirectionalLight light ) {
+            vec3 specular( vec3 fragPosition, vec3 normal, vec3 materialSpecular, float materialShininess, vec3 lightSpecularColor, vec3 lightPosition ) {
+            
+                vec3 lightDirection  = normalize( lightPosition - fragPosition );
+                vec3 viewDirection = normalize( global.camera.xyz - fragPosition );
+                vec3 reflectDirection = reflect( -lightDirection, normal );
+            
+                float specularFactor = max(dot(viewDirection, reflectDirection), 0.0);
+            
+                //https://stackoverflow.com/questions/37051358/opengl-es-2-0-specular-light-generates-black-border
+                if ( specularFactor > 0.0 ) {
+                    float spec = pow(specularFactor, materialShininess);
+                    return lightSpecularColor * spec * materialSpecular;
+                } else {
+                    return vec3(0.0f);
+                }
+            
+            }
+            
+            vec3 directional( vec3 nlNormal, vec3 position, Material material, DirectionalLight light ) {
                 vec3 ambientColor = ambient( light.ambient.rgb, material.ambient.rgb );
                 vec3 diffuseColor = diffuseDirectional( nlNormal, material.diffuse.rgb, light.diffuse.rgb, light.direction.xyz );
                 vec3 specularColor = specularDirectional( position, nlNormal, material.specular.rgb, material.shininess, light.specular.rgb, light.direction.xyz );
                 return ambientColor + diffuseColor + specularColor;
             }
             
-            vec3 directionals( vec3 nlNormal, vec3 position) {
+            vec3 point( vec3 nlNormal, vec3 position, Material material, PointLight light ) {
+                vec3 ambientColor = ambient( light.ambient.rgb, material.ambient.rgb );
+                vec3 diffuseColor = diffuse( position, nlNormal, material.diffuse.rgb, light.diffuse.rgb, light.position.xyz );
+                vec3 specularColor = specular( position, nlNormal, material.specular.rgb, material.shininess, light.specular.rgb, light.position.xyz );
+                float attenuation = attenuation(position, nlNormal, light.position.xyz, light.attenuation);
+                return attenuation * (ambientColor + diffuseColor + specularColor);
+            }
+            
+            vec3 directionals( vec3 nlNormal, vec3 position, Material material ) {
                 vec3 color = vec3(0.0f);
                 for (int i = 0; i<lights.directionalLightCount; i++ ) {
                     if ( directionalLights.lights[i].data.x == 1.0f ) {
-                        color += directional(nlNormal, position, directionalLights.lights[i]);
+                        color += directional(nlNormal, position, material, directionalLights.lights[i]);
                     }
                 }
                 return color;
             }
             
+            vec3 points( vec3 nlNormal, vec3 position, Material material ) {
+                vec3 color = vec3(0.0f);
+                for (int i = 0; i<lights.pointLightCount; i++ ) {
+                    if ( pointLights.lights[i].data.x == 1.0f ) {
+                        color += point(nlNormal, position, material, pointLights.lights[i]);
+                    }
+                }
+                return color;
+            }
+            
+            /**** MAIN ****/
+            
             void main() {
+            
+                Material material = material.content;
                 vec3 nlNormal = normalize(inNormal);
                 vec3 position = inPosition;
                 vec3 finalColor = vec3(0.0f);
-                finalColor += directionals(nlNormal, position);
+
+                finalColor += directionals(nlNormal, position, material);
+                finalColor += points(nlNormal, position, material);
+            
                 outColor = vec4( finalColor, 1.0f );
+            
             }
             """;
 
