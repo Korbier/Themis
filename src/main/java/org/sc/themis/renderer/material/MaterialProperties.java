@@ -31,8 +31,8 @@ public class MaterialProperties extends HashMap<MaterialProperty<?>, Object> {
         
     }
 
-    public String generateVariantIdentifier( MaterialProperty<?> ... properties ) {
-        return Integer.toString(Objects.hashCode( properties ));
+    public String generateVariantIdentifier(MaterialProperty<?> ... properties) {
+        return Integer.toString(Objects.hashCode(properties));
     }
 
 }
