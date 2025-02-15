@@ -1,5 +1,8 @@
 package org.sc.themis.shared.utils;
 
+/**
+ * Utils class.
+ */
 public class MemorySizeUtils {
 
     public static final int PUSHCONSTANT = 64;
