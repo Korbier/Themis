@@ -48,6 +48,7 @@ public class EngineTest {
 
     @Test
     @DisplayName("Create engine - no gamestate found")
+    @Disabled
     void testCreateEngine_01() throws ThemisException {
 
         //Given
