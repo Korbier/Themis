@@ -5,58 +5,72 @@ import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorSet;
 import org.sc.themis.scene.Model;
 import org.sc.themis.shared.exception.ThemisException;
 
+/**
+ * Material manager.
+ */
 public class MaterialManager {
 
     private final Material defaultMaterial;
     private Material lastUsedMaterial = null;
 
-    public MaterialManager( Material defaultMaterial ) {
+    /**
+     * Default constructor.
+     */
+    public MaterialManager(Material defaultMaterial) {
         this.defaultMaterial = defaultMaterial;
     }
 
-    public void compile( MaterialProperties ... properties ) throws ThemisException {
+    /**
+     * Compile given material properties.
+     */
+    public void compile(MaterialProperties ... properties) throws ThemisException {
 
-        for ( MaterialProperties mProperties : properties ) {
+        for (MaterialProperties materialProperties : properties) {
 
-            String variantIdentifier = this.defaultMaterial.add( mProperties );
+            String variantIdentifier = this.defaultMaterial.add(materialProperties);
 
-            if ( variantIdentifier != null ) {
-                mProperties.setVariantIdentifier(this.defaultMaterial, variantIdentifier);
+            if (variantIdentifier != null) {
+                materialProperties.setVariantIdentifier(this.defaultMaterial, variantIdentifier);
             }
 
         }
     }
 
+    /**
+     * Bind material pipeline for given model.
+     */
     public void bindMaterial(VkCommand command, Model model) throws ThemisException {
 
-        Material material = select( model );
+        Material material = select(model);
 
-        if ( this.lastUsedMaterial == null || !this.lastUsedMaterial.equals(material) ) {
+        if (this.lastUsedMaterial == null || !this.lastUsedMaterial.equals(material)) {
             this.lastUsedMaterial = material;
         }
 
-        command.bindPipeline( this.lastUsedMaterial.getPipeline() );
+        command.bindPipeline(this.lastUsedMaterial.getPipeline());
 
     }
 
-    public void bindMaterialVariant( VkCommand command, MaterialProperties properties, int frame) throws ThemisException {
+    /**
+     * Bind material variant (descriptorset) for given material properties.
+     */
+    public void bindMaterialVariant(VkCommand command, MaterialProperties properties, int frame) throws ThemisException {
         int[] indexedOffest = new int[0];
         VkDescriptorSet [] descriptorsets = this.lastUsedMaterial.getDescriptorSets(frame, properties);
-        command.bindDescriptorSets( indexedOffest, descriptorsets );
-    }
-
-    public boolean isValid( MaterialProperties properties ) {
-        return properties.getVariantIdentifier( this.lastUsedMaterial ) != null;
+        command.bindDescriptorSets(indexedOffest, descriptorsets);
     }
 
     private Material select(Model model) {
         return this.defaultMaterial;
     }
 
-    public MaterialProperties select( MaterialProperties ... properties ) {
+    /**
+     * Select material properties to use for current material.
+     */
+    public MaterialProperties select(MaterialProperties ... properties) {
 
-        for ( MaterialProperties materialProperties : properties ) {
-            if ( materialProperties.getVariantIdentifier( this.lastUsedMaterial ) != null ) {
+        for (MaterialProperties materialProperties : properties) {
+            if (materialProperties.getVariantIdentifier(this.lastUsedMaterial) != null) {
                 return materialProperties;
             }
         }

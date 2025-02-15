@@ -200,7 +200,7 @@ public class GeometryRenderPass extends RenderPass {
                 this.getViewerActivity().getSceneDescriptorset(), this.getViewerActivity().getLighDescriptorset());
         this.defaultMaterial2.setup();
 
-        this.materialManager = new MaterialManager(this.defaultMaterial2);
+        this.materialManager = new MaterialManager(this.defaultMaterial);
 
     }
 

@@ -6,10 +6,18 @@ import org.sc.themis.renderer.material.MaterialProperty;
 
 public class MaterialFactory {
 
-    public MaterialProperties colored( float r, float g, float b ) {
+    public MaterialProperties color(Vector4f ambient, Vector4f diffuse, Vector4f specular, float shininess) {
         MaterialProperties properties = new MaterialProperties();
-        properties.put(MaterialProperty.Color.BASE, new Vector4f(r, g, b, 1.0f ) );
+        properties.put(MaterialProperty.Color.BASE, ambient);
+        properties.put(MaterialProperty.Color.DIFFUSE, diffuse);
+        properties.put(MaterialProperty.Color.SPECULAR, specular);
+        properties.put(MaterialProperty.Property.SHININESS, shininess);
         return properties;
+    }
+
+    public MaterialProperties color(float r, float g, float b, float shininess) {
+        Vector4f color =  new Vector4f(r, g, b, 1.0f);
+        return color(color, color, color, shininess);
     }
 
 }
