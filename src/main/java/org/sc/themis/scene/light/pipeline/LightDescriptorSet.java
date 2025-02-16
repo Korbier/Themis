@@ -1,4 +1,4 @@
-package org.sc.themis.scene.descriptorset;
+package org.sc.themis.scene.light.pipeline;
 
 import static org.lwjgl.vulkan.VK10.VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
 import static org.lwjgl.vulkan.VK10.VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;

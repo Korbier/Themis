@@ -7,7 +7,7 @@ import org.sc.themis.renderer.base.frame.Frames;
 import org.sc.themis.renderer.device.VkDevice;
 import org.sc.themis.renderer.sync.VkSemaphore;
 import org.sc.themis.scene.Scene;
-import org.sc.themis.scene.descriptorset.LightDescriptorSet;
+import org.sc.themis.scene.light.pipeline.LightDescriptorSet;
 import org.sc.themis.scene.descriptorset.MousePickingDescriptorSet;
 import org.sc.themis.scene.descriptorset.SceneDescriptorSet;
 import org.sc.themis.shared.Configuration;
