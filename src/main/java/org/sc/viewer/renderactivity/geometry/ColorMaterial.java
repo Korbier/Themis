@@ -219,17 +219,17 @@ public class ColorMaterial extends Material {
             
             }
             
-            vec3 directional( vec3 nlNormal, vec3 position, Material material, DirectionalLight light ) {
-                vec3 ambientColor = ambient( light.ambient.rgb, material.ambient.rgb );
-                vec3 diffuseColor = diffuseDirectional( nlNormal, material.diffuse.rgb, light.diffuse.rgb, light.direction.xyz );
-                vec3 specularColor = specularDirectional( position, nlNormal, material.specular.rgb, material.shininess, light.specular.rgb, light.direction.xyz );
+            vec3 directional( vec3 nlNormal, vec3 position, vec3 materialAmbient, vec3 materialDiffuse, vec3 materialSpecular, float materialShininess, DirectionalLight light ) {
+                vec3 ambientColor = ambient( light.ambient.rgb, materialAmbient );
+                vec3 diffuseColor = diffuseDirectional( nlNormal, materialDiffuse, light.diffuse.rgb, light.direction.xyz );
+                vec3 specularColor = specularDirectional( position, nlNormal, materialSpecular, materialShininess, light.specular.rgb, light.direction.xyz );
                 return ambientColor + diffuseColor + specularColor;
             }
             
-            vec3 point( vec3 nlNormal, vec3 position, Material material, PointLight light ) {
-                vec3 ambientColor = ambient( light.ambient.rgb, material.ambient.rgb );
-                vec3 diffuseColor = diffuse( position, nlNormal, material.diffuse.rgb, light.diffuse.rgb, light.position.xyz );
-                vec3 specularColor = specular( position, nlNormal, material.specular.rgb, material.shininess, light.specular.rgb, light.position.xyz );
+            vec3 point( vec3 nlNormal, vec3 position, vec3 materialAmbient, vec3 materialDiffuse, vec3 materialSpecular, float materialShininess, PointLight light ) {
+                vec3 ambientColor = ambient( light.ambient.rgb, materialAmbient );
+                vec3 diffuseColor = diffuse( position, nlNormal, materialDiffuse, light.diffuse.rgb, light.position.xyz );
+                vec3 specularColor = specular( position, nlNormal, materialSpecular, materialShininess, light.specular.rgb, light.position.xyz );
                 float attenuation = attenuation(position, nlNormal, light.position.xyz, light.attenuation);
                 return attenuation * (ambientColor + diffuseColor + specularColor);
             }
@@ -240,10 +240,11 @@ public class ColorMaterial extends Material {
                 return clamp((theta - light.outerCutOff) / epsilon, 0.0, 1.0 );
             }
             
-            vec3 spot( vec3 nlNormal, vec3 position, Material material, SpotLight light ) {
-                vec3 ambientColor = ambient( light.ambient.rgb, material.ambient.rgb );
-                vec3 diffuseColor = diffuse( position, nlNormal, material.diffuse.rgb, light.diffuse.rgb, light.position.xyz );
-                vec3 specularColor = specular( position, nlNormal, material.specular.rgb, material.shininess, light.specular.rgb, light.position.xyz );
+            vec3 spot( vec3 nlNormal, vec3 position, vec3 materialAmbient, vec3 materialDiffuse, vec3 materialSpecular, float materialShininess, SpotLight light ) {
+            
+                vec3 ambientColor = ambient( light.ambient.rgb, materialAmbient );
+                vec3 diffuseColor = diffuse( position, nlNormal, materialDiffuse, light.diffuse.rgb, light.position.xyz );
+                vec3 specularColor = specular( position, nlNormal, materialSpecular, materialShininess, light.specular.rgb, light.position.xyz );
                 float intensity = spotIntensity(position, light);
             
                 diffuseColor *= intensity;
@@ -253,31 +254,31 @@ public class ColorMaterial extends Material {
                 return attenuation * (ambientColor + diffuseColor + specularColor);
             }
             
-            vec3 directionals( vec3 nlNormal, vec3 position, Material material ) {
+            vec3 directionals( vec3 nlNormal, vec3 position, vec3 materialAmbient, vec3 materialDiffuse, vec3 materialSpecular, float materialShininess ) {
                 vec3 color = vec3(0.0f);
                 for (int i = 0; i<lights.directionalLightCount; i++ ) {
                     if ( directionalLights.lights[i].data.x == 1.0f ) {
-                        color += directional(nlNormal, position, material, directionalLights.lights[i]);
+                        color += directional(nlNormal, position, materialAmbient, materialDiffuse, materialSpecular, materialShininess, directionalLights.lights[i]);
                     }
                 }
                 return color;
             }
             
-            vec3 points( vec3 nlNormal, vec3 position, Material material ) {
+            vec3 points( vec3 nlNormal, vec3 position, vec3 materialAmbient, vec3 materialDiffuse, vec3 materialSpecular, float materialShininess ) {
                 vec3 color = vec3(0.0f);
                 for (int i = 0; i<lights.pointLightCount; i++ ) {
                     if ( pointLights.lights[i].data.x == 1.0f ) {
-                        color += point(nlNormal, position, material, pointLights.lights[i]);
+                        color += point(nlNormal, position, materialAmbient, materialDiffuse, materialSpecular, materialShininess, pointLights.lights[i]);
                     }
                 }
                 return color;
             }
             
-            vec3 spots( vec3 nlNormal, vec3 position, Material material ) {
+            vec3 spots( vec3 nlNormal, vec3 position, vec3 materialAmbient, vec3 materialDiffuse, vec3 materialSpecular, float materialShininess ) {
                 vec3 color = vec3(0.0f);
                 for (int i = 0; i<lights.spotLightCount; i++ ) {
                     if ( spotLights.lights[i].data.x == 1.0f ) {
-                        color += spot(nlNormal, position, material, spotLights.lights[i]);
+                        color += spot(nlNormal, position, materialAmbient, materialDiffuse, materialSpecular, materialShininess, spotLights.lights[i]);
                     }
                 }
                 return color;
@@ -292,9 +293,9 @@ public class ColorMaterial extends Material {
                 vec3 position = inPosition;
                 vec3 finalColor = vec3(0.0f);
 
-                finalColor += directionals(nlNormal, position, material);
-                finalColor += points(nlNormal, position, material);
-                finalColor += spots(nlNormal, position, material);
+                finalColor += directionals(nlNormal, position, material.ambient.rgb, material.diffuse.rgb, material.specular.rgb, material.shininess);
+                finalColor += points(nlNormal, position, material.ambient.rgb, material.diffuse.rgb, material.specular.rgb, material.shininess);
+                finalColor += spots(nlNormal, position, material.ambient.rgb, material.diffuse.rgb, material.specular.rgb, material.shininess);
             
                 outColor = vec4( finalColor, 1.0f );
             
