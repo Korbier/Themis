@@ -5,8 +5,8 @@ import org.sc.themis.shared.utils.MemorySizeUtils;
 
 public class SpotLight extends Light {
 
-    public static final int SIZE = Light.SIZE + MemorySizeUtils.VEC3F + MemorySizeUtils.VEC3F + MemorySizeUtils.VEC3F + MemorySizeUtils.FLOAT + MemorySizeUtils.FLOAT;
-
+    public static final int SIZE = Light.SIZE + MemorySizeUtils.VEC4F + MemorySizeUtils.VEC4F
+                                   + MemorySizeUtils.VEC4F + MemorySizeUtils.FLOAT + MemorySizeUtils.FLOAT;
     private final Vector3f position;
     private final Vector3f direction;
     private final Attenuation attenuation;
