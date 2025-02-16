@@ -136,7 +136,6 @@ public class ColorMaterial extends Material {
                 Material content;
             } material;
             
-            
             /**** FUNCTIONS **** Attenuation ****/
             float attenuationType1( vec3 fragPosition, vec3 lightPosition, float radius, float falloff ) {
                 float distance = length( lightPosition - fragPosition );
@@ -179,8 +178,8 @@ public class ColorMaterial extends Material {
             }
             
             vec3 diffuse( vec3 fragPosition, vec3 nlNormal, vec3 materialColor, vec3 lightDiffuseColor, vec3 lightPosition ) {
-                vec3 oppLightDirection  = normalize( lightPosition - fragPosition );
-                float diff = max( dot( nlNormal, oppLightDirection), 0.0 );
+                vec3 lightDirection  = normalize( lightPosition - fragPosition );
+                float diff = max( dot( nlNormal, lightDirection), 0.0 );
                 return lightDiffuseColor * materialColor * diff;
             }
             
@@ -235,6 +234,25 @@ public class ColorMaterial extends Material {
                 return attenuation * (ambientColor + diffuseColor + specularColor);
             }
             
+            float spotIntensity( vec3 fragPosition, SpotLight light ) {
+                float theta = dot(normalize(light.position.xyz - fragPosition), normalize(-light.direction.xyz));
+                float epsilon = light.innerCutOff - light.outerCutOff;
+                return clamp((theta - light.outerCutOff) / epsilon, 0.0, 1.0 );
+            }
+            
+            vec3 spot( vec3 nlNormal, vec3 position, Material material, SpotLight light ) {
+                vec3 ambientColor = ambient( light.ambient.rgb, material.ambient.rgb );
+                vec3 diffuseColor = diffuse( position, nlNormal, material.diffuse.rgb, light.diffuse.rgb, light.position.xyz );
+                vec3 specularColor = specular( position, nlNormal, material.specular.rgb, material.shininess, light.specular.rgb, light.position.xyz );
+                float intensity = spotIntensity(position, light);
+            
+                diffuseColor *= intensity;
+                specularColor *= intensity;
+            
+                float attenuation = attenuation(position, nlNormal, light.position.xyz, light.attenuation);
+                return attenuation * (ambientColor + diffuseColor + specularColor);
+            }
+            
             vec3 directionals( vec3 nlNormal, vec3 position, Material material ) {
                 vec3 color = vec3(0.0f);
                 for (int i = 0; i<lights.directionalLightCount; i++ ) {
@@ -255,6 +273,16 @@ public class ColorMaterial extends Material {
                 return color;
             }
             
+            vec3 spots( vec3 nlNormal, vec3 position, Material material ) {
+                vec3 color = vec3(0.0f);
+                for (int i = 0; i<lights.spotLightCount; i++ ) {
+                    if ( spotLights.lights[i].data.x == 1.0f ) {
+                        color += spot(nlNormal, position, material, spotLights.lights[i]);
+                    }
+                }
+                return color;
+            }
+            
             /**** MAIN ****/
             
             void main() {
@@ -266,6 +294,7 @@ public class ColorMaterial extends Material {
 
                 finalColor += directionals(nlNormal, position, material);
                 finalColor += points(nlNormal, position, material);
+                finalColor += spots(nlNormal, position, material);
             
                 outColor = vec4( finalColor, 1.0f );
             

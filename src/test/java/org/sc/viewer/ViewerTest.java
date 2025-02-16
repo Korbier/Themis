@@ -20,7 +20,7 @@ public class ViewerTest {
     Configuration configuration;
 
     @Test
-    @Disabled
+//    @Disabled
     void runViewer() throws ThemisException {
 
         //Given

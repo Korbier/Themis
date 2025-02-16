@@ -5,7 +5,7 @@ import org.sc.themis.shared.utils.MemorySizeUtils;
 
 public class PointLight extends Light {
 
-    public static final int SIZE = Light.SIZE + MemorySizeUtils.VEC3F + MemorySizeUtils.VEC4F;
+    public static final int SIZE = Light.SIZE + MemorySizeUtils.VEC4F + MemorySizeUtils.VEC4F;
 
     private final Vector3f position;
     private final Attenuation attenuation;
