@@ -9,7 +9,7 @@ import org.sc.themis.renderer.pipeline.VkShaderSourceCompiler;
 import org.sc.themis.renderer.pipeline.VkVertexInputStateDescriptor;
 import org.sc.themis.renderer.renderpass.VkRenderPass;
 import org.sc.themis.renderer.resource.image.VkSamplerDescriptor;
-import org.sc.themis.scene.descriptorset.LightDescriptorSet;
+import org.sc.themis.scene.light.pipeline.LightDescriptorSet;
 import org.sc.themis.scene.descriptorset.SceneDescriptorSet;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.utils.MemorySizeUtils;
