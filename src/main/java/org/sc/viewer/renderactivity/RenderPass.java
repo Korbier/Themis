@@ -5,7 +5,9 @@ import org.sc.themis.renderer.Renderer;
 import org.sc.themis.renderer.base.VulkanObject;
 import org.sc.themis.renderer.base.frame.Frames;
 import org.sc.themis.renderer.device.VkDevice;
+import org.sc.themis.renderer.framebuffer.VkFrameBufferAttachments;
 import org.sc.themis.renderer.resource.image.VkImageView;
+import org.sc.themis.renderer.sync.VkFence;
 import org.sc.themis.renderer.sync.VkSemaphore;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.shared.Configuration;
@@ -39,11 +41,15 @@ public abstract class RenderPass extends VulkanObject  {
         return this.viewerActivity.getFrames();
     }
 
-    protected VkImageView getImageView( int frame ) {
-        return this.viewerActivity.getRenderer().getImageView( frame );
+    protected VkImageView getImageView(int frame) {
+        return this.viewerActivity.getRenderer().getImageView(frame);
     }
 
-    public final void setup( ViewerRendererActivity activity ) throws ThemisException {
+    protected VkFrameBufferAttachments getGeometryFrameBufferAttachments() {
+        return getViewerActivity().getGeometryFrameBufferAttachments();
+    }
+
+    public final void setup(ViewerRendererActivity activity) throws ThemisException {
         this.viewerActivity = activity;
         this.setup();
     }
@@ -52,10 +58,15 @@ public abstract class RenderPass extends VulkanObject  {
         return this.viewerActivity;
     }
 
-    abstract public void setup(Scene scene) throws ThemisException;
+    public void render(int frame, Scene scene, VkSemaphore waitSemaphore, VkSemaphore signalSemaphore) throws ThemisException {
+        render(frame, scene, waitSemaphore, signalSemaphore, null);
+    }
 
-    abstract public void render(int frame, Scene scene, VkSemaphore waitSemaphore, VkSemaphore signalSemaphore ) throws ThemisException;
+    public abstract void setup(Scene scene) throws ThemisException;
 
-    abstract public void resize() throws ThemisException;
+    public abstract void render(int frame, Scene scene, VkSemaphore waitSemaphore, VkSemaphore signalSemaphore, VkFence fence)
+            throws ThemisException;
+
+    public abstract void resize() throws ThemisException;
 
 }

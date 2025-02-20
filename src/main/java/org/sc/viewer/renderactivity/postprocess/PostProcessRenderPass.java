@@ -1,15 +1,14 @@
 package org.sc.viewer.renderactivity.postprocess;
 
-import static org.lwjgl.vulkan.KHRSwapchain.VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 import static org.lwjgl.vulkan.VK10.VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 import static org.lwjgl.vulkan.VK10.VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 import static org.lwjgl.vulkan.VK10.VK_ATTACHMENT_LOAD_OP_LOAD;
 import static org.lwjgl.vulkan.VK10.VK_ATTACHMENT_STORE_OP_DONT_CARE;
 import static org.lwjgl.vulkan.VK10.VK_ATTACHMENT_STORE_OP_STORE;
-import static org.lwjgl.vulkan.VK10.VK_FORMAT_B8G8R8A8_SRGB;
 import static org.lwjgl.vulkan.VK10.VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 import static org.lwjgl.vulkan.VK10.VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 import static org.lwjgl.vulkan.VK10.VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+import static org.lwjgl.vulkan.VK10.VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 import static org.lwjgl.vulkan.VK10.VK_IMAGE_LAYOUT_UNDEFINED;
 import static org.lwjgl.vulkan.VK10.VK_PIPELINE_BIND_POINT_GRAPHICS;
 import static org.lwjgl.vulkan.VK10.VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
@@ -31,12 +30,11 @@ import org.sc.themis.scene.Instance;
 import org.sc.themis.scene.Mesh;
 import org.sc.themis.scene.Model;
 import org.sc.themis.scene.Scene;
-import org.sc.themis.scene.descriptorset.InputDescriptorSet;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.viewer.gamestate.PostProcessorContext;
 import org.sc.viewer.renderactivity.RenderPass;
-import org.sc.viewer.renderactivity.geometry.GeometryRenderPass;
+import org.sc.viewer.renderactivity.ViewerRendererActivity;
 
 /**
  * Post processing render pass.
@@ -50,13 +48,11 @@ public class PostProcessRenderPass extends RenderPass {
     // Framed object
     private static final FrameKey<VkFrameBuffer> FK_FRAMEBUFFER = FrameKey.of(VkFrameBuffer.class);
     private static final FrameKey<VkCommand>     FK_COMMAND = FrameKey.of(VkCommand.class);
-    private static final FrameKey<VkFence>       FK_FENCE = FrameKey.of(VkFence.class);
 
     // Renderpass
     private VkFrameBufferAttachments frameBufferAttachments;
     private VkRenderPass renderPass;
 
-    private InputDescriptorSet geometryAttachmentDescriptorset;
     private PostProcessors postProcessors;
 
     /**
@@ -76,14 +72,11 @@ public class PostProcessRenderPass extends RenderPass {
         setupRenderPass();
         setupFramebuffers();
         setupCommand();
-        setupFence();
-        setupGeometryAttachmentDescriptorset();
         setupPostProcessors();
     }
 
     @Override
     public void setup(Scene scene) throws ThemisException {
-        this.geometryAttachmentDescriptorset.update(getViewerActivity().getGeometryRenderPass().getFramebufferAttachments());
     }
 
     private void setupPostProcessors() throws ThemisException {
@@ -91,21 +84,21 @@ public class PostProcessRenderPass extends RenderPass {
                 getConfiguration(), getRenderer(),
                 this.renderPass,
                 getViewerActivity().getSceneDescriptorset(),
-                this.geometryAttachmentDescriptorset);
+                getViewerActivity().getGeometryDescriptorset()
+        );
         this.postProcessors.setup();
     }
 
     @Override
     public void cleanup() throws ThemisException {
-        getRenderer().waitIdle();
         this.postProcessors.cleanup();
-        this.geometryAttachmentDescriptorset.cleanup();
         this.renderPass.cleanup();
         this.frameBufferAttachments.cleanup();
     }
 
     @Override
-    public void render(int frame, Scene scene, VkSemaphore waitSemaphore, VkSemaphore signalSemaphore) throws ThemisException {
+    public void render(int frame, Scene scene, VkSemaphore waitSemaphore, VkSemaphore signalSemaphore, VkFence fence)
+            throws ThemisException {
 
         VkCommand     command     = getFrames().get(frame, FK_COMMAND);
         VkFrameBuffer frameBuffer = getFrames().get(frame, FK_FRAMEBUFFER);
@@ -124,9 +117,7 @@ public class PostProcessRenderPass extends RenderPass {
         command.endRenderPass();
         command.end();
 
-        VkFence fence = getFrames().get(frame, FK_FENCE);
         command.submit(fence, waitSemaphore, signalSemaphore);
-        fence.waitForAndReset();
 
     }
 
@@ -148,16 +139,18 @@ public class PostProcessRenderPass extends RenderPass {
     public void resize() throws ThemisException {
 
         getFrames().remove(FK_FRAMEBUFFER);
-        this.geometryAttachmentDescriptorset.cleanup();
         this.renderPass.cleanup();
         this.frameBufferAttachments.cleanup();
 
         setupFramebufferAttachments();
         setupRenderPass();
         setupFramebuffers();
-        setupGeometryAttachmentDescriptorset();
 
-        this.postProcessors.resize(this.renderPass, getViewerActivity().getSceneDescriptorset(), this.geometryAttachmentDescriptorset);
+        this.postProcessors.resize(
+            this.renderPass,
+            getViewerActivity().getSceneDescriptorset(),
+            getViewerActivity().getGeometryDescriptorset()
+        );
 
     }
 
@@ -175,17 +168,17 @@ public class PostProcessRenderPass extends RenderPass {
 
     private VkRenderPassDescriptor createSubPassDescriptor(VkDevice device) {
 
-        VkFrameBufferAttachments geoFbAttachements = getViewerActivity().getGeometryRenderPass().getFramebufferAttachments();
-
         VkRenderPassLayout layout = new VkRenderPassLayout()
-                .add(0, geoFbAttachements.get(GeometryRenderPass.FB_ATTACHMENT_DEPTH).getImage().getDescriptor().format(),
-                        VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL,
-                        VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_DONT_CARE,
-                        VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_STORE)
-                .add(1, VK_FORMAT_B8G8R8A8_SRGB,
-                        VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-                        VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_STORE,
-                        VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE);
+            .add(0,
+                getGeometryFrameBufferAttachments().get(ViewerRendererActivity.GEOMETRY_FB_ATTACHMENT_DEPTH).getFormat(),
+                VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL,
+                VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_DONT_CARE,
+                VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_STORE)
+            .add(1,
+                getGeometryFrameBufferAttachments().get(ViewerRendererActivity.GEOMETRY_FB_ATTACHMENT_COLOR).getFormat(),
+                VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_STORE,
+                VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE);
 
         VkSubpass subpass = new VkSubpass(device, VK_PIPELINE_BIND_POINT_GRAPHICS);
         subpass.depth(0, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
@@ -202,35 +195,19 @@ public class PostProcessRenderPass extends RenderPass {
     }
 
     private void setupFramebuffers() throws ThemisException {
-
-        VkFrameBufferAttachments geoFbAttachements = getViewerActivity().getGeometryRenderPass().getFramebufferAttachments();
-
         getFrames().create(FK_FRAMEBUFFER, (frame) -> {
             VkFrameBufferDescriptor descriptor = new VkFrameBufferDescriptor(
                 getExtent2D(),
                 this.renderPass.getHandle(),
-                geoFbAttachements.get(GeometryRenderPass.FB_ATTACHMENT_DEPTH).getView().getHandle(),
-                getImageView(frame).getHandle()
+                getGeometryFrameBufferAttachments().get(ViewerRendererActivity.GEOMETRY_FB_ATTACHMENT_DEPTH).getView().getHandle(),
+                getGeometryFrameBufferAttachments().get(ViewerRendererActivity.GEOMETRY_FB_ATTACHMENT_COLOR).getView().getHandle()
             );
             return new VkFrameBuffer(getConfiguration(), getDevice(), descriptor);
         });
-
-    }
-
-    private void setupFence() throws ThemisException {
-        getFrames().create(FK_FENCE, () -> new VkFence(getConfiguration(), getDevice(), false));
     }
 
     private void setupCommand() throws ThemisException {
         getFrames().create(FK_COMMAND, () -> getRenderer().createGraphicCommand(true));
-    }
-
-    private void setupGeometryAttachmentDescriptorset() throws ThemisException {
-        this.geometryAttachmentDescriptorset = new InputDescriptorSet(
-                getConfiguration(), getRenderer(),
-                getViewerActivity().getGeometryRenderPass().getFramebufferAttachments());
-        this.geometryAttachmentDescriptorset.setup();
-
     }
 
 }

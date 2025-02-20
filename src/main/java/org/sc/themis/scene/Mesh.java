@@ -24,25 +24,25 @@ public class Mesh {
     private int vertexCount = 0;
     private int indiceCount = 0;
 
-    public Mesh( VkStagingResourceAllocator resourceAllocator, String identifier ) {
+    public Mesh(VkStagingResourceAllocator resourceAllocator, String identifier) {
         this.identifier = identifier;
-        this.vertexBuffer = resourceAllocator.allocateBuffer( VK_BUFFER_USAGE_VERTEX_BUFFER_BIT );
-        this.indiceBuffer = resourceAllocator.allocateBuffer( VK_BUFFER_USAGE_INDEX_BUFFER_BIT );
+        this.vertexBuffer = resourceAllocator.allocateBuffer(VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, true);
+        this.indiceBuffer = resourceAllocator.allocateBuffer(VK_BUFFER_USAGE_INDEX_BUFFER_BIT, true);
     }
 
-    public void set( Vertex[] vertices, int [] indices ) throws ThemisException {
+    public void set(Vertex[] vertices, int [] indices) throws ThemisException {
 
         this.vertexCount = vertices.length;
         this.indiceCount = indices.length;
 
-        float[] aVertices  = toArray( vertices );
+        float[] aVertices  = toArray(vertices);
 
-        this.vertexBuffer.load( aVertices.length * MemorySizeUtils.FLOAT, 0, aVertices  );
-        this.indiceBuffer.load( indices.length * MemorySizeUtils.INT, 0, indices );
+        this.vertexBuffer.load(aVertices.length * MemorySizeUtils.FLOAT, 0, aVertices );
+        this.indiceBuffer.load(indices.length * MemorySizeUtils.INT, 0, indices);
 
     }
 
-    public void setProperties( MaterialProperties properties ) {
+    public void setProperties(MaterialProperties properties) {
         this.properties = properties;
     }
 
@@ -52,14 +52,14 @@ public class Mesh {
 
     public void cleanup() throws ThemisException {
         this.renderable = false;
-        this.vertexBuffer.cleanup();
-        this.indiceBuffer.cleanup();
+        // this.vertexBuffer.cleanup();
+        // this.indiceBuffer.cleanup();
     }
 
     private float[] toArray(Vertex[] vertices) {
         float [] components = new float[vertices.length * Vertex.COMPONENTS];
         int i = 0;
-        for ( Vertex vertex : vertices ) {
+        for (Vertex vertex : vertices) {
             components[i++] = vertex.position().x();
             components[i++] = vertex.position().y();
             components[i++] = vertex.position().z();
@@ -84,15 +84,15 @@ public class Mesh {
 
     public boolean isRenderable() {
 
-        if ( this.renderable ) {
+        if (this.renderable) {
             return true;
         }
 
-        if ( !this.indiceBuffer.isRenderable() ) return false;
-        if ( !this.vertexBuffer.isRenderable() ) return false;
+        if (!this.indiceBuffer.isRenderable()) return false;
+        if (!this.vertexBuffer.isRenderable()) return false;
 
-        for ( Object property : this.properties.values() ) {
-            if ( property instanceof VkStagingResource resource && !resource.isRenderable() ) return false;
+        for (Object property : this.properties.values()) {
+            if (property instanceof VkStagingResource resource && !resource.isRenderable()) return false;
         }
 
         this.renderable = true;

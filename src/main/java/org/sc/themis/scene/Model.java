@@ -1,13 +1,10 @@
 package org.sc.themis.scene;
 
-import org.sc.themis.renderer.material.MaterialProperties;
-import org.sc.themis.shared.exception.ThemisException;
-
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Stream;
+import org.sc.themis.renderer.material.MaterialProperties;
+import org.sc.themis.shared.exception.ThemisException;
 
 public class Model {
 
@@ -17,7 +14,7 @@ public class Model {
 
     private MaterialProperties materialProperties = null;
 
-    public Model( String identifier, Mesh [] meshes ) {
+    public Model(String identifier, Mesh [] meshes) {
         this.identifier = identifier;
         this.meshes = meshes;
     }
@@ -27,15 +24,17 @@ public class Model {
     }
 
     public void cleanup() throws ThemisException {
-        for ( Mesh mesh : getMeshes() ) {
+        for (Mesh mesh : getMeshes()) {
             mesh.cleanup();
         }
     }
 
     public boolean isRenderable() {
 
-        for ( Mesh mesh : this.getMeshes() ) {
-            if ( !mesh.isRenderable() ) return false;
+        for (Mesh mesh : this.getMeshes()) {
+            if (!mesh.isRenderable()) {
+                return false;
+            }
         }
 
         return true;
@@ -44,7 +43,7 @@ public class Model {
 
     public Instance create() {
         Instance instance = new Instance(this);
-        this.instances.add( instance );
+        this.instances.add(instance);
         return instance;
     }
 
@@ -52,15 +51,11 @@ public class Model {
         return this.meshes;
     }
 
-    public Stream<Mesh> getMeshesAsStream() {
-        return Arrays.stream( getMeshes() );
-    }
-
     public List<Instance> getInstances() {
         return this.instances;
     }
 
-    public void setMaterialProperties(MaterialProperties properties ) {
+    public void setMaterialProperties(MaterialProperties properties) {
         this.materialProperties = properties;
     }
 
@@ -70,10 +65,18 @@ public class Model {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+
+        if (this == o) {
+            return true;
+        }
+
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
         Model model = (Model) o;
         return Objects.equals(identifier, model.identifier);
+
     }
 
     @Override

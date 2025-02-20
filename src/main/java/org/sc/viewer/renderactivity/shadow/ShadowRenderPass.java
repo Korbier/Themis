@@ -1,5 +1,6 @@
 package org.sc.viewer.renderactivity.shadow;
 
+import org.sc.themis.renderer.sync.VkFence;
 import org.sc.themis.renderer.sync.VkSemaphore;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.shared.Configuration;
@@ -26,7 +27,7 @@ public class ShadowRenderPass extends RenderPass {
     }
 
     @Override
-    public void render(int frame, Scene scene, VkSemaphore waitSemaphore, VkSemaphore signalSemaphore) throws ThemisException {
+    public void render(int frame, Scene scene, VkSemaphore waitSemaphore, VkSemaphore signalSemaphore, VkFence fence) throws ThemisException {
     }
 
     @Override

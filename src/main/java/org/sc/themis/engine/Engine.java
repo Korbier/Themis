@@ -26,12 +26,12 @@ public class Engine extends TObject {
     private Gamestate nextGamestate;
     private Gamestate currentGamestate;
 
-    public Engine(Configuration configuration, RendererActivity activity ) {
+    public Engine(Configuration configuration, RendererActivity activity) {
         super(configuration);
-        this.window = new Window( configuration );
-        this.input = new Input( configuration, this.window );
-        this.renderer = new Renderer( configuration, this.window, this.input, activity );
-        this.scene = new Scene( configuration );
+        this.window = new Window(configuration);
+        this.input = new Input(configuration, this.window);
+        this.renderer = new Renderer(configuration, this.window, this.input, activity);
+        this.scene = new Scene(configuration);
     }
 
     @Override
@@ -58,7 +58,7 @@ public class Engine extends TObject {
 
     public void run() throws ThemisException {
 
-        Assertions.notNull( this.nextGamestate, new EngineGamestateNotFoundException() );
+        Assertions.notNull(this.nextGamestate, new EngineGamestateNotFoundException());
 
         this.status = EngineStatus.RUNNING;
         this.loop();
@@ -69,7 +69,7 @@ public class Engine extends TObject {
         this.status = EngineStatus.STOPPED;
     }
 
-    public void setGamestate( Gamestate gamestate ) {
+    public void setGamestate(Gamestate gamestate) {
         this.nextGamestate = gamestate;
     }
 
@@ -81,7 +81,7 @@ public class Engine extends TObject {
         double deltaUpdate = 0;
         long updateTime  = initialTime;
 
-        while ( this.status == EngineStatus.RUNNING && !this.window.shouldClose()) {
+        while (this.status == EngineStatus.RUNNING && !this.window.shouldClose()) {
 
             loadRequestedGamestate();
 
@@ -92,16 +92,16 @@ public class Engine extends TObject {
 
             deltaUpdate += (value) / timeU;
 
-            this.input( value );
+            this.input(value);
 
             if (deltaUpdate >= 1) {
                 long diffTimeMilis = now - updateTime;
-                this.update( diffTimeMilis );
+                this.update(diffTimeMilis);
                 updateTime = now;
                 deltaUpdate--;
             }
 
-            this.render( value );
+            this.render(value);
 
             initialTime = now;
 
@@ -112,38 +112,38 @@ public class Engine extends TObject {
     }
 
     private void loadRequestedGamestate() throws ThemisException {
-        if ( this.nextGamestate != null ) {
+        if (this.nextGamestate != null) {
             this.cleanupGamestate();
-            this.loadGamestate( this.nextGamestate );
+            this.loadGamestate(this.nextGamestate);
             this.nextGamestate = null;
         }
     }
 
-    private void loadGamestate( Gamestate gamestate ) throws ThemisException {
+    private void loadGamestate(Gamestate gamestate) throws ThemisException {
         this.currentGamestate = gamestate;
-        this.currentGamestate.setup( this.renderer, this.scene );
+        this.currentGamestate.setup(this.renderer, this.scene);
     }
 
     private void cleanupGamestate() {
-        if ( this.currentGamestate != null ) {
+        if (this.currentGamestate != null) {
             try {
-                this.currentGamestate.cleanup( this.renderer, this.scene );
+                this.currentGamestate.cleanup(this.renderer, this.scene);
             } catch (ThemisException e) {
                 throw new RuntimeException(e);
             }
         }
     }
 
-    private void update( long tpf ) {
-        this.currentGamestate.update( this.scene, tpf );
+    private void update(long tpf) {
+        this.currentGamestate.update(this.scene, tpf);
     }
 
-    private void input( long tpf ) {
-        this.currentGamestate.input( this.scene, this.input, tpf );
+    private void input(long tpf) {
+        this.currentGamestate.input(this.scene, this.input, tpf);
     }
 
-    private void render( long tpf ) throws ThemisException {
-        this.renderer.render( this.scene, tpf );
+    private void render(long tpf) throws ThemisException {
+        this.renderer.render(this.scene, tpf);
     }
 
 }
