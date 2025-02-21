@@ -30,7 +30,7 @@ public class PostProcessorPipeline {
         VkRenderPass renderpass,
         SceneDescriptorSet sceneDescriptorset,
         InputDescriptorSet geometryAttachmentDescriptorset,
-        PostProcessor postProcessor ) {
+        PostProcessor postProcessor) {
         this.configuration = configuration;
         this.renderer = renderer;
         this.postProcessor = postProcessor;
@@ -51,7 +51,7 @@ public class PostProcessorPipeline {
         this.shaderProgram.cleanup();
     }
 
-    public void resize( VkRenderPass renderpass, SceneDescriptorSet sceneDescriptorset, InputDescriptorSet geometryAttachmentDescriptorset) throws ThemisException {
+    public void resize(VkRenderPass renderpass, SceneDescriptorSet sceneDescriptorset, InputDescriptorSet geometryAttachmentDescriptorset) throws ThemisException {
         this.renderpass = renderpass;
         this.sceneDescriptorset = sceneDescriptorset;
         this.geometryAttachmentDescriptorset = geometryAttachmentDescriptorset;
@@ -59,13 +59,13 @@ public class PostProcessorPipeline {
         setupPipeline();
     }
 
-    public void bind( VkCommand command, int frame ) throws ThemisException {
-        command.bindPipeline( this.pipeline );
+    public void bind(VkCommand command, int frame) throws ThemisException {
+        command.bindPipeline(this.pipeline);
         command.bindDescriptorSets(
             new int[0],
-            this.sceneDescriptorset.getDescriptorSet( frame ),
-            this.geometryAttachmentDescriptorset.getDescriptorSet( frame )
-        );
+            this.sceneDescriptorset.getDescriptorSet(frame),
+            this.geometryAttachmentDescriptorset.getDescriptorSet(frame)
+       );
     }
 
     private void setupShaderProgram() throws ThemisException {
@@ -76,7 +76,7 @@ public class PostProcessorPipeline {
             new VkShaderProgramStage(VK_SHADER_STAGE_VERTEX_BIT, this.postProcessor.getVertexShader()),
             new VkShaderProgramStage(VK_SHADER_STAGE_GEOMETRY_BIT, this.postProcessor.getGeometryShader()),
             new VkShaderProgramStage(VK_SHADER_STAGE_FRAGMENT_BIT, this.postProcessor.getFragmentShader())
-        );
+       );
 
         this.shaderProgram.setup();
 
@@ -91,30 +91,30 @@ public class PostProcessorPipeline {
             },
             this.sceneDescriptorset.getDescriptorSetLayout(),
             this.geometryAttachmentDescriptorset.getLayout()
-        );
+       );
         this.pipelineLayout.setup();
     }
 
-    private VkPipelineDescriptor createPipelineDescriptor( VkRenderPass renderPass ) {
-        return new VkPipelineDescriptor( renderPass, 0, false, 1, true, 1, 1, 1 );
+    private VkPipelineDescriptor createPipelineDescriptor(VkRenderPass renderPass) {
+        return new VkPipelineDescriptor(renderPass, 0, false, 1, true, 1, 1, 1);
     }
 
-    private VkVertexInputState createVertexInputState(MemoryStack stack ) {
+    private VkVertexInputState createVertexInputState(MemoryStack stack) {
         VkVertexInputState inputState = new VkVertexInputState(new VkVertexInputStateDescriptor(VK_VERTEX_INPUT_RATE_VERTEX)
-                .attribute( VK_FORMAT_R32G32B32_SFLOAT, MemorySizeUtils.VEC3F ) //Position
-                .attribute( VK_FORMAT_R32G32B32_SFLOAT, MemorySizeUtils.VEC3F ) //Normal
-                .attribute( VK_FORMAT_R32G32_SFLOAT, MemorySizeUtils.VEC2F ) //Texture
-                .attribute( VK_FORMAT_R32G32B32_SFLOAT, MemorySizeUtils.VEC3F ) //Tangent
-                .attribute( VK_FORMAT_R32G32B32_SFLOAT, MemorySizeUtils.VEC3F ) //Bitangentr
-        );
-        inputState.setup( stack );
+                .attribute(VK_FORMAT_R32G32B32_SFLOAT, MemorySizeUtils.VEC3F) //Position
+                .attribute(VK_FORMAT_R32G32B32_SFLOAT, MemorySizeUtils.VEC3F) //Normal
+                .attribute(VK_FORMAT_R32G32_SFLOAT, MemorySizeUtils.VEC2F) //Texture
+                .attribute(VK_FORMAT_R32G32B32_SFLOAT, MemorySizeUtils.VEC3F) //Tangent
+                .attribute(VK_FORMAT_R32G32B32_SFLOAT, MemorySizeUtils.VEC3F) //Bitangentr
+       );
+        inputState.setup(stack);
         return inputState;
     }
 
     private void setupPipeline() throws ThemisException {
-        try (MemoryStack stack = MemoryStack.stackPush() ) {
-            VkPipelineDescriptor pipelineDescriptor = createPipelineDescriptor( renderpass );
-            VkVertexInputState vertexInputState = createVertexInputState( stack );
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            VkPipelineDescriptor pipelineDescriptor = createPipelineDescriptor(renderpass);
+            VkVertexInputState vertexInputState = createVertexInputState(stack);
             this.pipeline = new VkPipeline(
                     this.configuration,
                     this.renderer.getDevice(),

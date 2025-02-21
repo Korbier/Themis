@@ -1,5 +1,8 @@
 package org.sc.viewer.renderactivity.postprocess;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import org.sc.themis.renderer.Renderer;
 import org.sc.themis.renderer.renderpass.VkRenderPass;
 import org.sc.themis.scene.descriptorset.InputDescriptorSet;
@@ -8,9 +11,6 @@ import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.viewer.renderactivity.postprocess.postprocessor.ShowTBNPostprocessor;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 public class PostProcessors {
 
@@ -36,13 +36,13 @@ public class PostProcessors {
     }
 
     public void setup() throws ThemisException {
-        for ( PostProcessorPipeline pipeline : this.pipelines.values() ) {
+        for (PostProcessorPipeline pipeline : this.pipelines.values()) {
             pipeline.setup();
         }
     }
 
     public void cleanup() throws ThemisException {
-        for ( PostProcessorPipeline pipeline : this.pipelines.values() ) {
+        for (PostProcessorPipeline pipeline : this.pipelines.values()) {
             pipeline.cleanup();
         }
     }
@@ -55,23 +55,30 @@ public class PostProcessors {
         return this.postprocessors
                 .values()
                 .stream()
-                .filter( p -> p.getFrequency() == frequency )
+                .filter(p -> p.getFrequency() == frequency)
                 .map(PostProcessor::getIdentifier)
                 .toList();
     }
 
     public PostProcessorPipeline getPipeline(String identifier) {
-        return this.pipelines.get( identifier );
+        return this.pipelines.get(identifier);
     }
 
-    private void addPostProcessor( PostProcessor postprocessor ) {
-        postprocessors.put( postprocessor.getIdentifier(), postprocessor );
-        pipelines.put( postprocessor.getIdentifier(), new PostProcessorPipeline( this.configuration, this.renderer, this.renderpass, this.sceneDescriptorSet, this.geometryAttachmentDescriptorset, postprocessor ) );
+    private void addPostProcessor(PostProcessor postprocessor) {
+        postprocessors.put(postprocessor.getIdentifier(), postprocessor);
+        pipelines.put(
+                postprocessor.getIdentifier(),
+                new PostProcessorPipeline(
+                        this.configuration, this.renderer,
+                        this.renderpass, this.sceneDescriptorSet,
+                        this.geometryAttachmentDescriptorset, postprocessor
+                )
+        );
     }
 
     public void resize(VkRenderPass renderpass, SceneDescriptorSet sceneDescriptorset, InputDescriptorSet geometryAttachmentDescriptorset) throws ThemisException {
-        for ( PostProcessorPipeline pipeline : this.pipelines.values() ) {
-            pipeline.resize(renderpass,sceneDescriptorset,geometryAttachmentDescriptorset);
+        for (PostProcessorPipeline pipeline : this.pipelines.values()) {
+            pipeline.resize(renderpass, sceneDescriptorset, geometryAttachmentDescriptorset);
         }
     }
 }

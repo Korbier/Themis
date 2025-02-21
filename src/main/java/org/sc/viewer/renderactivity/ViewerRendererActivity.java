@@ -5,11 +5,14 @@ import org.sc.themis.renderer.activity.RendererActivity;
 import org.sc.themis.renderer.base.frame.FrameKey;
 import org.sc.themis.renderer.base.frame.Frames;
 import org.sc.themis.renderer.device.VkDevice;
+import org.sc.themis.renderer.framebuffer.VkFrameBufferAttachments;
+import org.sc.themis.renderer.sync.VkFence;
 import org.sc.themis.renderer.sync.VkSemaphore;
 import org.sc.themis.scene.Scene;
-import org.sc.themis.scene.light.pipeline.LightDescriptorSet;
+import org.sc.themis.scene.descriptorset.InputDescriptorSet;
 import org.sc.themis.scene.descriptorset.MousePickingDescriptorSet;
 import org.sc.themis.scene.descriptorset.SceneDescriptorSet;
+import org.sc.themis.scene.light.pipeline.LightDescriptorSet;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.viewer.gamestate.ViewerGamestate;
@@ -19,10 +22,15 @@ import org.sc.viewer.renderactivity.postprocess.PostProcessRenderPass;
 import org.sc.viewer.renderactivity.shadow.ShadowRenderPass;
 import org.sc.viewer.renderactivity.ui.UiRenderPass;
 
+import static org.lwjgl.vulkan.VK10.*;
+
 /**
  * Viewer renderer activity.
  */
 public class ViewerRendererActivity extends RendererActivity {
+
+    public static final String GEOMETRY_FB_ATTACHMENT_COLOR = "geometry.framebuffer.attachment.color";
+    public static final String GEOMETRY_FB_ATTACHMENT_DEPTH = "geometry.framebuffer.attachment.depth";
 
     private final ViewerGamestate gamestate;
     private Renderer renderer;
@@ -34,16 +42,21 @@ public class ViewerRendererActivity extends RendererActivity {
     private final PostProcessRenderPass postProcessRenderPass;
     private final UiRenderPass uiRenderPass;
 
-    // Additionnal Semaphores
+    // Renderpasses common data
+    private VkFrameBufferAttachments geometryFrameBufferAttachments;
+
+    // Sync.
     private FrameKey<VkSemaphore> semPickingPassCompleted;
     private FrameKey<VkSemaphore> semShadowPassCompleted;
     private FrameKey<VkSemaphore> semGeometryPassCompleted;
     private FrameKey<VkSemaphore> semPostProcessPassCompleted;
+    private FrameKey<VkFence>     fenceGlobal;
 
     // Common descriptorsets
     private SceneDescriptorSet dsScene;
     private MousePickingDescriptorSet dsMousePicking;
     private LightDescriptorSet dsLight;
+    private InputDescriptorSet dsGeometry;
 
     /**
      * Default constructor.
@@ -73,6 +86,10 @@ public class ViewerRendererActivity extends RendererActivity {
         return this.renderer.getDevice();
     }
 
+    public VkFrameBufferAttachments getGeometryFrameBufferAttachments() {
+        return this.geometryFrameBufferAttachments;
+    }
+
     public SceneDescriptorSet getSceneDescriptorset() {
         return this.dsScene;
     }
@@ -85,6 +102,10 @@ public class ViewerRendererActivity extends RendererActivity {
         return this.dsLight;
     }
 
+    public InputDescriptorSet getGeometryDescriptorset() {
+        return this.dsGeometry;
+    }
+
     public GeometryRenderPass getGeometryRenderPass() {
         return this.geometryRenderPass;
     }
@@ -94,6 +115,7 @@ public class ViewerRendererActivity extends RendererActivity {
 
         this.renderer = renderer;
 
+        setupGeometryFrameBufferAttachments();
         setupDescriptorsets();
         setupRenderPasses();
         setupSemaphores();
@@ -113,6 +135,19 @@ public class ViewerRendererActivity extends RendererActivity {
 
     }
 
+    private void setupGeometryFrameBufferAttachments() throws ThemisException {
+        this.geometryFrameBufferAttachments = new VkFrameBufferAttachments(getConfiguration(), getDevice(), getRenderer().getExtent());
+        this.geometryFrameBufferAttachments.setup();
+        this.geometryFrameBufferAttachments.depth(
+                GEOMETRY_FB_ATTACHMENT_DEPTH, VK_FORMAT_D32_SFLOAT,
+                VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, 1
+        );
+        this.geometryFrameBufferAttachments.color(
+                GEOMETRY_FB_ATTACHMENT_COLOR, VK_FORMAT_R16G16B16A16_UNORM,
+                VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_SAMPLE_COUNT_1_BIT
+        );
+    }
+
     private void setupDescriptorsets() throws ThemisException {
 
         this.dsScene = new SceneDescriptorSet(getConfiguration(), renderer);
@@ -124,6 +159,13 @@ public class ViewerRendererActivity extends RendererActivity {
         this.dsLight = new LightDescriptorSet(getConfiguration(), renderer);
         this.dsLight.setup();
 
+        setupGeometryDescriptorset();
+
+    }
+
+    private void setupGeometryDescriptorset() throws ThemisException {
+        this.dsGeometry = new InputDescriptorSet(getConfiguration(), getRenderer(), getGeometryFrameBufferAttachments().size());
+        this.dsGeometry.setup();
     }
 
     private void setupRenderPasses() throws ThemisException {
@@ -148,19 +190,27 @@ public class ViewerRendererActivity extends RendererActivity {
         this.semPostProcessPassCompleted = FrameKey.of(VkSemaphore.class);
         getFrames().create(this.semPostProcessPassCompleted, () -> new VkSemaphore(getConfiguration(), getDevice()));
 
+        this.fenceGlobal = FrameKey.of(VkFence.class);
+        getFrames().create(this.fenceGlobal, () -> new VkFence(getConfiguration(), getDevice(), true));
+
     }
 
     @Override
     public void cleanup() throws ThemisException {
+
+        getRenderer().waitIdle();
 
         getFrames().remove(this.semPostProcessPassCompleted);
         getFrames().remove(this.semGeometryPassCompleted);
         getFrames().remove(this.semShadowPassCompleted);
         getFrames().remove(this.semPickingPassCompleted);
 
+        this.dsGeometry.cleanup();
         this.dsLight.cleanup();
         this.dsMousePicking.cleanup();
         this.dsScene.cleanup();
+
+        this.geometryFrameBufferAttachments.cleanup();
 
         this.uiRenderPass.cleanup();
         this.postProcessRenderPass.cleanup();
@@ -181,6 +231,7 @@ public class ViewerRendererActivity extends RendererActivity {
     }
 
     private void render(int frame, Scene scene) throws ThemisException {
+
         // this.mousePickingRenderPass.render(
         //      frame, scene,
         //      this.renderer.getAcquireSemaphore(frame),
@@ -201,28 +252,52 @@ public class ViewerRendererActivity extends RendererActivity {
         //      frame, scene,
         //      getFrames().get(frame, this.semPostProcessPassCompleted),
         //      this.renderer.getPresentSemaphore(frame));
+
+        VkFence fence = getFrames().get(frame, this.fenceGlobal);
+        fence.waitForAndReset();
+
         this.geometryRenderPass.render(
-                frame, scene,
-                this.renderer.getAcquireSemaphore(frame),
-                getFrames().get(frame, this.semGeometryPassCompleted));
+            frame, scene,
+            this.renderer.getAcquireSemaphore(frame),
+            getFrames().get(frame, this.semGeometryPassCompleted)
+        );
+
         this.postProcessRenderPass.render(
-                frame, scene,
-                getFrames().get(frame, this.semGeometryPassCompleted),
-                this.renderer.getPresentSemaphore(frame));
+            frame, scene,
+            getFrames().get(frame, this.semGeometryPassCompleted),
+            getFrames().get(frame, this.semPostProcessPassCompleted)
+        );
+
+        this.uiRenderPass.render(
+            frame, scene,
+            getFrames().get(frame, this.semPostProcessPassCompleted),
+            this.renderer.getPresentSemaphore(frame),
+            fence
+        );
+
     }
 
     @Override
     public void resize() throws ThemisException {
+
+        this.dsGeometry.cleanup();
+        this.geometryFrameBufferAttachments.cleanup();
+
+        setupGeometryFrameBufferAttachments();
+        setupGeometryDescriptorset();
+
         this.mousePickingRenderPass.resize();
         this.shadowRenderPass.resize();
         this.geometryRenderPass.resize();
         this.postProcessRenderPass.resize();
         this.uiRenderPass.resize();
+
     }
 
-    private void update(int frame, Scene scene) {
+    private void update(int frame, Scene scene) throws ThemisException {
         this.dsLight.update(frame, scene);
         this.dsScene.update(frame, scene);
+        this.dsGeometry.update(frame, getGeometryFrameBufferAttachments());
     }
 
 }

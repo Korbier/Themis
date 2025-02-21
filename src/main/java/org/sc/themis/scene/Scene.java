@@ -29,7 +29,6 @@ public class Scene extends TObject {
     // Geometry
     private final List<Instance> instances = new ArrayList<>();
     private final Set<Model> models = new HashSet<>();
-    private final List<MaterialProperties> materialProperties = new ArrayList<>();
 
     // Light casters
     private final List<DirectionalLight> directionalLights = new ArrayList<>();
@@ -57,9 +56,6 @@ public class Scene extends TObject {
 
     @Override
     public void cleanup() throws ThemisException {
-        for (Model model : this.models) {
-            model.cleanup();
-        }
     }
 
     /**
@@ -69,7 +65,7 @@ public class Scene extends TObject {
      */
     public void add(Instance ... instances) {
         for (Instance instance : instances) {
-            add(instance.getModel());
+            this.models.add(instance.getModel());
             this.instances.add(instance);
         }
     }
@@ -108,16 +104,6 @@ public class Scene extends TObject {
      */
     public void add(PointLight light) {
         this.pointLights.add(light);
-    }
-
-    private void add(Model model) {
-
-        this.models.add(model);
-
-        for (Mesh mesh : model.getMeshes()) {
-            this.materialProperties.add(mesh.getProperties());
-        }
-
     }
 
     public Set<Model> getModels() {

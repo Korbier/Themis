@@ -1,11 +1,24 @@
 package org.sc.viewer.renderactivity.geometry;
 
+import static org.lwjgl.vulkan.VK10.VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+import static org.lwjgl.vulkan.VK10.VK_ATTACHMENT_LOAD_OP_CLEAR;
+import static org.lwjgl.vulkan.VK10.VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+import static org.lwjgl.vulkan.VK10.VK_ATTACHMENT_STORE_OP_DONT_CARE;
+import static org.lwjgl.vulkan.VK10.VK_ATTACHMENT_STORE_OP_STORE;
+import static org.lwjgl.vulkan.VK10.VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+import static org.lwjgl.vulkan.VK10.VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+import static org.lwjgl.vulkan.VK10.VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+import static org.lwjgl.vulkan.VK10.VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+import static org.lwjgl.vulkan.VK10.VK_IMAGE_LAYOUT_UNDEFINED;
+import static org.lwjgl.vulkan.VK10.VK_PIPELINE_BIND_POINT_GRAPHICS;
+import static org.lwjgl.vulkan.VK10.VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_VERTEX_BIT;
+
 import org.jboss.logging.Logger;
 import org.sc.themis.renderer.base.frame.FrameKey;
 import org.sc.themis.renderer.command.VkCommand;
 import org.sc.themis.renderer.device.VkDevice;
 import org.sc.themis.renderer.framebuffer.VkFrameBuffer;
-import org.sc.themis.renderer.framebuffer.VkFrameBufferAttachments;
 import org.sc.themis.renderer.framebuffer.VkFrameBufferDescriptor;
 import org.sc.themis.renderer.material.MaterialManager;
 import org.sc.themis.renderer.material.MaterialProperties;
@@ -22,24 +35,20 @@ import org.sc.themis.scene.Scene;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.viewer.renderactivity.RenderPass;
+import org.sc.viewer.renderactivity.ViewerRendererActivity;
 
-import static org.lwjgl.vulkan.KHRSwapchain.VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-import static org.lwjgl.vulkan.VK10.*;
-
+/**
+ * Geometry renderpass.
+ */
 public class GeometryRenderPass extends RenderPass {
-
-    public static final String FB_ATTACHMENT_PRESENT = "geometry.framebuffer.attachment.present";
-    public static final String FB_ATTACHMENT_DEPTH = "geometry.framebuffer.attachment.depth";
 
     private static final org.jboss.logging.Logger LOG = Logger.getLogger(GeometryRenderPass.class);
 
     //Framed object
     private static final FrameKey<VkFrameBuffer> FK_FRAMEBUFFER = FrameKey.of(VkFrameBuffer.class);
     private static final FrameKey<VkCommand>     FK_COMMAND = FrameKey.of(VkCommand.class);
-    private static final FrameKey<VkFence>       FK_FENCE = FrameKey.of(VkFence.class);
 
     //Renderpass
-    private VkFrameBufferAttachments frameBufferAttachments;
     private VkRenderPass renderPass;
 
     //Material
@@ -53,11 +62,9 @@ public class GeometryRenderPass extends RenderPass {
 
     @Override
     public void setup() throws ThemisException {
-        setupFramebufferAttachments();
         setupRenderPass();
         setupFramebuffers();
         setupCommand();
-        setupFence();
         setupMaterialManager();
     }
 
@@ -68,18 +75,15 @@ public class GeometryRenderPass extends RenderPass {
 
     @Override
     public void cleanup() throws ThemisException {
-        getRenderer().waitIdle();
         this.defaultMaterial.cleanup();
         this.defaultMaterial2.cleanup();
         this.renderPass.cleanup();
-        this.frameBufferAttachments.cleanup();
     }
 
     @Override
-    public void render(int frame, Scene scene, VkSemaphore waitSemaphore, VkSemaphore signalSemaphore) throws ThemisException {
+    public void render(int frame, Scene scene, VkSemaphore waitSemaphore, VkSemaphore signalSemaphore, VkFence fence) throws ThemisException {
 
         VkCommand     command     = getFrames().get(frame, FK_COMMAND);
-        VkFence       fence       = getFrames().get(frame, FK_FENCE);
         VkFrameBuffer frameBuffer = getFrames().get(frame, FK_FRAMEBUFFER);
 
         command.begin();
@@ -109,14 +113,13 @@ public class GeometryRenderPass extends RenderPass {
                     }
 
                 }
+
             }
         }
 
         command.endRenderPass();
         command.end();
         command.submit(fence, waitSemaphore, signalSemaphore);
-
-        fence.waitForAndReset();
 
     }
 
@@ -125,23 +128,10 @@ public class GeometryRenderPass extends RenderPass {
 
         getFrames().remove(FK_FRAMEBUFFER);
         this.renderPass.cleanup();
-        this.frameBufferAttachments.cleanup();
 
-        setupFramebufferAttachments();
         setupRenderPass();
         setupFramebuffers();
 
-    }
-
-    public VkFrameBufferAttachments getFramebufferAttachments() {
-        return this.frameBufferAttachments;
-    }
-
-    private void setupFramebufferAttachments() throws ThemisException {
-        this.frameBufferAttachments = new VkFrameBufferAttachments(getConfiguration(), getDevice(), getExtent2D());
-        this.frameBufferAttachments.setup();
-        this.frameBufferAttachments.depth(FB_ATTACHMENT_DEPTH, VK_FORMAT_D32_SFLOAT, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, 1);
-        this.frameBufferAttachments.raw(FB_ATTACHMENT_PRESENT, getRenderer().getImageFormat());
     }
 
     private void setupRenderPass() throws ThemisException {
@@ -155,15 +145,11 @@ public class GeometryRenderPass extends RenderPass {
             VkFrameBufferDescriptor descriptor = new VkFrameBufferDescriptor(
                 getExtent2D(),
                 this.renderPass.getHandle(),
-                this.frameBufferAttachments.get(FB_ATTACHMENT_DEPTH).getView().getHandle(),
-                getImageView(frame).getHandle()
-           );
+                getGeometryFrameBufferAttachments().get(ViewerRendererActivity.GEOMETRY_FB_ATTACHMENT_DEPTH).getView().getHandle(),
+                getGeometryFrameBufferAttachments().get(ViewerRendererActivity.GEOMETRY_FB_ATTACHMENT_COLOR).getView().getHandle()
+            );
             return new VkFrameBuffer(getConfiguration(), getDevice(), descriptor);
         });
-    }
-
-    private void setupFence() throws ThemisException {
-        getFrames().create(FK_FENCE, () -> new VkFence(getConfiguration(), getDevice(), false));
     }
 
     private void setupCommand() throws ThemisException {
@@ -173,8 +159,14 @@ public class GeometryRenderPass extends RenderPass {
     private VkRenderPassDescriptor createSubPassDescriptor(VkDevice device) {
 
         VkRenderPassLayout layout = new VkRenderPassLayout()
-                .add(0, this.frameBufferAttachments.get(FB_ATTACHMENT_DEPTH).getFormat(), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE)
-                .add(1, VK_FORMAT_B8G8R8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE);
+                .add(0, getGeometryFrameBufferAttachments().get(ViewerRendererActivity.GEOMETRY_FB_ATTACHMENT_DEPTH).getFormat(),
+                        VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL,
+                        VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE,
+                        VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE)
+                .add(1, getGeometryFrameBufferAttachments().get(ViewerRendererActivity.GEOMETRY_FB_ATTACHMENT_COLOR).getFormat(),
+                        VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                        VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE,
+                        VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE);
 
         VkSubpass subpass = new VkSubpass(device, VK_PIPELINE_BIND_POINT_GRAPHICS);
         subpass.depth(0, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
@@ -192,7 +184,7 @@ public class GeometryRenderPass extends RenderPass {
 
         this.defaultMaterial = new ColorMaterial(
                 getConfiguration(), getRenderer(), this.renderPass,
-                this.getViewerActivity().getSceneDescriptorset(), this.getViewerActivity().getLighDescriptorset() );
+                this.getViewerActivity().getSceneDescriptorset(), this.getViewerActivity().getLighDescriptorset());
         this.defaultMaterial.setup();
 
         this.defaultMaterial2 = new TextureMaterial(

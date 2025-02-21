@@ -127,7 +127,30 @@ public class VkDescriptorSet extends VulkanObject {
 
     }
 
-    public void bind( int binding, VkFrameBufferAttachment attachment, VkSampler sampler ) {
+    public void bind(int binding, VkFrameBufferAttachment attachment, VkSampler sampler) {
+
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+
+            VkDescriptorImageInfo.Buffer imageInfo = VkDescriptorImageInfo.calloc(1, stack)
+                    .imageLayout(
+                        attachment.getType() == VkFrameBufferAttachment.VkFrameBufferAttachmentType.DEPTH
+                        ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL
+                        : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+                    .sampler(sampler.getHandle())
+                    .imageView(attachment.getView().getHandle());
+
+            VkWriteDescriptorSet.Buffer descrBuffer = VkWriteDescriptorSet.calloc(1, stack);
+            descrBuffer.get(0)
+                    .sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET)
+                    .dstSet(getHandle())
+                    .dstBinding(binding)
+                    .descriptorType(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)
+                    .descriptorCount(1)
+                    .pImageInfo(imageInfo);
+
+            vkUpdateDescriptorSets(this.device.getHandle(), descrBuffer, null);
+
+        }
 
     }
 
@@ -137,7 +160,7 @@ public class VkDescriptorSet extends VulkanObject {
 
             VkDescriptorImageInfo.Buffer imageInfo = VkDescriptorImageInfo.calloc(1, stack)
                     .imageLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
-                    .imageView( attachment.getView().getHandle());
+                    .imageView(attachment.getView().getHandle());
 
             VkWriteDescriptorSet.Buffer descrBuffer = VkWriteDescriptorSet.calloc(1, stack);
             descrBuffer.get(0)
