@@ -18,7 +18,7 @@ public final class VkStagingBuffer extends VkStagingResource {
     private final int bufferUsage;
     private VkBuffer buffer;
 
-    public VkStagingBuffer(Configuration configuration, VkStagingResourceAllocator resourceAllocator, VkDevice device, VkMemoryAllocator allocator, int bufferUsage) {
+    VkStagingBuffer(Configuration configuration, VkStagingResourceAllocator resourceAllocator, VkDevice device, VkMemoryAllocator allocator, int bufferUsage) {
         super(configuration, resourceAllocator, device, allocator);
         this.device = device;
         this.allocator = allocator;
@@ -27,7 +27,7 @@ public final class VkStagingBuffer extends VkStagingResource {
 
     @Override
     public void doCommit(VkCommand command) throws ThemisException {
-        command.copy( getStagingBuffer(), this.buffer );
+        command.copy(getStagingBuffer(), this.buffer);
     }
 
     @Override

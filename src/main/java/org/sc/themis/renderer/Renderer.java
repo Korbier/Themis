@@ -8,6 +8,7 @@ import org.sc.themis.renderer.activity.RendererActivity;
 import org.sc.themis.renderer.base.frame.FrameKey;
 import org.sc.themis.renderer.base.frame.Frames;
 import org.sc.themis.renderer.command.VkCommand;
+import org.sc.themis.renderer.command.VkCommandBuffer;
 import org.sc.themis.renderer.command.VkCommandPool;
 import org.sc.themis.renderer.device.*;
 import org.sc.themis.renderer.presentation.VkSurface;
@@ -53,6 +54,7 @@ public class Renderer extends TObject {
 
     private VkCommandPool graphicCommandPool;
     private VkCommandPool transfertCommandPool;
+    private VkCommand transfertCommand;
 
     private Frames frames;
     private final Timer timer = new Timer();
@@ -95,7 +97,7 @@ public class Renderer extends TObject {
     }
 
     private void setupResourceAllocator() throws ThemisException {
-        this.resourceAllocator = new VkStagingResourceAllocator(getConfiguration(), this.device, this.memoryAllocator, createTransfertCommand(true));
+        this.resourceAllocator = new VkStagingResourceAllocator(getConfiguration(), this.device, this.memoryAllocator);
         this.resourceAllocator.setup();
     }
 
@@ -126,7 +128,8 @@ public class Renderer extends TObject {
 
         this.timer.start("themis.renderer");
 
-        this.getResourceAllocator().commit();
+        this.getResourceAllocator().submit(this.transfertCommand);
+
         this.activity.render(scene, tpf);
         this.present(getPresentSemaphore(getCurrentFrame()));
 
@@ -262,6 +265,7 @@ public class Renderer extends TObject {
         this.graphicCommandPool.setup();
         this.transfertCommandPool = new VkCommandPool(getConfiguration(), this.device, this.transfertQueue);
         this.transfertCommandPool.setup();
+        this.transfertCommand = createTransfertCommand(true);
     }
 
     private void setupQueues() throws ThemisException {

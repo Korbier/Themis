@@ -179,7 +179,7 @@ public class ModelFactory {
 
         if ( path != null ) {
             LOG.infof("Loading texture property %s (%s)", property.getName(), path );
-            VkStagingImage stgImage = allocator.allocateImage( VK_FORMAT_R8G8B8A8_SRGB, true );
+            VkStagingImage stgImage = allocator.allocateImage( VK_FORMAT_R8G8B8A8_SRGB);
             stgImage.load( Image.of( path ) );
             properties.put( property, stgImage );
         }
