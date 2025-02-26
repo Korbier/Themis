@@ -1,9 +1,11 @@
 package org.sc.themis.renderer.resource.staging;
 
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
-
 import org.jboss.logging.Logger;
 import org.sc.themis.renderer.base.VulkanObject;
 import org.sc.themis.renderer.command.VkCommand;
@@ -24,7 +26,9 @@ public class VkStagingResourceAllocator extends VulkanObject {
     private final VkDevice device;
     private final VkMemoryAllocator allocator;
     private final Queue<VkStagingResource> staging = new ArrayBlockingQueue<>(STAGING_SIZE);
-    private final List<VkStagingResource> staged = Collections.synchronizedList(new ArrayList<>(ALIVED_SIZE));;
+    private final List<VkStagingResource> staged = Collections.synchronizedList(
+        new ArrayList<>(ALIVED_SIZE)
+    );
     private final Queue<VkStagingResource> garbage = new ArrayBlockingQueue<>(GARBAGE_SIZE);
 
     private VkFence commitFence;
@@ -47,8 +51,7 @@ public class VkStagingResourceAllocator extends VulkanObject {
     @Override
     public void cleanup() throws ThemisException {
         this.commitFence.cleanup();
-        new ArrayList<>(this.staged).forEach(this::garbage);
-        garbage();
+        garbageAndReleaseAll();
     }
 
     public void submit(VkCommand command) throws ThemisException {
@@ -67,7 +70,7 @@ public class VkStagingResourceAllocator extends VulkanObject {
 
         this.commitFence.waitForAndReset();
 
-        runGarbage();
+        releaseAllInThread();
 
     }
 
@@ -92,25 +95,32 @@ public class VkStagingResourceAllocator extends VulkanObject {
         this.garbage.add(vkStagingResource);
     }
 
-    private void runGarbage() {
-        Thread.ofVirtual().start(() -> {
-            try {
-                garbage();
-            } catch (ThemisException e) {
-                throw new RuntimeException(e);
-            }
-        });
+
+    private void releaseAll() throws ThemisException {
+        LOG.tracef("Releasing garbaged resources");
+        VkStagingResource resource;
+        while ((resource = this.garbage.poll()) != null) {
+            resource.release();
+            LOG.tracef("Garbaging resource (%d bytes)", resource.getBufferSize());
+        }
     }
 
-    private void garbage() throws ThemisException {
-
-        VkStagingResource resource;
-
-        while ((resource = this.garbage.poll()) != null) {
-            resource.cleanupStagingBuffer();
-            LOG.tracef("Staged resource garbaged (%d bytes)", resource.getBufferSize());
+    private void releaseAllInThread() {
+        if (!this.garbage.isEmpty()) {
+            Thread.ofVirtual().start(() -> {
+                try {
+                    releaseAll();
+                } catch (ThemisException e) {
+                    throw new RuntimeException(e);
+                }
+            });
         }
+    }
 
+    private void garbageAndReleaseAll() throws ThemisException {
+        LOG.tracef("Garbaging all resources");
+        new ArrayList<>(this.staged).forEach(this::garbage);
+        releaseAll();
     }
 
 }

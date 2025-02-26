@@ -1,24 +1,27 @@
 package org.sc.themis.scene;
 
-import org.jboss.logging.Logger;
-import org.joml.*;
-
 import java.lang.Math;
+import org.jboss.logging.Logger;
+import org.joml.Matrix4f;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
 
 public class Instance {
 
     private static final org.jboss.logging.Logger LOG = Logger.getLogger(Instance.class);
 
-    private final static Vector4f identifierReference = new Vector4f(0,0,0,1);
+    private static final Vector4f identifierReference = new Vector4f(0,0,0,1);
+
     private static float [] calculateIdentifier() {
-        identifierReference.x += 0.01f;
-        float [] aIdentifier = new float[4];
-        aIdentifier[0] = identifierReference.x;
-        aIdentifier[1] = identifierReference.y;
-        aIdentifier[2] = identifierReference.z;
-        aIdentifier[3] = identifierReference.w;
-        LOG.tracef( "Provinding new instance identifier : [%f %f %f %f]", aIdentifier[0], aIdentifier[1], aIdentifier[2], aIdentifier[3] );
-        return aIdentifier;
+        identifierReference.x += 0.000001f;
+        float [] identifier = new float[4];
+        identifier[0] = identifierReference.x;
+        identifier[1] = identifierReference.y;
+        identifier[2] = identifierReference.z;
+        identifier[3] = identifierReference.w;
+        LOG.tracef("Provinding new instance identifier : [%f %f %f %f]", identifier[0], identifier[1], identifier[2], identifier[3]);
+        return identifier;
     }
 
     private final Model model;
@@ -29,9 +32,9 @@ public class Instance {
     private float             scale    = 1.0f;
     private final Matrix4f    matrix   = new Matrix4f();
 
-    private float [] fMatrix = new float[16];
+    private float [] matrixAsFloats = new float[16];
 
-    public Instance( Model model ) {
+    public Instance(Model model) {
         this.model = model;
         this.identifier = calculateIdentifier();
         updateMatrix();
@@ -46,7 +49,7 @@ public class Instance {
     }
 
     public float[] matrix() {
-        return this.fMatrix;
+        return this.matrixAsFloats;
     }
 
     public Vector3f position() {
@@ -84,7 +87,7 @@ public class Instance {
 
     private void updateMatrix() {
         this.matrix.translationRotateScale(position(), rotation(), scale());
-        this.fMatrix = this.matrix.get( this.fMatrix );
+        this.matrixAsFloats = this.matrix.get(this.matrixAsFloats);
     }
 
 }

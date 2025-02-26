@@ -9,7 +9,6 @@ import org.joml.Matrix4f;
 import org.joml.Vector2i;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
-import org.sc.themis.renderer.base.VulkanObject;
 import org.sc.themis.renderer.command.VkCommand;
 import org.sc.themis.renderer.device.VkDevice;
 import org.sc.themis.renderer.device.VkMemoryAllocator;
@@ -32,25 +31,38 @@ public abstract sealed class VkStagingResource
     private VkStagingResourceStatus status = VkStagingResourceStatus.CREATED;
     private org.sc.themis.renderer.resource.buffer.VkBuffer stagingBuffer;
 
-    public VkStagingResource(Configuration configuration, VkStagingResourceAllocator resourceAllocator, VkDevice device, VkMemoryAllocator allocator) {
+    public VkStagingResource(
+            Configuration configuration,
+            VkStagingResourceAllocator resourceAllocator,
+            VkDevice device,
+            VkMemoryAllocator allocator
+    ) {
         super(configuration);
         this.resourceAllocator = resourceAllocator;
         this.device = device;
         this.allocator = allocator;
     }
 
-    abstract public void doCommit(VkCommand command) throws ThemisException;
+    public abstract void doCommit(VkCommand command) throws ThemisException;
 
     @Override
-    final public void setup() {
+    public final void setup() {
     }
 
     @Override
-    final public void cleanup() throws ThemisException {
+    public final void cleanup() throws ThemisException {
         setStatus(VkStagingResourceStatus.FREE);
         this.resourceAllocator.garbage(this);
     }
 
+    /**
+     * Called by the allocator to free this resource.
+     *
+     * @throws ThemisException ex
+     */
+    void release() throws ThemisException {
+        this.cleanupStagingBuffer();
+    }
 
     public void commit(VkCommand command) throws ThemisException {
         doCommit(command);
