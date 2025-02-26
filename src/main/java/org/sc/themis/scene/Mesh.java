@@ -26,8 +26,8 @@ public class Mesh {
 
     public Mesh(VkStagingResourceAllocator resourceAllocator, String identifier) {
         this.identifier = identifier;
-        this.vertexBuffer = resourceAllocator.allocateBuffer(VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, true);
-        this.indiceBuffer = resourceAllocator.allocateBuffer(VK_BUFFER_USAGE_INDEX_BUFFER_BIT, true);
+        this.vertexBuffer = resourceAllocator.allocateBuffer(VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+        this.indiceBuffer = resourceAllocator.allocateBuffer(VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
     }
 
     public void set(Vertex[] vertices, int [] indices) throws ThemisException {

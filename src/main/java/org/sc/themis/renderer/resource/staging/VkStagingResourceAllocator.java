@@ -1,5 +1,11 @@
 package org.sc.themis.renderer.resource.staging;
 
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ArrayBlockingQueue;
 import org.jboss.logging.Logger;
 import org.sc.themis.renderer.base.VulkanObject;
 import org.sc.themis.renderer.command.VkCommand;
@@ -9,104 +15,112 @@ import org.sc.themis.renderer.sync.VkFence;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 
-import java.util.Queue;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 public class VkStagingResourceAllocator extends VulkanObject {
 
     private static final org.jboss.logging.Logger LOG = Logger.getLogger(VkStagingResourceAllocator.class);
 
-    private static final int QUEUE_SIZE = 1024;
+    private static final int STAGING_SIZE = 1024;
+    private static final int ALIVED_SIZE  = 1024;
+    private static final int GARBAGE_SIZE = 1024;
 
     private final VkDevice device;
     private final VkMemoryAllocator allocator;
-    private final VkCommand command;
-    private final Queue<VkStagingResource> resources = new ArrayBlockingQueue<>(QUEUE_SIZE);
-    private final Queue<VkStagingResource> tracked = new ArrayBlockingQueue<>(QUEUE_SIZE);
+    private final Queue<VkStagingResource> staging = new ArrayBlockingQueue<>(STAGING_SIZE);
+    private final List<VkStagingResource> staged = Collections.synchronizedList(
+        new ArrayList<>(ALIVED_SIZE)
+    );
+    private final Queue<VkStagingResource> garbage = new ArrayBlockingQueue<>(GARBAGE_SIZE);
 
     private VkFence commitFence;
 
-    private AtomicBoolean garbaging = new AtomicBoolean(false);
-
-    public VkStagingResourceAllocator(Configuration configuration, VkDevice device, VkMemoryAllocator allocator, VkCommand command) {
+    public VkStagingResourceAllocator(Configuration configuration, VkDevice device, VkMemoryAllocator allocator) {
         super(configuration);
         this.device = device;
         this.allocator = allocator;
-        this.command = command;
     }
 
     @Override
     public void setup() throws ThemisException {
+
         this.commitFence = new VkFence(getConfiguration(), this.device, false);
         this.commitFence.setup();
+
+
     }
 
     @Override
     public void cleanup() throws ThemisException {
         this.commitFence.cleanup();
-        for (VkStagingResource resource : this.resources) {
-            resource.cleanup();
-        }
-        for (VkStagingResource resource : this.tracked) {
-            resource.cleanup();
-        }
+        garbageAndReleaseAll();
     }
 
-    public void commit() throws ThemisException {
+    public void submit(VkCommand command) throws ThemisException {
 
         VkStagingResource resource;
+        command.begin();
 
-        this.command.begin();
-
-        while ((resource = this.resources.poll()) != null) {
-            resource.commit(this.command);
+        while ((resource = this.staging.poll()) != null) {
+            resource.commit(command);
+            this.staged.add(resource);
             LOG.tracef("Staging resource commited (%d bytes)", resource.getBufferSize());
         }
 
-        this.command.end();
-        this.command.submit(this.commitFence);
+        command.end();
+        command.submit(this.commitFence);
 
         this.commitFence.waitForAndReset();
+
+        releaseAllInThread();
 
     }
 
     public VkStagingBuffer allocateBuffer(int bufferUsage) {
-        return allocateBuffer(bufferUsage, false);
-    }
-
-    public VkStagingBuffer allocateBuffer(int bufferUsage, boolean track) {
-
         VkStagingBuffer buffer = new VkStagingBuffer(getConfiguration(), this, this.device, this.allocator, bufferUsage);
         buffer.setup();
-
-        if (track) {
-            this.tracked.add(buffer);
-        }
-
         return buffer;
-
     }
 
     public VkStagingImage allocateImage(int imageFormat) {
-        return this.allocateImage(imageFormat, false);
-    }
-
-    public VkStagingImage allocateImage(int imageFormat, boolean track) {
-
         VkStagingImage image = new VkStagingImage(getConfiguration(), this, this.device, this.allocator, imageFormat);
         image.setup();
-
-        if (track) {
-            this.tracked.add(image);
-        }
-
         return image;
-
     }
 
-    public void signalResourceChanged(VkStagingResource vkStagingResource) {
-        this.resources.add(vkStagingResource);
+    void signalResourceChanged(VkStagingResource vkStagingResource) {
+        this.staging.add(vkStagingResource);
+    }
+
+    synchronized void garbage(VkStagingResource vkStagingResource) {
+        this.staged.remove(vkStagingResource);
+        this.garbage.add(vkStagingResource);
+    }
+
+
+    private void releaseAll() throws ThemisException {
+        LOG.tracef("Releasing garbaged resources");
+        VkStagingResource resource;
+        while ((resource = this.garbage.poll()) != null) {
+            resource.release();
+            LOG.tracef("Garbaging resource (%d bytes)", resource.getBufferSize());
+        }
+    }
+
+    private void releaseAllInThread() {
+        if (!this.garbage.isEmpty()) {
+            Thread.ofVirtual().start(() -> {
+                try {
+                    releaseAll();
+                } catch (ThemisException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        }
+    }
+
+    private void garbageAndReleaseAll() throws ThemisException {
+        LOG.tracef("Garbaging all resources");
+        new ArrayList<>(this.staged).forEach(this::garbage);
+        releaseAll();
     }
 
 }

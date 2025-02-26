@@ -1,5 +1,17 @@
 package org.sc.themis.renderer.resource.staging;
 
+import static org.lwjgl.vulkan.VK10.VK_ACCESS_TRANSFER_WRITE_BIT;
+import static org.lwjgl.vulkan.VK10.VK_IMAGE_ASPECT_COLOR_BIT;
+import static org.lwjgl.vulkan.VK10.VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+import static org.lwjgl.vulkan.VK10.VK_IMAGE_LAYOUT_UNDEFINED;
+import static org.lwjgl.vulkan.VK10.VK_IMAGE_USAGE_SAMPLED_BIT;
+import static org.lwjgl.vulkan.VK10.VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+import static org.lwjgl.vulkan.VK10.VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+import static org.lwjgl.vulkan.VK10.VK_IMAGE_VIEW_TYPE_2D;
+import static org.lwjgl.vulkan.VK10.VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+import static org.lwjgl.vulkan.VK10.VK_PIPELINE_STAGE_TRANSFER_BIT;
+import static org.lwjgl.vulkan.VK10.VK_SAMPLE_COUNT_1_BIT;
+
 import org.sc.themis.renderer.command.VkCommand;
 import org.sc.themis.renderer.device.VkDevice;
 import org.sc.themis.renderer.device.VkMemoryAllocator;
@@ -12,7 +24,6 @@ import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.resource.Image;
 import org.sc.themis.shared.utils.MathUtils;
 
-import static org.lwjgl.vulkan.VK10.*;
 
 public final class VkStagingImage extends VkStagingResource {
 
@@ -24,7 +35,7 @@ public final class VkStagingImage extends VkStagingResource {
     private VkImageView view;
     private int mipLevels;
 
-    public VkStagingImage(Configuration configuration, VkStagingResourceAllocator resourceAllocator, VkDevice device, VkMemoryAllocator allocator, int imageFormat ) {
+    VkStagingImage(Configuration configuration, VkStagingResourceAllocator resourceAllocator, VkDevice device, VkMemoryAllocator allocator, int imageFormat ) {
         super(configuration, resourceAllocator, device, allocator);
         this.device = device;
         this.imageFormat = imageFormat;
@@ -54,7 +65,7 @@ public final class VkStagingImage extends VkStagingResource {
                 VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
                 VK_PIPELINE_STAGE_TRANSFER_BIT,
                 0,
-                VK_ACCESS_TRANSFER_WRITE_BIT    ,
+                VK_ACCESS_TRANSFER_WRITE_BIT,
                 it -> it.aspectMask(VK_IMAGE_ASPECT_COLOR_BIT).baseMipLevel(0).levelCount(this.mipLevels).baseArrayLayer(0).layerCount(1)
         );
         command.copy( getStagingBuffer(), this.image );
