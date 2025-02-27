@@ -38,34 +38,7 @@ public class UiRenderPass extends RenderPass {
     private VkFrameBufferAttachments frameBufferAttachments;
     private VkRenderPass renderPass;
 
-    //Back pipeline
-    private final String BACK_VERTEX_SRC = """
-            #version 450
-            
-            layout (location = 0) out vec2 outTextCoord;
-
-            void main()
-            {
-                outTextCoord = vec2((gl_VertexIndex << 1) & 2, gl_VertexIndex & 2);
-                gl_Position  =  vec4(outTextCoord.x * 2.0f - 1.0f, outTextCoord.y * -2.0f + 1.0f, 0.0f, 1.0f);
-            }
-            """;
-    private final String BACK_FRAGMENT_SRC = """ 
-            #version 450
-            
-            layout(location = 0) in  vec2 inTextureCoords;
-            layout(location = 0) out vec4 outFragColor;
-            
-            layout(set = 0, binding = 0) uniform sampler2D depthSampler;
-            layout(set = 0, binding = 1) uniform sampler2D textureSampler;
-            
-            void main() {
-                outFragColor = texture(textureSampler, inTextureCoords);
-            }
-            """;
-    private VkShaderProgram backShaderProgram;
-    private VkPipelineLayout backPipelineLayout;
-    private VkPipeline backPipeline;
+    private BackPipeline backPipeline;
 
     public UiRenderPass(Configuration configuration) {
         super(configuration);
@@ -81,42 +54,8 @@ public class UiRenderPass extends RenderPass {
     }
 
     private void setupBackPipeline() throws ThemisException {
-
-        VkShaderProgramStage vertexShader = new VkShaderProgramStage(
-            VK_SHADER_STAGE_VERTEX_BIT,
-            VkShaderSourceCompiler.compileShader(BACK_VERTEX_SRC, Shaderc.shaderc_glsl_vertex_shader)
-        );
-
-        VkShaderProgramStage fragmentShader = new VkShaderProgramStage(
-            VK_SHADER_STAGE_FRAGMENT_BIT,
-            VkShaderSourceCompiler.compileShader(BACK_FRAGMENT_SRC, Shaderc.shaderc_glsl_fragment_shader)
-        );
-
-        this.backShaderProgram = new VkShaderProgram( getConfiguration(), getDevice(), vertexShader, fragmentShader );
-        this.backShaderProgram.setup();
-
-        this.backPipelineLayout = new VkPipelineLayout(
-            getConfiguration(), getDevice(),
-            new VkPushConstantRange[0],
-            getViewerActivity().getGeometryDescriptorset().getDescriptorSetLayout()
-        );
-        this.backPipelineLayout.setup();
-
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-
-            VkVertexInputState backInputState = new VkVertexInputState();
-            backInputState.setup(stack);
-
-            this.backPipeline = new VkPipeline(
-                getConfiguration(), getDevice(),
-                new VkPipelineDescriptor(this.renderPass, 0, false, 1, false, 1, 1, 1),
-                this.backShaderProgram, this.backPipelineLayout,
-                backInputState
-            );
-            this.backPipeline.setup();
-
-        }
-
+        this.backPipeline = new BackPipeline(getConfiguration(), getDevice(), getViewerActivity(), this.renderPass);
+        this.backPipeline.setup();
     }
 
     @Override
@@ -125,14 +64,9 @@ public class UiRenderPass extends RenderPass {
 
     @Override
     public void cleanup() throws ThemisException {
-
         this.backPipeline.cleanup();
-        this.backPipelineLayout.cleanup();
-        this.backShaderProgram.cleanup();
-
         this.renderPass.cleanup();
         this.frameBufferAttachments.cleanup();
-
     }
 
     @Override
@@ -146,7 +80,7 @@ public class UiRenderPass extends RenderPass {
         command.beginRenderPass(this.renderPass, frameBuffer);
         command.viewportAndScissor(getExtent2D());
 
-        command.bindPipeline(this.backPipeline);
+        command.bindPipeline(this.backPipeline.getPipeline());
         command.bindDescriptorSets(new int[0], getViewerActivity().getGeometryDescriptorset().getDescriptorSet(frame));
         command.draw(3, 1, 0, 0);
 
