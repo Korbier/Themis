@@ -86,7 +86,8 @@ public class TextureMaterial extends Material {
 
         super(configuration, renderer, MATERIAL_ID);
 
-        setVariantsIdentifierFunction( props -> props.get(MaterialProperty.Texture.BASE).toString() );
+        setVariantsIdentifierFunction(props -> props.get(MaterialProperty.Texture.BASE).toString());
+        setMaterialPropertiesValidator(props -> props.containsKey(MaterialProperty.Texture.BASE));
 
         /** Pipeline **/
         addShader( VK_SHADER_STAGE_VERTEX_BIT, VkShaderSourceCompiler.compileShader(VERTEX_SOURCE, Shaderc.shaderc_glsl_vertex_shader));
