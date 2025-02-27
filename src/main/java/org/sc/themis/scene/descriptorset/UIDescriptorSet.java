@@ -1,0 +1,139 @@
+package org.sc.themis.scene.descriptorset;
+
+import org.joml.Matrix4f;
+import org.sc.themis.renderer.Renderer;
+import org.sc.themis.renderer.base.frame.FrameKey;
+import org.sc.themis.renderer.pipeline.descriptorset.*;
+import org.sc.themis.renderer.resource.buffer.VkBuffer;
+import org.sc.themis.renderer.resource.buffer.VkBufferDescriptor;
+import org.sc.themis.scene.Scene;
+import org.sc.themis.shared.Configuration;
+import org.sc.themis.shared.exception.ThemisException;
+import org.sc.themis.shared.tobject.TObject;
+import org.sc.themis.shared.utils.MemorySizeUtils;
+
+import static org.lwjgl.vulkan.VK10.*;
+
+/**
+ * Descriptorset layout.
+ *
+ * <pre>
+ * MemorySizeUtils.MAT4x4F Projection
+ * MemorySizeUtils.MAT4x4F View
+ * MemorySizeUtils.VEC2F   Resolution</pre>
+ *
+ * <p>Shader source.</p>
+ *
+ * <pre>
+ * layout(std140, set = 0, binding = 0) uniform Global {
+ *     mat4 projection;
+ *     mat4 view;
+ *     vec2 resolution;
+ * } global;</pre>
+ *
+ */
+public class UIDescriptorSet extends TObject implements VkDescriptorSetProvider {
+
+    private static final FrameKey<VkBuffer>        FK_BUFFER = FrameKey.of(VkBuffer.class);
+    private static final FrameKey<VkDescriptorSet> FK_DESCRIPTORSET = FrameKey.of(VkDescriptorSet.class);
+    private static final int BUFFER_SIZE =
+            MemorySizeUtils.MAT4x4F + MemorySizeUtils.MAT4x4F //Projection + View
+            + MemorySizeUtils.MAT4x4F + MemorySizeUtils.MAT4x4F //Project Inv. + View Inv
+            + MemorySizeUtils.VEC2F; //resolution
+    private static final VkBufferDescriptor BUFFER_DESCRIPTOR = new VkBufferDescriptor(BUFFER_SIZE,
+            VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, 0);
+
+    private final Renderer renderer;
+
+    private VkDescriptorSetLayout descriptorSetLayout;
+    private VkDescriptorPool descriptorPool;
+
+    /**
+     * Constructor.
+     *
+     * @param configuration Globale configuration
+     * @param renderer Renderer
+     */
+    public UIDescriptorSet(Configuration configuration, Renderer renderer) {
+        super(configuration);
+        this.renderer = renderer;
+    }
+
+    /**
+     * Update all framed data with provided scene.
+     *
+     * @param scene scene
+     */
+    public void updateAll(Scene scene) throws ThemisException {
+        this.renderer.getFrames().update(FK_BUFFER, (frame, buffer) -> update(frame, scene));
+    }
+
+    /**
+     * Update frame with provided scene.
+     *
+     * @param scene scene
+     */
+    public void update(int frame, Scene scene) {
+        VkBuffer buffer = this.renderer.getFrames().get(frame, FK_BUFFER);
+        buffer.set(0, scene.getProjection().orthographic());
+        buffer.set(MemorySizeUtils.MAT4x4F, scene.getCamera().matrix());
+        buffer.set(MemorySizeUtils.MAT4x4F * 2, this.renderer.getWindow().getResolution());
+    }
+
+    public VkDescriptorSetLayout getDescriptorSetLayout() {
+        return this.descriptorSetLayout;
+    }
+
+    /**
+     * Return descriptorset for provided frame.
+     *
+     * @param frame frame
+     */
+    public VkDescriptorSet getDescriptorSet(int frame) {
+        return this.renderer.getFrames().get(frame, FK_DESCRIPTORSET);
+    }
+
+    @Override
+    public void setup() throws ThemisException {
+        setupDescriptorLayout();
+        setupDescriptorPool();
+        setupBuffers();
+        setupDescriptorSets();
+
+    }
+
+    private void setupDescriptorSets() throws ThemisException {
+        this.renderer.getFrames().create(FK_DESCRIPTORSET, () -> new VkDescriptorSet(getConfiguration(),
+                this.renderer.getDevice(), this.descriptorPool, this.descriptorSetLayout));
+        this.renderer.getFrames().update(FK_DESCRIPTORSET,
+                (frame, descriptorset) -> descriptorset.bind(0, this.renderer.getFrames().get(frame, FK_BUFFER)));
+    }
+
+    private void setupBuffers() throws ThemisException {
+        this.renderer.getFrames().create(FK_BUFFER, () -> new VkBuffer(getConfiguration(),
+                this.renderer.getDevice(), this.renderer.getMemoryAllocator(), BUFFER_DESCRIPTOR));
+    }
+
+    private void setupDescriptorLayout() throws ThemisException {
+        this.descriptorSetLayout = new VkDescriptorSetLayout(
+            getConfiguration(),
+            this.renderer.getDevice(),
+            VkDescriptorSetBinding.uniform(0, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_GEOMETRY_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
+       );
+        this.descriptorSetLayout.setup();
+    }
+
+    private void setupDescriptorPool() throws ThemisException {
+        this.descriptorPool = new VkDescriptorPool(getConfiguration(), this.renderer.getDevice(),
+                this.renderer.getFrames().getSize(), this.descriptorSetLayout);
+        this.descriptorPool.setup();
+    }
+
+    @Override
+    public void cleanup() throws ThemisException {
+        this.renderer.getFrames().remove(FK_BUFFER);
+        this.renderer.getFrames().remove(FK_DESCRIPTORSET);
+        this.descriptorPool.cleanup();
+        this.descriptorSetLayout.cleanup();
+    }
+}

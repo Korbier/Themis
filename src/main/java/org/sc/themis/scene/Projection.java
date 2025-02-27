@@ -36,7 +36,7 @@ public class Projection {
         );
 
         orthographic().identity();
-        orthographic().ortho( 0, (float) width, (float) height, 0, znear, zfar, true);
+        orthographic().ortho(0, (float) width, (float) height, 0, znear, zfar, true);
 
     }
 

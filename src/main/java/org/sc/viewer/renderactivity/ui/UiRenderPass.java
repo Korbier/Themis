@@ -16,12 +16,17 @@ import org.sc.themis.renderer.renderpass.VkRenderPass;
 import org.sc.themis.renderer.renderpass.VkRenderPassDescriptor;
 import org.sc.themis.renderer.renderpass.VkRenderPassLayout;
 import org.sc.themis.renderer.renderpass.VkSubpass;
+import org.sc.themis.renderer.resource.buffer.VkBuffer;
+import org.sc.themis.renderer.resource.buffer.VkBufferDescriptor;
 import org.sc.themis.renderer.sync.VkFence;
 import org.sc.themis.renderer.sync.VkSemaphore;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
+import org.sc.themis.shared.utils.MemorySizeUtils;
 import org.sc.viewer.renderactivity.RenderPass;
+import org.sc.viewer.renderactivity.ui.draw.DrawCommand;
+import org.sc.viewer.renderactivity.ui.draw.DrawVertex;
 
 /**
  * UI Renderpass.
@@ -39,6 +44,12 @@ public class UiRenderPass extends RenderPass {
     private VkRenderPass renderPass;
 
     private BackPipeline backPipeline;
+    private FrontPipeline frontPipeline;
+
+    private DrawCommand drawCommand;
+
+    private VkBuffer drawCommandVertexBuffer;
+    private VkBuffer drawCommandIndiceBuffer;
 
     public UiRenderPass(Configuration configuration) {
         super(configuration);
@@ -51,11 +62,36 @@ public class UiRenderPass extends RenderPass {
         setupFramebuffers();
         setupCommand();
         setupBackPipeline();
+        setupFrontPipeline();
+
+        this.drawCommand = new DrawCommand();
+        this.drawCommand.put(DrawVertex.of(-0.5f, -0.5f), DrawVertex.of(0.5f, -0.5f), DrawVertex.of(0.0f,  0.9f));
+        float[] data = this.drawCommand.toArray();
+
+        VkBufferDescriptor decriptor = VkBufferDescriptor.vertexBuffer((long) data.length * MemorySizeUtils.FLOAT);
+        this.drawCommandVertexBuffer = new VkBuffer(
+                getConfiguration(), this.getDevice(),
+                getViewerActivity().getRenderer().getMemoryAllocator(),
+                decriptor);
+        this.drawCommandVertexBuffer.setup();
+
+        VkBufferDescriptor decriptorIndices = VkBufferDescriptor.indiceBuffer(3 * MemorySizeUtils.INT);
+        this.drawCommandIndiceBuffer = new VkBuffer(
+                getConfiguration(), this.getDevice(),
+                getViewerActivity().getRenderer().getMemoryAllocator(),
+                decriptorIndices);
+        this.drawCommandIndiceBuffer.setup();
+
     }
 
     private void setupBackPipeline() throws ThemisException {
         this.backPipeline = new BackPipeline(getConfiguration(), getDevice(), getViewerActivity(), this.renderPass);
         this.backPipeline.setup();
+    }
+
+    private void setupFrontPipeline() throws ThemisException {
+        this.frontPipeline = new FrontPipeline(getConfiguration(), getDevice(), getViewerActivity(), this.renderPass);
+        this.frontPipeline.setup();
     }
 
     @Override
@@ -64,7 +100,10 @@ public class UiRenderPass extends RenderPass {
 
     @Override
     public void cleanup() throws ThemisException {
+        this.drawCommandVertexBuffer.cleanup();
+        this.drawCommandIndiceBuffer.cleanup();
         this.backPipeline.cleanup();
+        this.frontPipeline.cleanup();
         this.renderPass.cleanup();
         this.frameBufferAttachments.cleanup();
     }
@@ -82,6 +121,14 @@ public class UiRenderPass extends RenderPass {
 
         command.bindPipeline(this.backPipeline.getPipeline());
         command.bindDescriptorSets(new int[0], getViewerActivity().getGeometryDescriptorset().getDescriptorSet(frame));
+        command.draw(3, 1, 0, 0);
+
+        this.drawCommandVertexBuffer.set(0, this.drawCommand.toArray());
+        this.drawCommandIndiceBuffer.set(0, 0, 1, 2);
+
+        command.bindPipeline(this.frontPipeline.getPipeline());
+        command.bindDescriptorSets(new int[0], this.frontPipeline.getDescriptorset(frame));
+        command.bindBuffers(this.drawCommandVertexBuffer, this.drawCommandIndiceBuffer);
         command.draw(3, 1, 0, 0);
 
         command.endRenderPass();
