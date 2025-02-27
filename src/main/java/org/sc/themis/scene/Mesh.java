@@ -37,7 +37,7 @@ public class Mesh {
 
         float[] aVertices  = toArray(vertices);
 
-        this.vertexBuffer.load(aVertices.length * MemorySizeUtils.FLOAT, 0, aVertices );
+        this.vertexBuffer.load(aVertices.length * MemorySizeUtils.FLOAT, 0, aVertices);
         this.indiceBuffer.load(indices.length * MemorySizeUtils.INT, 0, indices);
 
     }
@@ -87,12 +87,19 @@ public class Mesh {
         if (this.renderable) {
             return true;
         }
+        if (!this.indiceBuffer.isRenderable()) {
+            return false;
+        }
+        if (!this.vertexBuffer.isRenderable()) {
+            return false;
+        }
 
-        if (!this.indiceBuffer.isRenderable()) return false;
-        if (!this.vertexBuffer.isRenderable()) return false;
-
-        for (Object property : this.properties.values()) {
-            if (property instanceof VkStagingResource resource && !resource.isRenderable()) return false;
+        if (this.properties != null) {
+            for (Object property : this.properties.values()) {
+                if (property instanceof VkStagingResource resource && !resource.isRenderable()) {
+                    return false;
+                }
+            }
         }
 
         this.renderable = true;

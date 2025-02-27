@@ -24,15 +24,8 @@ public class MaterialManager {
      * Compile given material properties.
      */
     public void compile(MaterialProperties ... properties) throws ThemisException {
-
         for (MaterialProperties materialProperties : properties) {
-
-            String variantIdentifier = this.defaultMaterial.add(materialProperties);
-
-            if (variantIdentifier != null) {
-                materialProperties.setVariantIdentifier(this.defaultMaterial, variantIdentifier);
-            }
-
+            this.defaultMaterial.add(materialProperties);
         }
     }
 
