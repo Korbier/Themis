@@ -6,9 +6,14 @@ import org.sc.themis.renderer.base.frame.FrameKey;
 import org.sc.themis.renderer.pipeline.descriptorset.*;
 import org.sc.themis.renderer.resource.buffer.VkBuffer;
 import org.sc.themis.renderer.resource.buffer.VkBufferDescriptor;
+import org.sc.themis.renderer.resource.image.VkImage;
+import org.sc.themis.renderer.resource.image.VkSampler;
+import org.sc.themis.renderer.resource.image.VkSamplerDescriptor;
+import org.sc.themis.renderer.resource.staging.VkStagingImage;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
+import org.sc.themis.shared.resource.Image;
 import org.sc.themis.shared.tobject.TObject;
 import org.sc.themis.shared.utils.MemorySizeUtils;
 
@@ -44,6 +49,9 @@ public class UIDescriptorSet extends TObject implements VkDescriptorSetProvider 
 
     private VkDescriptorSetLayout descriptorSetLayout;
     private VkDescriptorPool descriptorPool;
+
+    private VkSampler sampler;
+    private VkStagingImage stgImage;
 
     /**
      * Constructor.
@@ -97,15 +105,29 @@ public class UIDescriptorSet extends TObject implements VkDescriptorSetProvider 
         setupDescriptorLayout();
         setupDescriptorPool();
         setupBuffers();
+        setupImages();
         setupDescriptorSets();
 
     }
 
+    private void setupImages() throws ThemisException {
+
+        this.sampler = new VkSampler(getConfiguration(), this.renderer.getDevice(), new VkSamplerDescriptor(VK_FILTER_LINEAR, 1, true));
+        this.sampler.setup();
+
+        this.stgImage = this.renderer.getResourceAllocator().allocateImage(VK_FORMAT_R8G8B8A8_SRGB);
+        this.stgImage.load(Image.of("src/main/resources/viewer/ui.bmp"));
+
+    }
+
     private void setupDescriptorSets() throws ThemisException {
-        this.renderer.getFrames().create(FK_DESCRIPTORSET, () -> new VkDescriptorSet(getConfiguration(),
-                this.renderer.getDevice(), this.descriptorPool, this.descriptorSetLayout));
+        this.renderer.getFrames().create(FK_DESCRIPTORSET,
+                () -> new VkDescriptorSet(getConfiguration(), this.renderer.getDevice(), this.descriptorPool, this.descriptorSetLayout));
         this.renderer.getFrames().update(FK_DESCRIPTORSET,
-                (frame, descriptorset) -> descriptorset.bind(0, this.renderer.getFrames().get(frame, FK_BUFFER)));
+                (frame, descriptorset) -> {
+                    descriptorset.bind(0, this.renderer.getFrames().get(frame, FK_BUFFER));
+                    descriptorset.bind(1, this.stgImage.getView(), this.sampler);
+                });
     }
 
     private void setupBuffers() throws ThemisException {
@@ -117,7 +139,8 @@ public class UIDescriptorSet extends TObject implements VkDescriptorSetProvider 
         this.descriptorSetLayout = new VkDescriptorSetLayout(
             getConfiguration(),
             this.renderer.getDevice(),
-            VkDescriptorSetBinding.uniform(0, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_GEOMETRY_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
+            VkDescriptorSetBinding.uniform(0, VK_SHADER_STAGE_VERTEX_BIT),
+            VkDescriptorSetBinding.combinedImageSampler(0, VK_SHADER_STAGE_FRAGMENT_BIT)
        );
         this.descriptorSetLayout.setup();
     }
@@ -130,6 +153,7 @@ public class UIDescriptorSet extends TObject implements VkDescriptorSetProvider 
 
     @Override
     public void cleanup() throws ThemisException {
+        this.sampler.cleanup();
         this.renderer.getFrames().remove(FK_BUFFER);
         this.renderer.getFrames().remove(FK_DESCRIPTORSET);
         this.descriptorPool.cleanup();

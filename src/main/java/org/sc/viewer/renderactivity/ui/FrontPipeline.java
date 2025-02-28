@@ -15,19 +15,18 @@ import org.sc.themis.shared.utils.MemorySizeUtils;
 import org.sc.viewer.renderactivity.ViewerRendererActivity;
 
 import static org.lwjgl.vulkan.VK10.*;
-import static org.lwjgl.vulkan.VK10.VK_FORMAT_R32G32B32_SFLOAT;
-
 
 public class FrontPipeline extends TObject {
 
-    //Back pipeline
     private final String BACK_VERTEX_SRC = """
             #version 450
             
-            layout(location = 1) out vec2 outTexture;
+            layout(location = 0) out vec2 outTexture;
+            layout(location = 1) out vec3 outColor;
 
             layout(location = 0) in vec2 position;
-            layout(location = 1) in vec2 texture;
+            layout(location = 1) in vec2 textureCoord;
+            layout(location = 2) in vec3 color;
             
             layout(set = 0, binding = 0) uniform Global {
                 mat4 projection;
@@ -39,16 +38,22 @@ public class FrontPipeline extends TObject {
             
             void main()
             {
+                outTexture = textureCoord;
+                outColor = color;
                 gl_Position = global.projection * vec4(position, global.znear * -1, 1.0f);
             }
             """;
     private final String BACK_FRAGMENT_SRC = """ 
             #version 450
             
+            layout(location = 0) in vec2 inTexture;
+            layout(location = 1) in vec3 inColor;
             layout(location = 0) out vec4 outFragColor;
             
+            layout(set = 0, binding = 1) uniform sampler2D textureSampler;
+            
             void main() {
-                outFragColor = vec4(1.,0.,0.,1.);
+                outFragColor = vec4(inColor, 1.0f);// texture(textureSampler, inTexture);
             }
             """;
 
@@ -126,7 +131,8 @@ public class FrontPipeline extends TObject {
 
             VkVertexInputStateDescriptor descriptor = new VkVertexInputStateDescriptor(VK_VERTEX_INPUT_RATE_VERTEX)
                     .attribute(VK_FORMAT_R32G32_SFLOAT, MemorySizeUtils.VEC2F)  //2D position
-                    .attribute(VK_FORMAT_R32G32_SFLOAT, MemorySizeUtils.VEC2F); //Texture
+                    .attribute(VK_FORMAT_R32G32_SFLOAT, MemorySizeUtils.VEC2F)  //Texture
+                    .attribute(VK_FORMAT_R32G32B32_SFLOAT, MemorySizeUtils.VEC3F); //Color
 
             VkVertexInputState inputState = new VkVertexInputState(descriptor);
             inputState.setup(stack);

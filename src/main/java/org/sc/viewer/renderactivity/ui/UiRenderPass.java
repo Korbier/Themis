@@ -18,13 +18,11 @@ import org.sc.themis.renderer.resource.buffer.VkBufferDescriptor;
 import org.sc.themis.renderer.sync.VkFence;
 import org.sc.themis.renderer.sync.VkSemaphore;
 import org.sc.themis.scene.Scene;
-import org.sc.themis.scene.pen.Pencil;
+import org.sc.themis.scene.pencil.Pencil;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.utils.MemorySizeUtils;
 import org.sc.viewer.renderactivity.RenderPass;
-import org.sc.themis.scene.pen.DrawCommand;
-import org.sc.themis.scene.pen.DrawVertex;
 
 /**
  * UI Renderpass.
@@ -78,8 +76,12 @@ public class UiRenderPass extends RenderPass {
 
     @Override
     public void cleanup() throws ThemisException {
-        this.drawCommandVertexBuffer.cleanup();
-        this.drawCommandIndiceBuffer.cleanup();
+        if (this.drawCommandVertexBuffer != null) {
+            this.drawCommandVertexBuffer.cleanup();
+        }
+        if ( this.drawCommandIndiceBuffer != null) {
+            this.drawCommandIndiceBuffer.cleanup();
+        }
         this.backPipeline.cleanup();
         this.frontPipeline.cleanup();
         this.renderPass.cleanup();
@@ -101,12 +103,13 @@ public class UiRenderPass extends RenderPass {
         command.bindDescriptorSets(new int[0], getViewerActivity().getGeometryDescriptorset().getDescriptorSet(frame));
         command.draw(3, 1, 0, 0);
 
-        this.updatePencilBuffers(scene.getPencil());
-
-        command.bindPipeline(this.frontPipeline.getPipeline());
-        command.bindDescriptorSets(new int[0], this.frontPipeline.getDescriptorset(frame));
-        command.bindBuffers(this.drawCommandVertexBuffer, this.drawCommandIndiceBuffer);
-        command.drawIndexed(scene.getPencil().getIndiceSize());
+        if (scene.getPencil().isRenderable()) {
+            this.updatePencilBuffers(scene.getPencil());
+            command.bindPipeline(this.frontPipeline.getPipeline());
+            command.bindDescriptorSets(new int[0], this.frontPipeline.getDescriptorset(frame));
+            command.bindBuffers(this.drawCommandVertexBuffer, this.drawCommandIndiceBuffer);
+            command.drawIndexed(scene.getPencil().getIndiceSize());
+        }
 
         command.endRenderPass();
         command.end();
