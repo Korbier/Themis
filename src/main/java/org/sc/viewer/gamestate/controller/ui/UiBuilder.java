@@ -4,6 +4,10 @@ import org.sc.themis.scene.pencil.Pencil;
 
 public class UiBuilder {
 
+    public static final int DEFAULT_BORDER_SIZE = 1;
+    public static final int DEFAULT_BUTTON_WIDTH = 64;
+    public static final int DEFAULT_BUTTON_HEIGHT = 24;
+
     private final UiState state;
     private final Pencil pencil;
 
@@ -35,23 +39,41 @@ public class UiBuilder {
 
     public boolean button(String id, int x, int y) {
 
-        if (regionHit(x, y, 64, 48)) {
+        if (regionHit(x, y, DEFAULT_BUTTON_WIDTH, DEFAULT_BUTTON_HEIGHT)) {
             state().setHotItem(id);
             if (state().getActiveItem() == null && state().isMouseDown()) {
                 state().setActiveItem(id);
             }
         }
 
-        pencil().drawRect(x, y, 64, 48, .9f, .9f, .9f);
+        pencil().drawRect(x, y, DEFAULT_BUTTON_WIDTH, DEFAULT_BUTTON_HEIGHT, .3f, .3f, .3f);
 
         if (id.equals(state().getHotItem())) {
             if (id.equals(state().getActiveItem())) {
-                pencil().drawRect(x + 2, y + 2, 60, 44, 0.0f, 1.0f, 1.0f);
+                pencil().drawRect(
+                    x + DEFAULT_BORDER_SIZE,
+                    y + DEFAULT_BORDER_SIZE,
+                    DEFAULT_BUTTON_WIDTH - 2 * DEFAULT_BORDER_SIZE,
+                    DEFAULT_BUTTON_HEIGHT - 2 * DEFAULT_BORDER_SIZE,
+                    .5f, .5f, .5f
+                );
             } else {
-                pencil().drawRect(x + 2, y + 2, 60, 44, 0.0f, 0.5f, 0.5f);
+                pencil().drawRect(
+                    x + DEFAULT_BORDER_SIZE,
+                    y + DEFAULT_BORDER_SIZE,
+                    DEFAULT_BUTTON_WIDTH - 2 * DEFAULT_BORDER_SIZE,
+                    DEFAULT_BUTTON_HEIGHT - 2 * DEFAULT_BORDER_SIZE,
+                    1.f, 1.f, 1.f
+                );
             }
         } else {
-            pencil().drawRect(x, y, 64, 48, .5f, .5f, .5f);
+            pencil().drawRect(
+                x + DEFAULT_BORDER_SIZE,
+                y + DEFAULT_BORDER_SIZE,
+                DEFAULT_BUTTON_WIDTH - 2 * DEFAULT_BORDER_SIZE,
+                DEFAULT_BUTTON_HEIGHT - 2 * DEFAULT_BORDER_SIZE,
+                .3f, .3f, .3f
+            );
         }
 
         return state().isMouseDown()
