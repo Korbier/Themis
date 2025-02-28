@@ -36,10 +36,7 @@ public class UIDescriptorSet extends TObject implements VkDescriptorSetProvider 
 
     private static final FrameKey<VkBuffer>        FK_BUFFER = FrameKey.of(VkBuffer.class);
     private static final FrameKey<VkDescriptorSet> FK_DESCRIPTORSET = FrameKey.of(VkDescriptorSet.class);
-    private static final int BUFFER_SIZE =
-            MemorySizeUtils.MAT4x4F + MemorySizeUtils.MAT4x4F //Projection + View
-            + MemorySizeUtils.MAT4x4F + MemorySizeUtils.MAT4x4F //Project Inv. + View Inv
-            + MemorySizeUtils.VEC2F; //resolution
+    private static final int BUFFER_SIZE = MemorySizeUtils.MAT4x4F + MemorySizeUtils.VEC3F + MemorySizeUtils.VEC2F; //resolution
     private static final VkBufferDescriptor BUFFER_DESCRIPTOR = new VkBufferDescriptor(BUFFER_SIZE,
             VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, 0);
 
@@ -76,8 +73,10 @@ public class UIDescriptorSet extends TObject implements VkDescriptorSetProvider 
     public void update(int frame, Scene scene) {
         VkBuffer buffer = this.renderer.getFrames().get(frame, FK_BUFFER);
         buffer.set(0, scene.getProjection().orthographic());
-        buffer.set(MemorySizeUtils.MAT4x4F, scene.getCamera().matrix());
-        buffer.set(MemorySizeUtils.MAT4x4F * 2, this.renderer.getWindow().getResolution());
+        buffer.set(MemorySizeUtils.MAT4x4F, getConfiguration().scene().projection().fov());
+        buffer.set(MemorySizeUtils.MAT4x4F + MemorySizeUtils.FLOAT, getConfiguration().scene().projection().znear());
+        buffer.set(MemorySizeUtils.MAT4x4F + MemorySizeUtils.FLOAT * 2, getConfiguration().scene().projection().zfar());
+        buffer.set(MemorySizeUtils.MAT4x4F + MemorySizeUtils.FLOAT * 3, this.renderer.getWindow().getResolution());
     }
 
     public VkDescriptorSetLayout getDescriptorSetLayout() {

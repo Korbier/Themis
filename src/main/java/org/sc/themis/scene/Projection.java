@@ -31,7 +31,7 @@ public class Projection {
 
         perspective().identity();
         perspective().perspective(
-            (float) Math.toRadians( fov ), (float) width / (float) height,
+            (float) Math.toRadians(fov), (float) width / (float) height,
             znear, zfar, true
         );
 

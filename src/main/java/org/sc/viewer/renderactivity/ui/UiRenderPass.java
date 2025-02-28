@@ -3,15 +3,12 @@ package org.sc.viewer.renderactivity.ui;
 import static org.lwjgl.vulkan.KHRSwapchain.VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 import static org.lwjgl.vulkan.VK10.*;
 
-import org.lwjgl.system.MemoryStack;
-import org.lwjgl.util.shaderc.Shaderc;
 import org.sc.themis.renderer.base.frame.FrameKey;
 import org.sc.themis.renderer.command.VkCommand;
 import org.sc.themis.renderer.device.VkDevice;
 import org.sc.themis.renderer.framebuffer.VkFrameBuffer;
 import org.sc.themis.renderer.framebuffer.VkFrameBufferAttachments;
 import org.sc.themis.renderer.framebuffer.VkFrameBufferDescriptor;
-import org.sc.themis.renderer.pipeline.*;
 import org.sc.themis.renderer.renderpass.VkRenderPass;
 import org.sc.themis.renderer.renderpass.VkRenderPassDescriptor;
 import org.sc.themis.renderer.renderpass.VkRenderPassLayout;
@@ -21,12 +18,13 @@ import org.sc.themis.renderer.resource.buffer.VkBufferDescriptor;
 import org.sc.themis.renderer.sync.VkFence;
 import org.sc.themis.renderer.sync.VkSemaphore;
 import org.sc.themis.scene.Scene;
+import org.sc.themis.scene.pen.Pencil;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.utils.MemorySizeUtils;
 import org.sc.viewer.renderactivity.RenderPass;
-import org.sc.viewer.renderactivity.ui.draw.DrawCommand;
-import org.sc.viewer.renderactivity.ui.draw.DrawVertex;
+import org.sc.themis.scene.pen.DrawCommand;
+import org.sc.themis.scene.pen.DrawVertex;
 
 /**
  * UI Renderpass.
@@ -46,8 +44,6 @@ public class UiRenderPass extends RenderPass {
     private BackPipeline backPipeline;
     private FrontPipeline frontPipeline;
 
-    private DrawCommand drawCommand;
-
     private VkBuffer drawCommandVertexBuffer;
     private VkBuffer drawCommandIndiceBuffer;
 
@@ -63,25 +59,6 @@ public class UiRenderPass extends RenderPass {
         setupCommand();
         setupBackPipeline();
         setupFrontPipeline();
-
-        this.drawCommand = new DrawCommand();
-        this.drawCommand.put(DrawVertex.of(-0.5f, -0.5f), DrawVertex.of(0.5f, -0.5f), DrawVertex.of(0.0f,  0.9f));
-        float[] data = this.drawCommand.toArray();
-
-        VkBufferDescriptor decriptor = VkBufferDescriptor.vertexBuffer((long) data.length * MemorySizeUtils.FLOAT);
-        this.drawCommandVertexBuffer = new VkBuffer(
-                getConfiguration(), this.getDevice(),
-                getViewerActivity().getRenderer().getMemoryAllocator(),
-                decriptor);
-        this.drawCommandVertexBuffer.setup();
-
-        VkBufferDescriptor decriptorIndices = VkBufferDescriptor.indiceBuffer(3 * MemorySizeUtils.INT);
-        this.drawCommandIndiceBuffer = new VkBuffer(
-                getConfiguration(), this.getDevice(),
-                getViewerActivity().getRenderer().getMemoryAllocator(),
-                decriptorIndices);
-        this.drawCommandIndiceBuffer.setup();
-
     }
 
     private void setupBackPipeline() throws ThemisException {
@@ -96,6 +73,7 @@ public class UiRenderPass extends RenderPass {
 
     @Override
     public void setup(Scene scene) throws ThemisException {
+        this.frontPipeline.updateAll(scene);
     }
 
     @Override
@@ -123,13 +101,12 @@ public class UiRenderPass extends RenderPass {
         command.bindDescriptorSets(new int[0], getViewerActivity().getGeometryDescriptorset().getDescriptorSet(frame));
         command.draw(3, 1, 0, 0);
 
-        this.drawCommandVertexBuffer.set(0, this.drawCommand.toArray());
-        this.drawCommandIndiceBuffer.set(0, 0, 1, 2);
+        this.updatePencilBuffers(scene.getPencil());
 
         command.bindPipeline(this.frontPipeline.getPipeline());
         command.bindDescriptorSets(new int[0], this.frontPipeline.getDescriptorset(frame));
         command.bindBuffers(this.drawCommandVertexBuffer, this.drawCommandIndiceBuffer);
-        command.draw(3, 1, 0, 0);
+        command.drawIndexed(scene.getPencil().getIndiceSize());
 
         command.endRenderPass();
         command.end();
@@ -199,4 +176,46 @@ public class UiRenderPass extends RenderPass {
     private void setupCommand() throws ThemisException {
         getFrames().create(FK_COMMAND, () -> getRenderer().createGraphicCommand(true));
     }
+
+    private void updatePencilBuffers(Pencil pencil) throws ThemisException {
+
+        long dataSize = (long) pencil.getDataSize() * MemorySizeUtils.FLOAT;
+        long indiceSize = (long) pencil.getIndiceSize() * MemorySizeUtils.INT;
+
+        if (this.drawCommandVertexBuffer == null || this.drawCommandVertexBuffer.getRequestedSize() < dataSize) {
+
+            if (this.drawCommandVertexBuffer != null) {
+                this.drawCommandVertexBuffer.cleanup();
+            }
+
+            VkBufferDescriptor decriptor = VkBufferDescriptor.vertexBuffer(dataSize);
+            this.drawCommandVertexBuffer = new VkBuffer(
+                    getConfiguration(), this.getDevice(),
+                    getViewerActivity().getRenderer().getMemoryAllocator(),
+                    decriptor);
+            this.drawCommandVertexBuffer.setup();
+
+        }
+
+        this.drawCommandVertexBuffer.set(0, pencil.getData());
+
+        if (this.drawCommandIndiceBuffer == null || this.drawCommandIndiceBuffer.getRequestedSize() < indiceSize) {
+
+            if (this.drawCommandIndiceBuffer != null) {
+                this.drawCommandIndiceBuffer.cleanup();
+            }
+
+            VkBufferDescriptor decriptorIndices = VkBufferDescriptor.indiceBuffer(indiceSize);
+            this.drawCommandIndiceBuffer = new VkBuffer(
+                    getConfiguration(), this.getDevice(),
+                    getViewerActivity().getRenderer().getMemoryAllocator(),
+                    decriptorIndices);
+            this.drawCommandIndiceBuffer.setup();
+
+        }
+
+        this.drawCommandIndiceBuffer.set(0, pencil.getIndices());
+
+    }
+
 }

@@ -31,13 +31,15 @@ public class FrontPipeline extends TObject {
             
             layout(set = 0, binding = 0) uniform Global {
                 mat4 projection;
-                mat4 view;
+                float fov;
+                float znear;
+                float zfar;
                 vec2 resolution;
             } global;
             
             void main()
             {
-                gl_Position = vec4(position, 0.0f, 1.0f);
+                gl_Position = global.projection * vec4(position, global.znear * -1, 1.0f);
             }
             """;
     private final String BACK_FRAGMENT_SRC = """ 
@@ -90,8 +92,8 @@ public class FrontPipeline extends TObject {
         return this.pipeline;
     }
 
-    public void update(int frame, Scene scene) {
-        this.uiDescriptorSet.update(frame, scene);
+    public void updateAll(Scene scene) throws ThemisException {
+        this.uiDescriptorSet.updateAll(scene);
     }
 
     public VkDescriptorSet getDescriptorset(int frame) {

@@ -15,6 +15,7 @@ import org.sc.themis.scene.light.Attenuation;
 import org.sc.themis.scene.light.DirectionalLight;
 import org.sc.themis.scene.light.PointLight;
 import org.sc.themis.scene.light.SpotLight;
+import org.sc.themis.scene.pen.Pencil;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.viewer.gamestate.controller.PostProcessorController;
 import org.sc.viewer.renderactivity.postprocess.postprocessor.ShowTBNPostprocessor;
@@ -31,6 +32,7 @@ public class ViewerGamestate implements Gamestate {
     public void setup(Renderer renderer, Scene scene) throws ThemisException {
         setupPostProcessors(scene);
         setupCamera(scene);
+        setupUI(scene);
         setupScene(renderer, scene);
     }
 
@@ -57,6 +59,13 @@ public class ViewerGamestate implements Gamestate {
 
     private void setupCamera(Scene scene) {
         scene.getCamera().setPosition(0.0f, 1.0f, 8.0f);
+    }
+
+    private void setupUI(Scene scene) {
+        scene.getPencil()
+                .drawRect(10.0f, 10.0f, 200.0f, 100.0f)
+                .drawRect(210.0f, 110.0f, 200.0f, 100.0f)
+                .drawTriangle(200.0f, 200.0f, 300.0f, 300.0f, 200.0f, 300.0f);
     }
 
     private void setupScene(Renderer renderer, Scene scene) throws ThemisException {

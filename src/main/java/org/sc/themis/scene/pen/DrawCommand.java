@@ -1,4 +1,4 @@
-package org.sc.viewer.renderactivity.ui.draw;
+package org.sc.themis.scene.pen;
 
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;

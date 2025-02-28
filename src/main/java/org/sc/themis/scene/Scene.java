@@ -1,16 +1,14 @@
 package org.sc.themis.scene;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+
 import org.jboss.logging.Logger;
 import org.joml.Vector4f;
 import org.sc.themis.renderer.material.MaterialProperties;
 import org.sc.themis.scene.light.DirectionalLight;
 import org.sc.themis.scene.light.PointLight;
 import org.sc.themis.scene.light.SpotLight;
+import org.sc.themis.scene.pen.Pencil;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.tobject.TObject;
@@ -37,6 +35,9 @@ public class Scene extends TObject {
 
     // Controller
     private final Set<Controller> controllers = new HashSet<>();
+
+    //Pencil
+    private final Pencil pencil = new Pencil();
 
     /**
      * Default constructor.
@@ -104,6 +105,10 @@ public class Scene extends TObject {
      */
     public void add(PointLight light) {
         this.pointLights.add(light);
+    }
+
+    public Pencil getPencil() {
+        return this.pencil;
     }
 
     public Set<Model> getModels() {
