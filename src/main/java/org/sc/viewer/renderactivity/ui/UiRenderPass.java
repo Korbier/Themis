@@ -3,15 +3,12 @@ package org.sc.viewer.renderactivity.ui;
 import static org.lwjgl.vulkan.KHRSwapchain.VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 import static org.lwjgl.vulkan.VK10.*;
 
-import org.lwjgl.system.MemoryStack;
-import org.lwjgl.util.shaderc.Shaderc;
 import org.sc.themis.renderer.base.frame.FrameKey;
 import org.sc.themis.renderer.command.VkCommand;
 import org.sc.themis.renderer.device.VkDevice;
 import org.sc.themis.renderer.framebuffer.VkFrameBuffer;
 import org.sc.themis.renderer.framebuffer.VkFrameBufferAttachments;
 import org.sc.themis.renderer.framebuffer.VkFrameBufferDescriptor;
-import org.sc.themis.renderer.pipeline.*;
 import org.sc.themis.renderer.renderpass.VkRenderPass;
 import org.sc.themis.renderer.renderpass.VkRenderPassDescriptor;
 import org.sc.themis.renderer.renderpass.VkRenderPassLayout;
@@ -19,6 +16,8 @@ import org.sc.themis.renderer.renderpass.VkSubpass;
 import org.sc.themis.renderer.sync.VkFence;
 import org.sc.themis.renderer.sync.VkSemaphore;
 import org.sc.themis.scene.Scene;
+import org.sc.themis.scene.pencil.Pencil;
+import org.sc.themis.scene.pencil.PencilPipeline;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.viewer.renderactivity.RenderPass;
@@ -39,36 +38,15 @@ public class UiRenderPass extends RenderPass {
     private VkRenderPass renderPass;
 
     //Back pipeline
-    private final String BACK_VERTEX_SRC = """
-            #version 450
-            
-            layout (location = 0) out vec2 outTextCoord;
+    private UIBackPipeline UIBackPipeline;
 
-            void main()
-            {
-                outTextCoord = vec2((gl_VertexIndex << 1) & 2, gl_VertexIndex & 2);
-                gl_Position  =  vec4(outTextCoord.x * 2.0f - 1.0f, outTextCoord.y * -2.0f + 1.0f, 0.0f, 1.0f);
-            }
-            """;
-    private final String BACK_FRAGMENT_SRC = """ 
-            #version 450
-            
-            layout(location = 0) in  vec2 inTextureCoords;
-            layout(location = 0) out vec4 outFragColor;
-            
-            layout(set = 0, binding = 0) uniform sampler2D depthSampler;
-            layout(set = 0, binding = 1) uniform sampler2D textureSampler;
-            
-            void main() {
-                outFragColor = texture(textureSampler, inTextureCoords);
-            }
-            """;
-    private VkShaderProgram backShaderProgram;
-    private VkPipelineLayout backPipelineLayout;
-    private VkPipeline backPipeline;
+    //Pencil
+    private PencilPipeline pencilPipeline;
+    private Pencil pencil;
 
-    public UiRenderPass(Configuration configuration) {
+    public UiRenderPass(Configuration configuration, Pencil pencil) {
         super(configuration);
+        this.pencil = pencil;
     }
 
     @Override
@@ -78,61 +56,30 @@ public class UiRenderPass extends RenderPass {
         setupFramebuffers();
         setupCommand();
         setupBackPipeline();
+        setupFrontPipeline();
     }
 
     private void setupBackPipeline() throws ThemisException {
+        this.UIBackPipeline = new UIBackPipeline(getConfiguration(), getDevice(), getViewerActivity(), this.renderPass);
+        this.UIBackPipeline.setup();
+    }
 
-        VkShaderProgramStage vertexShader = new VkShaderProgramStage(
-            VK_SHADER_STAGE_VERTEX_BIT,
-            VkShaderSourceCompiler.compileShader(BACK_VERTEX_SRC, Shaderc.shaderc_glsl_vertex_shader)
-        );
-
-        VkShaderProgramStage fragmentShader = new VkShaderProgramStage(
-            VK_SHADER_STAGE_FRAGMENT_BIT,
-            VkShaderSourceCompiler.compileShader(BACK_FRAGMENT_SRC, Shaderc.shaderc_glsl_fragment_shader)
-        );
-
-        this.backShaderProgram = new VkShaderProgram( getConfiguration(), getDevice(), vertexShader, fragmentShader );
-        this.backShaderProgram.setup();
-
-        this.backPipelineLayout = new VkPipelineLayout(
-            getConfiguration(), getDevice(),
-            new VkPushConstantRange[0],
-            getViewerActivity().getGeometryDescriptorset().getDescriptorSetLayout()
-        );
-        this.backPipelineLayout.setup();
-
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-
-            VkVertexInputState backInputState = new VkVertexInputState();
-            backInputState.setup(stack);
-
-            this.backPipeline = new VkPipeline(
-                getConfiguration(), getDevice(),
-                new VkPipelineDescriptor(this.renderPass, 0, false, 1, false, 1, 1, 1),
-                this.backShaderProgram, this.backPipelineLayout,
-                backInputState
-            );
-            this.backPipeline.setup();
-
-        }
-
+    private void setupFrontPipeline() throws ThemisException {
+        this.pencilPipeline = new PencilPipeline(getConfiguration(), getRenderer(), this.renderPass, this.pencil);
+        this.pencilPipeline.setup();
     }
 
     @Override
     public void setup(Scene scene) throws ThemisException {
+        this.pencilPipeline.update(scene);
     }
 
     @Override
     public void cleanup() throws ThemisException {
-
-        this.backPipeline.cleanup();
-        this.backPipelineLayout.cleanup();
-        this.backShaderProgram.cleanup();
-
+        this.UIBackPipeline.cleanup();
+        this.pencilPipeline.cleanup();
         this.renderPass.cleanup();
         this.frameBufferAttachments.cleanup();
-
     }
 
     @Override
@@ -146,9 +93,11 @@ public class UiRenderPass extends RenderPass {
         command.beginRenderPass(this.renderPass, frameBuffer);
         command.viewportAndScissor(getExtent2D());
 
-        command.bindPipeline(this.backPipeline);
+        command.bindPipeline(this.UIBackPipeline.getPipeline());
         command.bindDescriptorSets(new int[0], getViewerActivity().getGeometryDescriptorset().getDescriptorSet(frame));
         command.draw(3, 1, 0, 0);
+
+        this.pencilPipeline.draw(command, frame);
 
         command.endRenderPass();
         command.end();
@@ -218,4 +167,5 @@ public class UiRenderPass extends RenderPass {
     private void setupCommand() throws ThemisException {
         getFrames().create(FK_COMMAND, () -> getRenderer().createGraphicCommand(true));
     }
+
 }

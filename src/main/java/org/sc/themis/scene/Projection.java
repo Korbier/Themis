@@ -31,12 +31,12 @@ public class Projection {
 
         perspective().identity();
         perspective().perspective(
-            (float) Math.toRadians( fov ), (float) width / (float) height,
+            (float) Math.toRadians(fov), (float) width / (float) height,
             znear, zfar, true
         );
 
         orthographic().identity();
-        orthographic().ortho( 0, (float) width, (float) height, 0, znear, zfar, true);
+        orthographic().ortho(0, (float) width, (float) height, 0, znear, zfar, true);
 
     }
 

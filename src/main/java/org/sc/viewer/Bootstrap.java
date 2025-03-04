@@ -15,13 +15,15 @@ public class Bootstrap implements QuarkusApplication {
     @Override
     public int run(String... args) throws Exception {
 
-        ViewerGamestate gamestate = new ViewerGamestate();
-        ViewerRendererActivity activity = new ViewerRendererActivity( this.configuration, gamestate );
+        ViewerContext context = ViewerContext.createDefault();
 
-        Engine engine = new Engine( this.configuration, activity );
+        ViewerGamestate gamestate = new ViewerGamestate(context);
+        ViewerRendererActivity activity = new ViewerRendererActivity(this.configuration, context, gamestate);
+
+        Engine engine = new Engine(this.configuration, activity);
         engine.setup();
 
-        engine.setGamestate( gamestate );
+        engine.setGamestate(gamestate);
         engine.run();
 
         return 0;

@@ -1,7 +1,5 @@
 package org.sc.viewer.gamestate;
 
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_F1;
-
 import java.nio.file.Path;
 import org.joml.Vector3f;
 import org.sc.themis.gamestate.Gamestate;
@@ -15,23 +13,32 @@ import org.sc.themis.scene.light.Attenuation;
 import org.sc.themis.scene.light.DirectionalLight;
 import org.sc.themis.scene.light.PointLight;
 import org.sc.themis.scene.light.SpotLight;
+import org.sc.themis.scene.pencil.Pencil;
 import org.sc.themis.shared.exception.ThemisException;
-import org.sc.viewer.gamestate.controller.PostProcessorController;
-import org.sc.viewer.renderactivity.postprocess.postprocessor.ShowTBNPostprocessor;
+import org.sc.viewer.ViewerContext;
+import org.sc.viewer.gamestate.controller.KeyMappingController;
+import org.sc.viewer.gamestate.ui.UIController;
 
 public class ViewerGamestate implements Gamestate {
 
-    private final PostProcessorContext ppContext = new PostProcessorContext();
     private final ModelFactory modelFactory = new ModelFactory();
     private final MaterialFactory materialFactory = new MaterialFactory();
 
+    private final ViewerContext context;
+    private final Pencil pencil = new Pencil();
+
     private Model model;
+
+    public ViewerGamestate(ViewerContext context) {
+        this.context = context;
+    }
 
     @Override
     public void setup(Renderer renderer, Scene scene) throws ThemisException {
-        setupPostProcessors(scene);
         setupCamera(scene);
+        setupUI(scene);
         setupScene(renderer, scene);
+        setupKeyMapping(scene);
     }
 
     @Override
@@ -39,24 +46,22 @@ public class ViewerGamestate implements Gamestate {
         this.model.cleanup();
     }
 
-    public PostProcessorContext getPostProcessorContext() {
-        return this.ppContext;
+    public Pencil getPencil() {
+        return this.pencil;
     }
 
-    private void setupPostProcessors(Scene scene) {
-
-        this.ppContext.add(ShowTBNPostprocessor.IDENTIFIER);
-
-        PostProcessorController ppController = new PostProcessorController(this.ppContext);
-        ppController.map(GLFW_KEY_F1, ShowTBNPostprocessor.IDENTIFIER);
-
-        scene.add(ppController);
-        scene.add(new FpsCameraController(scene));
-
+    private void setupKeyMapping(Scene scene) {
+        scene.add(new KeyMappingController(this.context.getKeyMapping()));
     }
 
     private void setupCamera(Scene scene) {
         scene.getCamera().setPosition(0.0f, 1.0f, 8.0f);
+        scene.add(new FpsCameraController(scene));
+    }
+
+    private void setupUI(Scene scene) {
+        UIController uiController = new UIController(this.pencil);
+        scene.add(uiController);
     }
 
     private void setupScene(Renderer renderer, Scene scene) throws ThemisException {
