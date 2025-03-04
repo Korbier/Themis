@@ -17,7 +17,8 @@ import org.sc.themis.scene.pencil.Pencil;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.viewer.ViewerContext;
 import org.sc.viewer.gamestate.controller.KeyMappingController;
-import org.sc.viewer.gamestate.ui.UIController;
+import org.sc.themis.scene.ui.UIBuilder;
+import org.sc.viewer.gamestate.controller.UiController;
 
 public class ViewerGamestate implements Gamestate {
 
@@ -60,8 +61,7 @@ public class ViewerGamestate implements Gamestate {
     }
 
     private void setupUI(Scene scene) {
-        UIController uiController = new UIController(this.pencil);
-        scene.add(uiController);
+        scene.add(new UiController(this.pencil, this.context));
     }
 
     private void setupScene(Renderer renderer, Scene scene) throws ThemisException {

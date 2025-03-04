@@ -14,6 +14,12 @@ public class ViewerKeyMapping {
         this.repeat.put(key, repeat);
     }
 
+    public void execute(int key) {
+        if (this.actions.containsKey(key)) {
+            this.actions.get(key).run();
+        }
+    }
+
     public void input(Input input) {
 
         for (int key : this.actions.keySet()) {
