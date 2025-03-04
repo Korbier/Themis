@@ -1,20 +1,18 @@
-package org.sc.viewer.gamestate.controller;
+package org.sc.viewer.gamestate.ui;
 
 import org.sc.themis.input.Input;
 import org.sc.themis.scene.Controller;
-import org.sc.themis.scene.Scene;
-import org.sc.viewer.gamestate.controller.ui.UiBuilder;
-import org.sc.viewer.gamestate.controller.ui.UiState;
+import org.sc.themis.scene.pencil.Pencil;
 
 import java.util.UUID;
 
 public class UIController implements Controller {
 
-    private final Scene scene;
+    private final Pencil pencil;
     private final UiState uiState = new UiState();
 
-    public UIController(Scene scene) {
-        this.scene = scene;
+    public UIController(Pencil pencil) {
+        this.pencil = pencil;
     }
 
     @Override
@@ -22,7 +20,7 @@ public class UIController implements Controller {
 
         prepare();
 
-        UiBuilder builder = UiBuilder.of(uiState, scene.getPencil());
+        UiBuilder builder = UiBuilder.of(uiState, this.pencil);
 
         if (builder.button(UUID.randomUUID().toString(), 10, 10)) {
             System.out.println("plop");
@@ -45,7 +43,7 @@ public class UIController implements Controller {
 
     private void prepare() {
         uiState.setHotItem(null);
-        scene.getPencil().clear();
+        this.pencil.clear();
     }
 
     private void finish() {

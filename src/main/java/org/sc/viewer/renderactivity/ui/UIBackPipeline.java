@@ -14,7 +14,7 @@ import org.sc.themis.shared.tobject.TObject;
 import org.sc.viewer.renderactivity.ViewerRendererActivity;
 
 
-public class BackPipeline extends TObject {
+public class UIBackPipeline extends TObject {
 
     //Back pipeline
     private final String BACK_VERTEX_SRC = """
@@ -50,7 +50,7 @@ public class BackPipeline extends TObject {
     private VkPipelineLayout pipelineLayout;
     private VkPipeline pipeline;
 
-    public BackPipeline(Configuration configuration, VkDevice device, ViewerRendererActivity activity, VkRenderPass pass) {
+    public UIBackPipeline(Configuration configuration, VkDevice device, ViewerRendererActivity activity, VkRenderPass pass) {
         super(configuration);
         this.device = device;
         this.activity = activity;

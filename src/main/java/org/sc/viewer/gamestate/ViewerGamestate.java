@@ -15,22 +15,29 @@ import org.sc.themis.scene.light.Attenuation;
 import org.sc.themis.scene.light.DirectionalLight;
 import org.sc.themis.scene.light.PointLight;
 import org.sc.themis.scene.light.SpotLight;
+import org.sc.themis.scene.pencil.Pencil;
 import org.sc.themis.shared.exception.ThemisException;
+import org.sc.viewer.ViewerContext;
 import org.sc.viewer.gamestate.controller.PostProcessorController;
-import org.sc.viewer.gamestate.controller.UIController;
+import org.sc.viewer.gamestate.ui.UIController;
 import org.sc.viewer.renderactivity.postprocess.postprocessor.ShowTBNPostprocessor;
 
 public class ViewerGamestate implements Gamestate {
 
-    private final PostProcessorContext ppContext = new PostProcessorContext();
     private final ModelFactory modelFactory = new ModelFactory();
     private final MaterialFactory materialFactory = new MaterialFactory();
 
+    private final ViewerContext context;
+    private final Pencil pencil = new Pencil();
+
     private Model model;
+
+    public ViewerGamestate(ViewerContext context) {
+        this.context = context;
+    }
 
     @Override
     public void setup(Renderer renderer, Scene scene) throws ThemisException {
-        setupPostProcessors(scene);
         setupCamera(scene);
         setupUI(scene);
         setupScene(renderer, scene);
@@ -41,10 +48,10 @@ public class ViewerGamestate implements Gamestate {
         this.model.cleanup();
     }
 
-    public PostProcessorContext getPostProcessorContext() {
-        return this.ppContext;
+    public Pencil getPencil() {
+        return this.pencil;
     }
-
+/**
     private void setupPostProcessors(Scene scene) {
 
         this.ppContext.add(ShowTBNPostprocessor.IDENTIFIER);
@@ -56,13 +63,13 @@ public class ViewerGamestate implements Gamestate {
         scene.add(new FpsCameraController(scene));
 
     }
-
+**/
     private void setupCamera(Scene scene) {
         scene.getCamera().setPosition(0.0f, 1.0f, 8.0f);
     }
 
     private void setupUI(Scene scene) {
-        UIController uiController = new UIController(scene);
+        UIController uiController = new UIController(this.pencil);
         scene.add(uiController);
     }
 

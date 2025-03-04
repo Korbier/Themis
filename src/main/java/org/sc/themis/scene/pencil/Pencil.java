@@ -1,7 +1,5 @@
 package org.sc.themis.scene.pencil;
 
-import org.joml.Vector3f;
-
 public class Pencil {
 
     private static final int COMPONENT_COUNT = 7;

@@ -1,12 +1,10 @@
-package org.sc.themis.scene.descriptorset;
+package org.sc.themis.scene.pencil;
 
-import org.joml.Matrix4f;
 import org.sc.themis.renderer.Renderer;
 import org.sc.themis.renderer.base.frame.FrameKey;
 import org.sc.themis.renderer.pipeline.descriptorset.*;
 import org.sc.themis.renderer.resource.buffer.VkBuffer;
 import org.sc.themis.renderer.resource.buffer.VkBufferDescriptor;
-import org.sc.themis.renderer.resource.image.VkImage;
 import org.sc.themis.renderer.resource.image.VkSampler;
 import org.sc.themis.renderer.resource.image.VkSamplerDescriptor;
 import org.sc.themis.renderer.resource.staging.VkStagingImage;
@@ -37,7 +35,7 @@ import static org.lwjgl.vulkan.VK10.*;
  * } global;</pre>
  *
  */
-public class UIDescriptorSet extends TObject implements VkDescriptorSetProvider {
+public class PencilDescriptorSet extends TObject implements VkDescriptorSetProvider {
 
     private static final FrameKey<VkBuffer>        FK_BUFFER = FrameKey.of(VkBuffer.class);
     private static final FrameKey<VkDescriptorSet> FK_DESCRIPTORSET = FrameKey.of(VkDescriptorSet.class);
@@ -59,7 +57,7 @@ public class UIDescriptorSet extends TObject implements VkDescriptorSetProvider 
      * @param configuration Globale configuration
      * @param renderer Renderer
      */
-    public UIDescriptorSet(Configuration configuration, Renderer renderer) {
+    public PencilDescriptorSet(Configuration configuration, Renderer renderer) {
         super(configuration);
         this.renderer = renderer;
     }

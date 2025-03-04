@@ -13,15 +13,13 @@ import org.sc.themis.renderer.renderpass.VkRenderPass;
 import org.sc.themis.renderer.renderpass.VkRenderPassDescriptor;
 import org.sc.themis.renderer.renderpass.VkRenderPassLayout;
 import org.sc.themis.renderer.renderpass.VkSubpass;
-import org.sc.themis.renderer.resource.buffer.VkBuffer;
-import org.sc.themis.renderer.resource.buffer.VkBufferDescriptor;
 import org.sc.themis.renderer.sync.VkFence;
 import org.sc.themis.renderer.sync.VkSemaphore;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.scene.pencil.Pencil;
+import org.sc.themis.scene.pencil.PencilPipeline;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
-import org.sc.themis.shared.utils.MemorySizeUtils;
 import org.sc.viewer.renderactivity.RenderPass;
 
 /**
@@ -39,14 +37,16 @@ public class UiRenderPass extends RenderPass {
     private VkFrameBufferAttachments frameBufferAttachments;
     private VkRenderPass renderPass;
 
-    private BackPipeline backPipeline;
-    private FrontPipeline frontPipeline;
+    //Back pipeline
+    private UIBackPipeline UIBackPipeline;
 
-    private VkBuffer drawCommandVertexBuffer;
-    private VkBuffer drawCommandIndiceBuffer;
+    //Pencil
+    private PencilPipeline pencilPipeline;
+    private Pencil pencil;
 
-    public UiRenderPass(Configuration configuration) {
+    public UiRenderPass(Configuration configuration, Pencil pencil) {
         super(configuration);
+        this.pencil = pencil;
     }
 
     @Override
@@ -60,30 +60,24 @@ public class UiRenderPass extends RenderPass {
     }
 
     private void setupBackPipeline() throws ThemisException {
-        this.backPipeline = new BackPipeline(getConfiguration(), getDevice(), getViewerActivity(), this.renderPass);
-        this.backPipeline.setup();
+        this.UIBackPipeline = new UIBackPipeline(getConfiguration(), getDevice(), getViewerActivity(), this.renderPass);
+        this.UIBackPipeline.setup();
     }
 
     private void setupFrontPipeline() throws ThemisException {
-        this.frontPipeline = new FrontPipeline(getConfiguration(), getDevice(), getViewerActivity(), this.renderPass);
-        this.frontPipeline.setup();
+        this.pencilPipeline = new PencilPipeline(getConfiguration(), getRenderer(), this.renderPass, this.pencil);
+        this.pencilPipeline.setup();
     }
 
     @Override
     public void setup(Scene scene) throws ThemisException {
-        this.frontPipeline.updateAll(scene);
+        this.pencilPipeline.update(scene);
     }
 
     @Override
     public void cleanup() throws ThemisException {
-        if (this.drawCommandVertexBuffer != null) {
-            this.drawCommandVertexBuffer.cleanup();
-        }
-        if ( this.drawCommandIndiceBuffer != null) {
-            this.drawCommandIndiceBuffer.cleanup();
-        }
-        this.backPipeline.cleanup();
-        this.frontPipeline.cleanup();
+        this.UIBackPipeline.cleanup();
+        this.pencilPipeline.cleanup();
         this.renderPass.cleanup();
         this.frameBufferAttachments.cleanup();
     }
@@ -99,17 +93,11 @@ public class UiRenderPass extends RenderPass {
         command.beginRenderPass(this.renderPass, frameBuffer);
         command.viewportAndScissor(getExtent2D());
 
-        command.bindPipeline(this.backPipeline.getPipeline());
+        command.bindPipeline(this.UIBackPipeline.getPipeline());
         command.bindDescriptorSets(new int[0], getViewerActivity().getGeometryDescriptorset().getDescriptorSet(frame));
         command.draw(3, 1, 0, 0);
 
-        if (scene.getPencil().isRenderable()) {
-            this.updatePencilBuffers(scene.getPencil());
-            command.bindPipeline(this.frontPipeline.getPipeline());
-            command.bindDescriptorSets(new int[0], this.frontPipeline.getDescriptorset(frame));
-            command.bindBuffers(this.drawCommandVertexBuffer, this.drawCommandIndiceBuffer);
-            command.drawIndexed(scene.getPencil().getIndiceSize());
-        }
+        this.pencilPipeline.draw(command, frame);
 
         command.endRenderPass();
         command.end();
@@ -178,47 +166,6 @@ public class UiRenderPass extends RenderPass {
 
     private void setupCommand() throws ThemisException {
         getFrames().create(FK_COMMAND, () -> getRenderer().createGraphicCommand(true));
-    }
-
-    private void updatePencilBuffers(Pencil pencil) throws ThemisException {
-
-        long dataSize = (long) pencil.getDataSize() * MemorySizeUtils.FLOAT;
-        long indiceSize = (long) pencil.getIndiceSize() * MemorySizeUtils.INT;
-
-        if (this.drawCommandVertexBuffer == null || this.drawCommandVertexBuffer.getRequestedSize() < dataSize) {
-
-            if (this.drawCommandVertexBuffer != null) {
-                this.drawCommandVertexBuffer.cleanup();
-            }
-
-            VkBufferDescriptor decriptor = VkBufferDescriptor.vertexBuffer(dataSize);
-            this.drawCommandVertexBuffer = new VkBuffer(
-                    getConfiguration(), this.getDevice(),
-                    getViewerActivity().getRenderer().getMemoryAllocator(),
-                    decriptor);
-            this.drawCommandVertexBuffer.setup();
-
-        }
-
-        this.drawCommandVertexBuffer.set(0, pencil.getData());
-
-        if (this.drawCommandIndiceBuffer == null || this.drawCommandIndiceBuffer.getRequestedSize() < indiceSize) {
-
-            if (this.drawCommandIndiceBuffer != null) {
-                this.drawCommandIndiceBuffer.cleanup();
-            }
-
-            VkBufferDescriptor decriptorIndices = VkBufferDescriptor.indiceBuffer(indiceSize);
-            this.drawCommandIndiceBuffer = new VkBuffer(
-                    getConfiguration(), this.getDevice(),
-                    getViewerActivity().getRenderer().getMemoryAllocator(),
-                    decriptorIndices);
-            this.drawCommandIndiceBuffer.setup();
-
-        }
-
-        this.drawCommandIndiceBuffer.set(0, pencil.getIndices());
-
     }
 
 }

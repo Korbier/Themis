@@ -32,7 +32,7 @@ import org.sc.themis.scene.Model;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
-import org.sc.viewer.gamestate.PostProcessorContext;
+import org.sc.viewer.ViewerContext;
 import org.sc.viewer.renderactivity.RenderPass;
 import org.sc.viewer.renderactivity.ViewerRendererActivity;
 
@@ -43,7 +43,7 @@ public class PostProcessRenderPass extends RenderPass {
 
     private static final String FB_ATTACHMENT_COLOR = "postprocess.framebuffer.attachment.color";
 
-    private final PostProcessorContext context;
+    private final ViewerContext context;
 
     // Framed object
     private static final FrameKey<VkFrameBuffer> FK_FRAMEBUFFER = FrameKey.of(VkFrameBuffer.class);
@@ -61,7 +61,7 @@ public class PostProcessRenderPass extends RenderPass {
      * @param configuration Configuration
      * @param context Context
      */
-    public PostProcessRenderPass(Configuration configuration, PostProcessorContext context) {
+    public PostProcessRenderPass(Configuration configuration, ViewerContext context) {
         super(configuration);
         this.context = context;
     }
@@ -108,7 +108,7 @@ public class PostProcessRenderPass extends RenderPass {
         command.viewportAndScissor(getExtent2D());
 
         for (String postprocessor : this.postProcessors.get(PostProcessor.Frequency.PER_VERTEX)) {
-            if (this.context.isEnabled(postprocessor)) {
+            if (this.context.isPostProcessorEnabled(postprocessor)) {
                 this.postProcessors.getPipeline(postprocessor).bind(command, frame);
                 this.renderPerVertex(scene, command);
             }

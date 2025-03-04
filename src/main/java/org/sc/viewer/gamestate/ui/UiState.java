@@ -1,4 +1,4 @@
-package org.sc.viewer.gamestate.controller.ui;
+package org.sc.viewer.gamestate.ui;
 
 public class UiState {
 

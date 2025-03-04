@@ -1,4 +1,4 @@
-package org.sc.viewer.gamestate.controller.ui;
+package org.sc.viewer.gamestate.ui;
 
 import org.sc.themis.scene.pencil.Pencil;
 
