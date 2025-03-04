@@ -1,4 +1,4 @@
-package org.sc.viewer.gamestate.ui;
+package org.sc.themis.scene.ui;
 
 public class UiState {
 
