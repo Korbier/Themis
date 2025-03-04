@@ -24,7 +24,7 @@ public class ViewerTest {
     void runViewer() throws ThemisException {
 
         //Given
-        ViewerContext context = new ViewerContext();
+        ViewerContext context = ViewerContext.createDefault();
         ViewerGamestate gamestate = new ViewerGamestate(context);
         Engine engine = new Engine( configuration, new ViewerRendererActivity( this.configuration, context, gamestate ) );
 

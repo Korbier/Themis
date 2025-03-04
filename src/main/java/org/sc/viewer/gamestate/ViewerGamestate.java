@@ -1,7 +1,5 @@
 package org.sc.viewer.gamestate;
 
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_F1;
-
 import java.nio.file.Path;
 import org.joml.Vector3f;
 import org.sc.themis.gamestate.Gamestate;
@@ -18,9 +16,8 @@ import org.sc.themis.scene.light.SpotLight;
 import org.sc.themis.scene.pencil.Pencil;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.viewer.ViewerContext;
-import org.sc.viewer.gamestate.controller.PostProcessorController;
+import org.sc.viewer.gamestate.controller.KeyMappingController;
 import org.sc.viewer.gamestate.ui.UIController;
-import org.sc.viewer.renderactivity.postprocess.postprocessor.ShowTBNPostprocessor;
 
 public class ViewerGamestate implements Gamestate {
 
@@ -41,6 +38,7 @@ public class ViewerGamestate implements Gamestate {
         setupCamera(scene);
         setupUI(scene);
         setupScene(renderer, scene);
+        setupKeyMapping(scene);
     }
 
     @Override
@@ -51,21 +49,14 @@ public class ViewerGamestate implements Gamestate {
     public Pencil getPencil() {
         return this.pencil;
     }
-/**
-    private void setupPostProcessors(Scene scene) {
 
-        this.ppContext.add(ShowTBNPostprocessor.IDENTIFIER);
-
-        PostProcessorController ppController = new PostProcessorController(this.ppContext);
-        ppController.map(GLFW_KEY_F1, ShowTBNPostprocessor.IDENTIFIER);
-
-        scene.add(ppController);
-        scene.add(new FpsCameraController(scene));
-
+    private void setupKeyMapping(Scene scene) {
+        scene.add(new KeyMappingController(this.context.getKeyMapping()));
     }
-**/
+
     private void setupCamera(Scene scene) {
         scene.getCamera().setPosition(0.0f, 1.0f, 8.0f);
+        scene.add(new FpsCameraController(scene));
     }
 
     private void setupUI(Scene scene) {

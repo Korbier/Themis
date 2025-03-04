@@ -15,7 +15,7 @@ public class Bootstrap implements QuarkusApplication {
     @Override
     public int run(String... args) throws Exception {
 
-        ViewerContext context = new ViewerContext();
+        ViewerContext context = ViewerContext.createDefault();
 
         ViewerGamestate gamestate = new ViewerGamestate(context);
         ViewerRendererActivity activity = new ViewerRendererActivity(this.configuration, context, gamestate);
