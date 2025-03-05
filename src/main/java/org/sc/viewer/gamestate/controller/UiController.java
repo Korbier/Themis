@@ -26,8 +26,9 @@ public class UiController implements Controller {
         this.builder.begin();
 
         this.builder
-            .button(UUID.randomUUID().toString())
+            .button(UUID.randomUUID().toString(), "Normals")
             .left(10).top(10)
+            .width(120).height(60)
             .onClick(builder -> context.getKeyMapping().execute(GLFW_KEY_F1))
             .build();
 

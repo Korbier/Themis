@@ -17,7 +17,7 @@ public class Image {
     private final int width;
     private final int height;
 
-    public static Image of( String path ) throws ImageNotLoadedException {
+    public static Image of(String path) throws ImageNotLoadedException {
 
         try (MemoryStack stack = MemoryStack.stackPush() ){
 

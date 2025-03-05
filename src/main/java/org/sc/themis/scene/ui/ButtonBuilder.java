@@ -12,8 +12,11 @@ public final class ButtonBuilder extends ComponentBuilder {
     public static final String EVENT_ON_HOVER = "button.event.onHover";
 
     private String identifier;
+    private String text = null;
     private int left = 0;
     private int top = 0;
+    private int width = 0;
+    private int height = 0;
 
     ButtonBuilder(UIBuilder builder) {
         super(builder);
@@ -24,6 +27,11 @@ public final class ButtonBuilder extends ComponentBuilder {
         return this;
     }
 
+    ButtonBuilder text(String text) {
+        this.text = text;
+        return this;
+    }
+
     public ButtonBuilder left(int left) {
         this.left = left;
         return this;
@@ -31,6 +39,16 @@ public final class ButtonBuilder extends ComponentBuilder {
 
     public ButtonBuilder top(int top) {
         this.top = top;
+        return this;
+    }
+
+    public ButtonBuilder width(int width) {
+        this.width = width;
+        return this;
+    }
+
+    public ButtonBuilder height(int height) {
+        this.height = height;
         return this;
     }
 
@@ -46,30 +64,30 @@ public final class ButtonBuilder extends ComponentBuilder {
 
     public void build() {
 
-        if (regionHit(this.left, this.top, DEFAULT_BUTTON_WIDTH, DEFAULT_BUTTON_HEIGHT)) {
+        if (regionHit(this.left, this.top, this.width, this.height)) {
             state().setHotItem(this.identifier);
             if (state().getActiveItem() == null && state().isMouseDown()) {
                 state().setActiveItem(this.identifier);
             }
         }
 
-        pencil().drawRect(this.left, this.top, DEFAULT_BUTTON_WIDTH, DEFAULT_BUTTON_HEIGHT, .3f, .3f, .3f);
+        pencil().drawRect(this.left, this.top, this.width, this.height, .3f, .3f, .3f);
 
         if (this.identifier.equals(state().getHotItem())) {
             if (this.identifier.equals(state().getActiveItem())) {
                 pencil().drawRect(
                     this.left + DEFAULT_BORDER_SIZE,
                     this.top + DEFAULT_BORDER_SIZE,
-                    DEFAULT_BUTTON_WIDTH - 2 * DEFAULT_BORDER_SIZE,
-                    DEFAULT_BUTTON_HEIGHT - 2 * DEFAULT_BORDER_SIZE,
+                    this.width - 2 * DEFAULT_BORDER_SIZE,
+                    this.height - 2 * DEFAULT_BORDER_SIZE,
                     .5f, .5f, .5f
                 );
             } else {
                 pencil().drawRect(
                     this.left + DEFAULT_BORDER_SIZE,
                     this.top + DEFAULT_BORDER_SIZE,
-                    DEFAULT_BUTTON_WIDTH - 2 * DEFAULT_BORDER_SIZE,
-                    DEFAULT_BUTTON_HEIGHT - 2 * DEFAULT_BORDER_SIZE,
+                    this.width - 2 * DEFAULT_BORDER_SIZE,
+                    this.height - 2 * DEFAULT_BORDER_SIZE,
                     1.f, 1.f, 1.f
                 );
             }
@@ -77,10 +95,14 @@ public final class ButtonBuilder extends ComponentBuilder {
             pencil().drawRect(
                 this.left + DEFAULT_BORDER_SIZE,
                 this.top + DEFAULT_BORDER_SIZE,
-                DEFAULT_BUTTON_WIDTH - 2 * DEFAULT_BORDER_SIZE,
-                DEFAULT_BUTTON_HEIGHT - 2 * DEFAULT_BORDER_SIZE,
+                this.width - 2 * DEFAULT_BORDER_SIZE,
+                this.height - 2 * DEFAULT_BORDER_SIZE,
                 .3f, .3f, .3f
             );
+        }
+
+        if (this.text != null) {
+            pencil().drawText(this.left + DEFAULT_BORDER_SIZE, this.top + DEFAULT_BORDER_SIZE, this.text);
         }
 
         if (shouldTriggerOnHoverEvent()) {

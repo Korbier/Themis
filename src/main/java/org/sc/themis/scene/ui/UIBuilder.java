@@ -1,11 +1,7 @@
 package org.sc.themis.scene.ui;
 
 import org.sc.themis.input.Input;
-import org.sc.themis.scene.Controller;
 import org.sc.themis.scene.pencil.Pencil;
-import org.sc.viewer.ViewerContext;
-
-import java.util.UUID;
 
 public class UIBuilder {
 
@@ -45,8 +41,8 @@ public class UIBuilder {
         return this.uiState;
     }
 
-    public ButtonBuilder button(String identifier) {
-        return new ButtonBuilder(this).identifier(identifier);
+    public ButtonBuilder button(String identifier, String text) {
+        return new ButtonBuilder(this).identifier(identifier).text(text);
     }
 
 }

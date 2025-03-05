@@ -44,6 +44,7 @@ public class PencilDescriptorSet extends TObject implements VkDescriptorSetProvi
             VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, 0);
 
     private final Renderer renderer;
+    private final Pencil pencil;
 
     private VkDescriptorSetLayout descriptorSetLayout;
     private VkDescriptorPool descriptorPool;
@@ -51,15 +52,17 @@ public class PencilDescriptorSet extends TObject implements VkDescriptorSetProvi
     private VkSampler sampler;
     private VkStagingImage stgImage;
 
+
     /**
      * Constructor.
      *
      * @param configuration Globale configuration
      * @param renderer Renderer
      */
-    public PencilDescriptorSet(Configuration configuration, Renderer renderer) {
+    public PencilDescriptorSet(Configuration configuration, Renderer renderer, Pencil pencil) {
         super(configuration);
         this.renderer = renderer;
+        this.pencil = pencil;
     }
 
     /**
@@ -114,7 +117,7 @@ public class PencilDescriptorSet extends TObject implements VkDescriptorSetProvi
         this.sampler.setup();
 
         this.stgImage = this.renderer.getResourceAllocator().allocateImage(VK_FORMAT_R8G8B8A8_SRGB);
-        this.stgImage.load(Image.of("src/main/resources/viewer/ui.bmp"));
+        this.stgImage.load(this.pencil.getFont().getImage());
 
     }
 
