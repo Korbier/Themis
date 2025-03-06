@@ -1,11 +1,5 @@
 package org.sc.themis.scene.pencil;
 
-import static org.lwjgl.vulkan.VK10.VK_FORMAT_R32G32B32_SFLOAT;
-import static org.lwjgl.vulkan.VK10.VK_FORMAT_R32G32_SFLOAT;
-import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_FRAGMENT_BIT;
-import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_VERTEX_BIT;
-import static org.lwjgl.vulkan.VK10.VK_VERTEX_INPUT_RATE_VERTEX;
-
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.util.shaderc.Shaderc;
 import org.sc.themis.renderer.Renderer;
@@ -29,6 +23,8 @@ import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.tobject.TObject;
 import org.sc.themis.shared.utils.MemorySizeUtils;
 
+import static org.lwjgl.vulkan.VK10.*;
+
 public class PencilPipeline extends TObject {
 
     private final String VERTEX_SRC = """
@@ -36,10 +32,12 @@ public class PencilPipeline extends TObject {
             
             layout(location = 0) out vec2 outTexture;
             layout(location = 1) out vec3 outColor;
+            layout(location = 2) out float outUseTexture;
 
             layout(location = 0) in vec2 position;
             layout(location = 1) in vec2 textureCoord;
             layout(location = 2) in vec3 color;
+            layout(location = 3) in float useTexture;
             
             layout(set = 0, binding = 0) uniform Global {
                 mat4 projection;
@@ -52,6 +50,7 @@ public class PencilPipeline extends TObject {
             void main()
             {
                 outTexture = textureCoord;
+                outUseTexture = useTexture;
                 outColor = color;
                 gl_Position = global.projection * vec4(position, global.znear * -1, 1.0f);
             }
@@ -61,12 +60,18 @@ public class PencilPipeline extends TObject {
             
             layout(location = 0) in vec2 inTexture;
             layout(location = 1) in vec3 inColor;
+            layout(location = 2) in float inUseTexture;
+            
             layout(location = 0) out vec4 outFragColor;
             
             layout(set = 0, binding = 1) uniform sampler2D textureSampler;
             
             void main() {
-                outFragColor = vec4(inColor, 1.0f);// texture(textureSampler, inTexture);
+                if (inUseTexture == 1.0f) {
+                    outFragColor = texture(textureSampler, inTexture);
+                } else {
+                    outFragColor = vec4(inColor, 1.0f); 
+                }                
             }
             """;
 
@@ -101,7 +106,7 @@ public class PencilPipeline extends TObject {
     }
 
     private void setupDescriptorset() throws ThemisException {
-        this.pencilDescriptorSet = new PencilDescriptorSet(getConfiguration(), this.renderer);
+        this.pencilDescriptorSet = new PencilDescriptorSet(getConfiguration(), this.renderer, this.pencil);
         this.pencilDescriptorSet.setup();
     }
 
@@ -211,7 +216,8 @@ public class PencilPipeline extends TObject {
             VkVertexInputStateDescriptor descriptor = new VkVertexInputStateDescriptor(VK_VERTEX_INPUT_RATE_VERTEX)
                     .attribute(VK_FORMAT_R32G32_SFLOAT, MemorySizeUtils.VEC2F)  //2D position
                     .attribute(VK_FORMAT_R32G32_SFLOAT, MemorySizeUtils.VEC2F)  //Texture
-                    .attribute(VK_FORMAT_R32G32B32_SFLOAT, MemorySizeUtils.VEC3F); //Color
+                    .attribute(VK_FORMAT_R32G32B32_SFLOAT, MemorySizeUtils.VEC3F) //Color
+                    .attribute(VK_FORMAT_R32_SFLOAT, MemorySizeUtils.FLOAT); //Use Texture
 
             VkVertexInputState inputState = new VkVertexInputState(descriptor);
             inputState.setup(stack);

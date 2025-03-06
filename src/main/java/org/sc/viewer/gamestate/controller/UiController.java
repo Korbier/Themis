@@ -26,10 +26,16 @@ public class UiController implements Controller {
         this.builder.begin();
 
         this.builder
-            .button(UUID.randomUUID().toString())
-            .left(10).top(10)
+            .button(UUID.randomUUID().toString(), "Normales")
+            .location(2, 2).size(120, 22)
             .onClick(builder -> context.getKeyMapping().execute(GLFW_KEY_F1))
             .build();
+
+        this.builder
+                .button(UUID.randomUUID().toString(), "Grid")
+                .location(2, 26).size(120, 22)
+                .onClick(builder -> context.getKeyMapping().execute(GLFW_KEY_F1))
+                .build();
 
         this.builder.end();
 

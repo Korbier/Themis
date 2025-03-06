@@ -15,9 +15,9 @@ import org.sc.themis.scene.light.PointLight;
 import org.sc.themis.scene.light.SpotLight;
 import org.sc.themis.scene.pencil.Pencil;
 import org.sc.themis.shared.exception.ThemisException;
+import org.sc.themis.shared.resource.Font;
 import org.sc.viewer.ViewerContext;
 import org.sc.viewer.gamestate.controller.KeyMappingController;
-import org.sc.themis.scene.ui.UIBuilder;
 import org.sc.viewer.gamestate.controller.UiController;
 
 public class ViewerGamestate implements Gamestate {
@@ -26,12 +26,13 @@ public class ViewerGamestate implements Gamestate {
     private final MaterialFactory materialFactory = new MaterialFactory();
 
     private final ViewerContext context;
-    private final Pencil pencil = new Pencil();
+    private final Pencil pencil;
 
     private Model model;
 
     public ViewerGamestate(ViewerContext context) {
         this.context = context;
+        this.pencil = new Pencil(Font.of("src/main/resources/font/arial.fnt"));
     }
 
     @Override
