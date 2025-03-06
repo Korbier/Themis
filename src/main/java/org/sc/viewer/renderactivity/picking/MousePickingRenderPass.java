@@ -31,7 +31,7 @@ public class MousePickingRenderPass extends RenderPass {
     }
 
     @Override
-    public void resize() throws ThemisException {
+    public void resize(Scene scene) throws ThemisException {
 
     }
 

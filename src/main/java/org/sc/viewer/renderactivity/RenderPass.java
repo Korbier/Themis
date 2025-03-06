@@ -67,6 +67,6 @@ public abstract class RenderPass extends VulkanObject  {
     public abstract void render(int frame, Scene scene, VkSemaphore waitSemaphore, VkSemaphore signalSemaphore, VkFence fence)
             throws ThemisException;
 
-    public abstract void resize() throws ThemisException;
+    public abstract void resize(Scene scene) throws ThemisException;
 
 }

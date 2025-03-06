@@ -279,7 +279,7 @@ public class ViewerRendererActivity extends RendererActivity {
     }
 
     @Override
-    public void resize() throws ThemisException {
+    public void resize(Scene scene) throws ThemisException {
 
         this.dsGeometry.cleanup();
         this.geometryFrameBufferAttachments.cleanup();
@@ -287,11 +287,11 @@ public class ViewerRendererActivity extends RendererActivity {
         setupGeometryFrameBufferAttachments();
         setupGeometryDescriptorset();
 
-        this.mousePickingRenderPass.resize();
-        this.shadowRenderPass.resize();
-        this.geometryRenderPass.resize();
-        this.postProcessRenderPass.resize();
-        this.uiRenderPass.resize();
+        this.mousePickingRenderPass.resize(scene);
+        this.shadowRenderPass.resize(scene);
+        this.geometryRenderPass.resize(scene);
+        this.postProcessRenderPass.resize(scene);
+        this.uiRenderPass.resize(scene);
 
     }
 

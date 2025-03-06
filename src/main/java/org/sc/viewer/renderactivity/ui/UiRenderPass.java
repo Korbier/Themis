@@ -107,7 +107,7 @@ public class UiRenderPass extends RenderPass {
     }
 
     @Override
-    public void resize() throws ThemisException {
+    public void resize(Scene scene) throws ThemisException {
 
         getFrames().remove(FK_FRAMEBUFFER);
         this.renderPass.cleanup();
@@ -116,6 +116,8 @@ public class UiRenderPass extends RenderPass {
         setupFramebufferAttachments();
         setupRenderPass();
         setupFramebuffers();
+
+        this.pencilPipeline.update(scene);
 
     }
 
