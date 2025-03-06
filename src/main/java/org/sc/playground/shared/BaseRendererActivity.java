@@ -14,6 +14,7 @@ import org.sc.themis.renderer.renderpass.VkRenderPassDescriptor;
 import org.sc.themis.renderer.renderpass.VkRenderPassLayout;
 import org.sc.themis.renderer.renderpass.VkSubpass;
 import org.sc.themis.renderer.sync.VkFence;
+import org.sc.themis.scene.Scene;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 
@@ -61,9 +62,9 @@ public abstract class BaseRendererActivity extends RendererActivity {
     }
 
     @Override
-    public void resize() throws ThemisException {
+    public void resize(Scene scene) throws ThemisException {
 
-        getFrames().remove( FK_FRAMEBUFFER );
+        getFrames().remove(FK_FRAMEBUFFER);
         this.renderPass.cleanup();
         this.frameBufferAttachments.cleanup();
 

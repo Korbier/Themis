@@ -184,7 +184,7 @@ public class MousePickingRendererActivity extends RendererActivity {
     }
 
     @Override
-    public void resize() throws ThemisException {
+    public void resize(Scene scene) throws ThemisException {
 
         this.renderer.getFrames().remove( FK_FRAMEBUFFER );
         this.renderPass.cleanup();

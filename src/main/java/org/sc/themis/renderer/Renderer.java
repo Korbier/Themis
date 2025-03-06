@@ -233,7 +233,8 @@ public class Renderer extends TObject {
         configureScene(scene, true);
 
         //Dispatch de l'evenement a l'activity
-        this.activity.resize();
+        this.activity.resize(scene);
+
     }
 
     private void configureScene(Scene scene, boolean isResizeConfiguration) throws ThemisException {

@@ -124,7 +124,7 @@ public class GeometryRenderPass extends RenderPass {
     }
 
     @Override
-    public void resize() throws ThemisException {
+    public void resize(Scene scene) throws ThemisException {
 
         getFrames().remove(FK_FRAMEBUFFER);
         this.renderPass.cleanup();
