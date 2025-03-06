@@ -12,6 +12,10 @@ import org.sc.themis.shared.resource.exception.ImageNotLoadedException;
 public class Font {
 
     private Image image;
+    private int lineHeight;
+    private int size;
+    private int scaleW;
+    private int scaleH;
     private Map<Character, CharacterProperties> properties;
 
     public static void main(String[] args) {
@@ -35,12 +39,14 @@ public class Font {
             try {
 
                 List<String> lines = Files.readAllLines(path);
-                Image image = readImage(lines, path.getParent());
-                Map<Character, CharacterProperties> properties = readCharacters(lines);
 
                 Font font = new Font();
-                font.image = image;
-                font.properties = properties;
+                font.image = readImage(lines, path.getParent());
+                font.properties = readCharacters(lines);
+                font.lineHeight = Integer.parseInt(readAttribute(lines, 1, "lineHeight"));
+                font.size = Integer.parseInt(readAttribute(lines, 0, "size"));
+                font.scaleW = Integer.parseInt(readAttribute(lines, 1, "scaleW"));
+                font.scaleH = Integer.parseInt(readAttribute(lines, 1, "scaleH"));
                 return font;
 
             } catch (IOException | ImageNotLoadedException e) {
@@ -54,6 +60,22 @@ public class Font {
 
     public Image getImage() {
         return image;
+    }
+
+    public int getLineHeight() {
+        return this.lineHeight;
+    }
+
+    public int getSize() {
+        return this.size;
+    }
+
+    public int getScaleW() {
+        return scaleW;
+    }
+
+    public int getScaleH() {
+        return scaleH;
     }
 
     public CharacterProperties getCharacterProperties(char character) {
@@ -73,11 +95,33 @@ public class Font {
 
     }
 
+    private static Map<String, String> lineToMap(String line) {
+        Map<String, String> map = new HashMap<>();
+        for (String chunk : line.split(" ")) {
+            String [] parts = chunk.split("=");
+            if (parts.length == 2) {
+                map.put(parts[0], parts[1]);
+            }
+        }
+        return map;
+    }
+
+    private static String readAttribute(List<String> lines, int line, String key) {
+        return lineToMap(lines.get(line)).get(key).replaceAll("\"", "");
+    }
+
     private static Image readImage(List<String> lines, Path directory) throws ImageNotLoadedException {
-        String line = lines.get(2);
-        int sepIndex = line.indexOf('"');
-        String imageName = line.substring(sepIndex + 1).replaceAll("\"", "");
-        return Image.of(directory.resolve(imageName).toString());
+        return Image.of(directory.resolve(readAttribute(lines, 2, "file")).toString());
+    }
+
+    private static int readLineHeight(List<String> lines) throws ImageNotLoadedException {
+        Map<String, String> attributes = lineToMap(lines.get(1));
+        return Integer.parseInt(attributes.get("lineHeight"));
+    }
+
+    private static int readSize(List<String> lines) throws ImageNotLoadedException {
+        Map<String, String> attributes = lineToMap(lines.getFirst());
+        return Integer.parseInt(attributes.get("size"));
     }
 
     private static Map<Character, CharacterProperties> readCharacters(List<String> lines) {

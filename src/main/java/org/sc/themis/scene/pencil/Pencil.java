@@ -45,25 +45,30 @@ public class Pencil {
         return this;
     }
 
-    public Pencil drawText(float x, float y, String text) {
+    public Pencil drawText(float x, float y, float size, String text) {
 
         Font.CharacterProperties [] characters = this.font.decode(text);
+
+        float ratio = size / this.font.getSize();
 
         float decal = 0;
         for (Font.CharacterProperties character : characters) {
 
-            float posX = x + character.xOffset() + decal;
-            float poxY = y + character.yOffset();
+            float height = character.height() * ratio;
+            float width  = character.width() * ratio;
 
-            float uMin = (float) character.x() / 256;
-            float vMin = (float) character.y() / 256;
+            float posX = x + (character.xOffset() * ratio) + decal;
+            float poxY = y + (character.yOffset() * ratio);
 
-            float uMax = (float) (character.x() + character.width()) / 256;
-            float vMax = (float) (character.y() + character.height()) / 256;
+            float uMin = (float) character.x() / this.font.getScaleW();
+            float vMin = (float) character.y() / this.font.getScaleH();
 
-            drawRect(posX, poxY, character.width(), character.height(), uMin, vMin, uMax, vMax);
+            float uMax = (float) (character.x() + character.width()) / this.font.getScaleW();
+            float vMax = (float) (character.y() + character.height()) / this.font.getScaleH();
 
-            decal += character.xAdvance();
+            drawRect(posX, poxY, width, height, uMin, vMin, uMax, vMax);
+
+            decal += character.xAdvance() * ratio;
 
         }
 

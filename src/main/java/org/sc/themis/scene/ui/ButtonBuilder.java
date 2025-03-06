@@ -4,9 +4,7 @@ import java.util.function.Consumer;
 
 public final class ButtonBuilder extends ComponentBuilder {
 
-    public static final int DEFAULT_BORDER_SIZE = 1;
-    public static final int DEFAULT_BUTTON_WIDTH = 64;
-    public static final int DEFAULT_BUTTON_HEIGHT = 24;
+    public static final int DEFAULT_BORDER_SIZE = 2;
 
     public static final String EVENT_ON_CLICK = "button.event.onclick";
     public static final String EVENT_ON_HOVER = "button.event.onHover";
@@ -32,22 +30,14 @@ public final class ButtonBuilder extends ComponentBuilder {
         return this;
     }
 
-    public ButtonBuilder left(int left) {
+    public ButtonBuilder location(int left, int top) {
         this.left = left;
-        return this;
-    }
-
-    public ButtonBuilder top(int top) {
         this.top = top;
         return this;
     }
 
-    public ButtonBuilder width(int width) {
+    public ButtonBuilder size(int width, int height) {
         this.width = width;
-        return this;
-    }
-
-    public ButtonBuilder height(int height) {
         this.height = height;
         return this;
     }
@@ -71,7 +61,7 @@ public final class ButtonBuilder extends ComponentBuilder {
             }
         }
 
-        pencil().drawRect(this.left, this.top, this.width, this.height, .3f, .3f, .3f);
+        pencil().drawRect(this.left, this.top, this.width, this.height, .2f, .2f, .2f);
 
         if (this.identifier.equals(state().getHotItem())) {
             if (this.identifier.equals(state().getActiveItem())) {
@@ -88,7 +78,7 @@ public final class ButtonBuilder extends ComponentBuilder {
                     this.top + DEFAULT_BORDER_SIZE,
                     this.width - 2 * DEFAULT_BORDER_SIZE,
                     this.height - 2 * DEFAULT_BORDER_SIZE,
-                    1.f, 1.f, 1.f
+                    .2f, .2f, .2f
                 );
             }
         } else {
@@ -97,12 +87,17 @@ public final class ButtonBuilder extends ComponentBuilder {
                 this.top + DEFAULT_BORDER_SIZE,
                 this.width - 2 * DEFAULT_BORDER_SIZE,
                 this.height - 2 * DEFAULT_BORDER_SIZE,
-                .3f, .3f, .3f
+                .5f, .5f, .5f
             );
         }
 
         if (this.text != null) {
-            pencil().drawText(this.left + DEFAULT_BORDER_SIZE, this.top + DEFAULT_BORDER_SIZE, this.text);
+            pencil().drawText(
+                    this.left + 2 * DEFAULT_BORDER_SIZE,
+                    this.top + 2 * DEFAULT_BORDER_SIZE,
+                    this.height - 4 * DEFAULT_BORDER_SIZE,
+                    this.text
+            );
         }
 
         if (shouldTriggerOnHoverEvent()) {

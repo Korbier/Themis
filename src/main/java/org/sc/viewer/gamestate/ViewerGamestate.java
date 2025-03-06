@@ -32,7 +32,7 @@ public class ViewerGamestate implements Gamestate {
 
     public ViewerGamestate(ViewerContext context) {
         this.context = context;
-        this.pencil = new Pencil(Font.of("src/main/resources/font/arial_24.fnt"));
+        this.pencil = new Pencil(Font.of("src/main/resources/font/arial.fnt"));
     }
 
     @Override
