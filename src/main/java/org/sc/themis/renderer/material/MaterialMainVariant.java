@@ -1,6 +1,10 @@
 package org.sc.themis.renderer.material;
 
-import org.sc.themis.renderer.base.VulkanObject;
+import static org.lwjgl.vulkan.VK10.VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+import static org.lwjgl.vulkan.VK10.VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+
+import java.util.HashMap;
+import java.util.Map;
 import org.sc.themis.renderer.base.frame.FrameKey;
 import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorPool;
 import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorSet;
@@ -9,13 +13,9 @@ import org.sc.themis.renderer.resource.buffer.VkBuffer;
 import org.sc.themis.renderer.resource.buffer.VkBufferDescriptor;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
+import org.sc.themis.shared.tobject.TObject;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.lwjgl.vulkan.VK10.*;
-
-public class MaterialMainVariant extends VulkanObject {
+public class MaterialMainVariant extends TObject {
 
 
     private final String identifier;

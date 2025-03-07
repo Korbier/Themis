@@ -8,7 +8,6 @@ import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_VERTEX_BIT;
 
 import org.joml.Matrix4f;
 import org.sc.themis.renderer.Renderer;
-import org.sc.themis.renderer.base.VulkanObject;
 import org.sc.themis.renderer.base.frame.FrameKey;
 import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorPool;
 import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorSet;

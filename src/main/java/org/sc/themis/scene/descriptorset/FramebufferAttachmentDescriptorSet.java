@@ -1,7 +1,6 @@
 package org.sc.themis.scene.descriptorset;
 
 import org.sc.themis.renderer.Renderer;
-import org.sc.themis.renderer.base.VulkanObject;
 import org.sc.themis.renderer.base.frame.FrameKey;
 import org.sc.themis.renderer.framebuffer.VkFrameBufferAttachment;
 import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorPool;
@@ -10,6 +9,7 @@ import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorSetBinding;
 import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorSetLayout;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
+import org.sc.themis.shared.tobject.TObject;
 
 import static org.lwjgl.vulkan.VK10.*;
 
@@ -17,7 +17,7 @@ import static org.lwjgl.vulkan.VK10.*;
  *
  *
  */
-public class FramebufferAttachmentDescriptorSet extends VulkanObject {
+public class FramebufferAttachmentDescriptorSet extends TObject {
 
     private final static FrameKey<VkDescriptorSet> FK_DESCRIPTORSET = FrameKey.of( VkDescriptorSet.class );
 

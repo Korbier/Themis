@@ -19,7 +19,7 @@ public abstract class VulkanObject extends TObject {
     private final VulkanCommand command = new VulkanCommand();
 
     public VulkanObject(Configuration configuration) {
-        super( configuration );
+        super(configuration);
     }
 
     protected VulkanDebug vkDebug() {

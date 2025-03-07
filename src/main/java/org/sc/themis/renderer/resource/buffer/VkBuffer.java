@@ -1,5 +1,12 @@
 package org.sc.themis.renderer.resource.buffer;
 
+
+import static org.lwjgl.vulkan.VK10.VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
+import static org.lwjgl.vulkan.VK10.VK_SHARING_MODE_EXCLUSIVE;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+
+import java.nio.ByteBuffer;
+import java.nio.LongBuffer;
 import org.joml.Matrix4f;
 import org.joml.Vector2i;
 import org.joml.Vector3f;
@@ -16,11 +23,6 @@ import org.sc.themis.renderer.device.VkPhysicalDevice;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.utils.MemorySizeUtils;
-
-import java.nio.ByteBuffer;
-import java.nio.LongBuffer;
-
-import static org.lwjgl.vulkan.VK10.*;
 
 public class VkBuffer extends VulkanObject {
 

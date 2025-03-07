@@ -2,7 +2,6 @@ package org.sc.viewer.renderactivity;
 
 import org.lwjgl.vulkan.VkExtent2D;
 import org.sc.themis.renderer.Renderer;
-import org.sc.themis.renderer.base.VulkanObject;
 import org.sc.themis.renderer.base.frame.Frames;
 import org.sc.themis.renderer.device.VkDevice;
 import org.sc.themis.renderer.framebuffer.VkFrameBufferAttachments;
@@ -12,8 +11,9 @@ import org.sc.themis.renderer.sync.VkSemaphore;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
+import org.sc.themis.shared.tobject.TObject;
 
-public abstract class RenderPass extends VulkanObject  {
+public abstract class RenderPass extends TObject {
 
     private ViewerRendererActivity viewerActivity;
 

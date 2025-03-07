@@ -2,7 +2,6 @@ package org.sc.themis.renderer.material;
 
 import org.jboss.logging.Logger;
 import org.sc.themis.renderer.Renderer;
-import org.sc.themis.renderer.base.VulkanObject;
 import org.sc.themis.renderer.base.frame.Frames;
 import org.sc.themis.renderer.device.VkDevice;
 import org.sc.themis.renderer.device.VkMemoryAllocator;
@@ -14,12 +13,13 @@ import org.sc.themis.renderer.resource.image.VkSampler;
 import org.sc.themis.renderer.resource.image.VkSamplerDescriptor;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
+import org.sc.themis.shared.tobject.TObject;
 
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-public abstract class Material extends VulkanObject {
+public abstract class Material extends TObject {
 
     private static final org.jboss.logging.Logger LOG = Logger.getLogger(Material.class);
 
@@ -37,7 +37,7 @@ public abstract class Material extends VulkanObject {
 
     @FunctionalInterface
     public interface CombinedImageSamplerSetter {
-        void set(int binding, VkDescriptorSet descriptorset, VkSampler sampler, MaterialProperties meshProperties);
+        void set(int binding, VkDescriptorSet descriptorset, VkSampler sampler, MaterialProperties meshProperties) throws ThemisException;
     }
 
     private final Renderer renderer;

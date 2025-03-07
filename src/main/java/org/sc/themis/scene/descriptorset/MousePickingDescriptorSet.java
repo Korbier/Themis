@@ -1,8 +1,8 @@
 package org.sc.themis.scene.descriptorset;
 
-import org.joml.Matrix4f;
+import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_FRAGMENT_BIT;
+
 import org.sc.themis.renderer.Renderer;
-import org.sc.themis.renderer.base.VulkanObject;
 import org.sc.themis.renderer.base.frame.FrameKey;
 import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorPool;
 import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorSet;
@@ -10,13 +10,11 @@ import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorSetBinding;
 import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorSetLayout;
 import org.sc.themis.renderer.resource.buffer.VkBuffer;
 import org.sc.themis.renderer.resource.buffer.VkBufferDescriptor;
-import org.sc.themis.scene.Instance;
-import org.sc.themis.scene.Scene;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
+import org.sc.themis.shared.tobject.TObject;
 import org.sc.themis.shared.utils.MemorySizeUtils;
 
-import static org.lwjgl.vulkan.VK10.*;
 
 /**
  * Descriptorset layout
@@ -36,7 +34,7 @@ import static org.lwjgl.vulkan.VK10.*;
  * } selection;
  *
  */
-public class MousePickingDescriptorSet extends VulkanObject {
+public class MousePickingDescriptorSet extends TObject {
 
     private final static FrameKey<VkBuffer>        FK_BUFFER = FrameKey.of( VkBuffer.class );
     private final static FrameKey<VkDescriptorSet> FK_DESCRIPTORSET = FrameKey.of( VkDescriptorSet.class );

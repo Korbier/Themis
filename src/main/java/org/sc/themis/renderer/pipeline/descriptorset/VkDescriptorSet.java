@@ -9,7 +9,6 @@ import org.sc.themis.renderer.base.VulkanObject;
 import org.sc.themis.renderer.device.VkDevice;
 import org.sc.themis.renderer.framebuffer.VkFrameBufferAttachment;
 import org.sc.themis.renderer.resource.buffer.VkBuffer;
-import org.sc.themis.renderer.resource.image.VkImage;
 import org.sc.themis.renderer.resource.image.VkImageView;
 import org.sc.themis.renderer.resource.image.VkSampler;
 import org.sc.themis.shared.Configuration;
@@ -74,7 +73,7 @@ public class VkDescriptorSet extends VulkanObject {
 
     }
 
-    public void bind( int binding, VkBuffer buffer ) {
+    public void bind( int binding, VkBuffer buffer ) throws ThemisException {
 
         try (MemoryStack stack = MemoryStack.stackPush()) {
 
@@ -97,13 +96,13 @@ public class VkDescriptorSet extends VulkanObject {
                         .pBufferInfo(bufferInfo);
             }
 
-            vkUpdateDescriptorSets(this.device.getHandle(), descrBuffer, null);
+            vkPipeline().updateDescriptorSets(this.device.getHandle(), descrBuffer, null);
 
         }
 
     }
 
-    public void bind( int binding, VkImageView imageView, VkSampler sampler ) {
+    public void bind( int binding, VkImageView imageView, VkSampler sampler ) throws ThemisException {
 
         try (MemoryStack stack = MemoryStack.stackPush()) {
 
@@ -121,13 +120,13 @@ public class VkDescriptorSet extends VulkanObject {
                     .descriptorCount(1)
                     .pImageInfo(imageInfo);
 
-            vkUpdateDescriptorSets( this.device.getHandle(), descrBuffer, null);
+            vkPipeline().updateDescriptorSets( this.device.getHandle(), descrBuffer, null);
 
         }
 
     }
 
-    public void bind(int binding, VkFrameBufferAttachment attachment, VkSampler sampler) {
+    public void bind(int binding, VkFrameBufferAttachment attachment, VkSampler sampler) throws ThemisException {
 
         try (MemoryStack stack = MemoryStack.stackPush()) {
 
@@ -148,13 +147,13 @@ public class VkDescriptorSet extends VulkanObject {
                     .descriptorCount(1)
                     .pImageInfo(imageInfo);
 
-            vkUpdateDescriptorSets(this.device.getHandle(), descrBuffer, null);
+            vkPipeline().updateDescriptorSets(this.device.getHandle(), descrBuffer, null);
 
         }
 
     }
 
-    public void bind( int binding, VkFrameBufferAttachment attachment  ) {
+    public void bind( int binding, VkFrameBufferAttachment attachment  ) throws ThemisException {
 
         try (MemoryStack stack = MemoryStack.stackPush()) {
 
@@ -171,7 +170,7 @@ public class VkDescriptorSet extends VulkanObject {
                     .descriptorCount(1)
                     .pImageInfo(imageInfo);
 
-            vkUpdateDescriptorSets(this.device.getHandle(), descrBuffer, null);
+            vkPipeline().updateDescriptorSets(this.device.getHandle(), descrBuffer, null);
 
         }
 

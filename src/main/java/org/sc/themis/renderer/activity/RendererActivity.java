@@ -1,12 +1,12 @@
 package org.sc.themis.renderer.activity;
 
 import org.sc.themis.renderer.Renderer;
-import org.sc.themis.renderer.base.VulkanObject;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
+import org.sc.themis.shared.tobject.TObject;
 
-public abstract class RendererActivity extends VulkanObject {
+public abstract class RendererActivity extends TObject {
 
     public RendererActivity(Configuration configuration) {
         super(configuration);

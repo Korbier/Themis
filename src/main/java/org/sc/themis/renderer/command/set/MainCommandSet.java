@@ -1,5 +1,12 @@
 package org.sc.themis.renderer.command.set;
 
+import static org.lwjgl.vulkan.VK10.VK_NULL_HANDLE;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_SUBMIT_INFO;
+
+import java.nio.IntBuffer;
+import java.nio.LongBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkCommandBufferBeginInfo;
 import org.lwjgl.vulkan.VkCommandBufferInheritanceInfo;
@@ -10,11 +17,6 @@ import org.sc.themis.renderer.sync.VkFence;
 import org.sc.themis.renderer.sync.VkSemaphore;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
-
-import java.nio.IntBuffer;
-import java.nio.LongBuffer;
-
-import static org.lwjgl.vulkan.VK10.*;
 
 public class MainCommandSet extends VkCommandSet {
 

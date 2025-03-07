@@ -1,6 +1,11 @@
 package org.sc.themis.renderer.command;
 
-import org.joml.Matrix4f;
+import static org.lwjgl.vulkan.VK10.VK_PIPELINE_BIND_POINT_COMPUTE;
+import static org.lwjgl.vulkan.VK10.VK_PIPELINE_BIND_POINT_GRAPHICS;
+import static org.lwjgl.vulkan.VK10.VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+
+import java.nio.IntBuffer;
+import java.util.function.Consumer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkExtent2D;
 import org.lwjgl.vulkan.VkImageSubresourceRange;
@@ -18,10 +23,6 @@ import org.sc.themis.shared.exception.ThemisException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.nio.IntBuffer;
-import java.util.function.Consumer;
-
-import static org.lwjgl.vulkan.VK10.*;
 
 public class VkCommand extends VkCommandSet {
 
