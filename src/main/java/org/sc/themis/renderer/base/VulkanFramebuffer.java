@@ -1,30 +1,31 @@
 package org.sc.themis.renderer.base;
 
-import org.lwjgl.PointerBuffer;
-import org.lwjgl.vulkan.*;
-import org.sc.themis.renderer.exception.*;
-import org.sc.themis.shared.exception.ThemisException;
+import static org.lwjgl.vulkan.VK10.vkCreateFramebuffer;
+import static org.lwjgl.vulkan.VK10.vkDestroyFramebuffer;
 
-import java.nio.IntBuffer;
 import java.nio.LongBuffer;
-
-import static org.lwjgl.vulkan.VK10.*;
+import org.lwjgl.vulkan.VkDevice;
+import org.lwjgl.vulkan.VkFramebufferCreateInfo;
+import org.sc.themis.renderer.exception.VkOutOfDeviceMemoryException;
+import org.sc.themis.renderer.exception.VkOutOfHostMemoryException;
+import org.sc.themis.shared.exception.ThemisException;
 
 public class VulkanFramebuffer extends Vulkan {
 
-    public void createFramebuffer(VkDevice device, VkFramebufferCreateInfo pCreateInfo, LongBuffer pFramebuffer) throws ThemisException {
-        vk(
-                () -> vkCreateFramebuffer( device, pCreateInfo, null, pFramebuffer ),
-                (errno) -> {
-                    if ( errno == org.lwjgl.vulkan.VK10.VK_ERROR_OUT_OF_HOST_MEMORY ) throw new VkOutOfHostMemoryException();
-                    if ( errno == org.lwjgl.vulkan.VK10.VK_ERROR_OUT_OF_DEVICE_MEMORY ) throw new VkOutOfDeviceMemoryException();
-                }
-        );
-    }
+  public void createFramebuffer(
+      VkDevice device, VkFramebufferCreateInfo pCreateInfo, LongBuffer pFramebuffer)
+      throws ThemisException {
+    vk(
+        () -> vkCreateFramebuffer(device, pCreateInfo, null, pFramebuffer),
+        (errno) -> {
+          if (errno == org.lwjgl.vulkan.VK10.VK_ERROR_OUT_OF_HOST_MEMORY)
+            throw new VkOutOfHostMemoryException();
+          if (errno == org.lwjgl.vulkan.VK10.VK_ERROR_OUT_OF_DEVICE_MEMORY)
+            throw new VkOutOfDeviceMemoryException();
+        });
+  }
 
-    public void destroyFramebuffer(VkDevice device, long framebuffer) throws ThemisException {
-        vk( () -> vkDestroyFramebuffer( device, framebuffer, null ) );
-    }
-
-
+  public void destroyFramebuffer(VkDevice device, long framebuffer) throws ThemisException {
+    vk(() -> vkDestroyFramebuffer(device, framebuffer, null));
+  }
 }

@@ -8,24 +8,15 @@ import org.sc.themis.shared.exception.ThemisException;
 
 public class NoopGamestate implements Gamestate {
 
-    @Override
-    public void setup(Renderer renderer, Scene scene) {
+  @Override
+  public void setup(Renderer renderer, Scene scene) {}
 
-    }
+  @Override
+  public void cleanup(Renderer renderer, Scene scene) throws ThemisException {}
 
-    @Override
-    public void cleanup(Renderer renderer, Scene scene) throws ThemisException {
+  @Override
+  public void input(Scene scene, Input input, long tpf) {}
 
-    }
-
-    @Override
-    public void input(Scene scene, Input input, long tpf) {
-
-    }
-
-    @Override
-    public void update(Scene scene, long tpf) {
-
-    }
-
+  @Override
+  public void update(Scene scene, long tpf) {}
 }

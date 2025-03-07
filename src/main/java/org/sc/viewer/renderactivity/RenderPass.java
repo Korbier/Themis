@@ -15,58 +15,59 @@ import org.sc.themis.shared.tobject.TObject;
 
 public abstract class RenderPass extends TObject {
 
-    private ViewerRendererActivity viewerActivity;
+  private ViewerRendererActivity viewerActivity;
 
-    public RenderPass(Configuration configuration) {
-        super(configuration);
-    }
+  public RenderPass(Configuration configuration) {
+    super(configuration);
+  }
 
-    protected Renderer getRenderer() {
-        return this.viewerActivity.getRenderer();
-    }
+  protected Renderer getRenderer() {
+    return this.viewerActivity.getRenderer();
+  }
 
-    protected VkDevice getDevice() {
-        return this.viewerActivity.getDevice();
-    }
+  protected VkDevice getDevice() {
+    return this.viewerActivity.getDevice();
+  }
 
-    protected VkExtent2D getExtent2D() {
-        return this.viewerActivity.getRenderer().getExtent();
-    }
+  protected VkExtent2D getExtent2D() {
+    return this.viewerActivity.getRenderer().getExtent();
+  }
 
-    protected int getImageFormat() {
-        return this.viewerActivity.getRenderer().getImageFormat();
-    }
+  protected int getImageFormat() {
+    return this.viewerActivity.getRenderer().getImageFormat();
+  }
 
-    protected Frames getFrames() {
-        return this.viewerActivity.getFrames();
-    }
+  protected Frames getFrames() {
+    return this.viewerActivity.getFrames();
+  }
 
-    protected VkImageView getImageView(int frame) {
-        return this.viewerActivity.getRenderer().getImageView(frame);
-    }
+  protected VkImageView getImageView(int frame) {
+    return this.viewerActivity.getRenderer().getImageView(frame);
+  }
 
-    protected VkFrameBufferAttachments getGeometryFrameBufferAttachments() {
-        return getViewerActivity().getGeometryFrameBufferAttachments();
-    }
+  protected VkFrameBufferAttachments getGeometryFrameBufferAttachments() {
+    return getViewerActivity().getGeometryFrameBufferAttachments();
+  }
 
-    public final void setup(ViewerRendererActivity activity) throws ThemisException {
-        this.viewerActivity = activity;
-        this.setup();
-    }
+  public final void setup(ViewerRendererActivity activity) throws ThemisException {
+    this.viewerActivity = activity;
+    this.setup();
+  }
 
-    public ViewerRendererActivity getViewerActivity() {
-        return this.viewerActivity;
-    }
+  public ViewerRendererActivity getViewerActivity() {
+    return this.viewerActivity;
+  }
 
-    public void render(int frame, Scene scene, VkSemaphore waitSemaphore, VkSemaphore signalSemaphore) throws ThemisException {
-        render(frame, scene, waitSemaphore, signalSemaphore, null);
-    }
+  public void render(int frame, Scene scene, VkSemaphore waitSemaphore, VkSemaphore signalSemaphore)
+      throws ThemisException {
+    render(frame, scene, waitSemaphore, signalSemaphore, null);
+  }
 
-    public abstract void setup(Scene scene) throws ThemisException;
+  public abstract void setup(Scene scene) throws ThemisException;
 
-    public abstract void render(int frame, Scene scene, VkSemaphore waitSemaphore, VkSemaphore signalSemaphore, VkFence fence)
-            throws ThemisException;
+  public abstract void render(
+      int frame, Scene scene, VkSemaphore waitSemaphore, VkSemaphore signalSemaphore, VkFence fence)
+      throws ThemisException;
 
-    public abstract void resize(Scene scene) throws ThemisException;
-
+  public abstract void resize(Scene scene) throws ThemisException;
 }

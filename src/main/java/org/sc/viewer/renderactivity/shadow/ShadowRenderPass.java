@@ -9,29 +9,24 @@ import org.sc.viewer.renderactivity.RenderPass;
 
 public class ShadowRenderPass extends RenderPass {
 
-    public ShadowRenderPass(Configuration configuration) {
-        super(configuration);
-    }
+  public ShadowRenderPass(Configuration configuration) {
+    super(configuration);
+  }
 
-    @Override
-    public void setup() throws ThemisException {
-    }
+  @Override
+  public void setup() throws ThemisException {}
 
-    @Override
-    public void setup(Scene scene) throws ThemisException {
+  @Override
+  public void setup(Scene scene) throws ThemisException {}
 
-    }
+  @Override
+  public void cleanup() throws ThemisException {}
 
-    @Override
-    public void cleanup() throws ThemisException {
-    }
+  @Override
+  public void render(
+      int frame, Scene scene, VkSemaphore waitSemaphore, VkSemaphore signalSemaphore, VkFence fence)
+      throws ThemisException {}
 
-    @Override
-    public void render(int frame, Scene scene, VkSemaphore waitSemaphore, VkSemaphore signalSemaphore, VkFence fence) throws ThemisException {
-    }
-
-    @Override
-    public void resize(Scene scene) throws ThemisException {
-
-    }
+  @Override
+  public void resize(Scene scene) throws ThemisException {}
 }

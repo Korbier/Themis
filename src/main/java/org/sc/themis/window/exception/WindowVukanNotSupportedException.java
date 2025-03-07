@@ -4,9 +4,10 @@ import org.sc.themis.shared.exception.ThemisException;
 
 public class WindowVukanNotSupportedException extends ThemisException {
 
-    private final static String MESSAGE = "Cannot find a compatible Vulkan installable client driver (ICD)";
+  private static final String MESSAGE =
+      "Cannot find a compatible Vulkan installable client driver (ICD)";
 
-    public WindowVukanNotSupportedException() {
-        super(MESSAGE);
-    }
+  public WindowVukanNotSupportedException() {
+    super(MESSAGE);
+  }
 }

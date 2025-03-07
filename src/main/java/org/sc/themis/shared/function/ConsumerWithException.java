@@ -4,5 +4,5 @@ import org.sc.themis.shared.exception.ThemisException;
 
 @FunctionalInterface
 public interface ConsumerWithException<IN> {
-    void accept(IN input ) throws ThemisException;
+  void accept(IN input) throws ThemisException;
 }

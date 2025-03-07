@@ -4,53 +4,68 @@ import io.smallrye.config.ConfigMapping;
 import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
-@ConfigMapping( prefix = "themis" )
+@ConfigMapping(prefix = "themis")
 public interface Configuration {
 
-    Application application();
-    Engine engine();
-    Window window();
-    Renderer renderer();
-    Scene scene();
+  Application application();
 
-    interface Application {
-        String name();
-        int version();
-    }
+  Engine engine();
 
-    interface Engine {
-        String name();
-        int version();
-    }
+  Window window();
 
-    interface Window {
-        int width();
-        int height();
-        boolean resizable();
-        boolean maximized();
-    }
+  Renderer renderer();
 
-    interface Renderer {
-        boolean debug();
-        int imageCount();
-        boolean vsyncEnabled();
-        Feature feature();
-    }
+  Scene scene();
 
-    interface Feature {
-        boolean samplerAnisotropy();
-        boolean geometryShader();
-        boolean fragmentStoresAndAtomics();
-    }
+  interface Application {
+    String name();
 
-    interface Scene {
-        Projection projection();
-    }
+    int version();
+  }
 
-    interface Projection {
-        float fov();
-        float znear();
-        float zfar();
-    }
+  interface Engine {
+    String name();
 
+    int version();
+  }
+
+  interface Window {
+    int width();
+
+    int height();
+
+    boolean resizable();
+
+    boolean maximized();
+  }
+
+  interface Renderer {
+    boolean debug();
+
+    int imageCount();
+
+    boolean vsyncEnabled();
+
+    Feature feature();
+  }
+
+  interface Feature {
+    boolean samplerAnisotropy();
+
+    boolean geometryShader();
+
+    boolean fragmentStoresAndAtomics();
+  }
+
+  interface Scene {
+    Projection projection();
+  }
+
+  interface Projection {
+    float fov();
+
+    float znear();
+
+    float zfar();
+  }
 }

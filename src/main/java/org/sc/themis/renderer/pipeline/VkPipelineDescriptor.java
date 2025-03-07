@@ -10,6 +10,4 @@ public record VkPipelineDescriptor(
     boolean hasDepthAttachment,
     int viewportCount,
     int scissorCount,
-    int sampleCount
-) {
-}
+    int sampleCount) {}

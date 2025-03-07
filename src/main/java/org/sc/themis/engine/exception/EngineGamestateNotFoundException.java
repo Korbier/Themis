@@ -4,9 +4,9 @@ import org.sc.themis.shared.exception.ThemisException;
 
 public class EngineGamestateNotFoundException extends ThemisException {
 
-    private final static String MESSAGE = "No gamestate found. Use Engine::setGamestate to set one.";
+  private static final String MESSAGE = "No gamestate found. Use Engine::setGamestate to set one.";
 
-    public EngineGamestateNotFoundException() {
-        super(MESSAGE);
-    }
+  public EngineGamestateNotFoundException() {
+    super(MESSAGE);
+  }
 }

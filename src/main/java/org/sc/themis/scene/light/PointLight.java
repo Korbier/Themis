@@ -5,34 +5,38 @@ import org.sc.themis.shared.utils.MemorySizeUtils;
 
 public class PointLight extends Light {
 
-    public static final int SIZE = Light.SIZE + MemorySizeUtils.VEC4F + MemorySizeUtils.VEC4F;
+  public static final int SIZE = Light.SIZE + MemorySizeUtils.VEC4F + MemorySizeUtils.VEC4F;
 
-    private final Vector3f position;
-    private final Attenuation attenuation;
+  private final Vector3f position;
+  private final Attenuation attenuation;
 
-    public PointLight(Vector3f ambient, Vector3f diffuse, Vector3f specular, Vector3f position, Attenuation attenuation) {
-        super(ambient, diffuse, specular);
-        this.attenuation = Attenuation.of(attenuation);
-        this.position = new Vector3f( position );
-        setDirty();
-    }
+  public PointLight(
+      Vector3f ambient,
+      Vector3f diffuse,
+      Vector3f specular,
+      Vector3f position,
+      Attenuation attenuation) {
+    super(ambient, diffuse, specular);
+    this.attenuation = Attenuation.of(attenuation);
+    this.position = new Vector3f(position);
+    setDirty();
+  }
 
-    public Vector3f getPosition() {
-        return new Vector3f(position);
-    }
+  public Vector3f getPosition() {
+    return new Vector3f(position);
+  }
 
-    public void setPosition(Vector3f position) {
-        this.position.set(position);
-        setDirty();
-    }
+  public void setPosition(Vector3f position) {
+    this.position.set(position);
+    setDirty();
+  }
 
-    public Attenuation getAttenuation() {
-        return Attenuation.of(attenuation);
-    }
+  public Attenuation getAttenuation() {
+    return Attenuation.of(attenuation);
+  }
 
-    public void setAttenuation(Attenuation attenuation) {
-        this.attenuation.set(attenuation);
-        setDirty();
-    }
-
+  public void setAttenuation(Attenuation attenuation) {
+    this.attenuation.set(attenuation);
+    setDirty();
+  }
 }

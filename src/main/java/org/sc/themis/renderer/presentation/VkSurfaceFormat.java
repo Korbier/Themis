@@ -1,4 +1,3 @@
 package org.sc.themis.renderer.presentation;
 
-public record VkSurfaceFormat(int imageFormat, int colorSpace) {
-}
+public record VkSurfaceFormat(int imageFormat, int colorSpace) {}

@@ -39,7 +39,7 @@ import org.sc.themis.shared.utils.MemorySizeUtils;
  * MemorySizeUtils.VEC2F   Resolution
  * MemorySizeUtils.INT     UTime</pre>
  *
- * <p>Shader source.</p>
+ * <p>Shader source.
  *
  * <pre>
  *
@@ -90,267 +90,307 @@ import org.sc.themis.shared.utils.MemorySizeUtils;
  *      SpotLight lights[];
  *  } spotLights;
  * </pre>
- *
  */
 public class LightDescriptorSet extends TObject implements VkDescriptorSetProvider {
 
-    private static final FrameKey<VkBuffer>        FK_BUFFER_DATA = FrameKey.of(VkBuffer.class);
-    private static final FrameKey<VkBuffer>        FK_BUFFER_DIRECTIONAL_LIGHTS = FrameKey.of(VkBuffer.class);
-    private static final FrameKey<VkBuffer>        FK_BUFFER_POINT_LIGHTS = FrameKey.of(VkBuffer.class);
-    private static final FrameKey<VkBuffer>        FK_BUFFER_SPOT_LIGHTS = FrameKey.of(VkBuffer.class);
-    private static final FrameKey<VkDescriptorSet> FK_DESCRIPTORSET = FrameKey.of(VkDescriptorSet.class);
+  private static final FrameKey<VkBuffer> FK_BUFFER_DATA = FrameKey.of(VkBuffer.class);
+  private static final FrameKey<VkBuffer> FK_BUFFER_DIRECTIONAL_LIGHTS =
+      FrameKey.of(VkBuffer.class);
+  private static final FrameKey<VkBuffer> FK_BUFFER_POINT_LIGHTS = FrameKey.of(VkBuffer.class);
+  private static final FrameKey<VkBuffer> FK_BUFFER_SPOT_LIGHTS = FrameKey.of(VkBuffer.class);
+  private static final FrameKey<VkDescriptorSet> FK_DESCRIPTORSET =
+      FrameKey.of(VkDescriptorSet.class);
 
-    private final Renderer renderer;
+  private final Renderer renderer;
 
-    private VkDescriptorSetLayout descriptorSetLayout;
-    private VkDescriptorPool descriptorPool;
+  private VkDescriptorSetLayout descriptorSetLayout;
+  private VkDescriptorPool descriptorPool;
 
-    /**
-     * Constructor.
-     *
-     * @param configuration Globale configuration
-     * @param renderer Renderer
-     */
-    public LightDescriptorSet(Configuration configuration, Renderer renderer) {
-        super(configuration);
-        this.renderer = renderer;
+  /**
+   * Constructor.
+   *
+   * @param configuration Globale configuration
+   * @param renderer Renderer
+   */
+  public LightDescriptorSet(Configuration configuration, Renderer renderer) {
+    super(configuration);
+    this.renderer = renderer;
+  }
+
+  /**
+   * Update all framed data with provided scene.
+   *
+   * @param scene scene
+   */
+  public void updateAll(Scene scene) {
+    for (int frame = 0; frame < renderer.getFrames().getSize(); frame++) {
+      update(frame, scene);
     }
+  }
 
-    /**
-     * Update all framed data with provided scene.
-     *
-     * @param scene scene
-     */
-    public void updateAll(Scene scene) {
-        for (int frame = 0; frame < renderer.getFrames().getSize(); frame++) {
-            update(frame, scene);
-        }
-    }
+  /**
+   * Update frame with provided scene.
+   *
+   * @param scene scene
+   */
+  public void update(int frame, Scene scene) {
+    updateData(frame, scene);
+    updateDirectionalLights(frame, scene.getDirectionalLights());
+    updatePointLights(frame, scene.getPointLights());
+    updateSpotLights(frame, scene.getSpotLights());
+  }
 
-    /**
-     * Update frame with provided scene.
-     *
-     * @param scene scene
-     */
-    public void update(int frame, Scene scene) {
-        updateData(frame, scene);
-        updateDirectionalLights(frame, scene.getDirectionalLights());
-        updatePointLights(frame, scene.getPointLights());
-        updateSpotLights(frame, scene.getSpotLights());
-    }
+  public VkDescriptorSetLayout getDescriptorSetLayout() {
+    return this.descriptorSetLayout;
+  }
 
-    public VkDescriptorSetLayout getDescriptorSetLayout() {
-        return this.descriptorSetLayout;
-    }
+  /**
+   * Return descriptorset for provided frame.
+   *
+   * @param frame frame
+   */
+  public VkDescriptorSet getDescriptorSet(int frame) {
+    return this.renderer.getFrames().get(frame, FK_DESCRIPTORSET);
+  }
 
-    /**
-     * Return descriptorset for provided frame.
-     *
-     * @param frame frame
-     */
-    public VkDescriptorSet getDescriptorSet(int frame) {
-        return this.renderer.getFrames().get(frame, FK_DESCRIPTORSET);
-    }
+  /** Descriptorset setup. */
+  @Override
+  public void setup() throws ThemisException {
+    setupDescriptorLayout();
+    setupDescriptorPool();
+    setupDescriptorSets();
+  }
 
-    /**
-     * Descriptorset setup.
-     */
-    @Override
-    public void setup() throws ThemisException {
-        setupDescriptorLayout();
-        setupDescriptorPool();
-        setupDescriptorSets();
-    }
+  /** Descriptorset setup. */
+  public void setup(Scene scene) throws ThemisException {
+    setupBuffersData(scene);
+    setupBuffersDirectionalLights(scene);
+    setupBuffersPointLights(scene);
+    setupBuffersSpotLights(scene);
+  }
 
-    /**
-     * Descriptorset setup.
-     */
-    public void setup(Scene scene) throws ThemisException {
-        setupBuffersData(scene);
-        setupBuffersDirectionalLights(scene);
-        setupBuffersPointLights(scene);
-        setupBuffersSpotLights(scene);
-    }
+  private void setupDescriptorSets() throws ThemisException {
+    this.renderer
+        .getFrames()
+        .create(
+            FK_DESCRIPTORSET,
+            () ->
+                new VkDescriptorSet(
+                    getConfiguration(),
+                    this.renderer.getDevice(),
+                    this.descriptorPool,
+                    this.descriptorSetLayout));
+  }
 
-    private void setupDescriptorSets() throws ThemisException {
-        this.renderer.getFrames().create(FK_DESCRIPTORSET, () -> new VkDescriptorSet(getConfiguration(),
-                this.renderer.getDevice(), this.descriptorPool, this.descriptorSetLayout));
-    }
+  private void setupBuffersData(Scene scene) throws ThemisException {
 
-    private void setupBuffersData(Scene scene) throws ThemisException {
-
-        VkBufferDescriptor descriptor = new VkBufferDescriptor(
+    VkBufferDescriptor descriptor =
+        new VkBufferDescriptor(
             MemorySizeUtils.VEC4F,
             VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
             0);
 
-        this.renderer.getFrames().create(
+    this.renderer
+        .getFrames()
+        .create(
             FK_BUFFER_DATA,
-            () -> new VkBuffer(
-                getConfiguration(), this.renderer.getDevice(),
-                this.renderer.getMemoryAllocator(), descriptor
-           )
-        );
+            () ->
+                new VkBuffer(
+                    getConfiguration(),
+                    this.renderer.getDevice(),
+                    this.renderer.getMemoryAllocator(),
+                    descriptor));
 
-        this.renderer.getFrames().update(FK_DESCRIPTORSET,
-                (frame, descriptorset) -> descriptorset.bind(0, this.renderer.getFrames().get(frame, FK_BUFFER_DATA)));
+    this.renderer
+        .getFrames()
+        .update(
+            FK_DESCRIPTORSET,
+            (frame, descriptorset) ->
+                descriptorset.bind(0, this.renderer.getFrames().get(frame, FK_BUFFER_DATA)));
+  }
 
-    }
+  private void setupBuffersDirectionalLights(Scene scene) throws ThemisException {
 
-    private void setupBuffersDirectionalLights(Scene scene) throws ThemisException {
+    VkBufferDescriptor descriptor =
+        new VkBufferDescriptor(
+            getDirectionalLightsBufferSize(scene),
+            VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_CACHED_BIT,
+            VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
-        VkBufferDescriptor descriptor = new VkBufferDescriptor(
-                getDirectionalLightsBufferSize(scene),
-                VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
-                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_CACHED_BIT,
-                VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    this.renderer
+        .getFrames()
+        .create(
+            FK_BUFFER_DIRECTIONAL_LIGHTS,
+            () ->
+                new VkBuffer(
+                    getConfiguration(),
+                    this.renderer.getDevice(),
+                    this.renderer.getMemoryAllocator(),
+                    descriptor));
 
-        this.renderer.getFrames().create(
-                FK_BUFFER_DIRECTIONAL_LIGHTS,
-                () -> new VkBuffer(
-                        getConfiguration(), this.renderer.getDevice(),
-                        this.renderer.getMemoryAllocator(), descriptor
-               )
-        );
+    this.renderer
+        .getFrames()
+        .update(
+            FK_DESCRIPTORSET,
+            (frame, descriptorset) ->
+                descriptorset.bind(
+                    1, this.renderer.getFrames().get(frame, FK_BUFFER_DIRECTIONAL_LIGHTS)));
+  }
 
-        this.renderer.getFrames().update(FK_DESCRIPTORSET,
-                (frame, descriptorset) ->
-                        descriptorset.bind(1, this.renderer.getFrames().get(frame, FK_BUFFER_DIRECTIONAL_LIGHTS)));
+  private void setupBuffersPointLights(Scene scene) throws ThemisException {
 
-    }
+    VkBufferDescriptor descriptor =
+        new VkBufferDescriptor(
+            getPointLightsBufferSize(scene),
+            VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_CACHED_BIT,
+            VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
-    private void setupBuffersPointLights(Scene scene) throws ThemisException {
+    this.renderer
+        .getFrames()
+        .create(
+            FK_BUFFER_POINT_LIGHTS,
+            () ->
+                new VkBuffer(
+                    getConfiguration(),
+                    this.renderer.getDevice(),
+                    this.renderer.getMemoryAllocator(),
+                    descriptor));
 
-        VkBufferDescriptor descriptor = new VkBufferDescriptor(
-                getPointLightsBufferSize(scene),
-                VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
-                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_CACHED_BIT,
-                VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    this.renderer
+        .getFrames()
+        .update(
+            FK_DESCRIPTORSET,
+            (frame, descriptorset) ->
+                descriptorset.bind(
+                    2, this.renderer.getFrames().get(frame, FK_BUFFER_POINT_LIGHTS)));
+  }
 
-        this.renderer.getFrames().create(
-                FK_BUFFER_POINT_LIGHTS,
-                () -> new VkBuffer(
-                        getConfiguration(), this.renderer.getDevice(),
-                        this.renderer.getMemoryAllocator(), descriptor
-               )
-        );
+  private void setupBuffersSpotLights(Scene scene) throws ThemisException {
 
-        this.renderer.getFrames().update(FK_DESCRIPTORSET,
-                (frame, descriptorset) ->
-                        descriptorset.bind(2, this.renderer.getFrames().get(frame, FK_BUFFER_POINT_LIGHTS)));
+    VkBufferDescriptor descriptor =
+        new VkBufferDescriptor(
+            getSpotLightsBufferSize(scene),
+            VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_CACHED_BIT,
+            VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
-    }
+    this.renderer
+        .getFrames()
+        .create(
+            FK_BUFFER_SPOT_LIGHTS,
+            () ->
+                new VkBuffer(
+                    getConfiguration(),
+                    this.renderer.getDevice(),
+                    this.renderer.getMemoryAllocator(),
+                    descriptor));
 
-    private void setupBuffersSpotLights(Scene scene) throws ThemisException {
+    this.renderer
+        .getFrames()
+        .update(
+            FK_DESCRIPTORSET,
+            (frame, descriptorset) ->
+                descriptorset.bind(3, this.renderer.getFrames().get(frame, FK_BUFFER_SPOT_LIGHTS)));
+  }
 
-        VkBufferDescriptor descriptor = new VkBufferDescriptor(
-                getSpotLightsBufferSize(scene),
-                VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
-                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_CACHED_BIT,
-                VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
-        this.renderer.getFrames().create(
-                FK_BUFFER_SPOT_LIGHTS,
-                () -> new VkBuffer(
-                        getConfiguration(), this.renderer.getDevice(),
-                        this.renderer.getMemoryAllocator(), descriptor
-               )
-        );
-
-        this.renderer.getFrames().update(FK_DESCRIPTORSET,
-                (frame, descriptorset) ->
-                        descriptorset.bind(3, this.renderer.getFrames().get(frame, FK_BUFFER_SPOT_LIGHTS)));
-
-    }
-
-    private void setupDescriptorLayout() throws ThemisException {
-        this.descriptorSetLayout = new VkDescriptorSetLayout(
+  private void setupDescriptorLayout() throws ThemisException {
+    this.descriptorSetLayout =
+        new VkDescriptorSetLayout(
             getConfiguration(),
             this.renderer.getDevice(),
             VkDescriptorSetBinding.uniform(0, VK_SHADER_STAGE_FRAGMENT_BIT),
             VkDescriptorSetBinding.storageBuffer(1, VK_SHADER_STAGE_FRAGMENT_BIT),
             VkDescriptorSetBinding.storageBuffer(2, VK_SHADER_STAGE_FRAGMENT_BIT),
-            VkDescriptorSetBinding.storageBuffer(3, VK_SHADER_STAGE_FRAGMENT_BIT)
-      );
-        this.descriptorSetLayout.setup();
+            VkDescriptorSetBinding.storageBuffer(3, VK_SHADER_STAGE_FRAGMENT_BIT));
+    this.descriptorSetLayout.setup();
+  }
+
+  private void setupDescriptorPool() throws ThemisException {
+    this.descriptorPool =
+        new VkDescriptorPool(
+            getConfiguration(),
+            this.renderer.getDevice(),
+            this.renderer.getFrames().getSize(),
+            this.descriptorSetLayout);
+    this.descriptorPool.setup();
+  }
+
+  @Override
+  public void cleanup() throws ThemisException {
+    this.renderer.getFrames().remove(FK_BUFFER_DATA);
+    this.renderer.getFrames().remove(FK_DESCRIPTORSET);
+    this.descriptorPool.cleanup();
+    this.descriptorSetLayout.cleanup();
+  }
+
+  private void updateData(int frame, Scene scene) {
+    VkBufferFiller buffer = this.renderer.getFrames().get(frame, FK_BUFFER_DATA).filler();
+    buffer.put(scene.getLightData());
+  }
+
+  private void updateDirectionalLights(int frame, List<DirectionalLight> lights) {
+
+    VkBufferFiller buffer =
+        this.renderer.getFrames().get(frame, FK_BUFFER_DIRECTIONAL_LIGHTS).filler();
+
+    for (DirectionalLight light : lights) {
+      buffer.put(light.getAmbient(), MemorySizeUtils.VEC4F);
+      buffer.put(light.getDiffuse(), MemorySizeUtils.VEC4F);
+      buffer.put(light.getSpecular(), MemorySizeUtils.VEC4F);
+      buffer.put(light.getData(), MemorySizeUtils.VEC4F);
+      buffer.put(light.getDirection(), MemorySizeUtils.VEC4F);
     }
+  }
 
-    private void setupDescriptorPool() throws ThemisException {
-        this.descriptorPool = new VkDescriptorPool(getConfiguration(), this.renderer.getDevice(),
-                this.renderer.getFrames().getSize(), this.descriptorSetLayout);
-        this.descriptorPool.setup();
+  private void updatePointLights(int frame, List<PointLight> lights) {
+
+    VkBufferFiller buffer = this.renderer.getFrames().get(frame, FK_BUFFER_POINT_LIGHTS).filler();
+
+    for (PointLight light : lights) {
+      buffer.put(light.getAmbient(), MemorySizeUtils.VEC4F);
+      buffer.put(light.getDiffuse(), MemorySizeUtils.VEC4F);
+      buffer.put(light.getSpecular(), MemorySizeUtils.VEC4F);
+      buffer.put(light.getData(), MemorySizeUtils.VEC4F);
+      buffer.put(light.getPosition(), MemorySizeUtils.VEC4F);
+      buffer.put(light.getAttenuation().data(), MemorySizeUtils.VEC4F);
     }
+  }
 
-    @Override
-    public void cleanup() throws ThemisException {
-        this.renderer.getFrames().remove(FK_BUFFER_DATA);
-        this.renderer.getFrames().remove(FK_DESCRIPTORSET);
-        this.descriptorPool.cleanup();
-        this.descriptorSetLayout.cleanup();
+  private void updateSpotLights(int frame, List<SpotLight> lights) {
+
+    VkBufferFiller buffer = this.renderer.getFrames().get(frame, FK_BUFFER_SPOT_LIGHTS).filler();
+
+    for (SpotLight light : lights) {
+      buffer.put(light.getAmbient(), MemorySizeUtils.VEC4F);
+      buffer.put(light.getDiffuse(), MemorySizeUtils.VEC4F);
+      buffer.put(light.getSpecular(), MemorySizeUtils.VEC4F);
+      buffer.put(light.getData(), MemorySizeUtils.VEC4F);
+      buffer.put(light.getPosition(), MemorySizeUtils.VEC4F);
+      buffer.put(light.getDirection(), MemorySizeUtils.VEC4F);
+      buffer.put(light.getAttenuation().data(), MemorySizeUtils.VEC4F);
+      buffer.put(light.getInnerCutOff());
+      buffer.put(light.getOuterCutOff(), MemorySizeUtils.VEC3F);
     }
+  }
 
-    private void updateData(int frame, Scene scene) {
-        VkBufferFiller buffer = this.renderer.getFrames().get(frame, FK_BUFFER_DATA).filler();
-        buffer.put(scene.getLightData());
-    }
+  private long getDirectionalLightsBufferSize(Scene scene) {
+    return scene.getDirectionalLights().isEmpty()
+        ? 1L
+        : (long) scene.getDirectionalLights().size() * DirectionalLight.SIZE;
+  }
 
-    private void updateDirectionalLights(int frame, List<DirectionalLight> lights) {
+  private long getPointLightsBufferSize(Scene scene) {
+    return scene.getPointLights().isEmpty()
+        ? 1L
+        : (long) scene.getPointLights().size() * PointLight.SIZE;
+  }
 
-        VkBufferFiller buffer = this.renderer.getFrames().get(frame, FK_BUFFER_DIRECTIONAL_LIGHTS).filler();
-
-        for (DirectionalLight light : lights) {
-            buffer.put(light.getAmbient(), MemorySizeUtils.VEC4F);
-            buffer.put(light.getDiffuse(), MemorySizeUtils.VEC4F);
-            buffer.put(light.getSpecular(), MemorySizeUtils.VEC4F);
-            buffer.put(light.getData(), MemorySizeUtils.VEC4F);
-            buffer.put(light.getDirection(), MemorySizeUtils.VEC4F);
-        }
-
-    }
-
-    private void updatePointLights(int frame, List<PointLight> lights) {
-
-        VkBufferFiller buffer = this.renderer.getFrames().get(frame, FK_BUFFER_POINT_LIGHTS).filler();
-
-        for (PointLight light : lights) {
-            buffer.put(light.getAmbient(),  MemorySizeUtils.VEC4F);
-            buffer.put(light.getDiffuse(),  MemorySizeUtils.VEC4F);
-            buffer.put(light.getSpecular(), MemorySizeUtils.VEC4F);
-            buffer.put(light.getData(),     MemorySizeUtils.VEC4F);
-            buffer.put(light.getPosition(), MemorySizeUtils.VEC4F);
-            buffer.put(light.getAttenuation().data(), MemorySizeUtils.VEC4F);
-        }
-
-    }
-
-    private void updateSpotLights(int frame, List<SpotLight> lights) {
-
-        VkBufferFiller buffer = this.renderer.getFrames().get(frame, FK_BUFFER_SPOT_LIGHTS).filler();
-
-        for (SpotLight light : lights) {
-            buffer.put(light.getAmbient(), MemorySizeUtils.VEC4F);
-            buffer.put(light.getDiffuse(), MemorySizeUtils.VEC4F);
-            buffer.put(light.getSpecular(), MemorySizeUtils.VEC4F);
-            buffer.put(light.getData(), MemorySizeUtils.VEC4F);
-            buffer.put(light.getPosition(), MemorySizeUtils.VEC4F);
-            buffer.put(light.getDirection(), MemorySizeUtils.VEC4F);
-            buffer.put(light.getAttenuation().data(), MemorySizeUtils.VEC4F);
-            buffer.put(light.getInnerCutOff());
-            buffer.put(light.getOuterCutOff(), MemorySizeUtils.VEC3F);
-        }
-
-    }
-
-    private long getDirectionalLightsBufferSize(Scene scene) {
-        return scene.getDirectionalLights().isEmpty() ? 1L : (long) scene.getDirectionalLights().size() * DirectionalLight.SIZE;
-    }
-
-    private long getPointLightsBufferSize(Scene scene) {
-        return scene.getPointLights().isEmpty() ? 1L : (long) scene.getPointLights().size() * PointLight.SIZE;
-    }
-
-    private long getSpotLightsBufferSize(Scene scene) {
-        return scene.getSpotLights().isEmpty() ? 1L : (long) scene.getSpotLights().size() * SpotLight.SIZE;
-    }
+  private long getSpotLightsBufferSize(Scene scene) {
+    return scene.getSpotLights().isEmpty()
+        ? 1L
+        : (long) scene.getSpotLights().size() * SpotLight.SIZE;
+  }
 }

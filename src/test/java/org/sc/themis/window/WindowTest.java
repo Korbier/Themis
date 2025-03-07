@@ -15,30 +15,27 @@ import org.sc.themis.shared.exception.ThemisException;
 @TestProfile(Profiles.TagWithUiTest.class)
 public class WindowTest {
 
-    @Inject
-    Configuration configuration;
+  @Inject Configuration configuration;
 
-    @Test
-    @DisplayName("Create window - nominal case")
-    @Disabled
-    void testCreateWindow_01() throws ThemisException {
+  @Test
+  @DisplayName("Create window - nominal case")
+  @Disabled
+  void testCreateWindow_01() throws ThemisException {
 
-        //Given
-        Window window = new Window( configuration );
+    // Given
+    Window window = new Window(configuration);
 
-        //When
-        window.setup();
+    // When
+    window.setup();
 
-        //Then
-        Assertions.assertNotNull( window.getHandle() );
-        Assertions.assertEquals( 800, window.getSize().x );
-        Assertions.assertEquals( 600, window.getSize().y );
-        Assertions.assertNotEquals( 0, window.getResolution().x );
-        Assertions.assertNotEquals( 0, window.getResolution().y );
+    // Then
+    Assertions.assertNotNull(window.getHandle());
+    Assertions.assertEquals(800, window.getSize().x);
+    Assertions.assertEquals(600, window.getSize().y);
+    Assertions.assertNotEquals(0, window.getResolution().x);
+    Assertions.assertNotEquals(0, window.getResolution().y);
 
-        //Cleanup
-        window.cleanup();
-
-    }
-
+    // Cleanup
+    window.cleanup();
+  }
 }

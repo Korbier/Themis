@@ -8,28 +8,19 @@ import org.sc.themis.shared.exception.ThemisException;
 
 public class NoopRendererActivity extends RendererActivity {
 
-    public NoopRendererActivity(Configuration configuration) {
-        super(configuration);
-    }
+  public NoopRendererActivity(Configuration configuration) {
+    super(configuration);
+  }
 
-    @Override
-    public void setup(Renderer renderer) throws ThemisException {
+  @Override
+  public void setup(Renderer renderer) throws ThemisException {}
 
-    }
+  @Override
+  public void render(Scene scene, long tpf) throws ThemisException {}
 
-    @Override
-    public void render(Scene scene, long tpf) throws ThemisException {
+  @Override
+  public void resize(Scene scene) throws ThemisException {}
 
-    }
-
-    @Override
-    public void resize(Scene scene) throws ThemisException {
-
-    }
-
-    @Override
-    public void cleanup() throws ThemisException {
-
-    }
-
+  @Override
+  public void cleanup() throws ThemisException {}
 }

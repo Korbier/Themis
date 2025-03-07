@@ -16,28 +16,27 @@ import org.sc.viewer.renderactivity.ViewerRendererActivity;
 @TestProfile(Profiles.TagWithUiTest.class)
 public class ViewerTest {
 
-    @Inject
-    Configuration configuration;
+  @Inject Configuration configuration;
 
-    @Test
-    @Disabled
-    void runViewer() throws ThemisException {
+  @Test
+  @Disabled
+  void runViewer() throws ThemisException {
 
-        //Given
-        ViewerContext context = ViewerContext.createDefault();
-        ViewerGamestate gamestate = new ViewerGamestate(context);
-        Engine engine = new Engine( configuration, new ViewerRendererActivity( this.configuration, context, gamestate ) );
+    // Given
+    ViewerContext context = ViewerContext.createDefault();
+    ViewerGamestate gamestate = new ViewerGamestate(context);
+    Engine engine =
+        new Engine(
+            configuration, new ViewerRendererActivity(this.configuration, context, gamestate));
 
-        //When
-        engine.setup();
-        engine.setGamestate( gamestate );
-        engine.run();
+    // When
+    engine.setup();
+    engine.setGamestate(gamestate);
+    engine.run();
 
-        //Then
+    // Then
 
-        //Cleanup
-        engine.cleanup();
-
-    }
-
+    // Cleanup
+    engine.cleanup();
+  }
 }
