@@ -24,7 +24,7 @@ import org.sc.playground.scene.triangle2.SceneTriangle2Gamestate;
 import org.sc.playground.scene.triangle2.SceneTriangle2RendererActivity;
 import org.sc.playground.triangle.TriangleRendererActivity;
 import org.sc.themis.gamestate.Gamestate;
-import org.sc.themis.renderer.activity.RendererActivity;
+import org.sc.themis.renderer.RendererActivity;
 import org.sc.themis.shared.Configuration;
 
 public enum Playgrounds {

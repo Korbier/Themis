@@ -4,7 +4,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import org.sc.themis.renderer.Renderer;
-import org.sc.themis.renderer.renderpass.VkRenderPass;
+import org.sc.themis.renderer.base.renderpass.VkRenderPass;
 import org.sc.themis.scene.descriptorset.InputDescriptorSet;
 import org.sc.themis.scene.descriptorset.SceneDescriptorSet;
 import org.sc.themis.shared.Configuration;

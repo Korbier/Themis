@@ -1,9 +1,10 @@
 package org.sc.themis.scene.light;
 
 import org.joml.Vector3f;
+import org.sc.themis.scene.light.attenuation.Attenuation;
 import org.sc.themis.shared.utils.MemorySizeUtils;
 
-public class SpotLight extends Light {
+public final class SpotLight extends Light {
 
   public static final int SIZE =
       Light.SIZE

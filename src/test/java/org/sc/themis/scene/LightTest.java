@@ -4,6 +4,7 @@ import org.joml.Vector3f;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.sc.themis.scene.light.DirectionalLight;
 import org.sc.themis.scene.light.Light;
 
 public class LightTest {
@@ -18,7 +19,7 @@ public class LightTest {
     Vector3f specularColor = new Vector3f(0.0f, 0.0f, 1.0f);
 
     // When
-    Light light = new TestLight(ambiantColor, diffuseColor, specularColor);
+    Light light = new DirectionalLight(ambiantColor, diffuseColor, specularColor, new Vector3f());
 
     // Then
     Assertions.assertEquals(ambiantColor, light.getAmbient());
@@ -26,10 +27,4 @@ public class LightTest {
     Assertions.assertEquals(specularColor, light.getSpecular());
   }
 
-  private static class TestLight extends Light {
-
-    public TestLight(Vector3f ambient, Vector3f diffuse, Vector3f specular) {
-      super(ambient, diffuse, specular);
-    }
-  }
 }

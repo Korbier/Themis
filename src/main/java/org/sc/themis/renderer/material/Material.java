@@ -9,21 +9,21 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import org.jboss.logging.Logger;
 import org.sc.themis.renderer.Renderer;
+import org.sc.themis.renderer.base.device.VkDevice;
+import org.sc.themis.renderer.base.device.VkMemoryAllocator;
 import org.sc.themis.renderer.base.frame.Frames;
-import org.sc.themis.renderer.device.VkDevice;
-import org.sc.themis.renderer.device.VkMemoryAllocator;
-import org.sc.themis.renderer.pipeline.VkPipeline;
-import org.sc.themis.renderer.pipeline.VkPipelineDescriptor;
-import org.sc.themis.renderer.pipeline.VkVertexInputStateDescriptor;
-import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorPool;
-import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorSet;
-import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorSetBinding;
-import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorSetLayout;
-import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorSetProvider;
-import org.sc.themis.renderer.resource.buffer.VkBuffer;
-import org.sc.themis.renderer.resource.buffer.VkBufferDescriptor;
-import org.sc.themis.renderer.resource.image.VkSampler;
-import org.sc.themis.renderer.resource.image.VkSamplerDescriptor;
+import org.sc.themis.renderer.base.pipeline.VkPipeline;
+import org.sc.themis.renderer.base.pipeline.VkPipelineDescriptor;
+import org.sc.themis.renderer.base.pipeline.VkVertexInputStateDescriptor;
+import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorPool;
+import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSet;
+import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSetBinding;
+import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSetLayout;
+import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSetProvider;
+import org.sc.themis.renderer.base.resource.buffer.VkBuffer;
+import org.sc.themis.renderer.base.resource.buffer.VkBufferDescriptor;
+import org.sc.themis.renderer.base.resource.image.VkSampler;
+import org.sc.themis.renderer.base.resource.image.VkSamplerDescriptor;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.tobject.TObject;
@@ -253,7 +253,7 @@ public abstract class Material extends TObject {
   }
 
   protected Frames getFrames() {
-    return this.renderer.getFrames();
+    return this.renderer.getFramesInFlight();
   }
 
   protected VkMemoryAllocator getAllocator() {

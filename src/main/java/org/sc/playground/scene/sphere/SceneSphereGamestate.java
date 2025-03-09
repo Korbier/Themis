@@ -3,8 +3,8 @@ package org.sc.playground.scene.sphere;
 import java.nio.file.Path;
 import org.sc.themis.gamestate.Gamestate;
 import org.sc.themis.renderer.Renderer;
-import org.sc.themis.scene.Model;
 import org.sc.themis.scene.Scene;
+import org.sc.themis.scene.base.geometry.Model;
 import org.sc.themis.scene.factory.ModelFactory;
 import org.sc.themis.shared.exception.ThemisException;
 

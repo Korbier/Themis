@@ -13,7 +13,7 @@ import org.sc.playground.Playgrounds;
 import org.sc.playground.noop.NoopRendererActivity;
 import org.sc.themis.Profiles;
 import org.sc.themis.engine.exception.EngineGamestateNotFoundException;
-import org.sc.themis.renderer.activity.RendererActivity;
+import org.sc.themis.renderer.RendererActivity;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 

@@ -2,9 +2,9 @@ package org.sc.themis.renderer.material;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorSetBinding;
-import org.sc.themis.renderer.resource.buffer.VkBufferDescriptor;
-import org.sc.themis.renderer.resource.image.VkSamplerDescriptor;
+import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSetBinding;
+import org.sc.themis.renderer.base.resource.buffer.VkBufferDescriptor;
+import org.sc.themis.renderer.base.resource.image.VkSamplerDescriptor;
 
 public class MaterialDescriptor {
 

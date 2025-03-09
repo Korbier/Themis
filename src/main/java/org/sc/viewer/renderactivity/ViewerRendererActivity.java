@@ -7,13 +7,13 @@ import static org.lwjgl.vulkan.VK10.VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 import static org.lwjgl.vulkan.VK10.VK_SAMPLE_COUNT_1_BIT;
 
 import org.sc.themis.renderer.Renderer;
-import org.sc.themis.renderer.activity.RendererActivity;
+import org.sc.themis.renderer.RendererActivity;
+import org.sc.themis.renderer.base.device.VkDevice;
 import org.sc.themis.renderer.base.frame.FrameKey;
 import org.sc.themis.renderer.base.frame.Frames;
-import org.sc.themis.renderer.device.VkDevice;
-import org.sc.themis.renderer.framebuffer.VkFrameBufferAttachments;
-import org.sc.themis.renderer.sync.VkFence;
-import org.sc.themis.renderer.sync.VkSemaphore;
+import org.sc.themis.renderer.base.framebuffer.VkFrameBufferAttachments;
+import org.sc.themis.renderer.base.sync.VkFence;
+import org.sc.themis.renderer.base.sync.VkSemaphore;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.scene.descriptorset.InputDescriptorSet;
 import org.sc.themis.scene.descriptorset.MousePickingDescriptorSet;
@@ -83,7 +83,7 @@ public class ViewerRendererActivity extends RendererActivity {
   }
 
   public Frames getFrames() {
-    return this.renderer.getFrames();
+    return this.renderer.getFramesInFlight();
   }
 
   public VkDevice getDevice() {

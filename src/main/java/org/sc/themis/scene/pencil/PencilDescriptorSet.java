@@ -9,16 +9,16 @@ import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_VERTEX_BIT;
 
 import org.sc.themis.renderer.Renderer;
 import org.sc.themis.renderer.base.frame.FrameKey;
-import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorPool;
-import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorSet;
-import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorSetBinding;
-import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorSetLayout;
-import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorSetProvider;
-import org.sc.themis.renderer.resource.buffer.VkBuffer;
-import org.sc.themis.renderer.resource.buffer.VkBufferDescriptor;
-import org.sc.themis.renderer.resource.image.VkSampler;
-import org.sc.themis.renderer.resource.image.VkSamplerDescriptor;
-import org.sc.themis.renderer.resource.staging.VkStagingImage;
+import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorPool;
+import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSet;
+import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSetBinding;
+import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSetLayout;
+import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSetProvider;
+import org.sc.themis.renderer.base.resource.buffer.VkBuffer;
+import org.sc.themis.renderer.base.resource.buffer.VkBufferDescriptor;
+import org.sc.themis.renderer.base.resource.image.VkSampler;
+import org.sc.themis.renderer.base.resource.image.VkSamplerDescriptor;
+import org.sc.themis.renderer.resource.VkStagingImage;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
@@ -80,7 +80,7 @@ public class PencilDescriptorSet extends TObject implements VkDescriptorSetProvi
    * @param scene scene
    */
   public void updateAll(Scene scene) throws ThemisException {
-    this.renderer.getFrames().update(FK_BUFFER, (frame, buffer) -> update(frame, scene));
+    this.renderer.getFramesInFlight().update(FK_BUFFER, (frame, buffer) -> update(frame, scene));
   }
 
   /**
@@ -89,7 +89,7 @@ public class PencilDescriptorSet extends TObject implements VkDescriptorSetProvi
    * @param scene scene
    */
   public void update(int frame, Scene scene) {
-    VkBuffer buffer = this.renderer.getFrames().get(frame, FK_BUFFER);
+    VkBuffer buffer = this.renderer.getFramesInFlight().get(frame, FK_BUFFER);
     buffer.set(0, scene.getProjection().orthographic());
     buffer.set(MemorySizeUtils.MAT4x4F, getConfiguration().scene().projection().fov());
     buffer.set(
@@ -113,7 +113,7 @@ public class PencilDescriptorSet extends TObject implements VkDescriptorSetProvi
    * @param frame frame
    */
   public VkDescriptorSet getDescriptorSet(int frame) {
-    return this.renderer.getFrames().get(frame, FK_DESCRIPTORSET);
+    return this.renderer.getFramesInFlight().get(frame, FK_DESCRIPTORSET);
   }
 
   @Override
@@ -140,7 +140,7 @@ public class PencilDescriptorSet extends TObject implements VkDescriptorSetProvi
 
   private void setupDescriptorSets() throws ThemisException {
     this.renderer
-        .getFrames()
+        .getFramesInFlight()
         .create(
             FK_DESCRIPTORSET,
             () ->
@@ -150,18 +150,18 @@ public class PencilDescriptorSet extends TObject implements VkDescriptorSetProvi
                     this.descriptorPool,
                     this.descriptorSetLayout));
     this.renderer
-        .getFrames()
+        .getFramesInFlight()
         .update(
             FK_DESCRIPTORSET,
             (frame, descriptorset) -> {
-              descriptorset.bind(0, this.renderer.getFrames().get(frame, FK_BUFFER));
+              descriptorset.bind(0, this.renderer.getFramesInFlight().get(frame, FK_BUFFER));
               descriptorset.bind(1, this.stgImage.getView(), this.sampler);
             });
   }
 
   private void setupBuffers() throws ThemisException {
     this.renderer
-        .getFrames()
+        .getFramesInFlight()
         .create(
             FK_BUFFER,
             () ->
@@ -187,7 +187,7 @@ public class PencilDescriptorSet extends TObject implements VkDescriptorSetProvi
         new VkDescriptorPool(
             getConfiguration(),
             this.renderer.getDevice(),
-            this.renderer.getFrames().getSize(),
+            this.renderer.getFramesInFlight().getSize(),
             this.descriptorSetLayout);
     this.descriptorPool.setup();
   }
@@ -195,8 +195,8 @@ public class PencilDescriptorSet extends TObject implements VkDescriptorSetProvi
   @Override
   public void cleanup() throws ThemisException {
     this.sampler.cleanup();
-    this.renderer.getFrames().remove(FK_BUFFER);
-    this.renderer.getFrames().remove(FK_DESCRIPTORSET);
+    this.renderer.getFramesInFlight().remove(FK_BUFFER);
+    this.renderer.getFramesInFlight().remove(FK_DESCRIPTORSET);
     this.descriptorPool.cleanup();
     this.descriptorSetLayout.cleanup();
   }

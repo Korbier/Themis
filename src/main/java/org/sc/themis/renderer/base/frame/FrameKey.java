@@ -1,10 +1,10 @@
 package org.sc.themis.renderer.base.frame;
 
-import org.sc.themis.renderer.base.VulkanObject;
+import org.sc.themis.shared.tobject.TObject;
 
-public interface FrameKey<D extends VulkanObject> {
+public interface FrameKey<D extends TObject> {
 
-  static <T extends VulkanObject> FrameKey<T> of(Class<T> clazz) {
+  static <T extends TObject> FrameKey<T> of(Class<T> clazz) {
     return () -> clazz;
   }
 

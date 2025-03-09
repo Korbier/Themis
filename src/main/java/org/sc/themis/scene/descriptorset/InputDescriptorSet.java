@@ -5,15 +5,15 @@ import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_FRAGMENT_BIT;
 
 import org.sc.themis.renderer.Renderer;
 import org.sc.themis.renderer.base.frame.FrameKey;
-import org.sc.themis.renderer.framebuffer.VkFrameBufferAttachment;
-import org.sc.themis.renderer.framebuffer.VkFrameBufferAttachments;
-import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorPool;
-import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorSet;
-import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorSetBinding;
-import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorSetLayout;
-import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorSetProvider;
-import org.sc.themis.renderer.resource.image.VkSampler;
-import org.sc.themis.renderer.resource.image.VkSamplerDescriptor;
+import org.sc.themis.renderer.base.framebuffer.VkFrameBufferAttachment;
+import org.sc.themis.renderer.base.framebuffer.VkFrameBufferAttachments;
+import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorPool;
+import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSet;
+import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSetBinding;
+import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSetLayout;
+import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSetProvider;
+import org.sc.themis.renderer.base.resource.image.VkSampler;
+import org.sc.themis.renderer.base.resource.image.VkSamplerDescriptor;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.tobject.TObject;
@@ -27,7 +27,7 @@ public class InputDescriptorSet extends TObject implements VkDescriptorSetProvid
   private VkDescriptorPool descriptorPool;
   private final int size;
 
-  private org.sc.themis.renderer.resource.image.VkSampler sampler;
+  private VkSampler sampler;
 
   public InputDescriptorSet(Configuration configuration, Renderer renderer, int size) {
     super(configuration);
@@ -60,13 +60,14 @@ public class InputDescriptorSet extends TObject implements VkDescriptorSetProvid
   }
 
   public VkDescriptorSet getDescriptorSet(int frame) {
-    return this.renderer.getFrames().get(frame, this.descriptorSets);
+    return this.renderer.getFramesInFlight().get(frame, this.descriptorSets);
   }
 
   public void update(int frame, VkFrameBufferAttachments... inputAttachments)
       throws ThemisException {
 
-    VkDescriptorSet descriptorSet = this.renderer.getFrames().get(frame, this.descriptorSets);
+    VkDescriptorSet descriptorSet =
+        this.renderer.getFramesInFlight().get(frame, this.descriptorSets);
 
     int i = 0;
     for (VkFrameBufferAttachments inputs : inputAttachments) {
@@ -104,11 +105,11 @@ public class InputDescriptorSet extends TObject implements VkDescriptorSetProvid
 
   private void createDescriptorSets(VkDescriptorPool pool, VkDescriptorSetLayout layout)
       throws ThemisException {
-    this.renderer.getFrames().create(this.descriptorSets, pool::create);
+    this.renderer.getFramesInFlight().create(this.descriptorSets, pool::create);
   }
 
   private VkSampler createDefaultSampler() throws ThemisException {
-    org.sc.themis.renderer.resource.image.VkSampler sampler =
+    VkSampler sampler =
         new VkSampler(
             getConfiguration(),
             this.renderer.getDevice(),
