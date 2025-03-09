@@ -9,9 +9,9 @@ import static org.lwjgl.glfw.GLFW.GLFW_KEY_W;
 
 import org.joml.Vector2f;
 import org.sc.themis.input.Input;
-import org.sc.themis.scene.Camera;
-import org.sc.themis.scene.Controller;
 import org.sc.themis.scene.Scene;
+import org.sc.themis.scene.base.Camera;
+import org.sc.themis.scene.base.Controller;
 
 public class FpsCameraController implements Controller {
 

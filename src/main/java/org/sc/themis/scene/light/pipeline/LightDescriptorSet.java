@@ -10,14 +10,14 @@ import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_FRAGMENT_BIT;
 import java.util.List;
 import org.sc.themis.renderer.Renderer;
 import org.sc.themis.renderer.base.frame.FrameKey;
-import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorPool;
-import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorSet;
-import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorSetBinding;
-import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorSetLayout;
-import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorSetProvider;
-import org.sc.themis.renderer.resource.buffer.VkBuffer;
-import org.sc.themis.renderer.resource.buffer.VkBufferDescriptor;
-import org.sc.themis.renderer.resource.buffer.VkBufferFiller;
+import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorPool;
+import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSet;
+import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSetBinding;
+import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSetLayout;
+import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSetProvider;
+import org.sc.themis.renderer.base.resource.buffer.VkBuffer;
+import org.sc.themis.renderer.base.resource.buffer.VkBufferDescriptor;
+import org.sc.themis.renderer.base.resource.buffer.VkBufferFiller;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.scene.light.DirectionalLight;
 import org.sc.themis.scene.light.PointLight;
@@ -123,7 +123,7 @@ public class LightDescriptorSet extends TObject implements VkDescriptorSetProvid
    * @param scene scene
    */
   public void updateAll(Scene scene) {
-    for (int frame = 0; frame < renderer.getFrames().getSize(); frame++) {
+    for (int frame = 0; frame < renderer.getFramesInFlight().getSize(); frame++) {
       update(frame, scene);
     }
   }
@@ -150,7 +150,7 @@ public class LightDescriptorSet extends TObject implements VkDescriptorSetProvid
    * @param frame frame
    */
   public VkDescriptorSet getDescriptorSet(int frame) {
-    return this.renderer.getFrames().get(frame, FK_DESCRIPTORSET);
+    return this.renderer.getFramesInFlight().get(frame, FK_DESCRIPTORSET);
   }
 
   /** Descriptorset setup. */
@@ -171,7 +171,7 @@ public class LightDescriptorSet extends TObject implements VkDescriptorSetProvid
 
   private void setupDescriptorSets() throws ThemisException {
     this.renderer
-        .getFrames()
+        .getFramesInFlight()
         .create(
             FK_DESCRIPTORSET,
             () ->
@@ -192,7 +192,7 @@ public class LightDescriptorSet extends TObject implements VkDescriptorSetProvid
             0);
 
     this.renderer
-        .getFrames()
+        .getFramesInFlight()
         .create(
             FK_BUFFER_DATA,
             () ->
@@ -203,11 +203,12 @@ public class LightDescriptorSet extends TObject implements VkDescriptorSetProvid
                     descriptor));
 
     this.renderer
-        .getFrames()
+        .getFramesInFlight()
         .update(
             FK_DESCRIPTORSET,
             (frame, descriptorset) ->
-                descriptorset.bind(0, this.renderer.getFrames().get(frame, FK_BUFFER_DATA)));
+                descriptorset.bind(
+                    0, this.renderer.getFramesInFlight().get(frame, FK_BUFFER_DATA)));
   }
 
   private void setupBuffersDirectionalLights(Scene scene) throws ThemisException {
@@ -220,7 +221,7 @@ public class LightDescriptorSet extends TObject implements VkDescriptorSetProvid
             VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
     this.renderer
-        .getFrames()
+        .getFramesInFlight()
         .create(
             FK_BUFFER_DIRECTIONAL_LIGHTS,
             () ->
@@ -231,12 +232,12 @@ public class LightDescriptorSet extends TObject implements VkDescriptorSetProvid
                     descriptor));
 
     this.renderer
-        .getFrames()
+        .getFramesInFlight()
         .update(
             FK_DESCRIPTORSET,
             (frame, descriptorset) ->
                 descriptorset.bind(
-                    1, this.renderer.getFrames().get(frame, FK_BUFFER_DIRECTIONAL_LIGHTS)));
+                    1, this.renderer.getFramesInFlight().get(frame, FK_BUFFER_DIRECTIONAL_LIGHTS)));
   }
 
   private void setupBuffersPointLights(Scene scene) throws ThemisException {
@@ -249,7 +250,7 @@ public class LightDescriptorSet extends TObject implements VkDescriptorSetProvid
             VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
     this.renderer
-        .getFrames()
+        .getFramesInFlight()
         .create(
             FK_BUFFER_POINT_LIGHTS,
             () ->
@@ -260,12 +261,12 @@ public class LightDescriptorSet extends TObject implements VkDescriptorSetProvid
                     descriptor));
 
     this.renderer
-        .getFrames()
+        .getFramesInFlight()
         .update(
             FK_DESCRIPTORSET,
             (frame, descriptorset) ->
                 descriptorset.bind(
-                    2, this.renderer.getFrames().get(frame, FK_BUFFER_POINT_LIGHTS)));
+                    2, this.renderer.getFramesInFlight().get(frame, FK_BUFFER_POINT_LIGHTS)));
   }
 
   private void setupBuffersSpotLights(Scene scene) throws ThemisException {
@@ -278,7 +279,7 @@ public class LightDescriptorSet extends TObject implements VkDescriptorSetProvid
             VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
     this.renderer
-        .getFrames()
+        .getFramesInFlight()
         .create(
             FK_BUFFER_SPOT_LIGHTS,
             () ->
@@ -289,11 +290,12 @@ public class LightDescriptorSet extends TObject implements VkDescriptorSetProvid
                     descriptor));
 
     this.renderer
-        .getFrames()
+        .getFramesInFlight()
         .update(
             FK_DESCRIPTORSET,
             (frame, descriptorset) ->
-                descriptorset.bind(3, this.renderer.getFrames().get(frame, FK_BUFFER_SPOT_LIGHTS)));
+                descriptorset.bind(
+                    3, this.renderer.getFramesInFlight().get(frame, FK_BUFFER_SPOT_LIGHTS)));
   }
 
   private void setupDescriptorLayout() throws ThemisException {
@@ -313,28 +315,28 @@ public class LightDescriptorSet extends TObject implements VkDescriptorSetProvid
         new VkDescriptorPool(
             getConfiguration(),
             this.renderer.getDevice(),
-            this.renderer.getFrames().getSize(),
+            this.renderer.getFramesInFlight().getSize(),
             this.descriptorSetLayout);
     this.descriptorPool.setup();
   }
 
   @Override
   public void cleanup() throws ThemisException {
-    this.renderer.getFrames().remove(FK_BUFFER_DATA);
-    this.renderer.getFrames().remove(FK_DESCRIPTORSET);
+    this.renderer.getFramesInFlight().remove(FK_BUFFER_DATA);
+    this.renderer.getFramesInFlight().remove(FK_DESCRIPTORSET);
     this.descriptorPool.cleanup();
     this.descriptorSetLayout.cleanup();
   }
 
   private void updateData(int frame, Scene scene) {
-    VkBufferFiller buffer = this.renderer.getFrames().get(frame, FK_BUFFER_DATA).filler();
+    VkBufferFiller buffer = this.renderer.getFramesInFlight().get(frame, FK_BUFFER_DATA).filler();
     buffer.put(scene.getLightData());
   }
 
   private void updateDirectionalLights(int frame, List<DirectionalLight> lights) {
 
     VkBufferFiller buffer =
-        this.renderer.getFrames().get(frame, FK_BUFFER_DIRECTIONAL_LIGHTS).filler();
+        this.renderer.getFramesInFlight().get(frame, FK_BUFFER_DIRECTIONAL_LIGHTS).filler();
 
     for (DirectionalLight light : lights) {
       buffer.put(light.getAmbient(), MemorySizeUtils.VEC4F);
@@ -347,7 +349,8 @@ public class LightDescriptorSet extends TObject implements VkDescriptorSetProvid
 
   private void updatePointLights(int frame, List<PointLight> lights) {
 
-    VkBufferFiller buffer = this.renderer.getFrames().get(frame, FK_BUFFER_POINT_LIGHTS).filler();
+    VkBufferFiller buffer =
+        this.renderer.getFramesInFlight().get(frame, FK_BUFFER_POINT_LIGHTS).filler();
 
     for (PointLight light : lights) {
       buffer.put(light.getAmbient(), MemorySizeUtils.VEC4F);
@@ -361,7 +364,8 @@ public class LightDescriptorSet extends TObject implements VkDescriptorSetProvid
 
   private void updateSpotLights(int frame, List<SpotLight> lights) {
 
-    VkBufferFiller buffer = this.renderer.getFrames().get(frame, FK_BUFFER_SPOT_LIGHTS).filler();
+    VkBufferFiller buffer =
+        this.renderer.getFramesInFlight().get(frame, FK_BUFFER_SPOT_LIGHTS).filler();
 
     for (SpotLight light : lights) {
       buffer.put(light.getAmbient(), MemorySizeUtils.VEC4F);

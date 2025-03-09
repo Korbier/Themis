@@ -4,7 +4,7 @@ import org.sc.themis.engine.exception.EngineGamestateNotFoundException;
 import org.sc.themis.gamestate.Gamestate;
 import org.sc.themis.input.Input;
 import org.sc.themis.renderer.Renderer;
-import org.sc.themis.renderer.activity.RendererActivity;
+import org.sc.themis.renderer.RendererActivity;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.assertion.Assertions;

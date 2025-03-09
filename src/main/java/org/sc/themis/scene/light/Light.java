@@ -4,7 +4,7 @@ import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.sc.themis.shared.utils.MemorySizeUtils;
 
-public abstract class Light {
+public abstract sealed class Light permits DirectionalLight, PointLight, SpotLight {
 
   public static final int SIZE =
       MemorySizeUtils.VEC4F + MemorySizeUtils.VEC4F + MemorySizeUtils.VEC4F + MemorySizeUtils.VEC4F;

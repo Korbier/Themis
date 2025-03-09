@@ -1,0 +1,10 @@
+package org.sc.themis.renderer.base.exception;
+
+import org.lwjgl.vulkan.KHRSwapchain;
+
+public class VkOutOfDateKHRException extends VulkanException {
+
+  public VkOutOfDateKHRException() {
+    super(KHRSwapchain.VK_ERROR_OUT_OF_DATE_KHR, "Out of date");
+  }
+}

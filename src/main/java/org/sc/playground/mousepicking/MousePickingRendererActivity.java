@@ -33,32 +33,32 @@ import org.joml.Vector2f;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.util.shaderc.Shaderc;
 import org.sc.themis.renderer.Renderer;
-import org.sc.themis.renderer.activity.RendererActivity;
+import org.sc.themis.renderer.RendererActivity;
+import org.sc.themis.renderer.base.command.VkCommand;
+import org.sc.themis.renderer.base.device.VkDevice;
 import org.sc.themis.renderer.base.frame.FrameKey;
-import org.sc.themis.renderer.command.VkCommand;
-import org.sc.themis.renderer.device.VkDevice;
-import org.sc.themis.renderer.framebuffer.VkFrameBuffer;
-import org.sc.themis.renderer.framebuffer.VkFrameBufferAttachments;
-import org.sc.themis.renderer.framebuffer.VkFrameBufferDescriptor;
-import org.sc.themis.renderer.pipeline.VkPipeline;
-import org.sc.themis.renderer.pipeline.VkPipelineDescriptor;
-import org.sc.themis.renderer.pipeline.VkPipelineLayout;
-import org.sc.themis.renderer.pipeline.VkPushConstantRange;
-import org.sc.themis.renderer.pipeline.VkShaderProgram;
-import org.sc.themis.renderer.pipeline.VkShaderProgramStage;
-import org.sc.themis.renderer.pipeline.VkShaderSourceCompiler;
-import org.sc.themis.renderer.pipeline.VkVertexInputState;
-import org.sc.themis.renderer.pipeline.VkVertexInputStateDescriptor;
-import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorSet;
-import org.sc.themis.renderer.renderpass.VkRenderPass;
-import org.sc.themis.renderer.renderpass.VkRenderPassDescriptor;
-import org.sc.themis.renderer.renderpass.VkRenderPassLayout;
-import org.sc.themis.renderer.renderpass.VkSubpass;
-import org.sc.themis.renderer.sync.VkFence;
-import org.sc.themis.scene.Instance;
-import org.sc.themis.scene.Mesh;
-import org.sc.themis.scene.Model;
+import org.sc.themis.renderer.base.framebuffer.VkFrameBuffer;
+import org.sc.themis.renderer.base.framebuffer.VkFrameBufferAttachments;
+import org.sc.themis.renderer.base.framebuffer.VkFrameBufferDescriptor;
+import org.sc.themis.renderer.base.pipeline.VkPipeline;
+import org.sc.themis.renderer.base.pipeline.VkPipelineDescriptor;
+import org.sc.themis.renderer.base.pipeline.VkPipelineLayout;
+import org.sc.themis.renderer.base.pipeline.VkPushConstantRange;
+import org.sc.themis.renderer.base.pipeline.VkShaderProgram;
+import org.sc.themis.renderer.base.pipeline.VkShaderProgramStage;
+import org.sc.themis.renderer.base.pipeline.VkShaderSourceCompiler;
+import org.sc.themis.renderer.base.pipeline.VkVertexInputState;
+import org.sc.themis.renderer.base.pipeline.VkVertexInputStateDescriptor;
+import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSet;
+import org.sc.themis.renderer.base.renderpass.VkRenderPass;
+import org.sc.themis.renderer.base.renderpass.VkRenderPassDescriptor;
+import org.sc.themis.renderer.base.renderpass.VkRenderPassLayout;
+import org.sc.themis.renderer.base.renderpass.VkSubpass;
+import org.sc.themis.renderer.base.sync.VkFence;
 import org.sc.themis.scene.Scene;
+import org.sc.themis.scene.base.geometry.Instance;
+import org.sc.themis.scene.base.geometry.Mesh;
+import org.sc.themis.scene.base.geometry.Model;
 import org.sc.themis.scene.descriptorset.FramebufferAttachmentDescriptorSet;
 import org.sc.themis.scene.descriptorset.MousePickingDescriptorSet;
 import org.sc.themis.scene.descriptorset.SceneDescriptorSet;
@@ -163,9 +163,9 @@ public class MousePickingRendererActivity extends RendererActivity {
 
     this.sceneDescriptorSet.update(frame, scene);
 
-    VkCommand command = this.renderer.getFrames().get(frame, FK_COMMAND);
-    VkFence fence = this.renderer.getFrames().get(frame, FK_FENCE);
-    VkFrameBuffer framebuffer = this.renderer.getFrames().get(frame, FK_FRAMEBUFFER);
+    VkCommand command = this.renderer.getFramesInFlight().get(frame, FK_COMMAND);
+    VkFence fence = this.renderer.getFramesInFlight().get(frame, FK_FENCE);
+    VkFrameBuffer framebuffer = this.renderer.getFramesInFlight().get(frame, FK_FRAMEBUFFER);
     VkDescriptorSet sceneDescriptorSet = this.sceneDescriptorSet.getDescriptorSet(frame);
     VkDescriptorSet subpass1DescriptorSet = this.subpass1DescriptorSet.getDescriptorSet(frame);
     VkDescriptorSet mousePickingDescriptorSet =
@@ -233,7 +233,7 @@ public class MousePickingRendererActivity extends RendererActivity {
   @Override
   public void resize(Scene scene) throws ThemisException {
 
-    this.renderer.getFrames().remove(FK_FRAMEBUFFER);
+    this.renderer.getFramesInFlight().remove(FK_FRAMEBUFFER);
     this.renderPass.cleanup();
     this.frameBufferAttachments.cleanup();
 
@@ -292,7 +292,7 @@ public class MousePickingRendererActivity extends RendererActivity {
 
   private void setupFramebuffers() throws ThemisException {
     this.renderer
-        .getFrames()
+        .getFramesInFlight()
         .create(
             FK_FRAMEBUFFER,
             (frame) -> {
@@ -332,12 +332,14 @@ public class MousePickingRendererActivity extends RendererActivity {
 
   private void setupFence() throws ThemisException {
     this.renderer
-        .getFrames()
+        .getFramesInFlight()
         .create(FK_FENCE, () -> new VkFence(getConfiguration(), this.renderer.getDevice(), false));
   }
 
   private void setupCommand() throws ThemisException {
-    this.renderer.getFrames().create(FK_COMMAND, () -> this.renderer.createGraphicCommand(true));
+    this.renderer
+        .getFramesInFlight()
+        .create(FK_COMMAND, () -> this.renderer.createGraphicCommand(true));
   }
 
   private VkRenderPassDescriptor createSubPassDescriptor(VkDevice device) {

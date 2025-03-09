@@ -15,19 +15,19 @@ import static org.lwjgl.vulkan.VK10.VK_PIPELINE_BIND_POINT_GRAPHICS;
 import static org.lwjgl.vulkan.VK10.VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 
 import org.sc.themis.renderer.Renderer;
-import org.sc.themis.renderer.activity.RendererActivity;
+import org.sc.themis.renderer.RendererActivity;
+import org.sc.themis.renderer.base.command.VkCommand;
+import org.sc.themis.renderer.base.device.VkDevice;
 import org.sc.themis.renderer.base.frame.FrameKey;
 import org.sc.themis.renderer.base.frame.Frames;
-import org.sc.themis.renderer.command.VkCommand;
-import org.sc.themis.renderer.device.VkDevice;
-import org.sc.themis.renderer.framebuffer.VkFrameBuffer;
-import org.sc.themis.renderer.framebuffer.VkFrameBufferAttachments;
-import org.sc.themis.renderer.framebuffer.VkFrameBufferDescriptor;
-import org.sc.themis.renderer.renderpass.VkRenderPass;
-import org.sc.themis.renderer.renderpass.VkRenderPassDescriptor;
-import org.sc.themis.renderer.renderpass.VkRenderPassLayout;
-import org.sc.themis.renderer.renderpass.VkSubpass;
-import org.sc.themis.renderer.sync.VkFence;
+import org.sc.themis.renderer.base.framebuffer.VkFrameBuffer;
+import org.sc.themis.renderer.base.framebuffer.VkFrameBufferAttachments;
+import org.sc.themis.renderer.base.framebuffer.VkFrameBufferDescriptor;
+import org.sc.themis.renderer.base.renderpass.VkRenderPass;
+import org.sc.themis.renderer.base.renderpass.VkRenderPassDescriptor;
+import org.sc.themis.renderer.base.renderpass.VkRenderPassLayout;
+import org.sc.themis.renderer.base.renderpass.VkSubpass;
+import org.sc.themis.renderer.base.sync.VkFence;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
@@ -87,7 +87,7 @@ public abstract class BaseRendererActivity extends RendererActivity {
   }
 
   protected Frames getFrames() {
-    return this.renderer.getFrames();
+    return this.renderer.getFramesInFlight();
   }
 
   protected VkFrameBuffer getFramebuffer(int frame) {

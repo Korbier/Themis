@@ -1,8 +1,8 @@
 package org.sc.themis.renderer.material;
 
-import org.sc.themis.renderer.command.VkCommand;
-import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorSet;
-import org.sc.themis.scene.Model;
+import org.sc.themis.renderer.base.command.VkCommand;
+import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSet;
+import org.sc.themis.scene.base.geometry.Model;
 import org.sc.themis.shared.exception.ThemisException;
 
 /** Material manager. */

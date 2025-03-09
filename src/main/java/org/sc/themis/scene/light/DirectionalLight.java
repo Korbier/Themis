@@ -3,7 +3,7 @@ package org.sc.themis.scene.light;
 import org.joml.Vector3f;
 import org.sc.themis.shared.utils.MemorySizeUtils;
 
-public class DirectionalLight extends Light {
+public final class DirectionalLight extends Light {
 
   public static final int SIZE = Light.SIZE + MemorySizeUtils.VEC3F;
 

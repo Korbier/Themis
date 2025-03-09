@@ -8,13 +8,13 @@ import static org.lwjgl.vulkan.VK10.VK_VERTEX_INPUT_RATE_VERTEX;
 
 import org.lwjgl.util.shaderc.Shaderc;
 import org.sc.themis.renderer.Renderer;
+import org.sc.themis.renderer.base.pipeline.VkPipelineDescriptor;
+import org.sc.themis.renderer.base.pipeline.VkShaderSourceCompiler;
+import org.sc.themis.renderer.base.pipeline.VkVertexInputStateDescriptor;
+import org.sc.themis.renderer.base.renderpass.VkRenderPass;
+import org.sc.themis.renderer.base.resource.buffer.VkBufferDescriptor;
 import org.sc.themis.renderer.material.Material;
 import org.sc.themis.renderer.material.MaterialProperty;
-import org.sc.themis.renderer.pipeline.VkPipelineDescriptor;
-import org.sc.themis.renderer.pipeline.VkShaderSourceCompiler;
-import org.sc.themis.renderer.pipeline.VkVertexInputStateDescriptor;
-import org.sc.themis.renderer.renderpass.VkRenderPass;
-import org.sc.themis.renderer.resource.buffer.VkBufferDescriptor;
 import org.sc.themis.scene.descriptorset.SceneDescriptorSet;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.utils.MemorySizeUtils;

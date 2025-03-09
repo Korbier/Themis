@@ -4,7 +4,7 @@ import static org.lwjgl.glfw.GLFW.GLFW_KEY_F1;
 
 import java.util.UUID;
 import org.sc.themis.input.Input;
-import org.sc.themis.scene.Controller;
+import org.sc.themis.scene.base.Controller;
 import org.sc.themis.scene.pencil.Pencil;
 import org.sc.themis.scene.ui.UIBuilder;
 import org.sc.viewer.ViewerContext;

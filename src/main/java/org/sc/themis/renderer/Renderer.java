@@ -4,24 +4,23 @@ import org.jboss.logging.Logger;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkExtent2D;
 import org.sc.themis.input.Input;
-import org.sc.themis.renderer.activity.RendererActivity;
+import org.sc.themis.renderer.base.command.VkCommand;
+import org.sc.themis.renderer.base.command.VkCommandPool;
+import org.sc.themis.renderer.base.device.VkDevice;
+import org.sc.themis.renderer.base.device.VkInstance;
+import org.sc.themis.renderer.base.device.VkMemoryAllocator;
+import org.sc.themis.renderer.base.device.VkPhysicalDevice;
+import org.sc.themis.renderer.base.device.VkPhysicalDeviceSelectors;
+import org.sc.themis.renderer.base.device.VkPhysicalDevices;
 import org.sc.themis.renderer.base.frame.FrameKey;
 import org.sc.themis.renderer.base.frame.Frames;
-import org.sc.themis.renderer.command.VkCommand;
-import org.sc.themis.renderer.command.VkCommandPool;
-import org.sc.themis.renderer.device.VkDevice;
-import org.sc.themis.renderer.device.VkInstance;
-import org.sc.themis.renderer.device.VkMemoryAllocator;
-import org.sc.themis.renderer.device.VkPhysicalDevice;
-import org.sc.themis.renderer.device.VkPhysicalDeviceSelectors;
-import org.sc.themis.renderer.device.VkPhysicalDevices;
-import org.sc.themis.renderer.presentation.VkSurface;
-import org.sc.themis.renderer.presentation.VkSwapChain;
-import org.sc.themis.renderer.queue.VkQueue;
-import org.sc.themis.renderer.queue.VkQueueSelectors;
-import org.sc.themis.renderer.resource.image.VkImageView;
-import org.sc.themis.renderer.resource.staging.VkStagingResourceAllocator;
-import org.sc.themis.renderer.sync.VkSemaphore;
+import org.sc.themis.renderer.base.presentation.VkSurface;
+import org.sc.themis.renderer.base.presentation.VkSwapChain;
+import org.sc.themis.renderer.base.queue.VkQueue;
+import org.sc.themis.renderer.base.queue.VkQueueSelectors;
+import org.sc.themis.renderer.base.resource.image.VkImageView;
+import org.sc.themis.renderer.base.sync.VkSemaphore;
+import org.sc.themis.renderer.resource.VkStagingResourceAllocator;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
@@ -61,7 +60,7 @@ public class Renderer extends TObject {
   private VkCommandPool transfertCommandPool;
   private VkCommand transfertCommand;
 
-  private Frames frames;
+  private Frames framesInFlight;
   private final Timer timer = new Timer();
 
   boolean isSceneConfigured = false;
@@ -94,7 +93,7 @@ public class Renderer extends TObject {
     this.setupResourceAllocator();
 
     /** Frame dependent setups * */
-    this.frames = new Frames(getFrameCount(), true, true);
+    this.framesInFlight = new Frames(getFrameCount(), true, true);
     this.setupActivity();
     this.setupSemaphores();
 
@@ -110,7 +109,7 @@ public class Renderer extends TObject {
   @Override
   public void cleanup() throws ThemisException {
     this.activity.cleanup();
-    this.frames.cleanup();
+    this.framesInFlight.cleanup();
     this.swapChain.cleanup();
     this.transfertCommandPool.cleanup();
     this.graphicCommandPool.cleanup();
@@ -196,8 +195,8 @@ public class Renderer extends TObject {
     return this.swapChain.getCurrentFrame();
   }
 
-  public Frames getFrames() {
-    return this.frames;
+  public Frames getFramesInFlight() {
+    return this.framesInFlight;
   }
 
   public VkExtent2D getExtent() {
@@ -221,11 +220,11 @@ public class Renderer extends TObject {
   }
 
   public VkSemaphore getAcquireSemaphore(int frame) {
-    return this.frames.get(frame, FK_ACQUIRE_SEMAPHORE);
+    return this.framesInFlight.get(frame, FK_ACQUIRE_SEMAPHORE);
   }
 
   public VkSemaphore getPresentSemaphore(int frame) {
-    return this.frames.get(frame, FK_PRESENT_SEMAPHORE);
+    return this.framesInFlight.get(frame, FK_PRESENT_SEMAPHORE);
   }
 
   private void resize(Scene scene) throws ThemisException {
@@ -314,9 +313,9 @@ public class Renderer extends TObject {
   }
 
   private void setupSemaphores() throws ThemisException {
-    this.frames.create(
+    this.framesInFlight.create(
         FK_ACQUIRE_SEMAPHORE, () -> new VkSemaphore(getConfiguration(), this.device));
-    this.frames.create(
+    this.framesInFlight.create(
         FK_PRESENT_SEMAPHORE, () -> new VkSemaphore(getConfiguration(), this.device));
   }
 }

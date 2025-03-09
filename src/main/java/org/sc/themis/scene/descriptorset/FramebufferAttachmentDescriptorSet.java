@@ -4,11 +4,11 @@ import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_FRAGMENT_BIT;
 
 import org.sc.themis.renderer.Renderer;
 import org.sc.themis.renderer.base.frame.FrameKey;
-import org.sc.themis.renderer.framebuffer.VkFrameBufferAttachment;
-import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorPool;
-import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorSet;
-import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorSetBinding;
-import org.sc.themis.renderer.pipeline.descriptorset.VkDescriptorSetLayout;
+import org.sc.themis.renderer.base.framebuffer.VkFrameBufferAttachment;
+import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorPool;
+import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSet;
+import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSetBinding;
+import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSetLayout;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.tobject.TObject;
@@ -37,7 +37,7 @@ public class FramebufferAttachmentDescriptorSet extends TObject {
   }
 
   public VkDescriptorSet getDescriptorSet(int frame) {
-    return this.renderer.getFrames().get(frame, FK_DESCRIPTORSET);
+    return this.renderer.getFramesInFlight().get(frame, FK_DESCRIPTORSET);
   }
 
   @Override
@@ -49,7 +49,7 @@ public class FramebufferAttachmentDescriptorSet extends TObject {
 
   private void setupDescriptorSets() throws ThemisException {
     this.renderer
-        .getFrames()
+        .getFramesInFlight()
         .create(
             FK_DESCRIPTORSET,
             () ->
@@ -59,7 +59,7 @@ public class FramebufferAttachmentDescriptorSet extends TObject {
                     this.descriptorPool,
                     this.descriptorSetLayout));
     this.renderer
-        .getFrames()
+        .getFramesInFlight()
         .update(
             FK_DESCRIPTORSET,
             desc -> {
@@ -86,14 +86,14 @@ public class FramebufferAttachmentDescriptorSet extends TObject {
         new VkDescriptorPool(
             getConfiguration(),
             this.renderer.getDevice(),
-            this.renderer.getFrames().getSize(),
+            this.renderer.getFramesInFlight().getSize(),
             this.descriptorSetLayout);
     this.descriptorPool.setup();
   }
 
   @Override
   public void cleanup() throws ThemisException {
-    this.renderer.getFrames().remove(FK_DESCRIPTORSET);
+    this.renderer.getFramesInFlight().remove(FK_DESCRIPTORSET);
     this.descriptorPool.cleanup();
     this.descriptorSetLayout.cleanup();
   }

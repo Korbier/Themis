@@ -1,8 +1,8 @@
 package org.sc.themis.scene.factory;
 
-import org.sc.themis.renderer.resource.staging.VkStagingResourceAllocator;
-import org.sc.themis.scene.Mesh;
-import org.sc.themis.scene.Vertex;
+import org.sc.themis.renderer.resource.VkStagingResourceAllocator;
+import org.sc.themis.scene.base.geometry.Mesh;
+import org.sc.themis.scene.base.geometry.Vertex;
 import org.sc.themis.shared.exception.ThemisException;
 
 public class MeshFactory {

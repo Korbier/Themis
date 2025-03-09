@@ -5,8 +5,8 @@ import org.joml.Vector3f;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.sc.themis.scene.light.Attenuation;
 import org.sc.themis.scene.light.SpotLight;
+import org.sc.themis.scene.light.attenuation.Attenuation;
 import org.sc.themis.shared.Configuration;
 
 public class SpotLightTest {

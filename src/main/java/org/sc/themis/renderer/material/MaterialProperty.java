@@ -1,7 +1,7 @@
 package org.sc.themis.renderer.material;
 
 import org.joml.Vector4f;
-import org.sc.themis.renderer.resource.staging.VkStagingImage;
+import org.sc.themis.renderer.resource.VkStagingImage;
 
 /**
  * Material properties.

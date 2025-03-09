@@ -1,7 +1,7 @@
 package org.sc.viewer.renderactivity.postprocess.postprocessor;
 
 import org.lwjgl.util.shaderc.Shaderc;
-import org.sc.themis.renderer.pipeline.VkShaderSourceCompiler;
+import org.sc.themis.renderer.base.pipeline.VkShaderSourceCompiler;
 import org.sc.viewer.renderactivity.postprocess.PostProcessor;
 
 public class ShowTBNPostprocessor implements PostProcessor {
