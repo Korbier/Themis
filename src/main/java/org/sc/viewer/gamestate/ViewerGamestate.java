@@ -22,97 +22,96 @@ import org.sc.viewer.gamestate.controller.UiController;
 
 public class ViewerGamestate implements Gamestate {
 
-    private final ModelFactory modelFactory = new ModelFactory();
-    private final MaterialFactory materialFactory = new MaterialFactory();
+  private final ModelFactory modelFactory = new ModelFactory();
+  private final MaterialFactory materialFactory = new MaterialFactory();
 
-    private final ViewerContext context;
-    private final Pencil pencil;
+  private final ViewerContext context;
+  private final Pencil pencil;
 
-    private Model model;
+  private Model model;
 
-    public ViewerGamestate(ViewerContext context) {
-        this.context = context;
-        this.pencil = new Pencil(Font.of("src/main/resources/font/arial.fnt"));
-    }
+  public ViewerGamestate(ViewerContext context) {
+    this.context = context;
+    this.pencil = new Pencil(Font.of("src/main/resources/font/arial.fnt"));
+  }
 
-    @Override
-    public void setup(Renderer renderer, Scene scene) throws ThemisException {
-        setupCamera(scene);
-        setupUI(scene);
-        setupScene(renderer, scene);
-        setupKeyMapping(scene);
-    }
+  @Override
+  public void setup(Renderer renderer, Scene scene) throws ThemisException {
+    setupCamera(scene);
+    setupUI(scene);
+    setupScene(renderer, scene);
+    setupKeyMapping(scene);
+  }
 
-    @Override
-    public void cleanup(Renderer renderer, Scene scene) throws ThemisException {
-        this.model.cleanup();
-    }
+  @Override
+  public void cleanup(Renderer renderer, Scene scene) throws ThemisException {
+    this.model.cleanup();
+  }
 
-    public Pencil getPencil() {
-        return this.pencil;
-    }
+  public Pencil getPencil() {
+    return this.pencil;
+  }
 
-    private void setupKeyMapping(Scene scene) {
-        scene.add(new KeyMappingController(this.context.getKeyMapping()));
-    }
+  private void setupKeyMapping(Scene scene) {
+    scene.add(new KeyMappingController(this.context.getKeyMapping()));
+  }
 
-    private void setupCamera(Scene scene) {
-        scene.getCamera().setPosition(0.0f, 1.0f, 8.0f);
-        scene.add(new FpsCameraController(scene));
-    }
+  private void setupCamera(Scene scene) {
+    scene.getCamera().setPosition(0.0f, 1.0f, 8.0f);
+    scene.add(new FpsCameraController(scene));
+  }
 
-    private void setupUI(Scene scene) {
-        scene.add(new UiController(this.pencil, this.context));
-    }
+  private void setupUI(Scene scene) {
+    scene.add(new UiController(this.pencil, this.context));
+  }
 
-    private void setupScene(Renderer renderer, Scene scene) throws ThemisException {
+  private void setupScene(Renderer renderer, Scene scene) throws ThemisException {
 
-        this.model = createSphere(renderer, "sphere-1");
-        this.model.setMaterialProperties(this.materialFactory.color(1.0f, 1.0f, 1.0f, 128.0f));
+    this.model = createSphere(renderer, "sphere-1");
+    this.model.setMaterialProperties(this.materialFactory.color(1.0f, 1.0f, 1.0f, 128.0f));
 
-        scene.add(this.model.create().position(-3.0f,  3.0f, 0.0f));
-        scene.add(this.model.create().position(-3.0f,  0.0f, 0.0f));
-        scene.add(this.model.create().position(-3.0f, -3.0f, 0.0f));
+    scene.add(this.model.create().position(-3.0f, 3.0f, 0.0f));
+    scene.add(this.model.create().position(-3.0f, 0.0f, 0.0f));
+    scene.add(this.model.create().position(-3.0f, -3.0f, 0.0f));
 
-        scene.add(this.model.create().position(0.0f,  3.0f, 0.0f));
-        scene.add(this.model.create().position(0.0f, -3.0f, 0.0f));
+    scene.add(this.model.create().position(0.0f, 3.0f, 0.0f));
+    scene.add(this.model.create().position(0.0f, -3.0f, 0.0f));
 
-        scene.add(this.model.create().position(3.0f,  3.0f, 0.0f));
-        scene.add(this.model.create().position(3.0f,  0.0f, 0.0f));
-        scene.add(this.model.create().position(3.0f, -3.0f, 0.0f));
+    scene.add(this.model.create().position(3.0f, 3.0f, 0.0f));
+    scene.add(this.model.create().position(3.0f, 0.0f, 0.0f));
+    scene.add(this.model.create().position(3.0f, -3.0f, 0.0f));
 
-        scene.add(new SpotLight(
-                new Vector3f(0.0f, 0.0f, 0.1f),
-                new Vector3f(0.0f, 0.0f, 0.7f),
-                new Vector3f(0.0f, 0.0f, 0.9f),
-                new Vector3f(0.0f, 0.5f, 10.0f),
-                new Vector3f(0.0f, 0.5f, -10.0f),
-                Attenuation.type1(128.0f, 64.0f),
-                (float) Math.cos(Math.toRadians(18.0f)),
-                (float) Math.cos(Math.toRadians(20.0f))
-        ));
+    scene.add(
+        new SpotLight(
+            new Vector3f(0.0f, 0.0f, 0.1f),
+            new Vector3f(0.0f, 0.0f, 0.7f),
+            new Vector3f(0.0f, 0.0f, 0.9f),
+            new Vector3f(0.0f, 0.5f, 10.0f),
+            new Vector3f(0.0f, 0.5f, -10.0f),
+            Attenuation.type1(128.0f, 64.0f),
+            (float) Math.cos(Math.toRadians(18.0f)),
+            (float) Math.cos(Math.toRadians(20.0f))));
 
-        scene.add(new DirectionalLight(
+    scene.add(
+        new DirectionalLight(
             new Vector3f(0.01f),
             new Vector3f(0.1f),
             new Vector3f(0.3f),
-            new Vector3f(0.0f, 0.0f, -1.0f))
-        );
+            new Vector3f(0.0f, 0.0f, -1.0f)));
 
-        scene.add(new PointLight(
+    scene.add(
+        new PointLight(
             new Vector3f(0.01f),
             new Vector3f(0.4f, 0.0f, 0.0f),
             new Vector3f(0.7f, 0.0f, 0.0f),
             new Vector3f(5.0f, 5.0f, 5.0f),
-            Attenuation.type1(128.0f, 64.0f)
-        ));
+            Attenuation.type1(128.0f, 64.0f)));
+  }
 
-    }
-
-    private Model createSphere(Renderer renderer, String id) throws ThemisException {
-        return this.modelFactory.create(id,
-            renderer.getResourceAllocator(),
-            Path.of("./src/main/resources/model/sphere/scene.gltf"));
-    }
-
+  private Model createSphere(Renderer renderer, String id) throws ThemisException {
+    return this.modelFactory.create(
+        id,
+        renderer.getResourceAllocator(),
+        Path.of("./src/main/resources/model/sphere/scene.gltf"));
+  }
 }

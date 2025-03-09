@@ -9,25 +9,23 @@ import org.sc.viewer.renderactivity.ViewerRendererActivity;
 
 public class Bootstrap implements QuarkusApplication {
 
-    @Inject
-    Configuration configuration;
+  @Inject Configuration configuration;
 
-    @Override
-    public int run(String... args) throws Exception {
+  @Override
+  public int run(String... args) throws Exception {
 
-        ViewerContext context = ViewerContext.createDefault();
+    ViewerContext context = ViewerContext.createDefault();
 
-        ViewerGamestate gamestate = new ViewerGamestate(context);
-        ViewerRendererActivity activity = new ViewerRendererActivity(this.configuration, context, gamestate);
+    ViewerGamestate gamestate = new ViewerGamestate(context);
+    ViewerRendererActivity activity =
+        new ViewerRendererActivity(this.configuration, context, gamestate);
 
-        Engine engine = new Engine(this.configuration, activity);
-        engine.setup();
+    Engine engine = new Engine(this.configuration, activity);
+    engine.setup();
 
-        engine.setGamestate(gamestate);
-        engine.run();
+    engine.setGamestate(gamestate);
+    engine.run();
 
-        return 0;
-
-    }
-
+    return 0;
+  }
 }

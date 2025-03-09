@@ -4,5 +4,5 @@ import org.sc.themis.shared.exception.ThemisException;
 
 @FunctionalInterface
 public interface FunctionWithException<T, R> {
-    R apply(T t) throws ThemisException;
+  R apply(T t) throws ThemisException;
 }

@@ -1,5 +1,19 @@
 package org.sc.playground.shared;
 
+import static org.lwjgl.vulkan.KHRSwapchain.VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+import static org.lwjgl.vulkan.VK10.VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+import static org.lwjgl.vulkan.VK10.VK_ATTACHMENT_LOAD_OP_CLEAR;
+import static org.lwjgl.vulkan.VK10.VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+import static org.lwjgl.vulkan.VK10.VK_ATTACHMENT_STORE_OP_DONT_CARE;
+import static org.lwjgl.vulkan.VK10.VK_ATTACHMENT_STORE_OP_STORE;
+import static org.lwjgl.vulkan.VK10.VK_FORMAT_B8G8R8A8_SRGB;
+import static org.lwjgl.vulkan.VK10.VK_FORMAT_D32_SFLOAT;
+import static org.lwjgl.vulkan.VK10.VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+import static org.lwjgl.vulkan.VK10.VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+import static org.lwjgl.vulkan.VK10.VK_IMAGE_LAYOUT_UNDEFINED;
+import static org.lwjgl.vulkan.VK10.VK_PIPELINE_BIND_POINT_GRAPHICS;
+import static org.lwjgl.vulkan.VK10.VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+
 import org.sc.themis.renderer.Renderer;
 import org.sc.themis.renderer.activity.RendererActivity;
 import org.sc.themis.renderer.base.frame.FrameKey;
@@ -18,126 +32,152 @@ import org.sc.themis.scene.Scene;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 
-import static org.lwjgl.vulkan.KHRSwapchain.VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-import static org.lwjgl.vulkan.VK10.*;
-
 public abstract class BaseRendererActivity extends RendererActivity {
 
-    private final static String FB_ATTACHMENT_COLOR = "framebuffer.attachment.color";
-    private final static String FB_ATTACHMENT_DEPTH = "framebuffer.attachment.depth";
+  private static final String FB_ATTACHMENT_COLOR = "framebuffer.attachment.color";
+  private static final String FB_ATTACHMENT_DEPTH = "framebuffer.attachment.depth";
 
-    /*** Framed object ***/
-    private final static FrameKey<VkFrameBuffer> FK_FRAMEBUFFER = FrameKey.of( VkFrameBuffer.class );
-    private final static FrameKey<VkCommand>     FK_COMMAND = FrameKey.of( VkCommand.class );
-    private final static FrameKey<VkFence>       FK_FENCE = FrameKey.of( VkFence.class );
+  /*** Framed object ***/
+  private static final FrameKey<VkFrameBuffer> FK_FRAMEBUFFER = FrameKey.of(VkFrameBuffer.class);
 
-    protected Renderer renderer;
-    protected VkFrameBufferAttachments frameBufferAttachments;
-    protected VkRenderPass renderPass;
+  private static final FrameKey<VkCommand> FK_COMMAND = FrameKey.of(VkCommand.class);
+  private static final FrameKey<VkFence> FK_FENCE = FrameKey.of(VkFence.class);
 
-    public BaseRendererActivity(Configuration configuration) {
-        super(configuration);
-    }
+  protected Renderer renderer;
+  protected VkFrameBufferAttachments frameBufferAttachments;
+  protected VkRenderPass renderPass;
 
-    public abstract void setupPipeline() throws ThemisException;
-    public abstract void cleanupPipeline() throws ThemisException ;
+  public BaseRendererActivity(Configuration configuration) {
+    super(configuration);
+  }
 
-    @Override
-    public void setup( Renderer renderer ) throws ThemisException {
-        this.renderer = renderer;
-        setupFramebufferAttachments();
-        setupRenderPass();
-        setupFramebuffers();
-        setupCommand();
-        setupFence();
-        setupPipeline();
-    }
+  public abstract void setupPipeline() throws ThemisException;
 
-    @Override
-    public void cleanup() throws ThemisException {
-        cleanupPipeline();
-        this.renderer.waitIdle();
-        this.renderPass.cleanup();
-        this.frameBufferAttachments.cleanup();
-    }
+  public abstract void cleanupPipeline() throws ThemisException;
 
-    @Override
-    public void resize(Scene scene) throws ThemisException {
+  @Override
+  public void setup(Renderer renderer) throws ThemisException {
+    this.renderer = renderer;
+    setupFramebufferAttachments();
+    setupRenderPass();
+    setupFramebuffers();
+    setupCommand();
+    setupFence();
+    setupPipeline();
+  }
 
-        getFrames().remove(FK_FRAMEBUFFER);
-        this.renderPass.cleanup();
-        this.frameBufferAttachments.cleanup();
+  @Override
+  public void cleanup() throws ThemisException {
+    cleanupPipeline();
+    this.renderer.waitIdle();
+    this.renderPass.cleanup();
+    this.frameBufferAttachments.cleanup();
+  }
 
-        setupFramebufferAttachments();
-        setupRenderPass();
-        setupFramebuffers();
+  @Override
+  public void resize(Scene scene) throws ThemisException {
 
-    }
+    getFrames().remove(FK_FRAMEBUFFER);
+    this.renderPass.cleanup();
+    this.frameBufferAttachments.cleanup();
 
-    protected Frames getFrames() {
-        return this.renderer.getFrames();
-    }
+    setupFramebufferAttachments();
+    setupRenderPass();
+    setupFramebuffers();
+  }
 
-    protected VkFrameBuffer getFramebuffer( int frame ) {
-        return getFrames().get( frame, FK_FRAMEBUFFER );
-    }
+  protected Frames getFrames() {
+    return this.renderer.getFrames();
+  }
 
-    protected VkCommand getCommand( int frame ) {
-        return getFrames().get( frame, FK_COMMAND );
-    }
+  protected VkFrameBuffer getFramebuffer(int frame) {
+    return getFrames().get(frame, FK_FRAMEBUFFER);
+  }
 
-    protected VkFence getFence( int frame ) {
-        return getFrames().get( frame, FK_FENCE );
-    }
+  protected VkCommand getCommand(int frame) {
+    return getFrames().get(frame, FK_COMMAND);
+  }
 
-    private void setupFence() throws ThemisException {
-        getFrames().create( FK_FENCE, () -> new VkFence( getConfiguration(), this.renderer.getDevice(), false ) );
-    }
+  protected VkFence getFence(int frame) {
+    return getFrames().get(frame, FK_FENCE);
+  }
 
-    private void setupCommand() throws ThemisException {
-        getFrames().create( FK_COMMAND, () -> this.renderer.createGraphicCommand( true ) );
-    }
+  private void setupFence() throws ThemisException {
+    getFrames()
+        .create(FK_FENCE, () -> new VkFence(getConfiguration(), this.renderer.getDevice(), false));
+  }
 
-    private void setupRenderPass() throws ThemisException {
-        VkRenderPassDescriptor descriptor = createSubPassDescriptor( renderer.getDevice() );
-        this.renderPass = new VkRenderPass(getConfiguration(), renderer.getDevice(), descriptor);
-        this.renderPass.setup();
-    }
+  private void setupCommand() throws ThemisException {
+    getFrames().create(FK_COMMAND, () -> this.renderer.createGraphicCommand(true));
+  }
 
-    private void setupFramebufferAttachments() throws ThemisException {
-        this.frameBufferAttachments = new VkFrameBufferAttachments( getConfiguration(), renderer.getDevice(), this.renderer.getExtent() );
-        this.frameBufferAttachments.setup();
-        this.frameBufferAttachments.raw( FB_ATTACHMENT_COLOR, renderer.getImageFormat() );
-        this.frameBufferAttachments.depth( FB_ATTACHMENT_DEPTH, VK_FORMAT_D32_SFLOAT );
-    }
+  private void setupRenderPass() throws ThemisException {
+    VkRenderPassDescriptor descriptor = createSubPassDescriptor(renderer.getDevice());
+    this.renderPass = new VkRenderPass(getConfiguration(), renderer.getDevice(), descriptor);
+    this.renderPass.setup();
+  }
 
-    private void setupFramebuffers() throws ThemisException {
-        getFrames().create( FK_FRAMEBUFFER, ( frame ) -> {
-            VkFrameBufferDescriptor descriptor = new VkFrameBufferDescriptor(
-                this.renderer.getExtent(), this.renderPass.getHandle(),
-                this.renderer.getImageView( frame ).getHandle(),
-                this.frameBufferAttachments.get( FB_ATTACHMENT_DEPTH ).getView().getHandle()
-            );
-            return new VkFrameBuffer( getConfiguration(), this.renderer.getDevice(), descriptor );
-        });
-    }
+  private void setupFramebufferAttachments() throws ThemisException {
+    this.frameBufferAttachments =
+        new VkFrameBufferAttachments(
+            getConfiguration(), renderer.getDevice(), this.renderer.getExtent());
+    this.frameBufferAttachments.setup();
+    this.frameBufferAttachments.raw(FB_ATTACHMENT_COLOR, renderer.getImageFormat());
+    this.frameBufferAttachments.depth(FB_ATTACHMENT_DEPTH, VK_FORMAT_D32_SFLOAT);
+  }
 
-    private VkRenderPassDescriptor createSubPassDescriptor(VkDevice device) {
+  private void setupFramebuffers() throws ThemisException {
+    getFrames()
+        .create(
+            FK_FRAMEBUFFER,
+            (frame) -> {
+              VkFrameBufferDescriptor descriptor =
+                  new VkFrameBufferDescriptor(
+                      this.renderer.getExtent(),
+                      this.renderPass.getHandle(),
+                      this.renderer.getImageView(frame).getHandle(),
+                      this.frameBufferAttachments.get(FB_ATTACHMENT_DEPTH).getView().getHandle());
+              return new VkFrameBuffer(getConfiguration(), this.renderer.getDevice(), descriptor);
+            });
+  }
 
-        VkRenderPassLayout layout = new VkRenderPassLayout()
-                .add( 0, VK_FORMAT_B8G8R8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE )
-                .add(1, this.frameBufferAttachments.get( FB_ATTACHMENT_DEPTH ).getFormat(), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE);
+  private VkRenderPassDescriptor createSubPassDescriptor(VkDevice device) {
 
-        VkSubpass subpass = new VkSubpass( device, VK_PIPELINE_BIND_POINT_GRAPHICS );
-        subpass.color( 0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL );
-        subpass.depth( 1, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL );
+    VkRenderPassLayout layout =
+        new VkRenderPassLayout()
+            .add(
+                0,
+                VK_FORMAT_B8G8R8A8_SRGB,
+                VK_IMAGE_LAYOUT_UNDEFINED,
+                VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+                VK_ATTACHMENT_LOAD_OP_CLEAR,
+                VK_ATTACHMENT_STORE_OP_STORE,
+                VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+                VK_ATTACHMENT_STORE_OP_DONT_CARE)
+            .add(
+                1,
+                this.frameBufferAttachments.get(FB_ATTACHMENT_DEPTH).getFormat(),
+                VK_IMAGE_LAYOUT_UNDEFINED,
+                VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+                VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+                VK_ATTACHMENT_STORE_OP_DONT_CARE,
+                VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+                VK_ATTACHMENT_STORE_OP_DONT_CARE);
 
-        VkRenderPassDescriptor descriptor = new VkRenderPassDescriptor( layout );
-        descriptor.subpass( subpass );
-        descriptor.dependency( 0, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, 0 );
+    VkSubpass subpass = new VkSubpass(device, VK_PIPELINE_BIND_POINT_GRAPHICS);
+    subpass.color(0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+    subpass.depth(1, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 
-        return descriptor;
+    VkRenderPassDescriptor descriptor = new VkRenderPassDescriptor(layout);
+    descriptor.subpass(subpass);
+    descriptor.dependency(
+        0,
+        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+        0,
+        VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+        0);
 
-    }
-
+    return descriptor;
+  }
 }

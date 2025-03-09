@@ -1,6 +1,7 @@
 package org.sc.themis.renderer.pipeline.descriptorset;
 
 public interface VkDescriptorSetProvider {
-    VkDescriptorSetLayout getDescriptorSetLayout();
-    VkDescriptorSet getDescriptorSet( int frame );
+  VkDescriptorSetLayout getDescriptorSetLayout();
+
+  VkDescriptorSet getDescriptorSet(int frame);
 }

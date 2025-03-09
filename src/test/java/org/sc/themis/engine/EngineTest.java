@@ -21,50 +21,49 @@ import org.sc.themis.shared.exception.ThemisException;
 @TestProfile(Profiles.TagWithUiTest.class)
 public class EngineTest {
 
-    @Inject
-    Configuration configuration;
+  @Inject Configuration configuration;
 
-    @ParameterizedTest
-    @EnumSource(value=Playgrounds.class, names = "NOOP", mode = EnumSource.Mode.EXCLUDE)
-    @Disabled
-    //@EnumSource(value=Playgrounds.class, names = "SCENE_TRIANGLE")
-    void testRenderActivity( Playgrounds playground ) throws ThemisException {
+  @ParameterizedTest
+  @EnumSource(value = Playgrounds.class, names = "NOOP", mode = EnumSource.Mode.EXCLUDE)
+  @Disabled
+  // @EnumSource(value=Playgrounds.class, names = "SCENE_TRIANGLE")
+  void testRenderActivity(Playgrounds playground) throws ThemisException {
 
-        //Given
-        RendererActivity activity = playground.getFactory().apply( this.configuration );
-        Engine engine = new Engine( configuration, activity );
+    // Given
+    RendererActivity activity = playground.getFactory().apply(this.configuration);
+    Engine engine = new Engine(configuration, activity);
 
-        //When
-        engine.setup();
-        engine.setGamestate( new EngineTestGamestate( engine, playground.getGamestate(), 5 ) ); //new EngineTestGamestate( engine, playground.getGamestate(), 5 )
-        engine.run();
+    // When
+    engine.setup();
+    engine.setGamestate(
+        new EngineTestGamestate(
+            engine,
+            playground.getGamestate(),
+            5)); // new EngineTestGamestate( engine, playground.getGamestate(), 5 )
+    engine.run();
 
-        //Then
+    // Then
 
-        //Cleanup
-        engine.cleanup();
+    // Cleanup
+    engine.cleanup();
+  }
 
-    }
+  @Test
+  @DisplayName("Create engine - no gamestate found")
+  @Disabled
+  void testCreateEngine_01() throws ThemisException {
 
-    @Test
-    @DisplayName("Create engine - no gamestate found")
-    @Disabled
-    void testCreateEngine_01() throws ThemisException {
+    // Given
 
-        //Given
+    Engine engine = new Engine(configuration, new NoopRendererActivity(this.configuration));
 
-        Engine engine = new Engine( configuration, new NoopRendererActivity( this.configuration ) );
+    // When
+    engine.setup();
 
-        //When
-        engine.setup();
+    // Then
+    Assertions.assertThrows(EngineGamestateNotFoundException.class, engine::run);
 
-        //Then
-        Assertions.assertThrows( EngineGamestateNotFoundException.class,  engine::run );
-
-        //Cleanup
-        engine.cleanup();
-
-    }
-
-
+    // Cleanup
+    engine.cleanup();
+  }
 }
