@@ -75,7 +75,7 @@ public class Pencil {
   }
 
   public Pencil drawTriangle(
-      float x1, float y1, float x2, float y2, float x3, float y3, float r, float g, float b) {
+    float x1, float y1, float x2, float y2, float x3, float y3, float r, float g, float b) {
 
     int startIndiceOffset = getDataSize() / COMPONENT_COUNT;
 
@@ -102,16 +102,16 @@ public class Pencil {
     setData(data, getDataSize(), x, y, 0.0f, 0.0f, r, g, b, false);
     setData(data, getDataSize() + COMPONENT_COUNT, x + width, y, 1.0f, 0.0f, r, g, b, false);
     setData(
-        data,
-        getDataSize() + COMPONENT_COUNT * 2,
-        x + width,
-        y + height,
-        1.0f,
-        1.0f,
-        r,
-        g,
-        b,
-        false);
+      data,
+      getDataSize() + COMPONENT_COUNT * 2,
+      x + width,
+      y + height,
+      1.0f,
+      1.0f,
+      r,
+      g,
+      b,
+      false);
     setData(data, getDataSize() + COMPONENT_COUNT * 3, x, y + height, 0.0f, 1.0f, r, g, b, false);
     this.data = data;
 
@@ -128,36 +128,36 @@ public class Pencil {
   }
 
   private Pencil drawRect(
-      float x, float y, float width, float height, float uMin, float vMin, float uMax, float vMax) {
+    float x, float y, float width, float height, float uMin, float vMin, float uMax, float vMax) {
 
     int startIndiceOffset = getDataSize() / COMPONENT_COUNT;
 
     float[] data = extendData(4);
     setData(data, getDataSize(), x, y, uMin, vMin, 0.0f, 0.0f, 0.0f, true);
     setData(
-        data, getDataSize() + COMPONENT_COUNT, x + width, y, uMax, vMin, 0.0f, 0.0f, 0.0f, true);
+      data, getDataSize() + COMPONENT_COUNT, x + width, y, uMax, vMin, 0.0f, 0.0f, 0.0f, true);
     setData(
-        data,
-        getDataSize() + COMPONENT_COUNT * 2,
-        x + width,
-        y + height,
-        uMax,
-        vMax,
-        0.0f,
-        0.0f,
-        0.0f,
-        true);
+      data,
+      getDataSize() + COMPONENT_COUNT * 2,
+      x + width,
+      y + height,
+      uMax,
+      vMax,
+      0.0f,
+      0.0f,
+      0.0f,
+      true);
     setData(
-        data,
-        getDataSize() + COMPONENT_COUNT * 3,
-        x,
-        y + height,
-        uMin,
-        vMax,
-        0.0f,
-        0.0f,
-        0.0f,
-        true);
+      data,
+      getDataSize() + COMPONENT_COUNT * 3,
+      x,
+      y + height,
+      uMin,
+      vMax,
+      0.0f,
+      0.0f,
+      0.0f,
+      true);
     this.data = data;
 
     int[] indices = extendIndices(6);

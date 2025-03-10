@@ -8,7 +8,7 @@ import org.sc.themis.scene.pencil.Pencil;
 public abstract sealed class ComponentBuilder<B extends ComponentBuilder<?>>
         permits
           ButtonBuilder,
-          SwitchButtonBuilder {
+        ToggleButtonBuilder {
 
   private final UIBuilder uiBuilder;
   private final Map<String, Consumer<UIBuilder>> events = new HashMap<>();
@@ -23,10 +23,12 @@ public abstract sealed class ComponentBuilder<B extends ComponentBuilder<?>>
     this.uiBuilder = uiBuilder;
   }
 
+  protected abstract void checkInput();
   protected abstract void draw();
   protected abstract void triggerEvents();
 
   public void build() {
+    checkInput();
     checkState();
     draw();
     triggerEvents();

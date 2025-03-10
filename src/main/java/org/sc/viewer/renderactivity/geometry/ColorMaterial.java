@@ -119,6 +119,7 @@ public class ColorMaterial extends Material {
                 finalColor += phong_spots(nlNormal, position, material.ambient.rgb, material.diffuse.rgb, material.specular.rgb, material.shininess);
 
                 outColor = vec4( finalColor, 1.0f );
+                outColor = vec4(pow(outColor.rgb, vec3(2.2)), outColor.a);
 
             }
             """);

@@ -77,7 +77,7 @@ public class PencilPipeline extends TObject {
                 if (inUseTexture == 1.0f) {
                     outFragColor = texture(textureSampler, inTexture);
                 } else {
-                    outFragColor = vec4(inColor, 1.0f);
+                    outFragColor = vec4(pow(inColor.rgb, vec3(2.2)), 1.0f);//vec4(inColor, 1.0f);//
                 }
             }
             """;

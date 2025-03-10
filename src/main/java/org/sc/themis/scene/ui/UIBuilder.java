@@ -44,4 +44,9 @@ public class UIBuilder {
   public ButtonBuilder button(String identifier, String text) {
     return new ButtonBuilder(this).identifier(identifier).text(text);
   }
+
+  public ToggleButtonBuilder toggleButton(String identifier) {
+    return new ToggleButtonBuilder(this).identifier(identifier);
+  }
+
 }

@@ -7,9 +7,11 @@ public final class ButtonBuilder extends ComponentBuilder<ButtonBuilder> {
   public static final int DEFAULT_BORDER_SIZE = 2;
 
   public static final String EVENT_ON_CLICK = "button.event.onclick";
-  public static final String EVENT_ON_HOVER = "button.event.onHover";
 
   private String text = null;
+  private Color clrDefault = Color.of("ffffff");
+  private Color clrHot = null;
+  private Color clrActive = null;
 
   ButtonBuilder(UIBuilder builder) {
     super(builder);
@@ -20,31 +22,61 @@ public final class ButtonBuilder extends ComponentBuilder<ButtonBuilder> {
     return this;
   }
 
+  public ButtonBuilder colorDefault(Color color) {
+    this.clrDefault = color;
+    return this;
+  }
+
+  public ButtonBuilder colorHot(Color color) {
+    this.clrHot = color;
+    return this;
+  }
+
+  public ButtonBuilder colorActive(Color color) {
+    this.clrActive = color;
+    return this;
+  }
+
   public ButtonBuilder onClick(Consumer<UIBuilder> eventListener) {
     addEvent(EVENT_ON_CLICK, eventListener);
     return this;
   }
 
-  public ButtonBuilder onHover(Consumer<UIBuilder> eventListener) {
-    addEvent(EVENT_ON_HOVER, eventListener);
-    return this;
+  @Override
+  protected void checkInput() {
+    //Nothing to do
   }
 
   @Override
   protected void draw() {
 
-    pencil().drawRect(this.left(), this.top(), this.width(), this.height(), .2f, .2f, .2f);
+    Color defaultColor = this.clrDefault;
+    Color hotColor = this.clrHot != null ? this.clrHot : this.clrDefault;
+    Color activeColor = this.clrActive != null ? this.clrActive : this.clrDefault;
+
+    pencil().drawRect(
+        this.left(), this.top(), this.width(), this.height(),
+        activeColor.r(), activeColor.b(), activeColor.g()
+    );
 
     if (isHotItem()) {
-      pencil()
-          .drawRect(
-              this.left() + DEFAULT_BORDER_SIZE,
-              this.top() + DEFAULT_BORDER_SIZE,
-              this.width() - 2 * DEFAULT_BORDER_SIZE,
-              this.height() - 2 * DEFAULT_BORDER_SIZE,
-              .2f,
-              .2f,
-              .2f);
+      if (isActiveItem()) {
+        pencil()
+            .drawRect(
+                this.left() + DEFAULT_BORDER_SIZE,
+                this.top() + DEFAULT_BORDER_SIZE,
+                this.width() - 2 * DEFAULT_BORDER_SIZE,
+                this.height() - 2 * DEFAULT_BORDER_SIZE,
+                activeColor.r(), activeColor.b(), activeColor.g());
+      } else {
+        pencil()
+            .drawRect(
+                this.left() + DEFAULT_BORDER_SIZE,
+                this.top() + DEFAULT_BORDER_SIZE,
+                this.width() - 2 * DEFAULT_BORDER_SIZE,
+                this.height() - 2 * DEFAULT_BORDER_SIZE,
+                hotColor.r(), hotColor.b(), hotColor.g());
+      }
     } else {
       pencil()
           .drawRect(
@@ -52,9 +84,7 @@ public final class ButtonBuilder extends ComponentBuilder<ButtonBuilder> {
               this.top() + DEFAULT_BORDER_SIZE,
               this.width() - 2 * DEFAULT_BORDER_SIZE,
               this.height() - 2 * DEFAULT_BORDER_SIZE,
-              .5f,
-              .5f,
-              .5f);
+              defaultColor.r(), defaultColor.b(), defaultColor.g());
     }
 
     if (this.text != null) {
@@ -80,10 +110,6 @@ public final class ButtonBuilder extends ComponentBuilder<ButtonBuilder> {
         && !state().isMouseDown()
         && isHotItem()
         && isActiveItem();
-  }
-
-  private boolean shouldTriggerOnHoverEvent() {
-    return isEventDefined(EVENT_ON_HOVER) && isHotItem();
   }
 
 }
