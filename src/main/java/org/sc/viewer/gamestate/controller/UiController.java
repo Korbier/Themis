@@ -6,37 +6,41 @@ import java.util.UUID;
 import org.sc.themis.input.Input;
 import org.sc.themis.scene.base.Controller;
 import org.sc.themis.scene.pencil.Pencil;
+import org.sc.themis.scene.ui.ButtonBuilder;
+import org.sc.themis.scene.ui.Color;
+import org.sc.themis.scene.ui.ToggleButtonBuilder;
 import org.sc.themis.scene.ui.UIBuilder;
 import org.sc.viewer.ViewerContext;
+import org.sc.viewer.renderactivity.postprocess.postprocessor.ShowTBNPostprocessor;
 
 public class UiController implements Controller {
 
   private final ViewerContext context;
   private final UIBuilder builder;
 
+  private final ToggleButtonBuilder tglTBN;
+
   public UiController(Pencil pencil, ViewerContext context) {
+
     this.context = context;
     this.builder = new UIBuilder(pencil);
+
+    this.tglTBN = this.builder.toggleButton(UUID.randomUUID().toString())
+            .location(2, 2)
+            .size(40, 16)
+            .colorDefault(Color.of("CBD5E1"))
+            .colorHot(Color.of("94A3B8"))
+            .colorToggled(Color.of("7092BE"))
+            .isToggledSupplier(() -> context.isPostProcessorEnabled(ShowTBNPostprocessor.IDENTIFIER))
+            .onClick(builder -> context.getKeyMapping().execute(GLFW_KEY_F1));
+
   }
 
   @Override
   public void update(long tpf) {
 
     this.builder.begin();
-
-    this.builder
-        .button(UUID.randomUUID().toString(), "TBN")
-        .location(2, 2)
-        .size(120, 22)
-        .onClick(builder -> context.getKeyMapping().execute(GLFW_KEY_F1))
-        .build();
-
-    this.builder
-        .button(UUID.randomUUID().toString(), "Grid")
-        .location(2, 26)
-        .size(120, 22)
-        .onClick(builder -> context.getKeyMapping().execute(GLFW_KEY_F1))
-        .build();
+    this.tglTBN.build();
 
     this.builder.end();
   }

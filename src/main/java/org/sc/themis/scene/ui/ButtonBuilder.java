@@ -2,27 +2,19 @@ package org.sc.themis.scene.ui;
 
 import java.util.function.Consumer;
 
-public final class ButtonBuilder extends ComponentBuilder {
+public final class ButtonBuilder extends ComponentBuilder<ButtonBuilder> {
 
   public static final int DEFAULT_BORDER_SIZE = 2;
 
   public static final String EVENT_ON_CLICK = "button.event.onclick";
-  public static final String EVENT_ON_HOVER = "button.event.onHover";
 
-  private String identifier;
   private String text = null;
-  private int left = 0;
-  private int top = 0;
-  private int width = 0;
-  private int height = 0;
+  private Color clrDefault = Color.of("ffffff");
+  private Color clrHot = null;
+  private Color clrActive = null;
 
   ButtonBuilder(UIBuilder builder) {
     super(builder);
-  }
-
-  ButtonBuilder identifier(String identifier) {
-    this.identifier = identifier;
-    return this;
   }
 
   ButtonBuilder text(String text) {
@@ -30,15 +22,18 @@ public final class ButtonBuilder extends ComponentBuilder {
     return this;
   }
 
-  public ButtonBuilder location(int left, int top) {
-    this.left = left;
-    this.top = top;
+  public ButtonBuilder colorDefault(Color color) {
+    this.clrDefault = color;
     return this;
   }
 
-  public ButtonBuilder size(int width, int height) {
-    this.width = width;
-    this.height = height;
+  public ButtonBuilder colorHot(Color color) {
+    this.clrHot = color;
+    return this;
+  }
+
+  public ButtonBuilder colorActive(Color color) {
+    this.clrActive = color;
     return this;
   }
 
@@ -47,69 +42,64 @@ public final class ButtonBuilder extends ComponentBuilder {
     return this;
   }
 
-  public ButtonBuilder onHover(Consumer<UIBuilder> eventListener) {
-    addEvent(EVENT_ON_HOVER, eventListener);
-    return this;
+  @Override
+  protected void checkInput() {
+    //Nothing to do
   }
 
-  public void build() {
+  @Override
+  protected void draw() {
 
-    if (regionHit(this.left, this.top, this.width, this.height)) {
-      state().setHotItem(this.identifier);
-      if (state().getActiveItem() == null && state().isMouseDown()) {
-        state().setActiveItem(this.identifier);
-      }
-    }
+    Color defaultColor = this.clrDefault;
+    Color hotColor = this.clrHot != null ? this.clrHot : this.clrDefault;
+    Color activeColor = this.clrActive != null ? this.clrActive : this.clrDefault;
 
-    pencil().drawRect(this.left, this.top, this.width, this.height, .2f, .2f, .2f);
+    pencil().drawRect(
+        this.left(), this.top(), this.width(), this.height(),
+        activeColor.r(), activeColor.b(), activeColor.g()
+    );
 
-    if (this.identifier.equals(state().getHotItem())) {
-      if (this.identifier.equals(state().getActiveItem())) {
+    if (isHotItem()) {
+      if (isActiveItem()) {
         pencil()
             .drawRect(
-                this.left + DEFAULT_BORDER_SIZE,
-                this.top + DEFAULT_BORDER_SIZE,
-                this.width - 2 * DEFAULT_BORDER_SIZE,
-                this.height - 2 * DEFAULT_BORDER_SIZE,
-                .5f,
-                .5f,
-                .5f);
+                this.left() + DEFAULT_BORDER_SIZE,
+                this.top() + DEFAULT_BORDER_SIZE,
+                this.width() - 2 * DEFAULT_BORDER_SIZE,
+                this.height() - 2 * DEFAULT_BORDER_SIZE,
+                activeColor.r(), activeColor.b(), activeColor.g());
       } else {
         pencil()
             .drawRect(
-                this.left + DEFAULT_BORDER_SIZE,
-                this.top + DEFAULT_BORDER_SIZE,
-                this.width - 2 * DEFAULT_BORDER_SIZE,
-                this.height - 2 * DEFAULT_BORDER_SIZE,
-                .2f,
-                .2f,
-                .2f);
+                this.left() + DEFAULT_BORDER_SIZE,
+                this.top() + DEFAULT_BORDER_SIZE,
+                this.width() - 2 * DEFAULT_BORDER_SIZE,
+                this.height() - 2 * DEFAULT_BORDER_SIZE,
+                hotColor.r(), hotColor.b(), hotColor.g());
       }
     } else {
       pencil()
           .drawRect(
-              this.left + DEFAULT_BORDER_SIZE,
-              this.top + DEFAULT_BORDER_SIZE,
-              this.width - 2 * DEFAULT_BORDER_SIZE,
-              this.height - 2 * DEFAULT_BORDER_SIZE,
-              .5f,
-              .5f,
-              .5f);
+              this.left() + DEFAULT_BORDER_SIZE,
+              this.top() + DEFAULT_BORDER_SIZE,
+              this.width() - 2 * DEFAULT_BORDER_SIZE,
+              this.height() - 2 * DEFAULT_BORDER_SIZE,
+              defaultColor.r(), defaultColor.b(), defaultColor.g());
     }
 
     if (this.text != null) {
       pencil()
           .drawText(
-              this.left + 2 * DEFAULT_BORDER_SIZE,
-              this.top + 2 * DEFAULT_BORDER_SIZE,
-              this.height - 4 * DEFAULT_BORDER_SIZE,
+              this.left() + 2 * DEFAULT_BORDER_SIZE,
+              this.top() + 2 * DEFAULT_BORDER_SIZE,
+              this.height() - 4 * DEFAULT_BORDER_SIZE,
               this.text);
     }
 
-    if (shouldTriggerOnHoverEvent()) {
-      this.fireEvent(EVENT_ON_HOVER);
-    }
+  }
 
+  @Override
+  protected void triggerEvents() {
     if (shouldTriggerOnClickEvent()) {
       this.fireEvent(EVENT_ON_CLICK);
     }
@@ -117,12 +107,9 @@ public final class ButtonBuilder extends ComponentBuilder {
 
   private boolean shouldTriggerOnClickEvent() {
     return isEventDefined(EVENT_ON_CLICK)
-        && state().isMouseDown()
-        && this.identifier.equals(state().getHotItem())
-        && this.identifier.equals(state().getActiveItem());
+        && !state().isMouseDown()
+        && isHotItem()
+        && isActiveItem();
   }
 
-  private boolean shouldTriggerOnHoverEvent() {
-    return isEventDefined(EVENT_ON_HOVER) && this.identifier.equals(state().getHotItem());
-  }
 }

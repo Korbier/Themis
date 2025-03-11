@@ -19,21 +19,16 @@ The viewer is a sample application built with this engine.
     * Basic color material (Phong lighting)
   * Mouse picking
   * Post processing
-    * TBN Display
+    * TBN display
+  * Immediate Mode UI
+    * Button
+    * Toggle button
 
 * Viewer
   * Sample scene
   * Key mapping
-
-### 🚧 In progress
-
-* Renderer
-  * Material system
-  * 2D Drawing (= pencil)
-  * Immediate mode user interface
-  
-* Viewer
   * User interface
+    * Toggle TBN
  
 ### 📝 Todo
 
@@ -43,9 +38,12 @@ The viewer is a sample application built with this engine.
     * PBR material
   * Post processing
     * Grid Display
-
+  * Immediate Mode UI
+    * Label
+    * Frame
+    
 * Viewer
-  * Apply mouse picking
+  * Mouse picking
 
 # Screenshots
 
