@@ -18,7 +18,6 @@ public class UiController implements Controller {
   private final ViewerContext context;
   private final UIBuilder builder;
 
-  private final ButtonBuilder btnTBN;
   private final ToggleButtonBuilder tglTBN;
 
   public UiController(Pencil pencil, ViewerContext context) {
@@ -26,16 +25,8 @@ public class UiController implements Controller {
     this.context = context;
     this.builder = new UIBuilder(pencil);
 
-    this.btnTBN = this.builder.button(UUID.randomUUID().toString(), "TBN")
-                              .location(2, 2)
-                              .size(120, 22)
-                              .colorDefault(Color.of("CBD5E1"))
-                              .colorHot(Color.of("94A3B8"))
-                              .colorActive(Color.of("7092BE"))
-                              .onClick(builder -> context.getKeyMapping().execute(GLFW_KEY_F1));
-
     this.tglTBN = this.builder.toggleButton(UUID.randomUUID().toString())
-            .location(2, 26)
+            .location(2, 2)
             .size(40, 16)
             .colorDefault(Color.of("CBD5E1"))
             .colorHot(Color.of("94A3B8"))
@@ -49,7 +40,6 @@ public class UiController implements Controller {
   public void update(long tpf) {
 
     this.builder.begin();
-    this.btnTBN.build();
     this.tglTBN.build();
 
     this.builder.end();
