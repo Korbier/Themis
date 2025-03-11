@@ -33,8 +33,8 @@ public class Color {
     this.hexaGreen = Integer.parseInt(hexaGreen, 16);
     this.hexaBlue = Integer.parseInt(hexaBlue, 16);
     this.red = (float) this.hexaRed / 255;
-    this.blue = (float) this.hexaGreen / 255;
-    this.green = (float) this.hexaBlue / 255;
+    this.green = (float) this.hexaGreen / 255;
+    this.blue = (float) this.hexaBlue / 255;
   }
 
   public String getCssColor() {

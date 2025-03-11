@@ -73,7 +73,7 @@ public final class ToggleButtonBuilder extends ComponentBuilder<ToggleButtonBuil
     if (this.isToggled) {
       pencil().drawRect(
           this.left(), this.top(), this.width(), this.height(),
-          toggledColor.r(), toggledColor.b(), toggledColor.g()
+          toggledColor.r(), toggledColor.g(), toggledColor.b()
       );
       pencil().drawRect(
           this.left() + DEFAULT_BORDER_SIZE + middle,
@@ -87,12 +87,12 @@ public final class ToggleButtonBuilder extends ComponentBuilder<ToggleButtonBuil
       if (isHotItem()) {
         pencil().drawRect(
             this.left(), this.top(), this.width(), this.height(),
-            hotColor.r(), hotColor.b(), hotColor.g()
+            hotColor.r(), hotColor.g(), hotColor.b()
         );
       } else {
         pencil().drawRect(
             this.left(), this.top(), this.width(), this.height(),
-            defaultColor.r(), defaultColor.b(), defaultColor.g()
+            defaultColor.r(), defaultColor.g(), defaultColor.b()
         );
       }
 
