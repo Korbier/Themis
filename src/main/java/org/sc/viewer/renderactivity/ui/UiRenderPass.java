@@ -179,7 +179,10 @@ public class UiRenderPass extends RenderPass {
             (frame) -> {
               VkFrameBufferDescriptor descriptor =
                   new VkFrameBufferDescriptor(
-                      getExtent2D(), this.renderPass.getHandle(), getImageView(frame).getHandle());
+                      getExtent2D(),
+                      this.renderPass.getHandle(),
+                      getImageView(frame).getHandle()
+                  );
               return new VkFrameBuffer(getConfiguration(), getDevice(), descriptor);
             });
   }
