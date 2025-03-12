@@ -1,5 +1,7 @@
 package org.sc.themis.scene.ui;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -11,7 +13,9 @@ public class UiState {
   private String hotItem = null;
   private String activeItem = null;
 
-  private final Map<String, Object> cmpStates = new HashMap<>();
+  private Deque<ComponentBuilder<?>> parentStack = new ArrayDeque<ComponentBuilder<?>>();
+
+  private final Map<ComponentBuilder<?>, Map<ComponentState<?>, Object>> componentStates = new HashMap<>();
 
   public int getMouseX() {
     return mouseX;
@@ -53,20 +57,61 @@ public class UiState {
     this.activeItem = activeItem;
   }
 
-  public void set(String key, Object value) {
-    this.cmpStates.put(key, value);
+  public void pushParent(ComponentBuilder<?> parent) {
+    this.parentStack.push(parent);
   }
 
-  public Object get(String key) {
-    return this.cmpStates.get(key);
+  public void popParent() {
+    this.parentStack.pop();
   }
 
-  public boolean contains(String key) {
-    return this.cmpStates.containsKey(key);
+  public ComponentBuilder<?> getParent() {
+    return this.parentStack.peek();
   }
 
-  public void remove(String key) {
-    this.cmpStates.remove(key);
+  public <T> void setComponentState(ComponentBuilder<?> owner, ComponentState<T> key, T value) {
+
+    Map<ComponentState<?>, Object> componentStates =
+        this.componentStates.computeIfAbsent(owner, k -> new HashMap<>());
+
+    componentStates.put(key, value);
+
+  }
+
+  public <T> T getComponentState(ComponentBuilder<?> owner, ComponentState<T> key) {
+
+    if (!this.componentStates.containsKey(owner)) {
+      return null;
+    }
+
+    if (!this.componentStates.get(owner).containsKey(key)) {
+      return null;
+    }
+
+    return (T) this.componentStates.get(owner).get(key);
+
+  }
+
+  public <T> boolean containsComponentState(ComponentBuilder<?> owner, ComponentState<T> key) {
+
+    if (!this.componentStates.containsKey(owner)) {
+      return false;
+    }
+
+    if (!this.componentStates.get(owner).containsKey(key)) {
+      return false;
+    }
+
+    return true;
+
+  }
+
+  public <T> void removeComponentState(ComponentBuilder<?> owner, ComponentState<T> key) {
+
+    if (this.componentStates.containsKey(owner)) {
+      this.componentStates.get(owner).remove(key);
+    }
+
   }
 
 }

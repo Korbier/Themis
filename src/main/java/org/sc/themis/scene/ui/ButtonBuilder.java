@@ -45,19 +45,19 @@ public final class ButtonBuilder extends ComponentBuilder<ButtonBuilder> {
   }
 
   @Override
-  protected void checkInput() {
+  protected void configure(int left, int top, int width, int height) {
     //Nothing to do
   }
 
   @Override
-  protected void draw() {
+  protected void draw(int left, int top, int width, int height) {
 
     Color defaultColor = this.clrDefault;
     Color hotColor = this.clrHot != null ? this.clrHot : this.clrDefault;
     Color activeColor = this.clrActive != null ? this.clrActive : this.clrDefault;
 
     pencil().drawRect(
-        this.left(), this.top(), this.width(), this.height(),
+        left, top, width, height,
         activeColor.r(), activeColor.b(), activeColor.g()
     );
 
@@ -65,36 +65,36 @@ public final class ButtonBuilder extends ComponentBuilder<ButtonBuilder> {
       if (isActiveItem()) {
         pencil()
             .drawRect(
-                this.left() + DEFAULT_BORDER_SIZE,
-                this.top() + DEFAULT_BORDER_SIZE,
-                this.width() - 2 * DEFAULT_BORDER_SIZE,
-                this.height() - 2 * DEFAULT_BORDER_SIZE,
+                left + DEFAULT_BORDER_SIZE,
+                top + DEFAULT_BORDER_SIZE,
+                width - 2 * DEFAULT_BORDER_SIZE,
+                height - 2 * DEFAULT_BORDER_SIZE,
                 activeColor.r(), activeColor.b(), activeColor.g());
       } else {
         pencil()
             .drawRect(
-                this.left() + DEFAULT_BORDER_SIZE,
-                this.top() + DEFAULT_BORDER_SIZE,
-                this.width() - 2 * DEFAULT_BORDER_SIZE,
-                this.height() - 2 * DEFAULT_BORDER_SIZE,
+                left + DEFAULT_BORDER_SIZE,
+                top + DEFAULT_BORDER_SIZE,
+                width - 2 * DEFAULT_BORDER_SIZE,
+                height - 2 * DEFAULT_BORDER_SIZE,
                 hotColor.r(), hotColor.b(), hotColor.g());
       }
     } else {
       pencil()
           .drawRect(
-              this.left() + DEFAULT_BORDER_SIZE,
-              this.top() + DEFAULT_BORDER_SIZE,
-              this.width() - 2 * DEFAULT_BORDER_SIZE,
-              this.height() - 2 * DEFAULT_BORDER_SIZE,
+              left + DEFAULT_BORDER_SIZE,
+              top + DEFAULT_BORDER_SIZE,
+              width - 2 * DEFAULT_BORDER_SIZE,
+              height - 2 * DEFAULT_BORDER_SIZE,
               defaultColor.r(), defaultColor.b(), defaultColor.g());
     }
 
     if (this.text != null) {
       pencil()
           .drawText(
-              this.left() + 2 * DEFAULT_BORDER_SIZE,
-              this.top() + 2 * DEFAULT_BORDER_SIZE,
-              this.height() - 4 * DEFAULT_BORDER_SIZE,
+              left + 2 * DEFAULT_BORDER_SIZE,
+              top + 2 * DEFAULT_BORDER_SIZE,
+              height - 4 * DEFAULT_BORDER_SIZE,
               this.text);
     }
 

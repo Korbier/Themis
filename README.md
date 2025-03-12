@@ -23,6 +23,7 @@ The viewer is a sample application built with this engine.
   * Immediate Mode UI
     * Button
     * Toggle button
+    * Panel
 
 * Viewer
   * Sample scene
@@ -40,7 +41,6 @@ The viewer is a sample application built with this engine.
     * Grid Display
   * Immediate Mode UI
     * Label
-    * Frame
     
 * Viewer
   * Mouse picking
@@ -54,5 +54,9 @@ The viewer is a sample application built with this engine.
 * With TBN vectors
 
 ![](./documentation/screenshots/screen_2.png)
+
+* UI Panel & Toggle button
+
+![](./documentation/screenshots/screen_3.png)
 
  

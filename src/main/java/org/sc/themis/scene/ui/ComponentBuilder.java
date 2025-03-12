@@ -1,7 +1,6 @@
 package org.sc.themis.scene.ui;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 import org.sc.themis.scene.pencil.Pencil;
 
@@ -9,11 +8,13 @@ public abstract sealed class ComponentBuilder<B extends ComponentBuilder<?>>
         permits
           ButtonBuilder,
           ToggleButtonBuilder,
-          PanelBuilder
-{
+          PanelBuilder {
 
   private final UIBuilder uiBuilder;
   private final Map<String, Consumer<UIBuilder>> events = new HashMap<>();
+  private final List<ComponentBuilder<?>> children = new ArrayList<>();
+
+  private final int[] region = new int[] {0, 0, 0, 0};
 
   private String identifier;
   private int left = 0;
@@ -21,41 +22,43 @@ public abstract sealed class ComponentBuilder<B extends ComponentBuilder<?>>
   private int width = 0;
   private int height = 0;
 
-  private int[] region = new int[] {0, 0, 0, 0};
-
   protected ComponentBuilder(UIBuilder uiBuilder) {
     this.uiBuilder = uiBuilder;
   }
 
-  protected abstract void checkInput();
-  protected abstract void draw();
+  protected abstract void configure(int left, int top, int width, int height);
+  protected abstract void draw(int left, int top, int width, int height);
   protected abstract void triggerEvents();
 
   public void build() {
-    checkInput();
+
+    ComponentBuilder<?> parent = getParent();
+    int left = parent != null ? parent.left + this.left : this.left;
+    int top = parent != null ? parent.top + this.top : this.top;
+    int width = this.width;
+    int height = this.height;
+
+    setRegion(left, top, width, height);
+
+    configure(left, top, width, height);
     checkState();
-    draw();
+
+    draw(left, top, width, height);
     triggerEvents();
+
+    if (!this.children.isEmpty()) {
+      state().pushParent(this);
+      try {
+        this.children.forEach(ComponentBuilder::build);
+      } finally {
+        state().popParent();
+      }
+    }
+
   }
 
   public String identifier() {
     return this.identifier;
-  }
-
-  public int left() {
-    return this.left;
-  }
-
-  public int top() {
-    return this.top;
-  }
-
-  public int width() {
-    return this.width;
-  }
-
-  public int height() {
-    return this.height;
   }
 
   public boolean isHotItem() {
@@ -74,18 +77,22 @@ public abstract sealed class ComponentBuilder<B extends ComponentBuilder<?>>
   public B location(int left, int top) {
     this.left = left;
     this.top = top;
-    this.region[0] = left;
-    this.region[1] = top;
     return (B) this;
   }
-
 
   public B size(int width, int height) {
     this.width = width;
     this.height = height;
-    this.region[2] = width;
-    this.region[3] = height;
     return (B) this;
+  }
+
+  public B child(ComponentBuilder<?> ... children) {
+    this.children.addAll(Arrays.asList(children));
+    return (B) this;
+  }
+
+  protected ComponentBuilder<?> getParent() {
+    return state().getParent();
   }
 
   protected void setRegion(int left, int top, int width, int height) {
@@ -93,6 +100,22 @@ public abstract sealed class ComponentBuilder<B extends ComponentBuilder<?>>
     this.region[1] = top;
     this.region[2] = width;
     this.region[3] = height;
+  }
+
+  protected <T> void set(ComponentState<T> state, T value) {
+    state().setComponentState(this, state, value);
+  }
+
+  protected <T> T get(ComponentState<T> state) {
+    return state().getComponentState(this, state);
+  }
+
+  protected <T> boolean contains(ComponentState<T> state) {
+    return state().containsComponentState(this, state);
+  }
+
+  protected <T> void remove(ComponentState<T> state) {
+    state().removeComponentState(this, state);
   }
 
   protected UiState state() {

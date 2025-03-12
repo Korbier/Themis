@@ -21,6 +21,8 @@ import org.sc.viewer.ViewerContext;
 import org.sc.viewer.gamestate.controller.KeyMappingController;
 import org.sc.viewer.gamestate.controller.UiController;
 
+import static org.lwjgl.glfw.GLFW.*;
+
 public class ViewerGamestate implements Gamestate {
 
   private final ModelFactory modelFactory = new ModelFactory();
@@ -54,6 +56,10 @@ public class ViewerGamestate implements Gamestate {
   }
 
   private void setupKeyMapping(Scene scene) {
+    this.context.getKeyMapping().map(GLFW_KEY_1, false, () -> {
+      DirectionalLight light = scene.getDirectionalLights().getFirst();
+      light.setVisible(!light.isVisible());
+    });
     scene.add(new KeyMappingController(this.context.getKeyMapping()));
   }
 
@@ -63,7 +69,7 @@ public class ViewerGamestate implements Gamestate {
   }
 
   private void setupUI(Scene scene) {
-    scene.add(new UiController(this.pencil, this.context));
+    scene.add(new UiController(this.pencil, scene, this.context));
   }
 
   private void setupScene(Renderer renderer, Scene scene) throws ThemisException {

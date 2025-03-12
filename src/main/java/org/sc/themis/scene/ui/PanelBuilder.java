@@ -8,89 +8,78 @@ public final class PanelBuilder extends ComponentBuilder<PanelBuilder> {
   public static final int DEFAULT_BORDER_SIZE = 2;
   public static final int DEFAULT_HEADER_SIZE = 24;
 
-  private String text = null;
-
-  private Color clrBackgroundColor = Color.of("ffffff");
-  private Color clrBorderColor = Color.of("ff0000");
-
-  private Color clrHeader = Color.of("dddddd");
-  private Color clrHot = Color.of("ff0000");
+  public static final ComponentState<Vector2i> STATE_MOUSE_POSITION =
+      ComponentState.of(Vector2i.class, "mouse.position");
 
   PanelBuilder(UIBuilder builder) {
     super(builder);
   }
 
-  PanelBuilder text(String text) {
-    this.text = text;
-    return this;
-  }
-
   @Override
-  protected void checkInput() {
+  protected void configure(int left, int top, int width, int height) {
 
     if (isActiveItem()) {
-      if (!state().contains("position" + identifier())) {
-        state().set("position" + identifier(), new Vector2i(state().getMouseX(), state().getMouseY()));
+      if (!contains(STATE_MOUSE_POSITION)) {
+        set(STATE_MOUSE_POSITION, new Vector2i(state().getMouseX(), state().getMouseY()));
       }
     } else {
-      if (state().contains("position" + identifier())) {
-        state().remove("position" + identifier());
+      if (contains(STATE_MOUSE_POSITION)) {
+        remove(STATE_MOUSE_POSITION);
       }
     }
 
-    if (state().contains("position" + identifier())) {
-      Vector2i oldpos = (Vector2i) state().get("position" + identifier());
+    if (contains(STATE_MOUSE_POSITION)) {
+      Vector2i oldpos = get(STATE_MOUSE_POSITION);
       Vector2i newpos = new Vector2i(state().getMouseX(), state().getMouseY());
       location(
-          left() + (newpos.x - oldpos.x),
-          top() + (newpos.y - oldpos.y)
+          left + (newpos.x - oldpos.x),
+          top + (newpos.y - oldpos.y)
       );
-      state().set("position" + identifier(), new Vector2i(state().getMouseX(), state().getMouseY()));
+      set(STATE_MOUSE_POSITION, new Vector2i(state().getMouseX(), state().getMouseY()));
     }
 
     setRegion(
-        this.left() + DEFAULT_BORDER_SIZE, this.top() + DEFAULT_BORDER_SIZE,
-        this.width() - 2 * DEFAULT_BORDER_SIZE, DEFAULT_HEADER_SIZE
+        left + DEFAULT_BORDER_SIZE, top + DEFAULT_BORDER_SIZE,
+        width - 2 * DEFAULT_BORDER_SIZE, DEFAULT_HEADER_SIZE
     );
 
   }
 
   @Override
-  protected void draw() {
+  protected void draw(int left, int top, int width, int height) {
 
-    Color borderColor = Color.of("ff0000");
-    Color backgroundColor = Color.of("ffffff");
-    Color headerColor = Color.of("00ff00");
-    Color headerColorHot = Color.of("227722");
+    Color borderColor = Color.of("7092BE");
+    Color backgroundColor = Color.of("eeeeee");
+    Color headerColor = Color.of("CBD5E1");
+    Color headerColorHot = Color.of("94A3B8");
 
-    pencil().drawRect(this.left(), this.top(), this.width(), this.height(), borderColor);
+    pencil().drawRect(left, top, width, height, borderColor);
     pencil().drawRect(
-        this.left() + DEFAULT_BORDER_SIZE, this.top() + DEFAULT_BORDER_SIZE,
-        this.width() - 2 * DEFAULT_BORDER_SIZE, this.height() - 2 * DEFAULT_BORDER_SIZE,
+        left + DEFAULT_BORDER_SIZE, top + DEFAULT_BORDER_SIZE,
+        width - 2 * DEFAULT_BORDER_SIZE, height - 2 * DEFAULT_BORDER_SIZE,
         backgroundColor
     );
 
     if (isHotItem()) {
       pencil().drawRect(
-          this.left() + DEFAULT_BORDER_SIZE, this.top() + DEFAULT_BORDER_SIZE,
-          this.width() - 2 * DEFAULT_BORDER_SIZE, DEFAULT_HEADER_SIZE,
+          left + DEFAULT_BORDER_SIZE, top + DEFAULT_BORDER_SIZE,
+          width - 2 * DEFAULT_BORDER_SIZE, DEFAULT_HEADER_SIZE,
           headerColorHot
       );
 
 
     } else {
       pencil().drawRect(
-          this.left() + DEFAULT_BORDER_SIZE, this.top() + DEFAULT_BORDER_SIZE,
-          this.width() - 2 * DEFAULT_BORDER_SIZE, DEFAULT_HEADER_SIZE,
+          left + DEFAULT_BORDER_SIZE, top + DEFAULT_BORDER_SIZE,
+          width - 2 * DEFAULT_BORDER_SIZE, DEFAULT_HEADER_SIZE,
           headerColor
       );
     }
 
     pencil().drawText(
-        this.left() + 2 * DEFAULT_BORDER_SIZE, this.top() + 2 * DEFAULT_BORDER_SIZE,
-        16, "My frame"
+        left + 2 * DEFAULT_BORDER_SIZE,  top + 2 * DEFAULT_BORDER_SIZE,
+        16, "Configuration"
     );
-
 
   }
 
