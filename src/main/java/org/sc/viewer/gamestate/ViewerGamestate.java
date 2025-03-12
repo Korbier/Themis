@@ -21,6 +21,8 @@ import org.sc.viewer.ViewerContext;
 import org.sc.viewer.gamestate.controller.KeyMappingController;
 import org.sc.viewer.gamestate.controller.UiController;
 
+import static org.lwjgl.glfw.GLFW.*;
+
 public class ViewerGamestate implements Gamestate {
 
   private final ModelFactory modelFactory = new ModelFactory();
@@ -54,6 +56,10 @@ public class ViewerGamestate implements Gamestate {
   }
 
   private void setupKeyMapping(Scene scene) {
+    this.context.getKeyMapping().map(GLFW_KEY_1, false, () -> {
+      DirectionalLight light = scene.getDirectionalLights().getFirst();
+      light.setVisible(!light.isVisible());
+    });
     scene.add(new KeyMappingController(this.context.getKeyMapping()));
   }
 
@@ -63,7 +69,7 @@ public class ViewerGamestate implements Gamestate {
   }
 
   private void setupUI(Scene scene) {
-    scene.add(new UiController(this.pencil, this.context));
+    scene.add(new UiController(this.pencil, scene, this.context));
   }
 
   private void setupScene(Renderer renderer, Scene scene) throws ThemisException {
@@ -71,16 +77,16 @@ public class ViewerGamestate implements Gamestate {
     this.model = createSphere(renderer, "sphere-1");
     this.model.setMaterialProperties(this.materialFactory.color(1.0f, 1.0f, 1.0f, 128.0f));
 
-    scene.add(this.model.create().position(-3.0f, 3.0f, 0.0f).scale(10.0f));
-    scene.add(this.model.create().position(-3.0f, 0.0f, 0.0f).scale(10.0f));
-    scene.add(this.model.create().position(-3.0f, -3.0f, 0.0f).scale(10.0f));
+    scene.add(this.model.create().position(-3.0f, 3.0f, 0.0f));
+    scene.add(this.model.create().position(-3.0f, 0.0f, 0.0f));
+    scene.add(this.model.create().position(-3.0f, -3.0f, 0.0f));
 
-    scene.add(this.model.create().position(0.0f, 3.0f, 0.0f).scale(10.0f));
-    scene.add(this.model.create().position(0.0f, -3.0f, 0.0f).scale(10.0f));
+    scene.add(this.model.create().position(0.0f, 3.0f, 0.0f));
+    scene.add(this.model.create().position(0.0f, -3.0f, 0.0f));
 
-    scene.add(this.model.create().position(3.0f, 3.0f, 0.0f).scale(10.0f));
-    scene.add(this.model.create().position(3.0f, 0.0f, 0.0f).scale(10.0f));
-    scene.add(this.model.create().position(3.0f, -3.0f, 0.0f).scale(10.0f));
+    scene.add(this.model.create().position(3.0f, 3.0f, 0.0f));
+    scene.add(this.model.create().position(3.0f, 0.0f, 0.0f));
+    scene.add(this.model.create().position(3.0f, -3.0f, 0.0f));
 
     scene.add(
         new SpotLight(
@@ -113,8 +119,7 @@ public class ViewerGamestate implements Gamestate {
     return this.modelFactory.create(
         id,
         renderer.getResourceAllocator(),
-        Path.of("./src/main/resources/model/waterbottle/WaterBottle.gltf")
-        //Path.of("./src/main/resources/model/sphere/scene.gltf")
+        Path.of("./src/main/resources/model/sphere/scene.gltf")
     );
   }
 }

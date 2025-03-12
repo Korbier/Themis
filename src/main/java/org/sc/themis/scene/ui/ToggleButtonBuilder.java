@@ -1,5 +1,7 @@
 package org.sc.themis.scene.ui;
 
+import org.sc.themis.scene.pencil.Color;
+
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -51,32 +53,33 @@ public final class ToggleButtonBuilder extends ComponentBuilder<ToggleButtonBuil
   }
 
   @Override
-  protected void checkInput() {
+  protected void configure(int left, int top, int width, int height) {
     if (this.isToggledSupplier != null) {
       this.isToggled = this.isToggledSupplier.get();
     }
   }
 
   @Override
-  protected void draw() {
+  protected void draw(int left, int top, int width, int height) {
 
     Color defaultColor = this.clrDefault;
     Color hotColor = this.clrHot != null ? this.clrHot : this.clrDefault;
     Color toggledColor = this.clrToggled != null ? this.clrToggled : this.clrDefault;
     Color buttonColor = this.clrButton != null ? this.clrButton : Color.of("ffffff");
 
-    float middle = (float) (this.left() + this.left() + this.width()) / 2;
-    float btnTop = this.top() + DEFAULT_BORDER_SIZE;
-    float btnWidth = this.width() - 2 * DEFAULT_BORDER_SIZE - middle;
-    float btnHeight = this.height() - 2 * DEFAULT_BORDER_SIZE;
+    float middle = (float) width / 2;
+    float btnTop = top + DEFAULT_BORDER_SIZE;
+    float btnWidth = width - 2 * DEFAULT_BORDER_SIZE - middle;
+    float btnHeight = height - 2 * DEFAULT_BORDER_SIZE;
 
     if (this.isToggled) {
       pencil().drawRect(
-          this.left(), this.top(), this.width(), this.height(),
+          left, top, width, height,
           toggledColor.r(), toggledColor.g(), toggledColor.b()
       );
+
       pencil().drawRect(
-          this.left() + DEFAULT_BORDER_SIZE + middle,
+          left + DEFAULT_BORDER_SIZE + middle,
           btnTop,
           btnWidth, btnHeight,
           buttonColor.r(), buttonColor.g(), buttonColor.b()
@@ -86,18 +89,18 @@ public final class ToggleButtonBuilder extends ComponentBuilder<ToggleButtonBuil
 
       if (isHotItem()) {
         pencil().drawRect(
-            this.left(), this.top(), this.width(), this.height(),
+            left, top, width, height,
             hotColor.r(), hotColor.g(), hotColor.b()
         );
       } else {
         pencil().drawRect(
-            this.left(), this.top(), this.width(), this.height(),
+            left, top, width, height,
             defaultColor.r(), defaultColor.g(), defaultColor.b()
         );
       }
 
       pencil().drawRect(
-          this.left() + DEFAULT_BORDER_SIZE,
+          left + DEFAULT_BORDER_SIZE,
           btnTop,
           btnWidth, btnHeight,
           buttonColor.r(), buttonColor.g(), buttonColor.b()

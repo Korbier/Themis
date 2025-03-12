@@ -1,4 +1,4 @@
-package org.sc.themis.scene.ui;
+package org.sc.themis.scene.pencil;
 
 public class Color {
 

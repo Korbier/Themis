@@ -49,4 +49,8 @@ public class UIBuilder {
     return new ToggleButtonBuilder(this).identifier(identifier);
   }
 
+  public PanelBuilder panel(String identifier) {
+    return new PanelBuilder(this).identifier(identifier);
+  }
+
 }
