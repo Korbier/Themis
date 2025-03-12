@@ -30,6 +30,7 @@ The viewer is a sample application built with this engine.
   * Key mapping
   * User interface
     * Toggle TBN
+    * Toggle main light
  
 ### 📝 Todo
 
