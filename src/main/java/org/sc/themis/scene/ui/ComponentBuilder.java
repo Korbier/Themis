@@ -8,7 +8,9 @@ import org.sc.themis.scene.pencil.Pencil;
 public abstract sealed class ComponentBuilder<B extends ComponentBuilder<?>>
         permits
           ButtonBuilder,
-        ToggleButtonBuilder {
+          ToggleButtonBuilder,
+          PanelBuilder
+{
 
   private final UIBuilder uiBuilder;
   private final Map<String, Consumer<UIBuilder>> events = new HashMap<>();
@@ -18,6 +20,8 @@ public abstract sealed class ComponentBuilder<B extends ComponentBuilder<?>>
   private int top = 0;
   private int width = 0;
   private int height = 0;
+
+  private int[] region = new int[] {0, 0, 0, 0};
 
   protected ComponentBuilder(UIBuilder uiBuilder) {
     this.uiBuilder = uiBuilder;
@@ -70,6 +74,8 @@ public abstract sealed class ComponentBuilder<B extends ComponentBuilder<?>>
   public B location(int left, int top) {
     this.left = left;
     this.top = top;
+    this.region[0] = left;
+    this.region[1] = top;
     return (B) this;
   }
 
@@ -77,9 +83,17 @@ public abstract sealed class ComponentBuilder<B extends ComponentBuilder<?>>
   public B size(int width, int height) {
     this.width = width;
     this.height = height;
+    this.region[2] = width;
+    this.region[3] = height;
     return (B) this;
   }
 
+  protected void setRegion(int left, int top, int width, int height) {
+    this.region[0] = left;
+    this.region[1] = top;
+    this.region[2] = width;
+    this.region[3] = height;
+  }
 
   protected UiState state() {
     return this.uiBuilder.getState();
@@ -87,13 +101,6 @@ public abstract sealed class ComponentBuilder<B extends ComponentBuilder<?>>
 
   protected Pencil pencil() {
     return this.uiBuilder.getPencil();
-  }
-
-  protected boolean regionHit(int x, int y, int w, int h) {
-    return !((state().getMouseX() < x)
-        || (state().getMouseY() < y)
-        || (state().getMouseX() >= (x + w))
-        || (state().getMouseY() >= (y + h)));
   }
 
   protected void addEvent(String event, Consumer<UIBuilder> eventConsumer) {
@@ -110,9 +117,16 @@ public abstract sealed class ComponentBuilder<B extends ComponentBuilder<?>>
     return this.events.containsKey(event);
   }
 
+  private boolean regionHit() {
+    return !((state().getMouseX() < this.region[0])
+        || (state().getMouseY() < this.region[1])
+        || (state().getMouseX() >= (this.region[0] + this.region[2]))
+        || (state().getMouseY() >= (this.region[1] + this.region[3])));
+  }
+
   private void checkState() {
 
-    if (regionHit(this.left(), this.top, this.width, this.height)) {
+    if (regionHit()) {
 
       state().setHotItem(this.identifier);
 

@@ -94,6 +94,10 @@ public class Pencil {
     return this;
   }
 
+  public Pencil drawRect(float x, float y, float width, float height, Color color) {
+    return drawRect(x, y, width, height, color.r(), color.g(), color.b() );
+  }
+
   public Pencil drawRect(float x, float y, float width, float height, float r, float g, float b) {
 
     int startIndiceOffset = getDataSize() / COMPONENT_COUNT;

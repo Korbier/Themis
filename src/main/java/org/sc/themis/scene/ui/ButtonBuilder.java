@@ -1,5 +1,7 @@
 package org.sc.themis.scene.ui;
 
+import org.sc.themis.scene.pencil.Color;
+
 import java.util.function.Consumer;
 
 public final class ButtonBuilder extends ComponentBuilder<ButtonBuilder> {

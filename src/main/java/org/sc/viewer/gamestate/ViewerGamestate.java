@@ -71,16 +71,16 @@ public class ViewerGamestate implements Gamestate {
     this.model = createSphere(renderer, "sphere-1");
     this.model.setMaterialProperties(this.materialFactory.color(1.0f, 1.0f, 1.0f, 128.0f));
 
-    scene.add(this.model.create().position(-3.0f, 3.0f, 0.0f).scale(10.0f));
-    scene.add(this.model.create().position(-3.0f, 0.0f, 0.0f).scale(10.0f));
-    scene.add(this.model.create().position(-3.0f, -3.0f, 0.0f).scale(10.0f));
+    scene.add(this.model.create().position(-3.0f, 3.0f, 0.0f));
+    scene.add(this.model.create().position(-3.0f, 0.0f, 0.0f));
+    scene.add(this.model.create().position(-3.0f, -3.0f, 0.0f));
 
-    scene.add(this.model.create().position(0.0f, 3.0f, 0.0f).scale(10.0f));
-    scene.add(this.model.create().position(0.0f, -3.0f, 0.0f).scale(10.0f));
+    scene.add(this.model.create().position(0.0f, 3.0f, 0.0f));
+    scene.add(this.model.create().position(0.0f, -3.0f, 0.0f));
 
-    scene.add(this.model.create().position(3.0f, 3.0f, 0.0f).scale(10.0f));
-    scene.add(this.model.create().position(3.0f, 0.0f, 0.0f).scale(10.0f));
-    scene.add(this.model.create().position(3.0f, -3.0f, 0.0f).scale(10.0f));
+    scene.add(this.model.create().position(3.0f, 3.0f, 0.0f));
+    scene.add(this.model.create().position(3.0f, 0.0f, 0.0f));
+    scene.add(this.model.create().position(3.0f, -3.0f, 0.0f));
 
     scene.add(
         new SpotLight(
@@ -113,8 +113,7 @@ public class ViewerGamestate implements Gamestate {
     return this.modelFactory.create(
         id,
         renderer.getResourceAllocator(),
-        Path.of("./src/main/resources/model/waterbottle/WaterBottle.gltf")
-        //Path.of("./src/main/resources/model/sphere/scene.gltf")
+        Path.of("./src/main/resources/model/sphere/scene.gltf")
     );
   }
 }

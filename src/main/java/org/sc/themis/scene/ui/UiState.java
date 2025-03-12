@@ -1,5 +1,8 @@
 package org.sc.themis.scene.ui;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class UiState {
 
   private int mouseX = -1;
@@ -7,6 +10,8 @@ public class UiState {
   private boolean mouseDown = false;
   private String hotItem = null;
   private String activeItem = null;
+
+  private final Map<String, Object> cmpStates = new HashMap<>();
 
   public int getMouseX() {
     return mouseX;
@@ -47,4 +52,21 @@ public class UiState {
   public void setActiveItem(String activeItem) {
     this.activeItem = activeItem;
   }
+
+  public void set(String key, Object value) {
+    this.cmpStates.put(key, value);
+  }
+
+  public Object get(String key) {
+    return this.cmpStates.get(key);
+  }
+
+  public boolean contains(String key) {
+    return this.cmpStates.containsKey(key);
+  }
+
+  public void remove(String key) {
+    this.cmpStates.remove(key);
+  }
+
 }
