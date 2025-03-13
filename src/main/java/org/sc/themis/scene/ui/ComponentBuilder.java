@@ -8,7 +8,8 @@ public abstract sealed class ComponentBuilder<B extends ComponentBuilder<?>>
         permits
           ButtonBuilder,
           ToggleButtonBuilder,
-          PanelBuilder {
+          PanelBuilder,
+          LabelBuilder {
 
   private final UIBuilder uiBuilder;
   private final Map<String, Consumer<UIBuilder>> events = new HashMap<>();

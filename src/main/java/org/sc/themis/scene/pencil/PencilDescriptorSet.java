@@ -131,7 +131,8 @@ public class PencilDescriptorSet extends TObject implements VkDescriptorSetProvi
         new VkSampler(
             getConfiguration(),
             this.renderer.getDevice(),
-            new VkSamplerDescriptor(VK_FILTER_LINEAR, 1, true));
+            new VkSamplerDescriptor(VK_FILTER_LINEAR, 1, true)
+        );
     this.sampler.setup();
 
     this.stgImage = this.renderer.getResourceAllocator().allocateImage(VK_FORMAT_R8G8B8A8_SRGB);

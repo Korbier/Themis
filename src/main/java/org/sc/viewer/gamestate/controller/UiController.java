@@ -9,6 +9,7 @@ import org.sc.themis.scene.Scene;
 import org.sc.themis.scene.base.Controller;
 import org.sc.themis.scene.pencil.Color;
 import org.sc.themis.scene.pencil.Pencil;
+import org.sc.themis.scene.ui.LabelBuilder;
 import org.sc.themis.scene.ui.PanelBuilder;
 import org.sc.themis.scene.ui.ToggleButtonBuilder;
 import org.sc.themis.scene.ui.UIBuilder;
@@ -25,8 +26,13 @@ public class UiController implements Controller {
 
     this.builder = new UIBuilder(pencil);
 
+    LabelBuilder lblTBN = this.builder.label(UUID.randomUUID().toString())
+        .location(2, 26)
+        .size(40, 20)
+        .text("TBN Vectors");
+
     ToggleButtonBuilder tglTBN = this.builder.toggleButton(UUID.randomUUID().toString())
-        .location(4, 28)
+        .location(300 - 44, 28)
         .size(40, 16)
         .colorDefault(Color.of("CBD5E1"))
         .colorHot(Color.of("94A3B8"))
@@ -34,8 +40,14 @@ public class UiController implements Controller {
         .isToggledSupplier(() -> context.isPostProcessorEnabled(ShowTBNPostprocessor.IDENTIFIER))
         .onClick(builder -> context.getKeyMapping().execute(GLFW_KEY_F1));
 
-    ToggleButtonBuilder tglDirectionalLight = this.builder.toggleButton(UUID.randomUUID().toString())
-        .location(4, 48)
+    LabelBuilder lblDirectionalLight = this.builder.label(UUID.randomUUID().toString())
+        .location(2, 48)
+        .size(40, 20)
+        .text("Directional light");
+
+    ToggleButtonBuilder tglDirectionalLight =
+        this.builder.toggleButton(UUID.randomUUID().toString())
+        .location(300 - 44, 48)
         .size(40, 16)
         .colorDefault(Color.of("CBD5E1"))
         .colorHot(Color.of("94A3B8"))
@@ -46,7 +58,7 @@ public class UiController implements Controller {
     this.pnlConfiguration = this.builder.panel(UUID.randomUUID().toString())
         .location(100, 100)
         .size(300, 400)
-        .child(tglTBN, tglDirectionalLight);
+        .child(lblTBN, tglTBN, lblDirectionalLight, tglDirectionalLight);
 
   }
 
