@@ -3,6 +3,9 @@ package org.sc.themis.scene.base.geometry;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+
+import org.sc.themis.renderer.material.Material;
 import org.sc.themis.renderer.material.MaterialProperties;
 import org.sc.themis.shared.exception.ThemisException;
 
@@ -13,6 +16,7 @@ public class Model {
   private final List<Instance> instances = new ArrayList<>();
 
   private MaterialProperties materialProperties = null;
+  private String material = null;
 
   public Model(String identifier, Mesh[] meshes) {
     this.identifier = identifier;
@@ -21,6 +25,14 @@ public class Model {
 
   public String getIdentifier() {
     return this.identifier;
+  }
+
+  public Optional<String> getMaterial() {
+    return Optional.ofNullable(this.material);
+  }
+
+  public void setMaterial(String materialIdentifier) {
+    this.material = materialIdentifier;
   }
 
   public void cleanup() throws ThemisException {

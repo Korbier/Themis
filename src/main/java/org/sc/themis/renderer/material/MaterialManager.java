@@ -1,5 +1,8 @@
 package org.sc.themis.renderer.material;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 import org.sc.themis.renderer.base.command.VkCommand;
 import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSet;
 import org.sc.themis.scene.base.geometry.Model;
@@ -9,18 +12,30 @@ import org.sc.themis.shared.exception.ThemisException;
 public class MaterialManager {
 
   private final Material defaultMaterial;
+  private final Map<String, Material> availableMaterials = new HashMap<>();
   private Material lastUsedMaterial = null;
 
   /** Default constructor. */
-  public MaterialManager(Material defaultMaterial) {
+  public MaterialManager(Material defaultMaterial, Material ... materials) {
     this.defaultMaterial = defaultMaterial;
+    for (Material material : materials) {
+      this.availableMaterials.put(material.getIdentifier(), material);
+    }
   }
 
   /** Compile given material properties. */
   public void compile(MaterialProperties... properties) throws ThemisException {
+
     for (MaterialProperties materialProperties : properties) {
+
       this.defaultMaterial.add(materialProperties);
+
+      for (Material material : this.availableMaterials.values()) {
+        material.add(materialProperties);
+      }
+
     }
+
   }
 
   /** Bind material pipeline for given model. */
@@ -33,6 +48,7 @@ public class MaterialManager {
     }
 
     command.bindPipeline(this.lastUsedMaterial.getPipeline());
+
   }
 
   /** Bind material variant (descriptorset) for given material properties. */
@@ -44,7 +60,8 @@ public class MaterialManager {
   }
 
   private Material select(Model model) {
-    return this.defaultMaterial;
+    Optional<String> oMaterialIdentifier = model.getMaterial();
+    return oMaterialIdentifier.map(this.availableMaterials::get).orElse(this.defaultMaterial);
   }
 
   /** Select material properties to use for current material. */
@@ -57,5 +74,7 @@ public class MaterialManager {
     }
 
     return null;
+
   }
+  
 }
