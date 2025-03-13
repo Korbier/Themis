@@ -53,4 +53,8 @@ public class UIBuilder {
     return new PanelBuilder(this).identifier(identifier);
   }
 
+  public LabelBuilder label(String identifier) {
+    return new LabelBuilder(this).identifier(identifier);
+  }
+
 }
