@@ -26,6 +26,7 @@ import org.sc.themis.renderer.base.renderpass.VkRenderPassLayout;
 import org.sc.themis.renderer.base.renderpass.VkSubpass;
 import org.sc.themis.renderer.base.sync.VkFence;
 import org.sc.themis.renderer.base.sync.VkSemaphore;
+import org.sc.themis.renderer.material.Material;
 import org.sc.themis.renderer.material.MaterialManager;
 import org.sc.themis.renderer.material.MaterialProperties;
 import org.sc.themis.scene.Scene;
@@ -36,6 +37,8 @@ import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.viewer.renderactivity.RenderPass;
 import org.sc.viewer.renderactivity.ViewerRendererActivity;
+import org.sc.viewer.renderactivity.geometry.material.ColorMaterial;
+import org.sc.viewer.renderactivity.geometry.material.NoLightColorMaterial;
 
 /** Geometry renderpass. */
 public class GeometryRenderPass extends RenderPass {
@@ -50,8 +53,7 @@ public class GeometryRenderPass extends RenderPass {
   private VkRenderPass renderPass;
 
   // Material
-  private ColorMaterial defaultMaterial;
-  private TextureMaterial defaultMaterial2;
+  private Material[] materials;
   private MaterialManager materialManager;
 
   public GeometryRenderPass(Configuration configuration) {
@@ -73,8 +75,9 @@ public class GeometryRenderPass extends RenderPass {
 
   @Override
   public void cleanup() throws ThemisException {
-    this.defaultMaterial.cleanup();
-    this.defaultMaterial2.cleanup();
+    for (Material material : this.materials) {
+      material.cleanup();
+    }
     this.renderPass.cleanup();
   }
 
@@ -211,24 +214,23 @@ public class GeometryRenderPass extends RenderPass {
 
   private void setupMaterialManager() throws ThemisException {
 
-    this.defaultMaterial =
+    this.materials = new Material[] {
+        new NoLightColorMaterial(
+            getConfiguration(), getRenderer(), this.renderPass,
+            this.getViewerActivity().getSceneDescriptorset(),
+            this.getViewerActivity().getLighDescriptorset()
+        ),
         new ColorMaterial(
-            getConfiguration(),
-            getRenderer(),
-            this.renderPass,
+            getConfiguration(), getRenderer(), this.renderPass,
             this.getViewerActivity().getSceneDescriptorset(),
-            this.getViewerActivity().getLighDescriptorset());
-    this.defaultMaterial.setup();
+            this.getViewerActivity().getLighDescriptorset()
+        ),
+    };
 
-    this.defaultMaterial2 =
-        new TextureMaterial(
-            getConfiguration(),
-            getRenderer(),
-            this.renderPass,
-            this.getViewerActivity().getSceneDescriptorset(),
-            this.getViewerActivity().getLighDescriptorset());
-    this.defaultMaterial2.setup();
+    for (Material material : this.materials) {
+      material.setup();
+    }
 
-    this.materialManager = new MaterialManager(this.defaultMaterial);
+    this.materialManager = new MaterialManager(this.materials[0], this.materials);
   }
 }

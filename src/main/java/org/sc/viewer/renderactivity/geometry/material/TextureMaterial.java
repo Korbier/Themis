@@ -1,4 +1,4 @@
-package org.sc.viewer.renderactivity.geometry;
+package org.sc.viewer.renderactivity.geometry.material;
 
 import static org.lwjgl.vulkan.VK10.VK_FILTER_LINEAR;
 import static org.lwjgl.vulkan.VK10.VK_FORMAT_R32G32B32_SFLOAT;

@@ -20,6 +20,7 @@ import org.sc.themis.shared.resource.Font;
 import org.sc.viewer.ViewerContext;
 import org.sc.viewer.gamestate.controller.KeyMappingController;
 import org.sc.viewer.gamestate.controller.UiController;
+import org.sc.viewer.renderactivity.geometry.material.ColorMaterial;
 
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -76,6 +77,7 @@ public class ViewerGamestate implements Gamestate {
 
     this.model = createSphere(renderer, "sphere-1");
     this.model.setMaterialProperties(this.materialFactory.color(1.0f, 1.0f, 1.0f, 128.0f));
+    this.model.setMaterial(ColorMaterial.IDENTIFIER);
 
     scene.add(this.model.create().position(-3.0f, 3.0f, 0.0f));
     scene.add(this.model.create().position(-3.0f, 0.0f, 0.0f));
