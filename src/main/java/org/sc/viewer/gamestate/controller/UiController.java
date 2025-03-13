@@ -45,7 +45,8 @@ public class UiController implements Controller {
         .size(40, 20)
         .text("Directional light");
 
-    ToggleButtonBuilder tglDirectionalLight = this.builder.toggleButton(UUID.randomUUID().toString())
+    ToggleButtonBuilder tglDirectionalLight =
+        this.builder.toggleButton(UUID.randomUUID().toString())
         .location(300 - 44, 48)
         .size(40, 16)
         .colorDefault(Color.of("CBD5E1"))

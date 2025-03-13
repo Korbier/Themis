@@ -24,6 +24,7 @@ The viewer is a sample application built with this engine.
     * Button
     * Toggle button
     * Panel
+    * Label
 
 * Viewer
   * Sample scene
@@ -40,8 +41,6 @@ The viewer is a sample application built with this engine.
     * PBR material
   * Post processing
     * Grid Display
-  * Immediate Mode UI
-    * Label
     
 * Viewer
   * Mouse picking
@@ -60,4 +59,9 @@ The viewer is a sample application built with this engine.
 
 ![](./documentation/screenshots/screen_3.png)
 
+* UI Label
+
+![](./documentation/screenshots/screen_4.png)
+
+ 
  
