@@ -24,9 +24,9 @@ public class EngineTest {
   @Inject Configuration configuration;
 
   @ParameterizedTest
-  @EnumSource(value = Playgrounds.class, names = "NOOP", mode = EnumSource.Mode.EXCLUDE)
-  @Disabled
-  // @EnumSource(value=Playgrounds.class, names = "SCENE_TRIANGLE")
+  //@EnumSource(value = Playgrounds.class, names = "NOOP", mode = EnumSource.Mode.EXCLUDE)
+  //@Disabled
+  @EnumSource(value=Playgrounds.class, names = "DESC_IMAGESAMPLER")
   void testRenderActivity(Playgrounds playground) throws ThemisException {
 
     // Given

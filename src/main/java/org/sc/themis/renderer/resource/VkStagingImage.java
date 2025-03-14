@@ -1,17 +1,5 @@
 package org.sc.themis.renderer.resource;
 
-import static org.lwjgl.vulkan.VK10.VK_ACCESS_TRANSFER_WRITE_BIT;
-import static org.lwjgl.vulkan.VK10.VK_IMAGE_ASPECT_COLOR_BIT;
-import static org.lwjgl.vulkan.VK10.VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-import static org.lwjgl.vulkan.VK10.VK_IMAGE_LAYOUT_UNDEFINED;
-import static org.lwjgl.vulkan.VK10.VK_IMAGE_USAGE_SAMPLED_BIT;
-import static org.lwjgl.vulkan.VK10.VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-import static org.lwjgl.vulkan.VK10.VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
-import static org.lwjgl.vulkan.VK10.VK_IMAGE_VIEW_TYPE_2D;
-import static org.lwjgl.vulkan.VK10.VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-import static org.lwjgl.vulkan.VK10.VK_PIPELINE_STAGE_TRANSFER_BIT;
-import static org.lwjgl.vulkan.VK10.VK_SAMPLE_COUNT_1_BIT;
-
 import org.sc.themis.renderer.base.command.VkCommand;
 import org.sc.themis.renderer.base.device.VkDevice;
 import org.sc.themis.renderer.base.device.VkMemoryAllocator;
@@ -20,9 +8,15 @@ import org.sc.themis.renderer.base.resource.image.VkImageDescriptor;
 import org.sc.themis.renderer.base.resource.image.VkImageView;
 import org.sc.themis.renderer.base.resource.image.VkImageViewDescriptor;
 import org.sc.themis.shared.Configuration;
+import org.sc.themis.shared.assertion.Assertions;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.resource.Image;
 import org.sc.themis.shared.utils.MathUtils;
+
+import java.nio.ByteBuffer;
+import java.util.Arrays;
+
+import static org.lwjgl.vulkan.VK10.*;
 
 public final class VkStagingImage extends VkStagingResource {
 
@@ -30,7 +24,8 @@ public final class VkStagingImage extends VkStagingResource {
   private final int imageFormat;
   private final int layers;
 
-  private Image source;
+  private Image master;
+  private Image [] sources;
   private VkImage image;
   private VkImageView view;
   private int mipLevels;
@@ -88,14 +83,29 @@ public final class VkStagingImage extends VkStagingResource {
     return this.view;
   }
 
-  public void load(Image image) throws ThemisException {
-    this.source = image;
-    load(image.getBuffer());
+  public void load(Image ... images) throws ThemisException {
+
+    Assertions.isTrue(
+        () -> this.layers == images.length,
+        new ThemisException()
+    );
+
+    this.sources = images;
+    this.master = this.sources[0];
+
+    ByteBuffer [] buffers = new ByteBuffer[images.length];
+
+    for (int i = 0; i < images.length; i++) {
+      buffers[i] = images[i].getBuffer();
+    }
+
+    load(buffers);
+
   }
 
   private void setupMipLevels() {
     this.mipLevels =
-        (int) Math.floor(MathUtils.log2(Math.min(this.source.getWidth(), this.source.getHeight())))
+        (int) Math.floor(MathUtils.log2(Math.min(this.master.getWidth(), this.master.getHeight())))
             + 1;
   }
 
@@ -103,7 +113,7 @@ public final class VkStagingImage extends VkStagingResource {
     VkImageDescriptor descriptor =
         new VkImageDescriptor(
             this.imageFormat, this.mipLevels,
-            this.source.getWidth(), this.source.getHeight(),
+            this.master.getWidth(), this.master.getHeight(),
             VK_SAMPLE_COUNT_1_BIT, this.layers,
             VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
             0);

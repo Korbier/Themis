@@ -205,7 +205,7 @@ public class DescriptorsetImageSamplerRendererActivity extends BaseRendererActiv
     this.sampler.setup();
 
     this.image = Image.of("src/main/resources/playground/descriptorset/imagesampler/vulkan.png");
-    this.vkImage = this.renderer.getResourceAllocator().allocateImage(VK_FORMAT_R8G8B8A8_SRGB);
+    this.vkImage = this.renderer.getResourceAllocator().allocateImage(VK_FORMAT_R8G8B8A8_SRGB, 2);
     this.vkImage.load(this.image);
   }
 }

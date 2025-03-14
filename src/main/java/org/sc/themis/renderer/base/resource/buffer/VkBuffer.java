@@ -168,6 +168,10 @@ public class VkBuffer extends VulkanObject {
     if (isMapped()) this.mappedContent.put(data);
   }
 
+  public void set(int offset, ByteBuffer data) {
+    if (isMapped()) this.mappedContent.put(offset, data, 0, data.capacity());
+  }
+
   public void set(int offset, Vector3f value) {
     if (isMapped()) value.get(offset, this.mappedContent);
   }
