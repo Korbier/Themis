@@ -28,6 +28,7 @@ public final class VkStagingImage extends VkStagingResource {
 
   private final VkDevice device;
   private final int imageFormat;
+  private final int layers;
 
   private Image source;
   private VkImage image;
@@ -39,10 +40,13 @@ public final class VkStagingImage extends VkStagingResource {
       VkStagingResourceAllocator resourceAllocator,
       VkDevice device,
       VkMemoryAllocator allocator,
-      int imageFormat) {
+      int imageFormat,
+      int layers
+  ) {
     super(configuration, resourceAllocator, device, allocator);
     this.device = device;
     this.imageFormat = imageFormat;
+    this.layers = layers;
   }
 
   @Override
@@ -98,15 +102,10 @@ public final class VkStagingImage extends VkStagingResource {
   private void setupImage() throws ThemisException {
     VkImageDescriptor descriptor =
         new VkImageDescriptor(
-            this.imageFormat,
-            this.mipLevels,
-            this.source.getWidth(),
-            this.source.getHeight(),
-            VK_SAMPLE_COUNT_1_BIT,
-            1,
-            VK_IMAGE_USAGE_TRANSFER_SRC_BIT
-                | VK_IMAGE_USAGE_TRANSFER_DST_BIT
-                | VK_IMAGE_USAGE_SAMPLED_BIT,
+            this.imageFormat, this.mipLevels,
+            this.source.getWidth(), this.source.getHeight(),
+            VK_SAMPLE_COUNT_1_BIT, this.layers,
+            VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
             0);
     this.image = new VkImage(getConfiguration(), this.device, descriptor);
     this.image.setup();
@@ -118,11 +117,12 @@ public final class VkStagingImage extends VkStagingResource {
             VK_IMAGE_ASPECT_COLOR_BIT,
             0,
             this.image.getDescriptor().format(),
-            1,
+            this.layers,
             this.mipLevels,
             VK_IMAGE_VIEW_TYPE_2D);
     this.view =
         new VkImageView(getConfiguration(), this.device, this.image.getHandle(), descriptor);
     this.view.setup();
   }
+
 }

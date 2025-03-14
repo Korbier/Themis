@@ -1,5 +1,6 @@
 package org.sc.themis.scene.ui;
 
+import org.joml.Vector2f;
 import org.sc.themis.scene.pencil.Color;
 
 import java.util.function.Consumer;
@@ -73,37 +74,38 @@ public final class ToggleButtonBuilder extends ComponentBuilder<ToggleButtonBuil
     float btnHeight = height - 2 * DEFAULT_BORDER_SIZE;
 
     if (this.isToggled) {
-      pencil().drawRect(
-          left, top, width, height,
-          toggledColor.r(), toggledColor.g(), toggledColor.b()
+      pencil().rect(
+          new Vector2f(left, top),
+          new Vector2f(width, height),
+          toggledColor
       );
 
-      pencil().drawRect(
-          left + DEFAULT_BORDER_SIZE + middle,
-          btnTop,
-          btnWidth, btnHeight,
-          buttonColor.r(), buttonColor.g(), buttonColor.b()
+      pencil().rect(
+          new Vector2f(left + DEFAULT_BORDER_SIZE + middle, btnTop),
+          new Vector2f(btnWidth, btnHeight),
+          buttonColor
       );
 
     } else {
 
       if (isHotItem()) {
-        pencil().drawRect(
-            left, top, width, height,
-            hotColor.r(), hotColor.g(), hotColor.b()
+        pencil().rect(
+            new Vector2f(left, top),
+            new Vector2f(width, height),
+            hotColor
         );
       } else {
-        pencil().drawRect(
-            left, top, width, height,
-            defaultColor.r(), defaultColor.g(), defaultColor.b()
+        pencil().rect(
+            new Vector2f(left, top),
+            new Vector2f(width, height),
+            defaultColor
         );
       }
 
-      pencil().drawRect(
-          left + DEFAULT_BORDER_SIZE,
-          btnTop,
-          btnWidth, btnHeight,
-          buttonColor.r(), buttonColor.g(), buttonColor.b()
+      pencil().rect(
+          new Vector2f(left + DEFAULT_BORDER_SIZE, btnTop),
+          new Vector2f(btnWidth, btnHeight),
+          buttonColor
       );
 
     }

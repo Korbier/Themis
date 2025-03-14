@@ -17,18 +17,6 @@ public class Font {
   private int scaleH;
   private Map<Character, CharacterProperties> properties;
 
-  public static void main(String[] args) {
-
-    Font font = Font.of("src/main/resources/font/arial.fnt");
-
-    String myText = "PLOP";
-    CharacterProperties[] decoded = font.decode(myText);
-
-    for (CharacterProperties cProperties : decoded) {
-      System.out.println(cProperties);
-    }
-  }
-
   public static Font of(String filename) {
 
     Path path = Path.of(filename);
@@ -53,6 +41,7 @@ public class Font {
     }
 
     return null;
+
   }
 
   public Image getImage() {

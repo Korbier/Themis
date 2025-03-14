@@ -38,12 +38,12 @@ public class PencilPipeline extends TObject {
 
             layout(location = 0) out vec2 outTexture;
             layout(location = 1) out vec3 outColor;
-            layout(location = 2) out float outUseTexture;
+            layout(location = 2) out vec3 outProperties;
 
             layout(location = 0) in vec2 position;
             layout(location = 1) in vec2 textureCoord;
             layout(location = 2) in vec3 color;
-            layout(location = 3) in float useTexture;
+            layout(location = 3) in vec3 properties;
 
             layout(set = 0, binding = 0) uniform Global {
                 mat4 projection;
@@ -56,7 +56,7 @@ public class PencilPipeline extends TObject {
             void main()
             {
                 outTexture = textureCoord;
-                outUseTexture = useTexture;
+                outProperties = properties;
                 outColor = color;
                 gl_Position = global.projection * vec4(position, global.znear * -1, 1.0f);
             }
@@ -67,14 +67,14 @@ public class PencilPipeline extends TObject {
 
             layout(location = 0) in vec2 inTexture;
             layout(location = 1) in vec3 inColor;
-            layout(location = 2) in float inUseTexture;
+            layout(location = 2) in vec3 inProperties;
 
             layout(location = 0) out vec4 outFragColor;
 
             layout(set = 0, binding = 1) uniform sampler2D textureSampler;
 
             void main() {
-                if (inUseTexture == 1.0f) {
+                if (inProperties.x == 1.0f) {
                     outFragColor = texture(textureSampler, inTexture);
                 } else {
                     outFragColor = vec4(pow(inColor.rgb, vec3(2.2)), 1.0f);//vec4(inColor, 1.0f);//
@@ -228,7 +228,7 @@ public class PencilPipeline extends TObject {
               .attribute(VK_FORMAT_R32G32_SFLOAT, MemorySizeUtils.VEC2F) // 2D position
               .attribute(VK_FORMAT_R32G32_SFLOAT, MemorySizeUtils.VEC2F) // Texture
               .attribute(VK_FORMAT_R32G32B32_SFLOAT, MemorySizeUtils.VEC3F) // Color
-              .attribute(VK_FORMAT_R32_SFLOAT, MemorySizeUtils.FLOAT); // Use Texture
+              .attribute(VK_FORMAT_R32G32B32_SFLOAT, MemorySizeUtils.VEC3F); // Use Texture
 
       VkVertexInputState inputState = new VkVertexInputState(descriptor);
       inputState.setup(stack);

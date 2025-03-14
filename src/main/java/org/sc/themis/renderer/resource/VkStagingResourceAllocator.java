@@ -79,8 +79,13 @@ public class VkStagingResourceAllocator extends VulkanObject {
   }
 
   public VkStagingImage allocateImage(int imageFormat) {
-    VkStagingImage image =
-        new VkStagingImage(getConfiguration(), this, this.device, this.allocator, imageFormat);
+    VkStagingImage image = new VkStagingImage(getConfiguration(), this, this.device, this.allocator, imageFormat, 1);
+    image.setup();
+    return image;
+  }
+
+  public VkStagingImage allocateImage(int imageFormat, int layers) {
+    VkStagingImage image = new VkStagingImage(getConfiguration(), this, this.device, this.allocator, imageFormat, layers);
     image.setup();
     return image;
   }

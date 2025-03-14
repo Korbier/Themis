@@ -1,8 +1,10 @@
 package org.sc.themis.scene.ui;
 
-import org.sc.themis.scene.pencil.Color;
-
 import java.util.function.Consumer;
+import org.joml.Vector2f;
+import org.sc.themis.scene.pencil.Color;
+import org.sc.themis.shared.resource.FontInstance;
+
 
 public final class ButtonBuilder extends ComponentBuilder<ButtonBuilder> {
 
@@ -56,46 +58,36 @@ public final class ButtonBuilder extends ComponentBuilder<ButtonBuilder> {
     Color hotColor = this.clrHot != null ? this.clrHot : this.clrDefault;
     Color activeColor = this.clrActive != null ? this.clrActive : this.clrDefault;
 
-    pencil().drawRect(
-        left, top, width, height,
-        activeColor.r(), activeColor.b(), activeColor.g()
-    );
+    pencil().rect(new Vector2f(left, top), new Vector2f(width, height), activeColor);
 
     if (isHotItem()) {
       if (isActiveItem()) {
-        pencil()
-            .drawRect(
-                left + DEFAULT_BORDER_SIZE,
-                top + DEFAULT_BORDER_SIZE,
-                width - 2 * DEFAULT_BORDER_SIZE,
-                height - 2 * DEFAULT_BORDER_SIZE,
-                activeColor.r(), activeColor.b(), activeColor.g());
+        pencil().rect(
+            new Vector2f(left + DEFAULT_BORDER_SIZE, top + DEFAULT_BORDER_SIZE),
+            new Vector2f(width - 2 * DEFAULT_BORDER_SIZE, height - 2 * DEFAULT_BORDER_SIZE),
+            activeColor
+        );
       } else {
-        pencil()
-            .drawRect(
-                left + DEFAULT_BORDER_SIZE,
-                top + DEFAULT_BORDER_SIZE,
-                width - 2 * DEFAULT_BORDER_SIZE,
-                height - 2 * DEFAULT_BORDER_SIZE,
-                hotColor.r(), hotColor.b(), hotColor.g());
+        pencil().rect(
+            new Vector2f(left + DEFAULT_BORDER_SIZE, top + DEFAULT_BORDER_SIZE),
+            new Vector2f(width - 2 * DEFAULT_BORDER_SIZE, height - 2 * DEFAULT_BORDER_SIZE),
+            hotColor
+        );
       }
     } else {
-      pencil()
-          .drawRect(
-              left + DEFAULT_BORDER_SIZE,
-              top + DEFAULT_BORDER_SIZE,
-              width - 2 * DEFAULT_BORDER_SIZE,
-              height - 2 * DEFAULT_BORDER_SIZE,
-              defaultColor.r(), defaultColor.b(), defaultColor.g());
+      pencil().rect(
+          new Vector2f(left + DEFAULT_BORDER_SIZE,top + DEFAULT_BORDER_SIZE),
+          new Vector2f(width - 2 * DEFAULT_BORDER_SIZE, height - 2 * DEFAULT_BORDER_SIZE),
+          defaultColor
+      );
     }
 
     if (this.text != null) {
-      pencil()
-          .drawText(
-              left + 2 * DEFAULT_BORDER_SIZE,
-              top + 2 * DEFAULT_BORDER_SIZE,
-              height - 4 * DEFAULT_BORDER_SIZE,
-              this.text);
+      pencil().text(
+          new Vector2f(left + 2 * DEFAULT_BORDER_SIZE, top + 2 * DEFAULT_BORDER_SIZE),
+          FontInstance.VERDANA_12, Color.of("FF0000"),
+          this.text
+      );
     }
 
   }

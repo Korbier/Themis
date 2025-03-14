@@ -1,7 +1,9 @@
 package org.sc.themis.scene.ui;
 
+import org.joml.Vector2f;
 import org.joml.Vector2i;
 import org.sc.themis.scene.pencil.Color;
+import org.sc.themis.shared.resource.FontInstance;
 
 public final class PanelBuilder extends ComponentBuilder<PanelBuilder> {
 
@@ -53,32 +55,32 @@ public final class PanelBuilder extends ComponentBuilder<PanelBuilder> {
     Color headerColor = Color.of("CBD5E1");
     Color headerColorHot = Color.of("94A3B8");
 
-    pencil().drawRect(left, top, width, height, borderColor);
-    pencil().drawRect(
-        left + DEFAULT_BORDER_SIZE, top + DEFAULT_BORDER_SIZE,
-        width - 2 * DEFAULT_BORDER_SIZE, height - 2 * DEFAULT_BORDER_SIZE,
+    pencil().rect(new Vector2f(left, top), new Vector2f(width, height), borderColor);
+    pencil().rect(
+        new Vector2f(left + DEFAULT_BORDER_SIZE, top + DEFAULT_BORDER_SIZE),
+        new Vector2f(width - 2 * DEFAULT_BORDER_SIZE, height - 2 * DEFAULT_BORDER_SIZE),
         backgroundColor
     );
 
     if (isHotItem()) {
-      pencil().drawRect(
-          left + DEFAULT_BORDER_SIZE, top + DEFAULT_BORDER_SIZE,
-          width - 2 * DEFAULT_BORDER_SIZE, DEFAULT_HEADER_SIZE,
+      pencil().rect(
+          new Vector2f(left + DEFAULT_BORDER_SIZE, top + DEFAULT_BORDER_SIZE),
+          new Vector2f(width - 2 * DEFAULT_BORDER_SIZE, DEFAULT_HEADER_SIZE),
           headerColorHot
       );
 
 
     } else {
-      pencil().drawRect(
-          left + DEFAULT_BORDER_SIZE, top + DEFAULT_BORDER_SIZE,
-          width - 2 * DEFAULT_BORDER_SIZE, DEFAULT_HEADER_SIZE,
+      pencil().rect(
+          new Vector2f(left + DEFAULT_BORDER_SIZE, top + DEFAULT_BORDER_SIZE),
+          new Vector2f(width - 2 * DEFAULT_BORDER_SIZE, DEFAULT_HEADER_SIZE),
           headerColor
       );
     }
 
-    pencil().drawText(
-        left + 2 * DEFAULT_BORDER_SIZE,  top + 2 * DEFAULT_BORDER_SIZE,
-        16, "Configuration"
+    pencil().text(
+        new Vector2f(left + 2 * DEFAULT_BORDER_SIZE,  top + 2 * DEFAULT_BORDER_SIZE),
+        FontInstance.VERDANA_12, Color.of("FF0000"), "Configuration"
     );
 
   }

@@ -24,7 +24,8 @@ public class MaterialDescriptor {
   }
 
   public void addCombinedImageSamplerBinding(
-      int binding, int shaderStage, VkSamplerDescriptor samplerDescriptor) {
+      int binding, int shaderStage, VkSamplerDescriptor samplerDescriptor
+  ) {
     this.bindings.put(binding, VkDescriptorSetBinding.combinedImageSampler(binding, shaderStage));
     this.samplerBufferDescriptors.put(binding, samplerDescriptor);
   }
