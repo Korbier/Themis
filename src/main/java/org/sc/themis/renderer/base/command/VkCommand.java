@@ -1,19 +1,11 @@
 package org.sc.themis.renderer.base.command;
 
-import static org.lwjgl.vulkan.VK10.VK_PIPELINE_BIND_POINT_COMPUTE;
-import static org.lwjgl.vulkan.VK10.VK_PIPELINE_BIND_POINT_GRAPHICS;
-import static org.lwjgl.vulkan.VK10.VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-
 import java.nio.IntBuffer;
 import java.util.function.Consumer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkExtent2D;
 import org.lwjgl.vulkan.VkImageSubresourceRange;
-import org.sc.themis.renderer.base.command.set.MainCommandSet;
-import org.sc.themis.renderer.base.command.set.PipelineCommandSet;
-import org.sc.themis.renderer.base.command.set.RenderPassCommandSet;
-import org.sc.themis.renderer.base.command.set.ResourceSet;
-import org.sc.themis.renderer.base.command.set.VkCommandSet;
+import org.sc.themis.renderer.base.command.set.*;
 import org.sc.themis.renderer.base.framebuffer.VkFrameBuffer;
 import org.sc.themis.renderer.base.pipeline.VkPipeline;
 import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSet;
@@ -26,6 +18,8 @@ import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.lwjgl.vulkan.VK10.*;
 
 public class VkCommand extends VkCommandSet {
 
@@ -192,16 +186,26 @@ public class VkCommand extends VkCommandSet {
   /**** Buffer ****/
   public void copy(VkBuffer srcBuffer, VkBuffer dstBuffer) throws ThemisException {
     resource()
-        .copy(srcBuffer, dstBuffer, ResourceSet.Region.of(0, 0, srcBuffer.getRequestedSize()));
+        .copy(srcBuffer, dstBuffer, VkBufferCopyRegion.of(0, 0, srcBuffer.getRequestedSize()));
   }
 
-  public void copy(VkBuffer srcBuffer, VkBuffer dstBuffer, ResourceSet.Region... regions)
+  public void copy(VkBuffer srcBuffer, VkBuffer dstBuffer, VkBufferCopyRegion ... regions)
       throws ThemisException {
     resource().copy(srcBuffer, dstBuffer, regions);
   }
 
   public void copy(VkBuffer srcBuffer, VkImage dstImage) throws ThemisException {
-    resource().copy(srcBuffer, dstImage);
+    resource().copy(
+        srcBuffer, dstImage,
+        new VkBufferImageCopyRegion(
+            0, dstImage.getDescriptor().width(), dstImage.getDescriptor().height(), 1,
+            1, 0, VK_IMAGE_ASPECT_COLOR_BIT, 0
+        )
+    );
+  }
+
+  public void copy(VkBuffer srcBuffer, VkImage dstImage, VkBufferImageCopyRegion ... regions) throws ThemisException {
+    resource().copy(srcBuffer, dstImage, regions);
   }
 
   /**** Image ****/

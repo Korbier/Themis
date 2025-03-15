@@ -22,6 +22,7 @@ import org.sc.playground.scene.sphere.SceneSphereRendererActivity;
 import org.sc.playground.scene.triangle.SceneTriangleRendererActivity;
 import org.sc.playground.scene.triangle2.SceneTriangle2Gamestate;
 import org.sc.playground.scene.triangle2.SceneTriangle2RendererActivity;
+import org.sc.playground.texturearray.TextureArrayRendererActivity;
 import org.sc.playground.triangle.TriangleRendererActivity;
 import org.sc.themis.gamestate.Gamestate;
 import org.sc.themis.renderer.RendererActivity;
@@ -48,7 +49,9 @@ public enum Playgrounds {
   CONTROLLER_FPS_CAMERA(
       "controller-fpscamera",
       new ControllerFpsCameraGamestate(),
-      ControllerFpsCameraRendererActivity::new);
+      ControllerFpsCameraRendererActivity::new),
+  TEXTURE_ARRAY("texturearray", new NoopGamestate(), TextureArrayRendererActivity::new),
+  ;
 
   final String name;
   final Gamestate gamestate;

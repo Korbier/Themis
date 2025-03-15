@@ -1,27 +1,12 @@
-package org.sc.playground.descriptorset.imagesampler;
+package org.sc.playground.texturearray;
 
-import static org.lwjgl.vulkan.VK10.VK_FILTER_LINEAR;
-import static org.lwjgl.vulkan.VK10.VK_FORMAT_R8G8B8A8_SRGB;
-import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_FRAGMENT_BIT;
-import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_VERTEX_BIT;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.util.shaderc.Shaderc;
 import org.sc.playground.shared.BaseRendererActivity;
 import org.sc.themis.renderer.base.command.VkCommand;
 import org.sc.themis.renderer.base.frame.FrameKey;
 import org.sc.themis.renderer.base.framebuffer.VkFrameBuffer;
-import org.sc.themis.renderer.base.pipeline.VkPipeline;
-import org.sc.themis.renderer.base.pipeline.VkPipelineDescriptor;
-import org.sc.themis.renderer.base.pipeline.VkPipelineLayout;
-import org.sc.themis.renderer.base.pipeline.VkPushConstantRange;
-import org.sc.themis.renderer.base.pipeline.VkShaderProgram;
-import org.sc.themis.renderer.base.pipeline.VkShaderProgramStage;
-import org.sc.themis.renderer.base.pipeline.VkShaderSourceCompiler;
-import org.sc.themis.renderer.base.pipeline.VkVertexInputState;
+import org.sc.themis.renderer.base.pipeline.*;
 import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorPool;
 import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSet;
 import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSetBinding;
@@ -35,16 +20,22 @@ import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.resource.Image;
 
-public class DescriptorsetImageSamplerRendererActivity extends BaseRendererActivity {
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
+import static org.lwjgl.vulkan.VK10.*;
+
+public class TextureArrayRendererActivity extends BaseRendererActivity {
 
   private static final String SHADER_VERTEX_SOURCE =
-      "src/main/resources/playground/descriptorset/imagesampler/vertex_shader.glsl";
+      "src/main/resources/playground/texturearray/vertex_shader.glsl";
   private static final String SHADER_VERTEX_COMPILED =
-      "target/playground/descriptorset/imagesampler/vertex_shader.spirv";
+      "target/playground/texturearray/vertex_shader.spirv";
   private static final String SHADER_FRAGMENT_SOURCE =
-      "src/main/resources/playground/descriptorset/imagesampler/fragment_shader.glsl";
+      "src/main/resources/playground/texturearray/fragment_shader.glsl";
   private static final String SHADER_FRAGMENT_COMPILED =
-      "target/playground/descriptorset/imagesampler/fragment_shader.spirv";
+      "target/playground/texturearray/fragment_shader.spirv";
 
   /*** Pipeline ***/
   private VkShaderProgram shaderProgram;
@@ -60,10 +51,11 @@ public class DescriptorsetImageSamplerRendererActivity extends BaseRendererActiv
   private VkDescriptorPool descriptorPool;
 
   private VkSampler sampler;
-  private Image image;
+  private Image imageA;
+  private Image imageB;
   private VkStagingImage vkImage;
 
-  public DescriptorsetImageSamplerRendererActivity(Configuration configuration) {
+  public TextureArrayRendererActivity(Configuration configuration) {
     super(configuration);
   }
 
@@ -204,8 +196,10 @@ public class DescriptorsetImageSamplerRendererActivity extends BaseRendererActiv
             new VkSamplerDescriptor(VK_FILTER_LINEAR, 1, true));
     this.sampler.setup();
 
-    this.image = Image.of("src/main/resources/playground/descriptorset/imagesampler/vulkan.png");
-    this.vkImage = this.renderer.getResourceAllocator().allocateImage(VK_FORMAT_R8G8B8A8_SRGB);
-    this.vkImage.load(this.image);
+    this.imageA = Image.of("src/main/resources/playground/texturearray/mars.jpg");
+    this.imageB = Image.of("src/main/resources/playground/texturearray/mercure.jpg");
+
+    this.vkImage = this.renderer.getResourceAllocator().allocateImage(VK_FORMAT_R8G8B8A8_SRGB, 2);
+    this.vkImage.load(this.imageA, this.imageB);
   }
 }

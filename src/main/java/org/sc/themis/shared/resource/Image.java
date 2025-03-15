@@ -13,6 +13,7 @@ public class Image {
 
   private final String path;
   private final ByteBuffer buffer;
+  private final int size;
   private final int width;
   private final int height;
 
@@ -53,6 +54,7 @@ public class Image {
     this.buffer = buffer;
     this.width = width;
     this.height = height;
+    this.size = this.buffer.capacity();
   }
 
   public String getPath() {
@@ -70,4 +72,9 @@ public class Image {
   public int getHeight() {
     return height;
   }
+
+  public int getSize() {
+    return this.size;
+  }
+
 }
