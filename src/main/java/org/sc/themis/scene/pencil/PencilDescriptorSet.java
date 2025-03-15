@@ -23,8 +23,11 @@ import org.sc.themis.scene.Scene;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.resource.FontInstance;
+import org.sc.themis.shared.resource.Image;
 import org.sc.themis.shared.tobject.TObject;
 import org.sc.themis.shared.utils.MemorySizeUtils;
+
+import java.util.Arrays;
 
 /**
  * Descriptorset layout.
@@ -136,8 +139,12 @@ public class PencilDescriptorSet extends TObject implements VkDescriptorSetProvi
         );
     this.sampler.setup();
 
-    this.stgImage = this.renderer.getResourceAllocator().allocateImage(VK_FORMAT_R8G8B8A8_SRGB);
-    this.stgImage.load(FontInstance.VERDANA_12.font().getImage());
+    this.stgImage = this.renderer.getResourceAllocator().allocateImage(
+        VK_FORMAT_R8G8B8A8_SRGB, FontInstance.values().length
+    );
+    this.stgImage.load(
+      Arrays.stream(FontInstance.values()).map(font -> font.font().getImage()).toArray(Image[]::new)
+    );
 
   }
 

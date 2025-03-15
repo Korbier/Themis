@@ -1,13 +1,13 @@
 package org.sc.themis.scene.pencil;
 
 import org.joml.Vector2f;
-import org.joml.Vector3f;
+import org.joml.Vector4f;
 import org.sc.themis.shared.resource.Font;
 import org.sc.themis.shared.resource.FontInstance;
 
 public class Pencil {
 
-  private static final int COMPONENT_COUNT = 10;
+  private static final int COMPONENT_COUNT = 11;
 
   private float[] data = new float[0];
   private int[] indices = new int[0];
@@ -63,7 +63,7 @@ public class Pencil {
       text(
           new Vector2f(posX, posY), new Vector2f(width, height),
           new Vector2f(uMin, vMin), new Vector2f(uMax, vMax),
-          color
+          color, fontInstance
       );
 
       decal += character.xAdvance() * ratio;
@@ -135,32 +135,36 @@ public class Pencil {
   }
 
   private Pencil text(
-    Vector2f position, Vector2f size,
-    Vector2f textureMin, Vector2f textureMax,
-    Color color
+      Vector2f position, Vector2f size,
+      Vector2f textureMin, Vector2f textureMax,
+      Color color, FontInstance font
   ) {
 
     int startIndiceOffset = getDataSize() / COMPONENT_COUNT;
 
     float[] data = extendData(4);
-    appendData(data, getDataSize(), position, textureMin, color, new Vector3f(1.0f, 0.0f, 0.0f));
+    appendData(
+        data, getDataSize(),
+        position, textureMin,
+        color, new Vector4f(1.0f, font.ordinal(), font.width(), font.edge())
+    );
     appendData(
         data, getDataSize() + COMPONENT_COUNT,
         new Vector2f(position.x() + size.x(), position.y()),
         new Vector2f(textureMax.x, textureMin.y),
-        color, new Vector3f(1.0f, 0.0f, 0.0f)
+        color, new Vector4f(1.0f, font.ordinal(), font.width(), font.edge())
     );
     appendData(
         data, getDataSize() + COMPONENT_COUNT * 2,
         new Vector2f(position.x() + size.x(), position.y() + size.y()),
         textureMax,
-        color, new Vector3f(1.0f, 0.0f, 0.0f)
+        color, new Vector4f(1.0f, font.ordinal(), font.width(), font.edge())
     );
     appendData(
         data, getDataSize() + COMPONENT_COUNT * 3,
         new Vector2f(position.x(), position.y() + size.y()),
         new Vector2f(textureMin.x, textureMax.y),
-        color, new Vector3f(1.0f, 0.0f, 0.0f)
+        color, new Vector4f(1.0f, font.ordinal(), font.width(), font.edge())
     );
     this.data = data;
 
@@ -189,20 +193,20 @@ public class Pencil {
   }
 
   private void appendData(float[] data, int idx, Vector2f position, Color color) {
-    appendData(data, idx, position, new Vector2f(), color, new Vector3f());
+    appendData(data, idx, position, new Vector2f(), color, new Vector4f());
   }
 
   private void appendData(
       float[] data, int idx,
       Vector2f position, Vector2f texture, Color color
   ) {
-    appendData(data, idx, position, texture, color, new Vector3f());
+    appendData(data, idx, position, texture, color, new Vector4f());
   }
 
   private void appendData(
       float[] data, int idx,
       Vector2f position, Vector2f texture, Color color,
-      Vector3f properties
+      Vector4f properties
   ) {
 
     data[idx] = position.x();
@@ -218,6 +222,7 @@ public class Pencil {
     data[idx + 7] = properties.x();
     data[idx + 8] = properties.y();
     data[idx + 9] = properties.z();
+    data[idx + 10] = properties.w();
 
   }
 

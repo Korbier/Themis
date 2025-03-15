@@ -2,7 +2,9 @@ package org.sc.themis.shared.resource;
 
 public enum FontInstance {
 
-  VERDANA_12("verdana", 12, 0.40f, 0.26f);
+  VERDANA_12("verdana_df", 12, 0.40f, 0.24f),
+  VERDANA_14("verdana_df", 14, 0.38f, 0.26f)
+  ;
 
   private String fontname;
   private int size;
@@ -11,7 +13,7 @@ public enum FontInstance {
 
   private Font font;
 
-  private FontInstance(String fontname, int size, float idth, float edge) {
+  private FontInstance(String fontname, int size, float width, float edge) {
     this.fontname = fontname;
     this.size = size;
     this.width = width;
