@@ -5,6 +5,9 @@ import static org.lwjgl.vulkan.VK10.VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
 import static org.lwjgl.vulkan.VK10.VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
 
 import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
+import java.util.Arrays;
+
 import org.joml.Matrix4f;
 import org.joml.Vector2i;
 import org.joml.Vector3f;
@@ -24,7 +27,7 @@ public abstract sealed class VkStagingResource extends TObject
   private final VkDevice device;
   private final VkStagingResourceAllocator resourceAllocator;
   private final VkMemoryAllocator allocator;
-  private int bufferSize;
+  private long bufferSize;
 
   private VkStagingResourceStatus status = VkStagingResourceStatus.CREATED;
   private VkBuffer stagingBuffer;
@@ -81,7 +84,7 @@ public abstract sealed class VkStagingResource extends TObject
     this.bufferSize = bufferSize;
   }
 
-  public int getBufferSize() {
+  public long getBufferSize() {
     return this.bufferSize;
   }
 
@@ -107,13 +110,20 @@ public abstract sealed class VkStagingResource extends TObject
     set(offset, data);
   }
 
-  public void load(ByteBuffer bBuffer) throws ThemisException {
-    this.recreateStagingBuffer(bBuffer.capacity());
-    set(bBuffer);
+  public void load(ByteBuffer ... buffers) throws ThemisException {
+    long capacity = Arrays.stream(buffers).map(ByteBuffer::capacity).reduce(0, Integer::sum);
+    this.recreateStagingBuffer(capacity);
+    set(buffers);
   }
 
-  public void set(ByteBuffer data) {
-    set(() -> this.stagingBuffer.set(data));
+  public void set(ByteBuffer ... buffers) {
+    set(() -> {
+      int offset = 0;
+      for (ByteBuffer buffer : buffers) {
+        this.stagingBuffer.set(offset, buffer);
+        offset += buffer.capacity();
+      }
+    });
   }
 
   public void set(int offset, Vector3f value) {
@@ -175,7 +185,7 @@ public abstract sealed class VkStagingResource extends TObject
     this.stagingBuffer = null;
   }
 
-  private void recreateStagingBuffer(int buffersize) throws ThemisException {
+  private void recreateStagingBuffer(long buffersize) throws ThemisException {
 
     if (this.stagingBuffer == null || this.bufferSize != buffersize) {
 

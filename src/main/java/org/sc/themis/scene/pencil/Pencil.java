@@ -1,19 +1,16 @@
 package org.sc.themis.scene.pencil;
 
+import org.joml.Vector2f;
+import org.joml.Vector4f;
 import org.sc.themis.shared.resource.Font;
+import org.sc.themis.shared.resource.FontInstance;
 
 public class Pencil {
 
-  private static final int COMPONENT_COUNT = 8;
-
-  private final Font font;
+  private static final int COMPONENT_COUNT = 11;
 
   private float[] data = new float[0];
   private int[] indices = new int[0];
-
-  public Pencil(Font font) {
-    this.font = font;
-  }
 
   public int getDataSize() {
     return this.data.length;
@@ -35,21 +32,18 @@ public class Pencil {
     return this.data.length > 0 && this.indices.length > 0;
   }
 
-  public Font getFont() {
-    return this.font;
-  }
-
   public Pencil clear() {
     this.data = new float[0];
     this.indices = new int[0];
     return this;
   }
 
-  public Pencil drawText(float x, float y, float size, String text) {
+  public Pencil text(Vector2f location, FontInstance fontInstance, Color color, String text) {
 
-    Font.CharacterProperties[] characters = this.font.decode(text);
+    Font font = fontInstance.font();
+    Font.CharacterProperties[] characters = font.decode(text);
 
-    float ratio = size / this.font.getSize();
+    float ratio = (float) fontInstance.size() / font.getSize();
 
     float decal = 0;
     for (Font.CharacterProperties character : characters) {
@@ -57,32 +51,37 @@ public class Pencil {
       float height = character.height() * ratio;
       float width = character.width() * ratio;
 
-      float posX = x + (character.xOffset() * ratio) + decal;
-      float poxY = y + (character.yOffset() * ratio);
+      float posX = location.x() + (character.xOffset() * ratio) + decal;
+      float posY = location.y() + (character.yOffset() * ratio);
 
-      float uMin = (float) character.x() / this.font.getScaleW();
-      float vMin = (float) character.y() / this.font.getScaleH();
+      float uMin = (float) character.x() / font.getScaleW();
+      float vMin = (float) character.y() / font.getScaleH();
 
-      float uMax = (float) (character.x() + character.width()) / this.font.getScaleW();
-      float vMax = (float) (character.y() + character.height()) / this.font.getScaleH();
+      float uMax = (float) (character.x() + character.width()) / font.getScaleW();
+      float vMax = (float) (character.y() + character.height()) / font.getScaleH();
 
-      drawRect(posX, poxY, width, height, uMin, vMin, uMax, vMax);
+      text(
+          new Vector2f(posX, posY), new Vector2f(width, height),
+          new Vector2f(uMin, vMin), new Vector2f(uMax, vMax),
+          color, fontInstance
+      );
 
       decal += character.xAdvance() * ratio;
+
     }
 
     return this;
+
   }
 
-  public Pencil drawTriangle(
-    float x1, float y1, float x2, float y2, float x3, float y3, float r, float g, float b) {
+  public Pencil triangle(Vector2f a, Vector2f b, Vector2f c, Color color) {
 
     int startIndiceOffset = getDataSize() / COMPONENT_COUNT;
 
     float[] data = extendData(3);
-    setData(data, getDataSize(), x1, y1, 0.0f, 0.0f, r, g, b, false);
-    setData(data, getDataSize() + COMPONENT_COUNT, x2, y2, 0.0f, 0.0f, r, g, b, false);
-    setData(data, getDataSize() + COMPONENT_COUNT * 2, x3, y3, 0.0f, 0.0f, r, g, b, false);
+    appendData(data, getDataSize(), a, color);
+    appendData(data, getDataSize() + COMPONENT_COUNT, b, color);
+    appendData(data, getDataSize() + COMPONENT_COUNT * 2, c, color);
     this.data = data;
 
     int[] indices = extendIndices(3);
@@ -94,29 +93,32 @@ public class Pencil {
     return this;
   }
 
-  public Pencil drawRect(float x, float y, float width, float height, Color color) {
-    return drawRect(x, y, width, height, color.r(), color.g(), color.b() );
-  }
-
-  public Pencil drawRect(float x, float y, float width, float height, float r, float g, float b) {
+  public Pencil rect(Vector2f position, Vector2f size, Color color) {
 
     int startIndiceOffset = getDataSize() / COMPONENT_COUNT;
 
     float[] data = extendData(4);
-    setData(data, getDataSize(), x, y, 0.0f, 0.0f, r, g, b, false);
-    setData(data, getDataSize() + COMPONENT_COUNT, x + width, y, 1.0f, 0.0f, r, g, b, false);
-    setData(
-      data,
-      getDataSize() + COMPONENT_COUNT * 2,
-      x + width,
-      y + height,
-      1.0f,
-      1.0f,
-      r,
-      g,
-      b,
-      false);
-    setData(data, getDataSize() + COMPONENT_COUNT * 3, x, y + height, 0.0f, 1.0f, r, g, b, false);
+
+    appendData(
+        data, getDataSize(),
+        position,
+        color
+    );
+    appendData(
+        data, getDataSize() + COMPONENT_COUNT,
+        new Vector2f(position.x() + size.x(), position.y()),
+        color
+    );
+    appendData(
+        data, getDataSize() + COMPONENT_COUNT * 2,
+        new Vector2f(position.x() + size.x(), position.y() + size.y()),
+        color
+    );
+    appendData(
+        data, getDataSize() + COMPONENT_COUNT * 3,
+        new Vector2f(position.x(), position.y() + size.y()),
+        color
+    );
     this.data = data;
 
     int[] indices = extendIndices(6);
@@ -129,39 +131,41 @@ public class Pencil {
     this.indices = indices;
 
     return this;
+
   }
 
-  private Pencil drawRect(
-    float x, float y, float width, float height, float uMin, float vMin, float uMax, float vMax) {
+  private Pencil text(
+      Vector2f position, Vector2f size,
+      Vector2f textureMin, Vector2f textureMax,
+      Color color, FontInstance font
+  ) {
 
     int startIndiceOffset = getDataSize() / COMPONENT_COUNT;
 
     float[] data = extendData(4);
-    setData(data, getDataSize(), x, y, uMin, vMin, 0.0f, 0.0f, 0.0f, true);
-    setData(
-      data, getDataSize() + COMPONENT_COUNT, x + width, y, uMax, vMin, 0.0f, 0.0f, 0.0f, true);
-    setData(
-      data,
-      getDataSize() + COMPONENT_COUNT * 2,
-      x + width,
-      y + height,
-      uMax,
-      vMax,
-      0.0f,
-      0.0f,
-      0.0f,
-      true);
-    setData(
-      data,
-      getDataSize() + COMPONENT_COUNT * 3,
-      x,
-      y + height,
-      uMin,
-      vMax,
-      0.0f,
-      0.0f,
-      0.0f,
-      true);
+    appendData(
+        data, getDataSize(),
+        position, textureMin,
+        color, new Vector4f(1.0f, font.ordinal(), font.width(), font.edge())
+    );
+    appendData(
+        data, getDataSize() + COMPONENT_COUNT,
+        new Vector2f(position.x() + size.x(), position.y()),
+        new Vector2f(textureMax.x, textureMin.y),
+        color, new Vector4f(1.0f, font.ordinal(), font.width(), font.edge())
+    );
+    appendData(
+        data, getDataSize() + COMPONENT_COUNT * 2,
+        new Vector2f(position.x() + size.x(), position.y() + size.y()),
+        textureMax,
+        color, new Vector4f(1.0f, font.ordinal(), font.width(), font.edge())
+    );
+    appendData(
+        data, getDataSize() + COMPONENT_COUNT * 3,
+        new Vector2f(position.x(), position.y() + size.y()),
+        new Vector2f(textureMin.x, textureMax.y),
+        color, new Vector4f(1.0f, font.ordinal(), font.width(), font.edge())
+    );
     this.data = data;
 
     int[] indices = extendIndices(6);
@@ -188,29 +192,38 @@ public class Pencil {
     return indices;
   }
 
-  private void setData(
-      float[] data,
-      int idx,
-      float x,
-      float y,
-      float u,
-      float v,
-      float r,
-      float g,
-      float b,
-      boolean useTexture) {
+  private void appendData(float[] data, int idx, Vector2f position, Color color) {
+    appendData(data, idx, position, new Vector2f(), color, new Vector4f());
+  }
 
-    data[idx] = x;
-    data[idx + 1] = y;
+  private void appendData(
+      float[] data, int idx,
+      Vector2f position, Vector2f texture, Color color
+  ) {
+    appendData(data, idx, position, texture, color, new Vector4f());
+  }
 
-    data[idx + 2] = u;
-    data[idx + 3] = v;
+  private void appendData(
+      float[] data, int idx,
+      Vector2f position, Vector2f texture, Color color,
+      Vector4f properties
+  ) {
 
-    data[idx + 4] = r;
-    data[idx + 5] = g;
-    data[idx + 6] = b;
+    data[idx] = position.x();
+    data[idx + 1] = position.y();
 
-    data[idx + 7] = useTexture ? 1.0f : 0.0f;
+    data[idx + 2] = texture.x();
+    data[idx + 3] = texture.y();
+
+    data[idx + 4] = color.r();
+    data[idx + 5] = color.g();
+    data[idx + 6] = color.b();
+
+    data[idx + 7] = properties.x();
+    data[idx + 8] = properties.y();
+    data[idx + 9] = properties.z();
+    data[idx + 10] = properties.w();
+
   }
 
   private void setIndice(int[] indices, int idx, int value) {

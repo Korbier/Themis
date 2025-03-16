@@ -34,7 +34,7 @@ public class ResourceSet extends VkCommandSet {
     super(configuration, buffer);
   }
 
-  public void copy(VkBuffer srcBuffer, VkBuffer dstBuffer, Region... regions)
+  public void copy(VkBuffer srcBuffer, VkBuffer dstBuffer, VkBufferCopyRegion ... regions)
       throws ThemisException {
     VkBufferCopy.Buffer copyRegion = createBufferCopy(regions);
     vkCommand()
@@ -42,9 +42,8 @@ public class ResourceSet extends VkCommandSet {
             buffer().getHandle(), srcBuffer.getHandle(), dstBuffer.getHandle(), copyRegion);
   }
 
-  public void copy(VkBuffer srcBuffer, VkImage dstImage) throws ThemisException {
-    VkBufferImageCopy.Buffer bufferImgCopy =
-        createBufferImageCopy(dstImage.getDescriptor().width(), dstImage.getDescriptor().height());
+  public void copy(VkBuffer srcBuffer, VkImage dstImage, VkBufferImageCopyRegion ... regions) throws ThemisException {
+    VkBufferImageCopy.Buffer bufferImgCopy = createBufferImageCopy(regions);
     vkCommand()
         .cmdCopyBufferToImage(
             buffer().getHandle(),
@@ -54,14 +53,12 @@ public class ResourceSet extends VkCommandSet {
             bufferImgCopy);
   }
 
+
   public void layout(
       VkImage image,
-      int sourceLayout,
-      int targetLayout,
-      int srcPipelineStage,
-      int dstPipelineStage,
-      int srcAccessMask,
-      int dstAccessMask,
+      int sourceLayout, int targetLayout,
+      int srcPipelineStage, int dstPipelineStage,
+      int srcAccessMask, int dstAccessMask,
       Consumer<VkImageSubresourceRange> subResourceRange)
       throws ThemisException {
     VkImageMemoryBarrier.Buffer barrier =
@@ -175,20 +172,6 @@ public class ResourceSet extends VkCommandSet {
     }
   }
 
-  private VkBufferCopy.Buffer createBufferCopy(Region... regions) {
-    try (MemoryStack stack = MemoryStack.stackPush()) {
-      VkBufferCopy.Buffer buffers = VkBufferCopy.calloc(regions.length, stack);
-      for (int i = 0; i < buffers.remaining(); i++) {
-        buffers
-            .get(i)
-            .srcOffset(regions[i].srcOffset)
-            .dstOffset(regions[i].dstOffset)
-            .size(regions[i].size);
-      }
-      return buffers;
-    }
-  }
-
   private VkImageMemoryBarrier.Buffer createImageMemoryBarrier(
       long handle,
       int sourceLayout,
@@ -210,47 +193,42 @@ public class ResourceSet extends VkCommandSet {
     }
   }
 
-  private VkBufferImageCopy.Buffer createBufferImageCopy(int width, int height) {
+  private VkBufferCopy.Buffer createBufferCopy(VkBufferCopyRegion... regions) {
     try (MemoryStack stack = MemoryStack.stackPush()) {
-      return VkBufferImageCopy.calloc(1, stack)
-          .bufferOffset(0)
-          .bufferRowLength(0)
-          .bufferImageHeight(0)
-          .imageSubresource(
-              it ->
-                  it.aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
-                      .mipLevel(0)
-                      .baseArrayLayer(0)
-                      .layerCount(1))
-          .imageOffset(it -> it.x(0).y(0).z(0))
-          .imageExtent(it -> it.width(width).height(height).depth(1));
+      VkBufferCopy.Buffer buffers = VkBufferCopy.calloc(regions.length, stack);
+      for (int i = 0; i < buffers.remaining(); i++) {
+        buffers
+            .get(i)
+            .srcOffset(regions[i].srcOffset())
+            .dstOffset(regions[i].dstOffset())
+            .size(regions[i].size());
+      }
+      return buffers;
     }
   }
 
-  public static class Region {
-
-    private long srcOffset;
-    private long dstOffset;
-    private long size;
-
-    public static Region of(long srcOffset, long dstOffset, long size) {
-      Region region = new Region();
-      region.srcOffset = srcOffset;
-      region.dstOffset = dstOffset;
-      region.size = size;
-      return region;
-    }
-
-    public long getSrcOffset() {
-      return srcOffset;
-    }
-
-    public long getDstOffset() {
-      return dstOffset;
-    }
-
-    public long getSize() {
-      return size;
+  private VkBufferImageCopy.Buffer createBufferImageCopy(VkBufferImageCopyRegion ... regions) {
+    try (MemoryStack stack = MemoryStack.stackPush()) {
+      VkBufferImageCopy.Buffer buffers = VkBufferImageCopy.calloc(regions.length, stack);
+      for (int i = 0; i < buffers.remaining(); i++) {
+        VkBufferImageCopyRegion region = regions[i];
+        buffers.get(i)
+            .bufferOffset(region.bufferOffset())
+            .bufferRowLength(0)
+            .bufferImageHeight(0)
+            .imageSubresource(
+                it ->
+                    it.aspectMask(region.aspectMask())
+                        .mipLevel(region.mipLevel())
+                        .baseArrayLayer(region.baseArrayLayer())
+                        .layerCount(region.layerCount()))
+            .imageOffset(it -> it.x(0).y(0).z(0))
+            .imageExtent(it ->
+                it.width(region.imageWidth()).height(region.imageHeight()).depth(region.depth())
+            );
+      }
+      return buffers;
     }
   }
+
 }
