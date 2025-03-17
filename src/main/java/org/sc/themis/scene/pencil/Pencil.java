@@ -4,6 +4,7 @@ import org.joml.Vector2f;
 import org.joml.Vector4f;
 import org.sc.themis.shared.resource.Font;
 import org.sc.themis.shared.resource.FontInstance;
+import org.sc.themis.shared.resource.STBFreeType;
 
 public class Pencil {
 
@@ -11,6 +12,9 @@ public class Pencil {
 
   private float[] data = new float[0];
   private int[] indices = new int[0];
+
+  public Pencil() {
+  }
 
   public int getDataSize() {
     return this.data.length;
@@ -40,6 +44,36 @@ public class Pencil {
 
   public Pencil text(Vector2f location, FontInstance fontInstance, Color color, String text) {
 
+    STBFreeType.FontCharacter[] characters = STBFreeType.INSTANCE.decode(text);
+
+    float decal = 0;
+
+    for (STBFreeType.FontCharacter fChar : characters) {
+
+      float height = fChar.height();
+      float width = fChar.width();
+
+      float posX = location.x() + fChar.xOffset() + decal;
+      float posY = location.y() + fChar.yOffset();
+
+      float uMin = fChar.u0();
+      float vMin = fChar.v0();
+
+      float uMax = fChar.u1();
+      float vMax = fChar.v1();
+
+      text(
+          new Vector2f(posX, posY), new Vector2f(width, height),
+          new Vector2f(uMin, vMin), new Vector2f(uMax, vMax),
+          color, fontInstance
+      );
+
+      decal += fChar.advance();
+
+    }
+
+
+/**
     Font font = fontInstance.font();
     Font.CharacterProperties[] characters = font.decode(text);
 
@@ -69,7 +103,7 @@ public class Pencil {
       decal += character.xAdvance() * ratio;
 
     }
-
+*/
     return this;
 
   }

@@ -1,12 +1,5 @@
 package org.sc.themis.scene.pencil;
 
-import static org.lwjgl.vulkan.VK10.VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-import static org.lwjgl.vulkan.VK10.VK_FILTER_LINEAR;
-import static org.lwjgl.vulkan.VK10.VK_FORMAT_R8G8B8A8_SRGB;
-import static org.lwjgl.vulkan.VK10.VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
-import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_FRAGMENT_BIT;
-import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_VERTEX_BIT;
-
 import org.sc.themis.renderer.Renderer;
 import org.sc.themis.renderer.base.frame.FrameKey;
 import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorPool;
@@ -24,10 +17,13 @@ import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.resource.FontInstance;
 import org.sc.themis.shared.resource.Image;
+import org.sc.themis.shared.resource.STBFreeType;
 import org.sc.themis.shared.tobject.TObject;
 import org.sc.themis.shared.utils.MemorySizeUtils;
 
 import java.util.Arrays;
+
+import static org.lwjgl.vulkan.VK10.*;
 
 /**
  * Descriptorset layout.
@@ -135,16 +131,12 @@ public class PencilDescriptorSet extends TObject implements VkDescriptorSetProvi
         new VkSampler(
             getConfiguration(),
             this.renderer.getDevice(),
-            new VkSamplerDescriptor(VK_FILTER_LINEAR, 1, true)
+            new VkSamplerDescriptor(VK_FILTER_LINEAR, 1, true, false)
         );
     this.sampler.setup();
 
-    this.stgImage = this.renderer.getResourceAllocator().allocateImage(
-        VK_FORMAT_R8G8B8A8_SRGB, FontInstance.values().length
-    );
-    this.stgImage.load(
-      Arrays.stream(FontInstance.values()).map(font -> font.font().getImage()).toArray(Image[]::new)
-    );
+    this.stgImage = this.renderer.getResourceAllocator().allocateImage(VK_FORMAT_R8_UNORM);
+    this.stgImage.load(STBFreeType.INSTANCE.getFontTexture());
 
   }
 

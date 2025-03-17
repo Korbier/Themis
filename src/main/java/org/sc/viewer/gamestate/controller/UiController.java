@@ -28,7 +28,7 @@ public class UiController implements Controller {
 
     LabelBuilder lblTBN = this.builder.label(UUID.randomUUID().toString())
         .font(FontInstance.VERDANA_14)
-        .location(2, 26).size(40, 20).text("TBN Vectors");
+        .location(2, 26).size(40, 20).text("TBNVectors");
 
     ToggleButtonBuilder tglTBN = this.builder.toggleButton(UUID.randomUUID().toString())
         .location(300 - 44, 28)
@@ -43,7 +43,7 @@ public class UiController implements Controller {
         .location(2, 48)
         .size(40, 20)
         .font(FontInstance.VERDANA_12)
-        .text("Directional light");
+        .text("Directionallight");
 
     ToggleButtonBuilder tglDirectionalLight =
         this.builder.toggleButton(UUID.randomUUID().toString())

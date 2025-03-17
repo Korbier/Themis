@@ -30,6 +30,11 @@ public class Image {
 
       return new Image(path, data, w.get(), h.get());
     }
+
+  }
+
+  public static Image of(ByteBuffer data, int width, int height) {
+    return new Image("generated.bytebuffer." + data.hashCode(), data, width, height);
   }
 
   public static Image of(float r, float g, float b, float a) {
@@ -46,7 +51,7 @@ public class Image {
     data.put((byte) alpha);
     data.rewind();
 
-    return new Image("generated_" + r + "_" + g + "_" + b + "_" + a, data, 1, 1);
+    return new Image("generated.color." + r + "_" + g + "_" + b + "_" + a, data, 1, 1);
   }
 
   private Image(String path, ByteBuffer buffer, int width, int height) {

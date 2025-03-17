@@ -66,14 +66,17 @@ public class PencilPipeline extends TObject {
 
             layout(location = 0) out vec4 outFragColor;
 
-            layout(set = 0, binding = 1) uniform sampler2DArray textureSampler;
+            layout(set = 0, binding = 1) uniform sampler2D textureSampler;
 
             void main() {
                 if (inProperties.x == 1.0f) {
-                  float originAlpha = texture(textureSampler, vec3(inTexture, inProperties.y)).a;
-                  float distance = 1.0 - originAlpha;
-                  float alpha = 1.0 - smoothstep(inProperties.z, inProperties.z + inProperties.w, distance);
-                  outFragColor = vec4(pow(inColor.rgb, vec3(2.2)), alpha);
+                  outFragColor = vec4(inColor.rgb, texture(textureSampler, inTexture).r);
+                  //float originAlpha = texture(textureSampler, vec3(inTexture, inProperties.y)).a;
+                  //float distance = 1.0 - originAlpha;
+                  //float alpha = 1.0 - smoothstep(inProperties.z, inProperties.z + inProperties.w, distance);
+                  //outFragColor = vec4(pow(inColor.rgb, vec3(2.2)), alpha);
+                  
+                  
                 } else {
                   outFragColor = vec4(pow(inColor.rgb, vec3(2.2)), 1.0f);//vec4(inColor, 1.0f);//
                 }

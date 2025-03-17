@@ -5,6 +5,7 @@ import org.sc.playground.controller.fpscamera.ControllerFpsCameraGamestate;
 import org.sc.playground.controller.fpscamera.ControllerFpsCameraRendererActivity;
 import org.sc.playground.descriptorset.imagesampler.DescriptorsetImageSamplerRendererActivity;
 import org.sc.playground.descriptorset.uniform.DescriptorsetUniformRendererActivity;
+import org.sc.playground.font.FontRendererActivity;
 import org.sc.playground.mousepicking.MousePickingGamestate;
 import org.sc.playground.mousepicking.MousePickingRendererActivity;
 import org.sc.playground.noop.NoopGamestate;
@@ -51,6 +52,7 @@ public enum Playgrounds {
       new ControllerFpsCameraGamestate(),
       ControllerFpsCameraRendererActivity::new),
   TEXTURE_ARRAY("texturearray", new NoopGamestate(), TextureArrayRendererActivity::new),
+  FONT("font", new NoopGamestate(), FontRendererActivity::new)
   ;
 
   final String name;
