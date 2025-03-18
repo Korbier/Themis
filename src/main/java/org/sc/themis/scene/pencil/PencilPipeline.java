@@ -75,8 +75,6 @@ public class PencilPipeline extends TObject {
                   //float distance = 1.0 - originAlpha;
                   //float alpha = 1.0 - smoothstep(inProperties.z, inProperties.z + inProperties.w, distance);
                   //outFragColor = vec4(pow(inColor.rgb, vec3(2.2)), alpha);
-                  
-                  
                 } else {
                   outFragColor = vec4(pow(inColor.rgb, vec3(2.2)), 1.0f);//vec4(inColor, 1.0f);//
                 }

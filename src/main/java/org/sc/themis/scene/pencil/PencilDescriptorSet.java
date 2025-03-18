@@ -15,13 +15,9 @@ import org.sc.themis.renderer.resource.VkStagingImage;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
-import org.sc.themis.shared.resource.FontInstance;
-import org.sc.themis.shared.resource.Image;
-import org.sc.themis.shared.resource.STBFreeType;
+import org.sc.themis.shared.resource.old.STBFreeType;
 import org.sc.themis.shared.tobject.TObject;
 import org.sc.themis.shared.utils.MemorySizeUtils;
-
-import java.util.Arrays;
 
 import static org.lwjgl.vulkan.VK10.*;
 

@@ -2,7 +2,7 @@ package org.sc.themis.scene.ui;
 
 import org.joml.Vector2f;
 import org.sc.themis.scene.pencil.Color;
-import org.sc.themis.shared.resource.FontInstance;
+import org.sc.themis.shared.resource.old.FontInstance;
 
 public final class LabelBuilder extends ComponentBuilder<LabelBuilder> {
 

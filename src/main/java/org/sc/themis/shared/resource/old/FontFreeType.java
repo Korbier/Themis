@@ -1,10 +1,8 @@
-package org.sc.themis.shared.resource;
+package org.sc.themis.shared.resource.old;
 
 import org.lwjgl.BufferUtils;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
-import org.lwjgl.util.freetype.FT_Face;
-import org.lwjgl.util.freetype.FT_GlyphSlot;
 import org.lwjgl.util.freetype.FT_Memory;
 import org.lwjgl.util.freetype.FreeType;
 

@@ -1,4 +1,4 @@
-package org.sc.themis.shared.resource;
+package org.sc.themis.shared.resource.old;
 
 public enum FontInstance {
 

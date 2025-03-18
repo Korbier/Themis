@@ -3,7 +3,7 @@ package org.sc.themis.scene.ui;
 import java.util.function.Consumer;
 import org.joml.Vector2f;
 import org.sc.themis.scene.pencil.Color;
-import org.sc.themis.shared.resource.FontInstance;
+import org.sc.themis.shared.resource.old.FontInstance;
 
 
 public final class ButtonBuilder extends ComponentBuilder<ButtonBuilder> {

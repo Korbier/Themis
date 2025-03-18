@@ -2,9 +2,11 @@ package org.sc.themis.scene.pencil;
 
 import org.joml.Vector2f;
 import org.joml.Vector4f;
-import org.sc.themis.shared.resource.Font;
-import org.sc.themis.shared.resource.FontInstance;
-import org.sc.themis.shared.resource.STBFreeType;
+import org.sc.themis.shared.resource.old.FontCharacter;
+import org.sc.themis.shared.resource.old.FontInstance;
+import org.sc.themis.shared.resource.old.FreeType;
+
+import java.util.Arrays;
 
 public class Pencil {
 
@@ -44,17 +46,19 @@ public class Pencil {
 
   public Pencil text(Vector2f location, FontInstance fontInstance, Color color, String text) {
 
-    STBFreeType.FontCharacter[] characters = STBFreeType.INSTANCE.decode(text);
+    FontCharacter[] characters = FreeType.INSTANCE.decode(text);
 
     float decal = 0;
 
-    for (STBFreeType.FontCharacter fChar : characters) {
+    float maxHeight = Arrays.stream(characters).max((a, b) -> Float.compare(a.height(), b.height())).orElseThrow().height();
+
+    for (FontCharacter fChar : characters) {
 
       float height = fChar.height();
       float width = fChar.width();
 
       float posX = location.x() + fChar.xOffset() + decal;
-      float posY = location.y() + fChar.yOffset();
+      float posY = location.y() + maxHeight + fChar.yOffset();
 
       float uMin = fChar.u0();
       float vMin = fChar.v0();
@@ -72,38 +76,6 @@ public class Pencil {
 
     }
 
-
-/**
-    Font font = fontInstance.font();
-    Font.CharacterProperties[] characters = font.decode(text);
-
-    float ratio = (float) fontInstance.size() / font.getSize();
-
-    float decal = 0;
-    for (Font.CharacterProperties character : characters) {
-
-      float height = character.height() * ratio;
-      float width = character.width() * ratio;
-
-      float posX = location.x() + (character.xOffset() * ratio) + decal;
-      float posY = location.y() + (character.yOffset() * ratio);
-
-      float uMin = (float) character.x() / font.getScaleW();
-      float vMin = (float) character.y() / font.getScaleH();
-
-      float uMax = (float) (character.x() + character.width()) / font.getScaleW();
-      float vMax = (float) (character.y() + character.height()) / font.getScaleH();
-
-      text(
-          new Vector2f(posX, posY), new Vector2f(width, height),
-          new Vector2f(uMin, vMin), new Vector2f(uMax, vMax),
-          color, fontInstance
-      );
-
-      decal += character.xAdvance() * ratio;
-
-    }
-*/
     return this;
 
   }

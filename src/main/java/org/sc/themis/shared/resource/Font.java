@@ -1,159 +1,195 @@
 package org.sc.themis.shared.resource;
 
-import java.io.IOException;
-import java.nio.file.Files;
+import static org.lwjgl.stb.STBImageWrite.stbi_write_png;
+import static org.lwjgl.util.freetype.FreeType.*;
+
+import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import org.sc.themis.shared.resource.exception.ImageNotLoadedException;
+import org.joml.Vector2i;
+import org.lwjgl.BufferUtils;
+import org.lwjgl.PointerBuffer;
+import org.lwjgl.system.MemoryStack;
+import org.lwjgl.util.freetype.FT_Bitmap;
+import org.lwjgl.util.freetype.FT_Face;
+import org.lwjgl.util.freetype.FT_GlyphSlot;
+import org.lwjgl.util.freetype.FT_Glyph_Metrics;
 
+//https://levelup.gitconnected.com/how-to-create-a-bitmap-font-with-freetype-58e8c31878a9
 public class Font {
 
-  private Image image;
-  private int lineHeight;
-  private int size;
-  private int scaleW;
-  private int scaleH;
-  private Map<Character, CharacterProperties> properties;
+  private static final char firstChar = (char) 32;
+  private static final int nbChar = 95;
 
-  public static Font of(String filename) {
+  private Map<Character, FontCharacter> characters;
+  private final int size;
+  private final Path font;
+  private final boolean sdf;
 
-    Path path = Path.of(filename);
+  private ByteBuffer bitmapBuffer;
+  private int bitmapPadding = 32;
+  private int bitmapCols = 16;
+  private int bitmapRows = 16;
 
-    if (path.toFile().exists()) {
-      try {
+  public Font(int size, boolean sdf, Path font) {
+    this.size = size;
+    this.sdf = sdf;
+    this.font = font;
+  }
 
-        List<String> lines = Files.readAllLines(path);
+  public void setup() {
+    try (MemoryStack stack = MemoryStack.stackPush()) {
+      long library = fetchLibrary(stack);
+      ByteBuffer filename = filenameToBuffer(this.font);
+      FT_Face face = setupFace(stack, library, filename);
+      this.characters = readCharacters(face, firstChar, nbChar);
+      this.bitmapBuffer = createBitmapBuffer(face, firstChar, nbChar);
+    }
+  }
 
-        Font font = new Font();
-        font.image = readImage(lines, path.getParent());
-        font.properties = readCharacters(lines);
-        font.lineHeight = Integer.parseInt(readAttribute(lines, 1, "lineHeight"));
-        font.size = Integer.parseInt(readAttribute(lines, 0, "size"));
-        font.scaleW = Integer.parseInt(readAttribute(lines, 1, "scaleW"));
-        font.scaleH = Integer.parseInt(readAttribute(lines, 1, "scaleH"));
-        return font;
+  private ByteBuffer createBitmapBuffer(FT_Face face, char firstChar, int nbChar) {
 
-      } catch (IOException | ImageNotLoadedException e) {
-        throw new RuntimeException(e);
+    int imageWidth  = (this.size + this.bitmapPadding) * this.bitmapCols;
+    int imageHeight = (this.size + this.bitmapPadding) * this.bitmapRows;
+
+    this.bitmapBuffer = BufferUtils.createByteBuffer(imageWidth * imageHeight + bitmapPadding);
+
+    for (int i = 0; i < nbChar; i++) {
+
+      char currentChar = (char) (firstChar + i);
+      int glyphIndex = FT_Get_Char_Index(face, currentChar);
+
+      int error = FT_Load_Glyph(face, glyphIndex, FT_LOAD_DEFAULT);
+      if (error != FT_Err_Ok) {
+        throw new IllegalStateException("Failed to initialize Face: " + FT_Error_String(error));
       }
-    }
 
-    return null;
-
-  }
-
-  public Image getImage() {
-    return image;
-  }
-
-  public int getLineHeight() {
-    return this.lineHeight;
-  }
-
-  public int getSize() {
-    return this.size;
-  }
-
-  public int getScaleW() {
-    return scaleW;
-  }
-
-  public int getScaleH() {
-    return scaleH;
-  }
-
-  public CharacterProperties getCharacterProperties(char character) {
-    return this.properties.get(character);
-  }
-
-  public CharacterProperties[] decode(String text) {
-
-    byte[] content = text.getBytes();
-    CharacterProperties[] decoded = new CharacterProperties[content.length];
-
-    for (int i = 0; i < content.length; i++) {
-      decoded[i] = this.properties.get((char) content[i]);
-    }
-
-    return decoded;
-  }
-
-  private static Map<String, String> lineToMap(String line) {
-    Map<String, String> map = new HashMap<>();
-    for (String chunk : line.split(" ")) {
-      String[] parts = chunk.split("=");
-      if (parts.length == 2) {
-        map.put(parts[0], parts[1]);
+      // convert to an anti-aliased bitmap
+      error = FT_Render_Glyph(face.glyph(), this.sdf ? FT_RENDER_MODE_SDF : FT_RENDER_MODE_NORMAL);
+      if (error != FT_Err_Ok) {
+        throw new IllegalStateException("Failed to initialize Face: " + FT_Error_String(error));
       }
-    }
-    return map;
-  }
 
-  private static String readAttribute(List<String> lines, int line, String key) {
-    return lineToMap(lines.get(line)).get(key).replaceAll("\"", "");
-  }
+      int x = (i % this.bitmapCols) * (this.size + this.bitmapPadding);
+      int y = (i / this.bitmapCols) * (this.size + this.bitmapPadding);
 
-  private static Image readImage(List<String> lines, Path directory)
-      throws ImageNotLoadedException {
-    return Image.of(directory.resolve(readAttribute(lines, 2, "file")).toString());
-  }
+      x += 1;
+      y += 1;
 
-  private static int readLineHeight(List<String> lines) throws ImageNotLoadedException {
-    Map<String, String> attributes = lineToMap(lines.get(1));
-    return Integer.parseInt(attributes.get("lineHeight"));
-  }
+      FT_Bitmap bitmap = face.glyph().bitmap();
+      int charWidth = bitmap.width();
+      int charHeight = bitmap.rows();
 
-  private static int readSize(List<String> lines) throws ImageNotLoadedException {
-    Map<String, String> attributes = lineToMap(lines.getFirst());
-    return Integer.parseInt(attributes.get("size"));
-  }
+      ByteBuffer buffer = bitmap.buffer(charWidth * charHeight);
 
-  private static Map<Character, CharacterProperties> readCharacters(List<String> lines) {
+      if (buffer != null) {
 
-    String line = lines.get(3);
-    int sepIndex = line.indexOf('=');
-    int charCount = Integer.parseInt(line.substring(sepIndex + 1));
+        stbi_write_png("C:/Users/Public/Workspace/001_Themis_V2/target/" + (int) currentChar + "_" + currentChar + ".png", charWidth, charHeight, 1, buffer, charWidth);
 
-    Map<Character, CharacterProperties> properties = new HashMap<>();
-    for (int lineIdx = 4; lineIdx < (4 + charCount); lineIdx++) {
+        for (int j = 0; j < charHeight; j++) {
 
-      line = lines.get(lineIdx);
-      line = line.replaceAll("\\s+", " ");
+          int srcStart  = j * charWidth;
+          int srcLength = charWidth;
 
-      String[] lineChunks = line.split(" ");
+          this.bitmapBuffer.put(x + ((y + j) * imageWidth), buffer, srcStart, srcLength);
 
-      properties.put(
-          (char) extractValue(lineChunks[1]),
-          new CharacterProperties(
-              (char) extractValue(lineChunks[1]),
-              extractValue(lineChunks[1]),
-              extractValue(lineChunks[2]),
-              extractValue(lineChunks[3]),
-              extractValue(lineChunks[4]),
-              extractValue(lineChunks[5]),
-              extractValue(lineChunks[6]),
-              extractValue(lineChunks[7]),
-              extractValue(lineChunks[8])));
+        }
+
+      }
+
     }
 
-    return properties;
+    stbi_write_png("C:/Users/Public/Workspace/001_Themis_V2/target/atlas.png", imageWidth, imageHeight, 1, this.bitmapBuffer, imageWidth);
+
+    return this.bitmapBuffer;
+
   }
 
-  private static int extractValue(String lineChunk) {
-    int sepIndex = lineChunk.indexOf('=');
-    return Integer.parseInt(lineChunk.substring(sepIndex + 1));
+  public FontCharacter[] toCharacters(String text) {
+
+    byte[] input = text.getBytes();
+    FontCharacter[] characters = new FontCharacter[input.length];
+
+    for (int i = 0; i < input.length; i++) {
+      characters[i] = this.characters.get(input[i]);
+    }
+
+    return characters;
+
   }
 
-  public record CharacterProperties(
-      char cId,
-      int id,
-      int x,
-      int y,
-      int width,
-      int height,
-      int xOffset,
-      int yOffset,
-      int xAdvance) {}
+  private Map<Character, FontCharacter> readCharacters(FT_Face face, char firstChar, int nbChar) {
+
+    Map<Character, FontCharacter> characters = new HashMap<>();
+
+    for (int i = 0; i < nbChar; i++) {
+      char currentChar = (char) (firstChar + i);
+      characters.put(currentChar, readCharacter(face, currentChar));
+    }
+
+    return characters;
+
+  }
+
+  private FontCharacter readCharacter(FT_Face face, char currentChar) {
+
+    int glyphIndex = FT_Get_Char_Index(face, currentChar);
+
+    FT_Load_Glyph(face, glyphIndex, FT_LOAD_DEFAULT);
+    FT_Render_Glyph(face.glyph(), this.sdf ? FT_RENDER_MODE_SDF : FT_RENDER_MODE_NORMAL);
+    FT_GlyphSlot slot = face.glyph();
+
+    ByteBuffer buffer = slot.bitmap().buffer(slot.bitmap().width() * slot.bitmap().rows());
+
+    FontCharacter fontChar = new FontCharacter(
+        currentChar,
+        buffer != null ? Image.of(buffer, slot.bitmap().width(), slot.bitmap().rows()) : null,
+        new Vector2i(slot.bitmap().width(), slot.bitmap().rows()),
+        new Vector2i(slot.bitmap_left(), slot.bitmap_top()),
+        slot.advance().x() / 64
+    );
+
+    //if (buffer != null) {
+    //  stbi_write_png("C:/Users/Public/Workspace/001_Themis_V2/target/" + currentChar + ".png", fontChar.size().x, fontChar.size().y, 1, buffer, fontChar.size().x);
+    //}
+
+    return fontChar;
+  }
+
+  private FT_Face setupFace(MemoryStack stack, long library, ByteBuffer filename) {
+
+    PointerBuffer pFace = stack.mallocPointer(1);
+    int err = FT_New_Face(library, filename, 0, pFace);
+
+    if (err != FT_Err_Ok) {
+      throw new IllegalStateException("Failed to initialize Face: " + FT_Error_String(err));
+    }
+
+    FT_Face face = FT_Face.create(pFace.get(0));
+    FT_Set_Pixel_Sizes(face, 0, this.size);
+    return face;
+
+  }
+
+  private ByteBuffer filenameToBuffer(Path font) {
+    String path  = font.toAbsolutePath().toString();
+    return BufferUtils
+        .createByteBuffer(path.getBytes().length + 1)
+        .put(path.getBytes())
+        .put((byte) 0)
+        .flip();
+  }
+
+  private long fetchLibrary(MemoryStack stack) {
+      PointerBuffer pLibrary = stack.mallocPointer(1);
+      int err = FT_Init_FreeType(pLibrary);
+
+      if (err != FT_Err_Ok) {
+        throw new IllegalStateException("Failed to initialize FreeType: " + FT_Error_String(err));
+      }
+
+      return pLibrary.get(0);
+  }
+
 }
