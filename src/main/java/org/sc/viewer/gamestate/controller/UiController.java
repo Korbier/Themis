@@ -13,7 +13,6 @@ import org.sc.themis.scene.ui.LabelBuilder;
 import org.sc.themis.scene.ui.PanelBuilder;
 import org.sc.themis.scene.ui.ToggleButtonBuilder;
 import org.sc.themis.scene.ui.UIBuilder;
-import org.sc.themis.shared.resource.old.FontInstance;
 import org.sc.viewer.ViewerContext;
 import org.sc.viewer.renderactivity.postprocess.postprocessor.ShowTBNPostprocessor;
 
@@ -27,7 +26,6 @@ public class UiController implements Controller {
     this.builder = new UIBuilder(pencil);
 
     LabelBuilder lblTBN = this.builder.label(UUID.randomUUID().toString())
-        .font(FontInstance.VERDANA_14)
         .location(2, 26).size(40, 20).text("TBNVectors");
 
     ToggleButtonBuilder tglTBN = this.builder.toggleButton(UUID.randomUUID().toString())
@@ -42,7 +40,6 @@ public class UiController implements Controller {
     LabelBuilder lblDirectionalLight = this.builder.label(UUID.randomUUID().toString())
         .location(2, 48)
         .size(40, 20)
-        .font(FontInstance.VERDANA_12)
         .text("Directional light");
 
     ToggleButtonBuilder tglDirectionalLight =

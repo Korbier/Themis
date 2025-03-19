@@ -3,7 +3,6 @@ package org.sc.themis.scene.ui;
 import org.joml.Vector2f;
 import org.joml.Vector2i;
 import org.sc.themis.scene.pencil.Color;
-import org.sc.themis.shared.resource.old.FontInstance;
 
 public final class PanelBuilder extends ComponentBuilder<PanelBuilder> {
 
@@ -79,8 +78,8 @@ public final class PanelBuilder extends ComponentBuilder<PanelBuilder> {
     }
 
     pencil().text(
-        new Vector2f(left + 2 * DEFAULT_BORDER_SIZE,  top + 4 * DEFAULT_BORDER_SIZE),
-        FontInstance.VERDANA_12, Color.of("FF0000"), "Configuration"
+        new Vector2f(left + 2 * DEFAULT_BORDER_SIZE,  top + DEFAULT_BORDER_SIZE),
+        0, Color.of("FF0000"), "Configuration"
     );
 
   }

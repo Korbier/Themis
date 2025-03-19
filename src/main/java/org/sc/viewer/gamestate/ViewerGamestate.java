@@ -15,6 +15,8 @@ import org.sc.themis.scene.light.SpotLight;
 import org.sc.themis.scene.light.attenuation.Attenuation;
 import org.sc.themis.scene.pencil.Pencil;
 import org.sc.themis.shared.exception.ThemisException;
+import org.sc.themis.shared.resource.font.Font;
+import org.sc.themis.shared.resource.font.FontRepository;
 import org.sc.viewer.ViewerContext;
 import org.sc.viewer.gamestate.controller.KeyMappingController;
 import org.sc.viewer.gamestate.controller.UiController;
@@ -34,7 +36,13 @@ public class ViewerGamestate implements Gamestate {
 
   public ViewerGamestate(ViewerContext context) {
     this.context = context;
-    this.pencil = new Pencil();
+
+    FontRepository fontRepository = new FontRepository();
+    fontRepository.load(Font.sdf(14, 0.46f, 0.09f, Path.of("./src/main/resources/playground/font/CenturyGothic.ttf")));
+    fontRepository.load(Font.sdf(18, 0.46f, 0.09f, Path.of("./src/main/resources/playground/font/CenturyGothic.ttf")));
+
+    this.pencil = new Pencil(fontRepository);
+
   }
 
   @Override

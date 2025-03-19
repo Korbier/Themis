@@ -1,5 +1,14 @@
 package org.sc.playground.font;
 
+import static org.lwjgl.vulkan.VK10.VK_FILTER_LINEAR;
+import static org.lwjgl.vulkan.VK10.VK_FORMAT_R8G8B8A8_SRGB;
+import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_FRAGMENT_BIT;
+import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_VERTEX_BIT;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.util.shaderc.Shaderc;
 import org.sc.playground.shared.BaseRendererActivity;
@@ -18,14 +27,8 @@ import org.sc.themis.renderer.resource.VkStagingImage;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
-import org.sc.themis.shared.resource.old.STBFreeType;
 import org.sc.themis.shared.resource.Image;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-
-import static org.lwjgl.vulkan.VK10.*;
+import org.sc.themis.shared.resource.font.Font;
 
 public class FontRendererActivity extends BaseRendererActivity {
 
@@ -196,20 +199,9 @@ public class FontRendererActivity extends BaseRendererActivity {
             new VkSamplerDescriptor(VK_FILTER_LINEAR, 1, true));
     this.sampler.setup();
 
-    try {
-      STBFreeType freeType = STBFreeType.of(18, "./src/main/resources/playground/font/CenturyGothic.ttf");
-      this.vkImage = this.renderer.getResourceAllocator().allocateImage(VK_FORMAT_R8G8B8A8_SRGB);
-      this.vkImage.load(freeType.getFontTexture());
-      /**
-      this.vkImage = this.renderer.getResourceAllocator().allocateImage(VK_FORMAT_R8G8B8A8_SRGB, STBFreeType.size());
-      Image[] images = STBFreeType
-                          .fontCharacters().values()
-                          .stream()
-                          .map(STBFreeType.FontCharacter::data).toArray(Image[]::new);
-      this.vkImage.load(images);
-       */
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+    Font font = Font.normal(18, Path.of("./src/main/resources/playground/font/CenturyGothic.ttf"));
+    this.vkImage = this.renderer.getResourceAllocator().allocateImage(VK_FORMAT_R8G8B8A8_SRGB);
+    this.vkImage.load(font.getTexture());
+
   }
 }

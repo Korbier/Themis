@@ -24,9 +24,8 @@ public class EngineTest {
   @Inject Configuration configuration;
 
   @ParameterizedTest
-  //@EnumSource(value = Playgrounds.class, names = "NOOP", mode = EnumSource.Mode.EXCLUDE)
-  //@Disabled
-  @EnumSource(value=Playgrounds.class, names = "FONT")
+  @EnumSource(value = Playgrounds.class, names = "NOOP", mode = EnumSource.Mode.EXCLUDE)
+  @Disabled
   void testRenderActivity(Playgrounds playground) throws ThemisException {
 
     // Given
@@ -35,13 +34,10 @@ public class EngineTest {
 
     // When
     engine.setup();
-    engine.setGamestate(playground.getGamestate());
-        /**
-        new EngineTestGamestate(
-            engine,
-            playground.getGamestate(),
-            5)); // new EngineTestGamestate( engine, playground.getGamestate(), 5 )
-         **/
+    engine.setGamestate(new EngineTestGamestate(
+        engine,
+        playground.getGamestate(),
+        5));
     engine.run();
 
     // Then

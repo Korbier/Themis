@@ -2,14 +2,12 @@ package org.sc.themis.scene.ui;
 
 import org.joml.Vector2f;
 import org.sc.themis.scene.pencil.Color;
-import org.sc.themis.shared.resource.old.FontInstance;
 
 public final class LabelBuilder extends ComponentBuilder<LabelBuilder> {
 
   public static final int DEFAULT_BORDER_SIZE = 2;
 
   private String text = null;
-  private FontInstance font = FontInstance.VERDANA_12;
 
   LabelBuilder(UIBuilder builder) {
     super(builder);
@@ -17,11 +15,6 @@ public final class LabelBuilder extends ComponentBuilder<LabelBuilder> {
 
   public LabelBuilder text(String text) {
     this.text = text;
-    return this;
-  }
-
-  public LabelBuilder font(FontInstance font) {
-    this.font = font;
     return this;
   }
 
@@ -36,7 +29,7 @@ public final class LabelBuilder extends ComponentBuilder<LabelBuilder> {
     if (this.text != null) {
       pencil().text(
           new Vector2f(left + 2 * DEFAULT_BORDER_SIZE, top + 2 * DEFAULT_BORDER_SIZE),
-          this.font, Color.of("000000"), this.text
+          0, Color.of("000000"), this.text
       );
     }
 

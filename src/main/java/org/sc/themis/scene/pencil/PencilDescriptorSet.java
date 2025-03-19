@@ -15,7 +15,7 @@ import org.sc.themis.renderer.resource.VkStagingImage;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
-import org.sc.themis.shared.resource.old.STBFreeType;
+import org.sc.themis.shared.resource.font.FontRepository;
 import org.sc.themis.shared.tobject.TObject;
 import org.sc.themis.shared.utils.MemorySizeUtils;
 
@@ -114,25 +114,30 @@ public class PencilDescriptorSet extends TObject implements VkDescriptorSetProvi
 
   @Override
   public void setup() throws ThemisException {
+
     setupDescriptorLayout();
     setupDescriptorPool();
     setupBuffers();
-    setupImages();
+
+    if (this.pencil.getFontRepository() != null && this.pencil.getFontRepository().size() > 0) {
+      setupFontTextures(this.pencil.getFontRepository());
+    }
+
     setupDescriptorSets();
+
   }
 
-  private void setupImages() throws ThemisException {
+  private void setupFontTextures(FontRepository repository) throws ThemisException {
 
     this.sampler =
         new VkSampler(
-            getConfiguration(),
-            this.renderer.getDevice(),
+            getConfiguration(), this.renderer.getDevice(),
             new VkSamplerDescriptor(VK_FILTER_LINEAR, 1, true, false)
         );
     this.sampler.setup();
 
-    this.stgImage = this.renderer.getResourceAllocator().allocateImage(VK_FORMAT_R8_UNORM);
-    this.stgImage.load(STBFreeType.INSTANCE.getFontTexture());
+    this.stgImage = this.renderer.getResourceAllocator().allocateImage(VK_FORMAT_R8_UNORM, repository.size());
+    this.stgImage.load(repository.getTextures());
 
   }
 

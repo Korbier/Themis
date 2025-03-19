@@ -1,21 +1,27 @@
 package org.sc.themis.scene.pencil;
 
 import org.joml.Vector2f;
+import org.joml.Vector3f;
 import org.joml.Vector4f;
-import org.sc.themis.shared.resource.old.FontCharacter;
-import org.sc.themis.shared.resource.old.FontInstance;
-import org.sc.themis.shared.resource.old.FreeType;
-
-import java.util.Arrays;
+import org.sc.themis.shared.resource.font.Font;
+import org.sc.themis.shared.resource.font.FontCharacter;
+import org.sc.themis.shared.resource.font.FontRepository;
 
 public class Pencil {
 
   private static final int COMPONENT_COUNT = 11;
 
+  private final FontRepository fontRepository;
+
   private float[] data = new float[0];
   private int[] indices = new int[0];
 
-  public Pencil() {
+  public Pencil(FontRepository repository) {
+    this.fontRepository = repository;
+  }
+
+  public FontRepository getFontRepository() {
+    return this.fontRepository;
   }
 
   public int getDataSize() {
@@ -44,38 +50,38 @@ public class Pencil {
     return this;
   }
 
-  public Pencil text(Vector2f location, FontInstance fontInstance, Color color, String text) {
+  public Pencil text(Vector2f position, int fontIdx, Color color, String text) {
 
-    FontCharacter[] characters = FreeType.INSTANCE.decode(text);
+    if (this.fontRepository == null || !this.fontRepository.contains(fontIdx)) {
+      System.err.println("[Use a logger here] font not found");
+      return this;
+    }
+
+    Font font = this.fontRepository.get(fontIdx);
+    FontCharacter [] characters = font.toCharacters(text);
 
     float decal = 0;
 
-    float maxHeight = Arrays.stream(characters).max((a, b) -> Float.compare(a.height(), b.height())).orElseThrow().height();
+    for (FontCharacter fchar : characters) {
 
-    for (FontCharacter fChar : characters) {
+      float posX = position.x() + decal + fchar.bearing().x();
+      float posY = position.y() + font.getFontSize() - fchar.bearing().y();
 
-      float height = fChar.height();
-      float width = fChar.width();
+      Vector3f fontProperties = new Vector3f(
+          fontIdx,
+          font.isSdfFont() ? font.getSdfWidth() : 0.0f,
+          font.isSdfFont() ? font.getSdfEdge() : 0.0f
+        );
 
-      float posX = location.x() + fChar.xOffset() + decal;
-      float posY = location.y() + maxHeight + fChar.yOffset();
-
-      float uMin = fChar.u0();
-      float vMin = fChar.v0();
-
-      float uMax = fChar.u1();
-      float vMax = fChar.v1();
-
-      text(
-          new Vector2f(posX, posY), new Vector2f(width, height),
-          new Vector2f(uMin, vMin), new Vector2f(uMax, vMax),
-          color, fontInstance
+      appendChar(
+          new Vector2f(posX, posY), new Vector2f(fchar.size().x(), fchar.size().y()),
+          fchar.uv0(), fchar.uv1(),
+          color, fontProperties
       );
 
-      decal += fChar.advance();
+      decal += fchar.advance();
 
     }
-
     return this;
 
   }
@@ -140,10 +146,10 @@ public class Pencil {
 
   }
 
-  private Pencil text(
+  private Pencil appendChar(
       Vector2f position, Vector2f size,
       Vector2f textureMin, Vector2f textureMax,
-      Color color, FontInstance font
+      Color color, Vector3f fontProperties
   ) {
 
     int startIndiceOffset = getDataSize() / COMPONENT_COUNT;
@@ -152,25 +158,25 @@ public class Pencil {
     appendData(
         data, getDataSize(),
         position, textureMin,
-        color, new Vector4f(1.0f, font.ordinal(), font.width(), font.edge())
+        color, new Vector4f(1.0f, fontProperties.x(), fontProperties.y(), fontProperties.z())
     );
     appendData(
         data, getDataSize() + COMPONENT_COUNT,
         new Vector2f(position.x() + size.x(), position.y()),
         new Vector2f(textureMax.x, textureMin.y),
-        color, new Vector4f(1.0f, font.ordinal(), font.width(), font.edge())
+        color, new Vector4f(1.0f, fontProperties.x(), fontProperties.y(), fontProperties.z())
     );
     appendData(
         data, getDataSize() + COMPONENT_COUNT * 2,
         new Vector2f(position.x() + size.x(), position.y() + size.y()),
         textureMax,
-        color, new Vector4f(1.0f, font.ordinal(), font.width(), font.edge())
+        color, new Vector4f(1.0f, fontProperties.x(), fontProperties.y(), fontProperties.z())
     );
     appendData(
         data, getDataSize() + COMPONENT_COUNT * 3,
         new Vector2f(position.x(), position.y() + size.y()),
         new Vector2f(textureMin.x, textureMax.y),
-        color, new Vector4f(1.0f, font.ordinal(), font.width(), font.edge())
+        color, new Vector4f(1.0f, fontProperties.x(), fontProperties.y(), fontProperties.z())
     );
     this.data = data;
 
