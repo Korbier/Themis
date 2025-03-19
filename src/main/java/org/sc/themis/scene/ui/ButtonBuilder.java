@@ -3,7 +3,6 @@ package org.sc.themis.scene.ui;
 import java.util.function.Consumer;
 import org.joml.Vector2f;
 import org.sc.themis.scene.pencil.Color;
-import org.sc.themis.shared.resource.FontInstance;
 
 
 public final class ButtonBuilder extends ComponentBuilder<ButtonBuilder> {
@@ -85,7 +84,7 @@ public final class ButtonBuilder extends ComponentBuilder<ButtonBuilder> {
     if (this.text != null) {
       pencil().text(
           new Vector2f(left + 2 * DEFAULT_BORDER_SIZE, top + 2 * DEFAULT_BORDER_SIZE),
-          FontInstance.VERDANA_12, Color.of("FF0000"),
+          0, Color.of("FF0000"),
           this.text
       );
     }

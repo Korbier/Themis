@@ -60,7 +60,7 @@ public class VkSampler extends VulkanObject {
     samplerInfo.addressModeW(VK_SAMPLER_ADDRESS_MODE_REPEAT);
     samplerInfo.borderColor(VK_BORDER_COLOR_INT_OPAQUE_BLACK);
     samplerInfo.unnormalizedCoordinates(false);
-    samplerInfo.compareEnable(false);
+    samplerInfo.compareEnable(this.descriptor.compareEnable());
     samplerInfo.compareOp(VK_COMPARE_OP_ALWAYS);
     samplerInfo.mipmapMode(VK_SAMPLER_MIPMAP_MODE_LINEAR);
     samplerInfo.minLod(0.0f);
