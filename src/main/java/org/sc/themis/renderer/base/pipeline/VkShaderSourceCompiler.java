@@ -4,13 +4,13 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
+
+import org.jboss.logging.Logger;
 import org.lwjgl.util.shaderc.Shaderc;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class VkShaderSourceCompiler {
 
-  private static final Logger logger = LoggerFactory.getLogger(VkShaderSourceCompiler.class);
+  private static final org.jboss.logging.Logger LOG = Logger.getLogger(VkShaderSourceCompiler.class);
 
   public static void compileShaderIfChanged(String glsShaderFile, int shaderType) {
     compileShaderIfChanged(glsShaderFile, glsShaderFile + ".spv", shaderType);
@@ -30,16 +30,16 @@ public class VkShaderSourceCompiler {
       if (!spvFile.exists() || glslFile.lastModified() > spvFile.lastModified()) {
 
         if (!glslFile.exists()) {
-          logger.debug("Shader {} does not exists", glslFile.getPath());
+          LOG.debugf("Shader {} does not exists", glslFile.getPath());
         }
 
-        logger.debug("Compiling {} to {}", glslFile.getPath(), spvFile.getPath());
+        LOG.debugf("Compiling {} to {}", glslFile.getPath(), spvFile.getPath());
         String shaderCode = new String(Files.readAllBytes(glslFile.toPath()));
         compiledShader = compileShader(shaderCode, shaderType);
         Files.write(spvFile.toPath(), compiledShader);
 
       } else {
-        logger.debug(
+        LOG.debugf(
             "Shader {} already compiled. Loading compiled version: {}",
             glslFile.getPath(),
             spvFile.getPath());

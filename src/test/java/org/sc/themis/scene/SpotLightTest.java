@@ -1,6 +1,5 @@
 package org.sc.themis.scene;
 
-import jakarta.inject.Inject;
 import org.joml.Vector3f;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -11,7 +10,7 @@ import org.sc.themis.shared.Configuration;
 
 public class SpotLightTest {
 
-  @Inject Configuration configuration;
+  Configuration configuration = Configuration.defaultConfiguration();
 
   @Test
   @DisplayName("New - nominal case")

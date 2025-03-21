@@ -1,11 +1,23 @@
 package org.sc.themis.renderer.base.command;
 
+
+import static org.lwjgl.vulkan.VK10.VK_IMAGE_ASPECT_COLOR_BIT;
+import static org.lwjgl.vulkan.VK10.VK_PIPELINE_BIND_POINT_COMPUTE;
+import static org.lwjgl.vulkan.VK10.VK_PIPELINE_BIND_POINT_GRAPHICS;
+import static org.lwjgl.vulkan.VK10.VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+
 import java.nio.IntBuffer;
 import java.util.function.Consumer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkExtent2D;
 import org.lwjgl.vulkan.VkImageSubresourceRange;
-import org.sc.themis.renderer.base.command.set.*;
+import org.sc.themis.renderer.base.command.set.MainCommandSet;
+import org.sc.themis.renderer.base.command.set.PipelineCommandSet;
+import org.sc.themis.renderer.base.command.set.RenderPassCommandSet;
+import org.sc.themis.renderer.base.command.set.ResourceSet;
+import org.sc.themis.renderer.base.command.set.VkBufferCopyRegion;
+import org.sc.themis.renderer.base.command.set.VkBufferImageCopyRegion;
+import org.sc.themis.renderer.base.command.set.VkCommandSet;
 import org.sc.themis.renderer.base.framebuffer.VkFrameBuffer;
 import org.sc.themis.renderer.base.pipeline.VkPipeline;
 import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSet;
@@ -16,14 +28,9 @@ import org.sc.themis.renderer.base.sync.VkFence;
 import org.sc.themis.renderer.base.sync.VkSemaphore;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import static org.lwjgl.vulkan.VK10.*;
 
 public class VkCommand extends VkCommandSet {
-
-  private static final Logger logger = LoggerFactory.getLogger(VkCommand.class);
 
   private final MainCommandSet main;
   private final RenderPassCommandSet renderpass;

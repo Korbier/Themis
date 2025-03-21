@@ -6,17 +6,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
+
+import org.jboss.logging.Logger;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.sc.themis.renderer.lang.VulkanObject;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class VkPhysicalDevices extends VulkanObject {
-
-  private static final Logger logger = LoggerFactory.getLogger(VkPhysicalDevices.class);
 
   private final Set<Long> physicalDevices = new HashSet<>();
   private final VkInstance instance;

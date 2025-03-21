@@ -1,18 +1,20 @@
 package org.sc.viewer;
 
-import io.quarkus.runtime.QuarkusApplication;
-import jakarta.inject.Inject;
 import org.sc.themis.engine.Engine;
 import org.sc.themis.shared.Configuration;
+import org.sc.themis.shared.exception.ThemisException;
 import org.sc.viewer.gamestate.ViewerGamestate;
 import org.sc.viewer.renderactivity.ViewerRendererActivity;
 
-public class Bootstrap implements QuarkusApplication {
+public class Bootstrap {
 
-  @Inject Configuration configuration;
+  Configuration configuration;
 
-  @Override
-  public int run(String... args) throws Exception {
+  public static void main(String[] args) throws ThemisException {
+    new Bootstrap().run();
+  }
+
+  private void run() throws ThemisException {
 
     ViewerContext context = ViewerContext.createDefault();
 
@@ -26,6 +28,6 @@ public class Bootstrap implements QuarkusApplication {
     engine.setGamestate(gamestate);
     engine.run();
 
-    return 0;
   }
+
 }

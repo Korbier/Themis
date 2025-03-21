@@ -1,8 +1,5 @@
 package org.sc.themis.engine;
 
-import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.TestProfile;
-import jakarta.inject.Inject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
@@ -11,17 +8,14 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.sc.playground.Playgrounds;
 import org.sc.playground.noop.NoopRendererActivity;
-import org.sc.themis.Profiles;
 import org.sc.themis.engine.exception.EngineGamestateNotFoundException;
 import org.sc.themis.renderer.RendererActivity;
 import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 
-@QuarkusTest
-@TestProfile(Profiles.TagWithUiTest.class)
 public class EngineTest {
 
-  @Inject Configuration configuration;
+  private Configuration configuration = Configuration.defaultConfiguration();
 
   @ParameterizedTest
   @EnumSource(value = Playgrounds.class, names = "NOOP", mode = EnumSource.Mode.EXCLUDE)

@@ -1,15 +1,9 @@
 package org.sc.themis.shared;
 
-import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.TestProfile;
-import jakarta.inject.Inject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.sc.themis.Profiles;
 
-@QuarkusTest
-@TestProfile(Profiles.TagWithoutUiTest.class)
 class ConfigurationTest {
 
   private static final String APPLICATION_NAME = "Themis Application";
@@ -27,7 +21,7 @@ class ConfigurationTest {
   private static final float SCENE_PROJECTION_ZNEAR = 0.1f;
   private static final float SCENE_PROJECTION_ZFAR = 1400.0f;
 
-  @Inject Configuration configuration;
+  Configuration configuration = Configuration.defaultConfiguration();
 
   @Test
   @DisplayName("Get application - nominal case")
