@@ -14,7 +14,7 @@ import org.sc.themis.renderer.base.pipeline.VkShaderProgramStage;
 import org.sc.themis.renderer.base.pipeline.VkVertexInputState;
 import org.sc.themis.renderer.base.pipeline.VkVertexInputStateDescriptor;
 import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSetLayout;
-import org.sc.themis.shared.Configuration;
+import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.assertion.Assertions;
 import org.sc.themis.shared.exception.ThemisException;
 

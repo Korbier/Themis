@@ -4,13 +4,12 @@ import org.joml.Vector3f;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.sc.TestWithConfiguration;
 import org.sc.themis.scene.light.SpotLight;
 import org.sc.themis.scene.light.attenuation.Attenuation;
-import org.sc.themis.shared.Configuration;
+import org.sc.themis.shared.configuration.Configuration;
 
-public class SpotLightTest {
-
-  Configuration configuration = Configuration.defaultConfiguration();
+public class SpotLightTest extends TestWithConfiguration {
 
   @Test
   @DisplayName("New - nominal case")
@@ -74,7 +73,7 @@ public class SpotLightTest {
             attenuation,
             innerCutOff,
             outerCutOff);
-    Scene scene = new Scene(configuration);
+    Scene scene = new Scene(getConfiguration());
     scene.add(light);
 
     // Then

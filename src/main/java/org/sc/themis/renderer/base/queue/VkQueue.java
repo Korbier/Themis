@@ -3,7 +3,7 @@ package org.sc.themis.renderer.base.queue;
 import java.util.Objects;
 import org.jboss.logging.Logger;
 import org.sc.themis.renderer.lang.VulkanObject;
-import org.sc.themis.shared.Configuration;
+import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 
 public class VkQueue extends VulkanObject {

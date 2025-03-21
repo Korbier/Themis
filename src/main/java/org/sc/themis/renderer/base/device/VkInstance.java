@@ -32,7 +32,8 @@ import org.sc.themis.renderer.base.device.layer.VkDefaultLayers;
 import org.sc.themis.renderer.base.device.layer.VkLayer;
 import org.sc.themis.renderer.base.device.layer.VkLayers;
 import org.sc.themis.renderer.lang.VulkanObject;
-import org.sc.themis.shared.Configuration;
+import org.sc.themis.shared.configuration.Configuration;
+import org.sc.themis.shared.configuration.ConfigurationEnum;
 import org.sc.themis.shared.exception.ThemisException;
 
 public class VkInstance extends VulkanObject {
@@ -164,10 +165,10 @@ public class VkInstance extends VulkanObject {
   private VkApplicationInfo createApplicationInfo(MemoryStack stack) throws ThemisException {
     return VkApplicationInfo.calloc(stack)
         .sType(VK_STRUCTURE_TYPE_APPLICATION_INFO)
-        .pApplicationName(stack.UTF8(getConfiguration().application().name()))
-        .applicationVersion(getConfiguration().application().version())
-        .pEngineName(stack.UTF8(getConfiguration().engine().name()))
-        .engineVersion(getConfiguration().engine().version())
+        .pApplicationName(stack.UTF8(getConfiguration().get(ConfigurationEnum.applicationName, "no-name")))
+        .applicationVersion(getConfiguration().get(ConfigurationEnum.applicationVersion, 1))
+        .pEngineName(stack.UTF8(getConfiguration().get(ConfigurationEnum.engineName, "no-name")))
+        .engineVersion(getConfiguration().get(ConfigurationEnum.engineVersion, 1))
         .apiVersion(VK_API_VERSION_1_3);
   }
 
@@ -209,7 +210,7 @@ public class VkInstance extends VulkanObject {
 
   private boolean checkDebugMode() {
 
-    if (!getConfiguration().renderer().debug()) {
+    if (!getConfiguration().get(ConfigurationEnum.rendererDebug, false)) {
       return false;
     }
 

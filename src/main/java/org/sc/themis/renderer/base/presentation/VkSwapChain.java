@@ -30,7 +30,8 @@ import org.sc.themis.renderer.base.resource.image.VkImageView;
 import org.sc.themis.renderer.base.resource.image.VkImageViewDescriptor;
 import org.sc.themis.renderer.base.sync.VkSemaphore;
 import org.sc.themis.renderer.lang.VulkanObject;
-import org.sc.themis.shared.Configuration;
+import org.sc.themis.shared.configuration.Configuration;
+import org.sc.themis.shared.configuration.ConfigurationEnum;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.window.Window;
 
@@ -287,7 +288,7 @@ public class VkSwapChain extends VulkanObject {
             .compositeAlpha(KHRSurface.VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR)
             .clipped(true);
 
-    if (getConfiguration().renderer().vsyncEnabled()) {
+    if (getConfiguration().get(ConfigurationEnum.rendererVSyncEnabled, true)) {
       swapchainCreateInfo.presentMode(KHRSurface.VK_PRESENT_MODE_FIFO_KHR);
     } else {
       swapchainCreateInfo.presentMode(KHRSurface.VK_PRESENT_MODE_IMMEDIATE_KHR);
@@ -348,7 +349,7 @@ public class VkSwapChain extends VulkanObject {
 
     int maxImages = capabilities.maxImageCount();
     int minImages = capabilities.minImageCount();
-    int requestedImages = getConfiguration().renderer().imageCount();
+    int requestedImages = getConfiguration().get(ConfigurationEnum.rendererImageCount, 3);
 
     int result = minImages;
 

@@ -15,7 +15,7 @@ import org.sc.themis.renderer.base.command.VkCommandBuffer;
 import org.sc.themis.renderer.base.command.VkCommandInheritanceInfo;
 import org.sc.themis.renderer.base.sync.VkFence;
 import org.sc.themis.renderer.base.sync.VkSemaphore;
-import org.sc.themis.shared.Configuration;
+import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 
 public class MainCommandSet extends VkCommandSet {

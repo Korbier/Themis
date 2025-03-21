@@ -2,15 +2,13 @@ package org.sc.viewer;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.sc.TestWithConfiguration;
 import org.sc.themis.engine.Engine;
-import org.sc.themis.shared.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.viewer.gamestate.ViewerGamestate;
 import org.sc.viewer.renderactivity.ViewerRendererActivity;
 
-public class ViewerTest {
-
-  Configuration configuration = Configuration.defaultConfiguration();
+public class ViewerTest extends TestWithConfiguration {
 
   @Test
   @Disabled
@@ -21,7 +19,9 @@ public class ViewerTest {
     ViewerGamestate gamestate = new ViewerGamestate(context);
     Engine engine =
         new Engine(
-            configuration, new ViewerRendererActivity(this.configuration, context, gamestate));
+            getConfiguration(),
+            new ViewerRendererActivity(getConfiguration(), context, gamestate)
+        );
 
     // When
     engine.setup();

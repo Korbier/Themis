@@ -13,7 +13,8 @@ import org.sc.themis.renderer.base.resource.image.VkSampler;
 import org.sc.themis.renderer.base.resource.image.VkSamplerDescriptor;
 import org.sc.themis.renderer.resource.VkStagingImage;
 import org.sc.themis.scene.Scene;
-import org.sc.themis.shared.Configuration;
+import org.sc.themis.shared.configuration.Configuration;
+import org.sc.themis.shared.configuration.ConfigurationEnum;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.resource.font.FontRepository;
 import org.sc.themis.shared.tobject.TObject;
@@ -87,13 +88,14 @@ public class PencilDescriptorSet extends TObject implements VkDescriptorSetProvi
   public void update(int frame, Scene scene) {
     VkBuffer buffer = this.renderer.getFramesInFlight().get(frame, FK_BUFFER);
     buffer.set(0, scene.getProjection().orthographic());
-    buffer.set(MemorySizeUtils.MAT4x4F, getConfiguration().scene().projection().fov());
+    buffer.set(MemorySizeUtils.MAT4x4F,
+        getConfiguration().get(ConfigurationEnum.sceneProjectionFov, 60.0f)); //todo Get this from scene projection
     buffer.set(
         MemorySizeUtils.MAT4x4F + MemorySizeUtils.FLOAT,
-        getConfiguration().scene().projection().znear());
+        getConfiguration().get(ConfigurationEnum.sceneProjectionZNear, 0.1f)); //todo Get this from scene projection
     buffer.set(
         MemorySizeUtils.MAT4x4F + MemorySizeUtils.FLOAT * 2,
-        getConfiguration().scene().projection().zfar());
+        getConfiguration().get(ConfigurationEnum.sceneProjectionZFar, 1400.0f)); //todo Get this from scene projection
     buffer.set(
         MemorySizeUtils.MAT4x4F + MemorySizeUtils.FLOAT * 3,
         this.renderer.getWindow().getResolution());

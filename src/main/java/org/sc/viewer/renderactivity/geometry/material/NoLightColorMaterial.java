@@ -18,7 +18,7 @@ import org.sc.themis.renderer.material.MaterialProperty;
 import org.sc.themis.scene.descriptorset.SceneDescriptorSet;
 import org.sc.themis.scene.light.pipeline.LightDescriptorSet;
 import org.sc.themis.scene.light.pipeline.PhongShaderSource;
-import org.sc.themis.shared.Configuration;
+import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.utils.MemorySizeUtils;
 
 public class NoLightColorMaterial extends Material {

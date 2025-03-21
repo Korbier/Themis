@@ -25,7 +25,7 @@ import org.lwjgl.vulkan.VkOffset3D;
 import org.sc.themis.renderer.base.command.VkCommandBuffer;
 import org.sc.themis.renderer.base.resource.buffer.VkBuffer;
 import org.sc.themis.renderer.base.resource.image.VkImage;
-import org.sc.themis.shared.Configuration;
+import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 
 public class ResourceSet extends VkCommandSet {

@@ -16,7 +16,7 @@ import org.sc.themis.renderer.base.resource.image.VkSamplerDescriptor;
 import org.sc.themis.renderer.base.sync.VkFence;
 import org.sc.themis.renderer.resource.VkStagingImage;
 import org.sc.themis.scene.Scene;
-import org.sc.themis.shared.Configuration;
+import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.resource.Image;
 

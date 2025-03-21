@@ -23,7 +23,8 @@ import org.sc.themis.renderer.base.presentation.VkSurface;
 import org.sc.themis.renderer.base.queue.VkQueue;
 import org.sc.themis.renderer.base.queue.VkQueueFamily;
 import org.sc.themis.renderer.lang.VulkanObject;
-import org.sc.themis.shared.Configuration;
+import org.sc.themis.shared.configuration.Configuration;
+import org.sc.themis.shared.configuration.ConfigurationEnum;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.utils.BitwiseState;
 
@@ -134,21 +135,21 @@ public class VkDevice extends VulkanObject {
 
     VkPhysicalDeviceFeatures features = VkPhysicalDeviceFeatures.calloc(stack);
 
-    if (getConfiguration().renderer().feature().samplerAnisotropy()
+    if (getConfiguration().get(ConfigurationEnum.rendererFeatureSamplerAnisotropy, false)
         && this.physicalDevice.getFeatures().samplerAnisotropy()) {
       LOG.debug("Sampler Anisotropy feature enabled");
       this.features.set(FEATURE_SAMPLER_ANISOTROPY);
       features.samplerAnisotropy(true);
     }
 
-    if (getConfiguration().renderer().feature().geometryShader()
+    if (getConfiguration().get(ConfigurationEnum.rendererFeatureGeometryShader, false)
         && this.physicalDevice.getFeatures().geometryShader()) {
       LOG.debug("Geometry Shader feature enabled");
       this.features.set(FEATURE_GEOMETRY_SHADER);
       features.geometryShader(true);
     }
 
-    if (getConfiguration().renderer().feature().fragmentStoresAndAtomics()
+    if (getConfiguration().get(ConfigurationEnum.rendererFeatureFragmentStoresAndAtomics, false)
         && this.physicalDevice.getFeatures().fragmentStoresAndAtomics()) {
       LOG.debug("Fragment Stores and Atomics feature enabled");
       this.features.set(FEATURE_FRAGMENT_STORES_AND_ATOMICS);

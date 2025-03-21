@@ -1,6 +1,6 @@
 package org.sc.themis.shared.tobject;
 
-import org.sc.themis.shared.Configuration;
+import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 
 public abstract class TObject {

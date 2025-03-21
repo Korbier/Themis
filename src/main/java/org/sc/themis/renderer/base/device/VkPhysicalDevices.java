@@ -7,11 +7,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 
-import org.jboss.logging.Logger;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.sc.themis.renderer.lang.VulkanObject;
-import org.sc.themis.shared.Configuration;
+import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 
 public class VkPhysicalDevices extends VulkanObject {

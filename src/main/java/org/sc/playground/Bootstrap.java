@@ -1,7 +1,7 @@
 package org.sc.playground;
 
 import org.sc.themis.engine.Engine;
-import org.sc.themis.shared.Configuration;
+import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 
 public class Bootstrap {
@@ -13,7 +13,8 @@ public class Bootstrap {
 
   public int run(String... args) throws ThemisException {
 
-    Configuration configuration = Configuration.defaultConfiguration();
+    Configuration configuration = new Configuration();
+
     Playgrounds playground = selectPlayground(args);
 
     LOG.infof("Running %s playground ...", playground);

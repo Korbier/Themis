@@ -27,7 +27,7 @@ import org.sc.playground.texturearray.TextureArrayRendererActivity;
 import org.sc.playground.triangle.TriangleRendererActivity;
 import org.sc.themis.gamestate.Gamestate;
 import org.sc.themis.renderer.RendererActivity;
-import org.sc.themis.shared.Configuration;
+import org.sc.themis.shared.configuration.Configuration;
 
 public enum Playgrounds {
   NOOP("noop", new NoopGamestate(), NoopRendererActivity::new),

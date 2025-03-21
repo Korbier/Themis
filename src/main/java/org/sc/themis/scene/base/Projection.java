@@ -1,7 +1,8 @@
 package org.sc.themis.scene.base;
 
 import org.joml.Matrix4f;
-import org.sc.themis.shared.Configuration;
+import org.sc.themis.shared.configuration.Configuration;
+import org.sc.themis.shared.configuration.ConfigurationEnum;
 
 public class Projection {
 
@@ -25,9 +26,9 @@ public class Projection {
 
   public void resize(int width, int height) {
 
-    float fov = this.configuration.scene().projection().fov();
-    float znear = this.configuration.scene().projection().znear();
-    float zfar = this.configuration.scene().projection().zfar();
+    float fov = this.configuration.get(ConfigurationEnum.sceneProjectionFov, 60.0f);
+    float znear = this.configuration.get(ConfigurationEnum.sceneProjectionZNear, 0.1f);
+    float zfar = this.configuration.get(ConfigurationEnum.sceneProjectionZFar, 1400.0f);
 
     perspective().identity();
     perspective()

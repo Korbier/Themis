@@ -23,8 +23,9 @@ import org.joml.Vector2i;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.glfw.GLFWVulkan;
 import org.lwjgl.system.MemoryUtil;
-import org.sc.themis.shared.Configuration;
+import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.assertion.Assertions;
+import org.sc.themis.shared.configuration.ConfigurationEnum;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.tobject.TObject;
 import org.sc.themis.window.exception.WindowGlfwInitException;
@@ -56,11 +57,15 @@ public class Window extends TObject {
     Assertions.notNull(vidMode, new WindowVideoModeNotSupportedException());
 
     setupAttributes(
-        vidMode, getConfiguration().window().width(), getConfiguration().window().height());
+        vidMode,
+        getConfiguration().get(ConfigurationEnum.windowWidth, 800),
+        getConfiguration().get(ConfigurationEnum.windowHeight, 600)
+    );
     setupWindow(
-        getConfiguration().application().name(),
-        getConfiguration().window().resizable(),
-        getConfiguration().window().maximized());
+        getConfiguration().get(ConfigurationEnum.applicationName, "no-name"),
+        getConfiguration().get(ConfigurationEnum.windowResizable, true),
+        getConfiguration().get(ConfigurationEnum.windowMaximized, false)
+    );
     setupCallback();
 
     LOG.tracef(

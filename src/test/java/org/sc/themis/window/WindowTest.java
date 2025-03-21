@@ -4,12 +4,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.sc.themis.shared.Configuration;
+import org.sc.TestWithConfiguration;
 import org.sc.themis.shared.exception.ThemisException;
 
-public class WindowTest {
-
-  Configuration configuration = Configuration.defaultConfiguration();
+public class WindowTest extends TestWithConfiguration {
 
   @Test
   @DisplayName("Create window - nominal case")
@@ -17,7 +15,7 @@ public class WindowTest {
   void testCreateWindow_01() throws ThemisException {
 
     // Given
-    Window window = new Window(configuration);
+    Window window = new Window(getConfiguration());
 
     // When
     window.setup();

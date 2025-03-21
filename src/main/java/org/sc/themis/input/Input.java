@@ -15,7 +15,7 @@ import static org.lwjgl.glfw.GLFW.glfwSetWindowShouldClose;
 import java.util.HashMap;
 import java.util.Map;
 import org.joml.Vector2f;
-import org.sc.themis.shared.Configuration;
+import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.tobject.TObject;
 import org.sc.themis.window.Window;
 

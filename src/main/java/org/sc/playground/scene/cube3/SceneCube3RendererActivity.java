@@ -11,7 +11,7 @@ import org.sc.themis.scene.base.geometry.Instance;
 import org.sc.themis.scene.base.geometry.Mesh;
 import org.sc.themis.scene.base.geometry.Model;
 import org.sc.themis.scene.descriptorset.SceneDescriptorSet;
-import org.sc.themis.shared.Configuration;
+import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 
 public class SceneCube3RendererActivity extends BaseRendererActivity {

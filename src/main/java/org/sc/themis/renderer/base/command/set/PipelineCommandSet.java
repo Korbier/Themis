@@ -9,7 +9,7 @@ import org.lwjgl.system.MemoryStack;
 import org.sc.themis.renderer.base.command.VkCommandBuffer;
 import org.sc.themis.renderer.base.pipeline.VkPipeline;
 import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSet;
-import org.sc.themis.shared.Configuration;
+import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.utils.MemorySizeUtils;
 
