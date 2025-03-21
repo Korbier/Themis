@@ -3,11 +3,12 @@ package org.sc.playground;
 import org.sc.themis.engine.Engine;
 import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Bootstrap {
 
-  private static final org.jboss.logging.Logger LOG =
-      org.jboss.logging.Logger.getLogger(Bootstrap.class);
+  private static final Logger logger = LoggerFactory.getLogger(Bootstrap.class);
 
   Configuration configuration;
 
@@ -17,7 +18,7 @@ public class Bootstrap {
 
     Playgrounds playground = selectPlayground(args);
 
-    LOG.infof("Running %s playground ...", playground);
+    logger.info("Running {} playground ...", playground);
 
     Engine engine =
         new Engine(this.configuration, playground.rendererActivityFactory.apply(configuration));

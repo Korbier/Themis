@@ -37,7 +37,7 @@ public class Timer {
 
     if (this.lastDisplay > 1000) {
       LOG.infof(
-          "{} > Average rendering time in ms : {}",
+          "%s > Average rendering time in ms : %d",
           this.name,
           this.measures.stream().mapToLong(l -> l).average().orElse(0));
       this.measures.clear();

@@ -24,13 +24,16 @@ import org.sc.themis.renderer.base.resource.buffer.VkBuffer;
 import org.sc.themis.renderer.base.resource.buffer.VkBufferDescriptor;
 import org.sc.themis.renderer.base.resource.image.VkSampler;
 import org.sc.themis.renderer.base.resource.image.VkSamplerDescriptor;
+import org.sc.themis.scene.base.geometry.Instance;
 import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.tobject.TObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class Material extends TObject {
 
-  private static final org.jboss.logging.Logger LOG = Logger.getLogger(Material.class);
+  private static final org.slf4j.Logger logger = LoggerFactory.getLogger(Instance.class);
 
   private static final int DESCRIPTORPOOL_SIZE = 10;
 
@@ -57,7 +60,7 @@ public abstract class Material extends TObject {
   private final Renderer renderer;
   private final String identifier;
 
-  /** Variant identifier function * */
+  /** Variant identifier function **/
   private Function<MaterialProperties, String> variantIdentifierFunction =
       MaterialProperties::toString;
 
@@ -127,11 +130,11 @@ public abstract class Material extends TObject {
   public String add(MaterialProperties properties) throws ThemisException {
 
     if (!this.materialPropertiesPredicate.test(properties)) {
-      LOG.warnf("Properties not compatible with material %s", this.getIdentifier());
+      logger.warn("Properties not compatible with material {}", this.getIdentifier());
       return null;
     }
 
-    LOG.infof("New variant for material %s", this.getIdentifier());
+    logger.info("New variant for material {}", this.getIdentifier());
 
     String variantIdentifier = getVariantIdentifier(properties);
     properties.setVariantIdentifier(this, variantIdentifier);

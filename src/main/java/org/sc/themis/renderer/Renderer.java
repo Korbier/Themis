@@ -1,8 +1,8 @@
 package org.sc.themis.renderer;
 
-import org.jboss.logging.Logger;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkExtent2D;
+import org.sc.playground.Bootstrap;
 import org.sc.themis.input.Input;
 import org.sc.themis.renderer.base.command.VkCommand;
 import org.sc.themis.renderer.base.command.VkCommandPool;
@@ -27,10 +27,12 @@ import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.tobject.TObject;
 import org.sc.themis.shared.utils.Timer;
 import org.sc.themis.window.Window;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Renderer extends TObject {
 
-  private static final Logger LOG = Logger.getLogger(Renderer.class);
+  private static final Logger logger = LoggerFactory.getLogger(Renderer.class);
 
   protected static final int DEFAULT_QUEUE_INDEX = 0;
 
@@ -97,7 +99,8 @@ public class Renderer extends TObject {
     this.setupActivity();
     this.setupSemaphores();
 
-    LOG.trace("Renderer initialized");
+    logger.trace("Renderer initialized");
+
   }
 
   private void setupResourceAllocator() throws ThemisException {
