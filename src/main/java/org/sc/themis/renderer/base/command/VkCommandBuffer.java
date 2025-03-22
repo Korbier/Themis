@@ -22,12 +22,7 @@ public class VkCommandBuffer extends VulkanObject {
 
   private org.lwjgl.vulkan.VkCommandBuffer handle;
 
-  public VkCommandBuffer(
-      Configuration configuration,
-      VkDevice device,
-      VkCommandPool pool,
-      VkQueue queue,
-      boolean primary) {
+  public VkCommandBuffer( Configuration configuration, VkDevice device, VkCommandPool pool, VkQueue queue, boolean primary) {
     super(configuration);
     this.device = device;
     this.commandPool = pool;
@@ -44,8 +39,7 @@ public class VkCommandBuffer extends VulkanObject {
 
   @Override
   public void cleanup() throws ThemisException {
-    vkCommand()
-        .freeCommandBuffers(this.device.getHandle(), this.commandPool.getHandle(), this.handle);
+    vkCommand().freeCommandBuffers(this.device.getHandle(), this.commandPool.getHandle(), this.handle);
   }
 
   public org.lwjgl.vulkan.VkCommandBuffer getHandle() {
@@ -60,8 +54,7 @@ public class VkCommandBuffer extends VulkanObject {
     return this.primary;
   }
 
-  private org.lwjgl.vulkan.VkCommandBuffer vkAllocateCommandBuffer(MemoryStack stack)
-      throws ThemisException {
+  private org.lwjgl.vulkan.VkCommandBuffer vkAllocateCommandBuffer(MemoryStack stack) throws ThemisException {
 
     VkCommandBufferAllocateInfo cmdBufAllocateInfo =
         VkCommandBufferAllocateInfo.calloc(stack)
@@ -75,5 +68,6 @@ public class VkCommandBuffer extends VulkanObject {
     vkCommand().allocateCommandBuffers(this.device.getHandle(), cmdBufAllocateInfo, buffer);
 
     return new org.lwjgl.vulkan.VkCommandBuffer(buffer.get(0), this.device.getHandle());
+
   }
 }

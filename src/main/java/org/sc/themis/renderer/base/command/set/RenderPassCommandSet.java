@@ -27,20 +27,13 @@ public class RenderPassCommandSet extends VkCommandSet {
     super(configuration, buffer);
   }
 
-  public void begin(
-      VkRenderPass renderPass, VkFrameBuffer frameBuffer, boolean executeSecondaryCommandBuffer)
-      throws ThemisException {
+  public void begin(VkRenderPass renderPass, VkFrameBuffer frameBuffer, boolean executeSecondaryCommandBuffer) throws ThemisException {
     try (MemoryStack stack = MemoryStack.stackPush()) {
       VkClearValue.Buffer clearValues = createClearValues(stack, renderPass);
-      VkRenderPassBeginInfo renderPassBeginInfo =
-          createRenderPassBeginInfo(stack, clearValues, renderPass, frameBuffer);
-      int contents =
-          executeSecondaryCommandBuffer
-              ? VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS
-              : VK_SUBPASS_CONTENTS_INLINE;
+      VkRenderPassBeginInfo renderPassBeginInfo = createRenderPassBeginInfo(stack, clearValues, renderPass, frameBuffer);
+      int contents = executeSecondaryCommandBuffer ? VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS : VK_SUBPASS_CONTENTS_INLINE;
       vkCommand().cmdBeginRenderPass(buffer().getHandle(), renderPassBeginInfo, contents);
     }
-    ;
   }
 
   public void endRenderPass() throws ThemisException {
@@ -53,8 +46,7 @@ public class RenderPassCommandSet extends VkCommandSet {
 
   public void scissor(int left, int top, int width, int height) throws ThemisException {
     try (MemoryStack stack = MemoryStack.stackPush()) {
-      VkRect2D.Buffer scissor =
-          VkRect2D.calloc(1, stack)
+      VkRect2D.Buffer scissor = VkRect2D.calloc(1, stack)
               .extent(it -> it.width(width).height(height))
               .offset(it -> it.x(left).y(top));
       vkCommand().cmdSetScissor(buffer().getHandle(), scissor);
@@ -63,8 +55,7 @@ public class RenderPassCommandSet extends VkCommandSet {
 
   public void viewport(int width, int height) throws ThemisException {
     try (MemoryStack stack = MemoryStack.stackPush()) {
-      VkViewport.Buffer viewports =
-          VkViewport.calloc(1, stack)
+      VkViewport.Buffer viewports = VkViewport.calloc(1, stack)
               .x(0)
               .y(height)
               .height(-height)
@@ -80,8 +71,7 @@ public class RenderPassCommandSet extends VkCommandSet {
       LongBuffer offsets = stack.mallocLong(1).put(0, 0L);
       LongBuffer vertexBuffer = stack.mallocLong(1).put(0, vertices.getHandle());
       vkCommand().cmdBindVertexBuffers(buffer().getHandle(), 0, vertexBuffer, offsets);
-      vkCommand()
-          .cmdBindIndexBuffer(buffer().getHandle(), indices.getHandle(), 0, VK_INDEX_TYPE_UINT32);
+      vkCommand().cmdBindIndexBuffer(buffer().getHandle(), indices.getHandle(), 0, VK_INDEX_TYPE_UINT32);
     }
   }
 
@@ -93,23 +83,12 @@ public class RenderPassCommandSet extends VkCommandSet {
     }
   }
 
-  public void draw(int vertexCount, int instanceCount, int firstVertex, int firstInstance)
-      throws ThemisException {
-    vkCommand()
-        .cmdDraw(buffer().getHandle(), vertexCount, instanceCount, firstVertex, firstInstance);
+  public void draw(int vertexCount, int instanceCount, int firstVertex, int firstInstance) throws ThemisException {
+    vkCommand().cmdDraw(buffer().getHandle(), vertexCount, instanceCount, firstVertex, firstInstance);
   }
 
-  public void drawIndexed(
-      int indexCount, int instanceCount, int firstIndex, int vertexOffset, int firstInstance)
-      throws ThemisException {
-    vkCommand()
-        .cmdDrawIndexed(
-            buffer().getHandle(),
-            indexCount,
-            instanceCount,
-            firstIndex,
-            vertexOffset,
-            firstInstance);
+  public void drawIndexed(int indexCount, int instanceCount, int firstIndex, int vertexOffset, int firstInstance) throws ThemisException {
+    vkCommand().cmdDrawIndexed(buffer().getHandle(), indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
   }
 
   private VkClearValue.Buffer createClearValues(MemoryStack stack, VkRenderPass renderPass) {
@@ -123,27 +102,25 @@ public class RenderPassCommandSet extends VkCommandSet {
       if (attachment.finalLayout() == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
         clearValues.apply(v -> v.depthStencil().depth(1.0f));
       } else {
-        clearValues.apply(
-            v -> v.color().float32(0, 0.0f).float32(1, 0.0f).float32(2, 0.0f).float32(3, 1.0f));
+        clearValues.apply(v -> v.color().float32(0, 0.0f).float32(1, 0.0f).float32(2, 0.0f).float32(3, 1.0f));
       }
     }
 
     return clearValues.flip();
+
   }
 
   private VkRenderPassBeginInfo createRenderPassBeginInfo(
       MemoryStack stack,
       VkClearValue.Buffer clearValues,
       VkRenderPass renderPass,
-      VkFrameBuffer frameBuffer) {
+      VkFrameBuffer frameBuffer
+  ) {
     return VkRenderPassBeginInfo.calloc(stack)
         .sType(VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO)
         .renderPass(renderPass.getHandle())
         .pClearValues(clearValues)
-        .renderArea(
-            a ->
-                a.extent()
-                    .set(frameBuffer.getDescriptor().width(), frameBuffer.getDescriptor().height()))
+        .renderArea( a -> a.extent().set(frameBuffer.getDescriptor().width(), frameBuffer.getDescriptor().height()))
         .framebuffer(frameBuffer.getHandle());
   }
 }

@@ -30,8 +30,7 @@ public class MainCommandSet extends VkCommandSet {
 
   public void begin(int flags, VkCommandInheritanceInfo inheritanceInfo) throws ThemisException {
     try (MemoryStack stack = MemoryStack.stackPush()) {
-      VkCommandBufferBeginInfo commandBufferBeginInfo =
-          createCommandBufferBeginInfo(stack, flags, inheritanceInfo);
+      VkCommandBufferBeginInfo commandBufferBeginInfo = createCommandBufferBeginInfo(stack, flags, inheritanceInfo);
       vkCommand().beginCommandBuffer(buffer().getHandle(), commandBufferBeginInfo);
     }
   }
@@ -40,28 +39,16 @@ public class MainCommandSet extends VkCommandSet {
     vkCommand().endCommandBuffer(buffer().getHandle());
   }
 
-  public void submit(
-      VkFence fence,
-      VkSemaphore waitSemaphore,
-      VkSemaphore signalSemaphore,
-      IntBuffer dstStageMasks)
-      throws ThemisException {
+  public void submit( VkFence fence, VkSemaphore waitSemaphore, VkSemaphore signalSemaphore, IntBuffer dstStageMasks) throws ThemisException {
     try (MemoryStack stack = MemoryStack.stackPush()) {
-      VkSubmitInfo submitInfo =
-          createSubmitInfo(stack, waitSemaphore, signalSemaphore, dstStageMasks);
-      vkCommand()
-          .queueSubmit(
-              buffer().getQueue().getHandle(),
-              submitInfo,
-              fence != null ? fence.getHandle() : VK_NULL_HANDLE);
+      VkSubmitInfo submitInfo = createSubmitInfo(stack, waitSemaphore, signalSemaphore, dstStageMasks);
+      vkCommand().queueSubmit( buffer().getQueue().getHandle(), submitInfo, fence != null ? fence.getHandle() : VK_NULL_HANDLE);
     }
   }
 
-  private VkCommandBufferBeginInfo createCommandBufferBeginInfo(
-      MemoryStack stack, int flags, VkCommandInheritanceInfo inheritanceInfo) {
+  private VkCommandBufferBeginInfo createCommandBufferBeginInfo(MemoryStack stack, int flags, VkCommandInheritanceInfo inheritanceInfo) {
 
-    VkCommandBufferBeginInfo cmdBufInfo =
-        VkCommandBufferBeginInfo.calloc(stack)
+    VkCommandBufferBeginInfo cmdBufInfo = VkCommandBufferBeginInfo.calloc(stack)
             .sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO)
             .flags(flags);
 
@@ -71,17 +58,16 @@ public class MainCommandSet extends VkCommandSet {
         throw new RuntimeException("Secondary buffers must declare inheritance info");
       }
 
-      VkCommandBufferInheritanceInfo vkInheritanceInfo =
-          createCommandBufferInheritanceInfo(stack, inheritanceInfo);
-      ;
+      VkCommandBufferInheritanceInfo vkInheritanceInfo = createCommandBufferInheritanceInfo(stack, inheritanceInfo);
       cmdBufInfo.pInheritanceInfo(vkInheritanceInfo);
+
     }
 
     return cmdBufInfo;
+
   }
 
-  private VkCommandBufferInheritanceInfo createCommandBufferInheritanceInfo(
-      MemoryStack stack, VkCommandInheritanceInfo inheritanceInfo) {
+  private VkCommandBufferInheritanceInfo createCommandBufferInheritanceInfo(MemoryStack stack, VkCommandInheritanceInfo inheritanceInfo) {
     return VkCommandBufferInheritanceInfo.calloc(stack)
         .sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO)
         .renderPass(inheritanceInfo.vkRenderPass())
@@ -89,14 +75,9 @@ public class MainCommandSet extends VkCommandSet {
         .framebuffer(inheritanceInfo.vkFrameBuffer());
   }
 
-  private VkSubmitInfo createSubmitInfo(
-      MemoryStack stack,
-      VkSemaphore waitSemaphore,
-      VkSemaphore signalSemaphore,
-      IntBuffer dstStageMasks) {
+  private VkSubmitInfo createSubmitInfo(MemoryStack stack, VkSemaphore waitSemaphore, VkSemaphore signalSemaphore, IntBuffer dstStageMasks) {
 
-    VkSubmitInfo submitInfo =
-        VkSubmitInfo.calloc(stack)
+    VkSubmitInfo submitInfo = VkSubmitInfo.calloc(stack)
             .sType(VK_STRUCTURE_TYPE_SUBMIT_INFO)
             .pCommandBuffers(stack.pointers(buffer().getHandle()));
 
@@ -117,5 +98,7 @@ public class MainCommandSet extends VkCommandSet {
     }
 
     return submitInfo;
+
   }
+
 }

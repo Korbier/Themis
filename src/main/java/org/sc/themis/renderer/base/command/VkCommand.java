@@ -1,6 +1,5 @@
 package org.sc.themis.renderer.base.command;
 
-
 import static org.lwjgl.vulkan.VK10.VK_IMAGE_ASPECT_COLOR_BIT;
 import static org.lwjgl.vulkan.VK10.VK_PIPELINE_BIND_POINT_COMPUTE;
 import static org.lwjgl.vulkan.VK10.VK_PIPELINE_BIND_POINT_GRAPHICS;
@@ -77,24 +76,13 @@ public class VkCommand extends VkCommandSet {
     mainSet().end();
   }
 
-  public void submit(
-      VkFence fence,
-      VkSemaphore waitSemaphore,
-      VkSemaphore signalSemaphore,
-      IntBuffer dstStageMasks)
-      throws ThemisException {
+  public void submit( VkFence fence, VkSemaphore waitSemaphore, VkSemaphore signalSemaphore, IntBuffer dstStageMasks) throws ThemisException {
     mainSet().submit(fence, waitSemaphore, signalSemaphore, dstStageMasks);
   }
 
-  public void submit(VkFence fence, VkSemaphore waitSemaphore, VkSemaphore signalSemaphore)
-      throws ThemisException {
+  public void submit(VkFence fence, VkSemaphore waitSemaphore, VkSemaphore signalSemaphore) throws ThemisException {
     try (MemoryStack stack = MemoryStack.stackPush()) {
-      mainSet()
-          .submit(
-              fence,
-              waitSemaphore,
-              signalSemaphore,
-              stack.ints(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT));
+      mainSet().submit( fence, waitSemaphore, signalSemaphore, stack.ints(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT));
     }
   }
 
@@ -103,14 +91,11 @@ public class VkCommand extends VkCommandSet {
   }
 
   /**** Render pass ****/
-  public void beginRenderPass(VkRenderPass renderPass, VkFrameBuffer framebuffer)
-      throws ThemisException {
+  public void beginRenderPass(VkRenderPass renderPass, VkFrameBuffer framebuffer) throws ThemisException {
     renderPass().begin(renderPass, framebuffer, false);
   }
 
-  public void beginRenderPass(
-      VkRenderPass renderPass, VkFrameBuffer framebuffer, boolean executeSecondary)
-      throws ThemisException {
+  public void beginRenderPass(VkRenderPass renderPass, VkFrameBuffer framebuffer, boolean executeSecondary) throws ThemisException {
     renderPass().begin(renderPass, framebuffer, executeSecondary);
   }
 
@@ -151,8 +136,7 @@ public class VkCommand extends VkCommandSet {
     renderPass().bindBuffer(binding, vertices);
   }
 
-  public void draw(int vertexCount, int instanceCount, int firstVertex, int firstInstance)
-      throws ThemisException {
+  public void draw(int vertexCount, int instanceCount, int firstVertex, int firstInstance) throws ThemisException {
     renderPass().draw(vertexCount, instanceCount, firstVertex, firstInstance);
   }
 
@@ -160,9 +144,7 @@ public class VkCommand extends VkCommandSet {
     renderPass().drawIndexed(indicesCount, 1, 0, 0, 0);
   }
 
-  public void drawIndexed(
-      int indexCount, int instanceCount, int firstIndex, int vertexOffset, int firstInstance)
-      throws ThemisException {
+  public void drawIndexed( int indexCount, int instanceCount, int firstIndex, int vertexOffset, int firstInstance) throws ThemisException {
     renderPass().drawIndexed(indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
   }
 
@@ -172,9 +154,7 @@ public class VkCommand extends VkCommandSet {
   }
 
   public void bindPipeline(VkPipeline pipeline, boolean compute) throws ThemisException {
-    pipeline()
-        .bindPipeline(
-            pipeline, compute ? VK_PIPELINE_BIND_POINT_COMPUTE : VK_PIPELINE_BIND_POINT_GRAPHICS);
+    pipeline().bindPipeline(pipeline, compute ? VK_PIPELINE_BIND_POINT_COMPUTE : VK_PIPELINE_BIND_POINT_GRAPHICS);
   }
 
   public void pushConstant(int shaderStage, int offset, float... data) throws ThemisException {
@@ -185,19 +165,16 @@ public class VkCommand extends VkCommandSet {
     pipeline().pushConstant(shaderStage, offset, data);
   }
 
-  public void bindDescriptorSets(int[] dynamicOffsets, VkDescriptorSet... vkDescriptorSets)
-      throws ThemisException {
+  public void bindDescriptorSets(int[] dynamicOffsets, VkDescriptorSet... vkDescriptorSets) throws ThemisException {
     pipeline().bindDescriptorSets(dynamicOffsets, vkDescriptorSets);
   }
 
   /**** Buffer ****/
   public void copy(VkBuffer srcBuffer, VkBuffer dstBuffer) throws ThemisException {
-    resource()
-        .copy(srcBuffer, dstBuffer, VkBufferCopyRegion.of(0, 0, srcBuffer.getRequestedSize()));
+    resource().copy(srcBuffer, dstBuffer, VkBufferCopyRegion.of(0, 0, srcBuffer.getRequestedSize()));
   }
 
-  public void copy(VkBuffer srcBuffer, VkBuffer dstBuffer, VkBufferCopyRegion ... regions)
-      throws ThemisException {
+  public void copy(VkBuffer srcBuffer, VkBuffer dstBuffer, VkBufferCopyRegion ... regions) throws ThemisException {
     resource().copy(srcBuffer, dstBuffer, regions);
   }
 
@@ -216,29 +193,17 @@ public class VkCommand extends VkCommandSet {
   }
 
   /**** Image ****/
-  public void layout(
-      VkImage image,
-      int srcLayout,
-      int dstLayout,
-      int srcPipelineStage,
-      int dstPipelineStage,
-      int srcAccessMask,
-      int dstAccessMask,
-      Consumer<VkImageSubresourceRange> subResourceRange)
-      throws ThemisException {
-    resource()
-        .layout(
-            image,
-            srcLayout,
-            dstLayout,
-            srcPipelineStage,
-            dstPipelineStage,
-            srcAccessMask,
-            dstAccessMask,
-            subResourceRange);
+  public void layout( VkImage image,
+      int srcLayout, int dstLayout,
+      int srcPipelineStage, int dstPipelineStage,
+      int srcAccessMask, int dstAccessMask,
+      Consumer<VkImageSubresourceRange> subResourceRange
+  ) throws ThemisException {
+    resource().layout( image, srcLayout, dstLayout, srcPipelineStage, dstPipelineStage, srcAccessMask, dstAccessMask, subResourceRange);
   }
 
   public void generateMipMaps(VkImage image, int mipLevel) throws ThemisException {
     resource().generateMipMaps(image, mipLevel);
   }
+
 }
