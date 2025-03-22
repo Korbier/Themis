@@ -2,7 +2,6 @@ package org.sc.themis.renderer;
 
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkExtent2D;
-import org.sc.playground.Bootstrap;
 import org.sc.themis.input.Input;
 import org.sc.themis.renderer.base.command.VkCommand;
 import org.sc.themis.renderer.base.command.VkCommandPool;
@@ -38,7 +37,6 @@ public class Renderer extends TObject {
 
   /*** Framed object ***/
   private static final FrameKey<VkSemaphore> FK_ACQUIRE_SEMAPHORE = FrameKey.of(VkSemaphore.class);
-
   private static final FrameKey<VkSemaphore> FK_PRESENT_SEMAPHORE = FrameKey.of(VkSemaphore.class);
 
   private final Window window;
@@ -79,33 +77,33 @@ public class Renderer extends TObject {
   @Override
   public void setup() throws ThemisException {
 
-    /** Core setups * */
+    //Core setups
     this.instance.setup();
     this.setupPhysicalDevice();
     this.setupDevice();
     this.setupMemoryAllocator();
 
-    /** Presentation setup * */
+    //Presentation setup
     this.setupSurface();
     this.setupQueues();
     this.setupCommandPool();
     this.setupSwapChain();
 
-    /** Others * */
+    //Others
     this.setupResourceAllocator();
 
-    /** Frame dependent setups * */
+    //Frame dependent setups
     this.framesInFlight = new Frames(getFrameCount(), true, true);
     this.setupActivity();
     this.setupSemaphores();
 
-    logger.trace("Renderer initialized");
+    logger.info("\uD83C\uDFA8 Renderer initialized");
+    logger.debug("⚠️ Additional information : frames in flight={}", this.getFramesInFlight().getSize());
 
   }
 
   private void setupResourceAllocator() throws ThemisException {
-    this.resourceAllocator =
-        new VkStagingResourceAllocator(getConfiguration(), this.device, this.memoryAllocator);
+    this.resourceAllocator = new VkStagingResourceAllocator(getConfiguration(), this.device, this.memoryAllocator);
     this.resourceAllocator.setup();
   }
 

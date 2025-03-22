@@ -29,8 +29,9 @@ public class VkExtensions extends VulkanObject {
 
       this.extensions.addAll(fetchExtensions(stack));
 
+      logger.debug("\uD83D\uDD0C Vulkan extensions fetched (found {} extensions)", size());
+
       if (logger.isTraceEnabled()) {
-        logger.trace("Extensions setup. Found {} layers.", size());
         showExtensions();
       }
 

@@ -8,6 +8,7 @@ import org.sc.themis.renderer.RendererActivity;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.assertion.Assertions;
+import org.sc.themis.shared.configuration.ConfigurationEnum;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.tobject.TObject;
 import org.sc.themis.window.Window;
@@ -39,14 +40,17 @@ public class Engine extends TObject {
   @Override
   public void setup() throws ThemisException {
 
-    logger.info("Engine initialisation ... ");
+    //noinspection UnnecessaryUnicodeEscape
+    logger.info("\u2699\uFE0F Initializing {} ...", getName());
 
     this.window.setup();
     this.input.setup();
     this.renderer.setup();
     this.scene.setup();
 
-    logger.trace("Engine initialized");
+    //noinspection UnnecessaryUnicodeEscape
+    logger.info("\u2699\uFE0F Engine initialized");
+
   }
 
   @Override
@@ -144,4 +148,15 @@ public class Engine extends TObject {
     this.renderer.render(this.scene, tpf);
   }
 
+  private String getName() {
+
+    String appname = getConfiguration().get(ConfigurationEnum.applicationName);
+    int appversion =  getConfiguration().get(ConfigurationEnum.applicationVersion);
+
+    String engname = getConfiguration().get(ConfigurationEnum.engineName);
+    int engversion =  getConfiguration().get(ConfigurationEnum.engineVersion);
+
+    return String.format("%s V%d (%s V%d)", appname, appversion, engname, engversion);
+
+  }
 }

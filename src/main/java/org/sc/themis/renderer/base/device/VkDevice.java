@@ -134,20 +134,22 @@ public class VkDevice extends VulkanObject {
 
     VkPhysicalDeviceFeatures features = VkPhysicalDeviceFeatures.calloc(stack);
 
+    logger.debug("Enabled features : ");
+
     if (getConfiguration().get(ConfigurationEnum.rendererFeatureSamplerAnisotropy, false) && this.physicalDevice.getFeatures().samplerAnisotropy()) {
-      logger.debug("Sampler Anisotropy feature enabled");
+      logger.debug(". Sampler anisotropy");
       this.features.set(FEATURE_SAMPLER_ANISOTROPY);
       features.samplerAnisotropy(true);
     }
 
     if (getConfiguration().get(ConfigurationEnum.rendererFeatureGeometryShader, false) && this.physicalDevice.getFeatures().geometryShader()) {
-      logger.debug("Geometry Shader feature enabled");
+      logger.debug(". Geometry shader feature enabled");
       this.features.set(FEATURE_GEOMETRY_SHADER);
       features.geometryShader(true);
     }
 
     if (getConfiguration().get(ConfigurationEnum.rendererFeatureFragmentStoresAndAtomics, false) && this.physicalDevice.getFeatures().fragmentStoresAndAtomics()) {
-      logger.debug("Fragment Stores and Atomics feature enabled");
+      logger.debug(". Fragment stores and atomics");
       this.features.set(FEATURE_FRAGMENT_STORES_AND_ATOMICS);
       features.fragmentStoresAndAtomics(true);
     }

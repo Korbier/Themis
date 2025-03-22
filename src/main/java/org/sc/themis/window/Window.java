@@ -69,7 +69,11 @@ public class Window extends TObject {
     );
     setupCallback();
 
-    logger.trace("Window initialised ({}, Size={}{}, Resolution={}{})", this, this.size.x, this.size.y, this.resolution.x, this.resolution.y);
+    //noinspection UnnecessaryUnicodeEscape
+    logger.info("\uD83D\uDCFA Window initialized");
+
+    //noinspection UnnecessaryUnicodeEscape
+    logger.debug("\u26A0\uFE0F Additional information : handle={}, size={}x{}, resolution={}x{}", this, this.size.x, this.size.y, this.resolution.x, this.resolution.y);
 
   }
 

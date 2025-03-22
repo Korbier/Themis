@@ -38,8 +38,9 @@ public class VkLayers extends VulkanObject {
 
       this.layers.addAll(fetchLayers(stack));
 
+      logger.debug("\uD83E\uDDF1 Vulkan layers fetched (found {} layers)", size());
+
       if (logger.isTraceEnabled()) {
-        logger.trace("Layers setup. Found {} layers.", size());
         showLayers();
       }
 
@@ -125,7 +126,7 @@ public class VkLayers extends VulkanObject {
 
   private void showLayers() {
     for (VkLayer layer : layers) {
-      logger.trace("Layer found : {}", layer.getName());
+      logger.trace(". {}", layer.getName());
     }
   }
 }

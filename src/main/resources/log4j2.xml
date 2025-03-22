@@ -9,15 +9,13 @@
 
     <Loggers>
 
-        <Root level="trace">
+        <Root level="WARN">
             <AppenderRef ref="Console"/>
         </Root>
 
-        <logger name="org.sc.themis.renderer" level="INFO">
+        <logger name="org.sc.themis" level="INFO" additivity="false">
             <AppenderRef ref="Console" />
         </logger>
-
-
 
     </Loggers>
 

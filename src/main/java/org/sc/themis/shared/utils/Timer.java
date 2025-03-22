@@ -9,7 +9,7 @@ public class Timer {
 
   private static final org.slf4j.Logger logger = LoggerFactory.getLogger(Timer.class);
 
-  private List<Long> measures = new ArrayList<>();
+  private final List<Long> measures = new ArrayList<>();
   private long measure = 0;
 
   private String name;
@@ -42,4 +42,5 @@ public class Timer {
     }
 
   }
+
 }
