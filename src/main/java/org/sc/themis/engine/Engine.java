@@ -79,9 +79,9 @@ public class Engine extends TObject {
 
   private void loop() throws ThemisException {
 
-    long targetfps = 60;
+    long targetfps = getConfiguration().get(ConfigurationEnum.engineTargetFps);
     long initialTime = System.currentTimeMillis();
-    float timeU = 1000.0f / targetfps; // 60 updates par seconde
+    float timeU = 1000.0f / targetfps;
     double deltaUpdate = 0;
     long updateTime = initialTime;
 
