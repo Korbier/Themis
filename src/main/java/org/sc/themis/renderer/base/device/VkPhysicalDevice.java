@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
-import org.jboss.logging.Logger;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkExtensionProperties;
 import org.lwjgl.vulkan.VkMemoryType;
@@ -26,10 +25,11 @@ import org.sc.themis.renderer.base.queue.VkQueueFamily;
 import org.sc.themis.renderer.lang.VulkanObject;
 import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
+import org.slf4j.LoggerFactory;
 
 public class VkPhysicalDevice extends VulkanObject {
 
-  private static final org.jboss.logging.Logger LOG = Logger.getLogger(VkPhysicalDevice.class);
+  private static final org.slf4j.Logger logger = LoggerFactory.getLogger(VkPhysicalDevice.class);
 
   private final org.lwjgl.vulkan.VkPhysicalDevice handle;
   private VkExtensionProperties.Buffer vkDeviceExtensions;
@@ -51,23 +51,23 @@ public class VkPhysicalDevice extends VulkanObject {
     try (MemoryStack stack = MemoryStack.stackPush()) {
       this.vkDeviceExtensions = vkFetchDeviceExtensions(stack, this.handle);
       this.vkMemoryProperties = fetchMemoryProperties(this.handle);
-      this.vkPhysicalDeviceFeatures = fetchPhysicalDeviceFeatures(stack, this.handle);
-      this.vkPhysicalDeviceProperties = fetchPhysicalDeviceProperties(stack, this.handle);
+      this.vkPhysicalDeviceFeatures = fetchPhysicalDeviceFeatures(this.handle);
+      this.vkPhysicalDeviceProperties = fetchPhysicalDeviceProperties(this.handle);
       this.vkQueueFamilyProperties = fetchQueueFamilyProperties(stack, this.handle);
     }
 
     this.fetchQueueFamilies();
 
-    LOG.tracef("  Device name : %s", this.vkPhysicalDeviceProperties.deviceNameString());
-    LOG.tracef("  Extensions found : %s", this.vkDeviceExtensions.capacity());
-    LOG.tracef("  Queue families found : %s", this.vkQueueFamilyProperties.capacity());
+    logger.trace("  Device name : {}}", this.vkPhysicalDeviceProperties.deviceNameString());
+    logger.trace("  Extensions found : {}", this.vkDeviceExtensions.capacity());
+    logger.trace("  Queue families found : {}", this.vkQueueFamilyProperties.capacity());
 
-    if (LOG.isTraceEnabled()) {
+    if (logger.isTraceEnabled()) {
       showDevicesExtensions();
       showQueueFamilyProperties();
     }
 
-    LOG.trace("Physical device initialized");
+    logger.trace("Physical device initialized");
   }
 
   @Override
@@ -114,6 +114,7 @@ public class VkPhysicalDevice extends VulkanObject {
     if ((value & VK_SAMPLE_COUNT_2_BIT) != 0) return VK_SAMPLE_COUNT_2_BIT;
 
     return VK_SAMPLE_COUNT_1_BIT;
+
   }
 
   public boolean hasExtension(String extension) {
@@ -130,8 +131,7 @@ public class VkPhysicalDevice extends VulkanObject {
     return false;
   }
 
-  private VkExtensionProperties.Buffer vkFetchDeviceExtensions(
-      MemoryStack stack, org.lwjgl.vulkan.VkPhysicalDevice device) throws ThemisException {
+  private VkExtensionProperties.Buffer vkFetchDeviceExtensions(MemoryStack stack, org.lwjgl.vulkan.VkPhysicalDevice device) throws ThemisException {
 
     IntBuffer intBuffer = stack.mallocInt(1);
     vkPhysicalDevice().enumerateDeviceExtensionProperties(device, intBuffer, null);
@@ -144,29 +144,25 @@ public class VkPhysicalDevice extends VulkanObject {
     return propBuff;
   }
 
-  private VkPhysicalDeviceMemoryProperties fetchMemoryProperties(
-      org.lwjgl.vulkan.VkPhysicalDevice device) throws ThemisException {
+  private VkPhysicalDeviceMemoryProperties fetchMemoryProperties(org.lwjgl.vulkan.VkPhysicalDevice device) throws ThemisException {
     VkPhysicalDeviceMemoryProperties vkMemoryProperties = VkPhysicalDeviceMemoryProperties.calloc();
     vkPhysicalDevice().getPhysicalDeviceMemoryProperties(device, vkMemoryProperties);
     return vkMemoryProperties;
   }
 
-  private VkPhysicalDeviceFeatures fetchPhysicalDeviceFeatures(
-      MemoryStack stack, org.lwjgl.vulkan.VkPhysicalDevice device) throws ThemisException {
+  private VkPhysicalDeviceFeatures fetchPhysicalDeviceFeatures(org.lwjgl.vulkan.VkPhysicalDevice device) throws ThemisException {
     VkPhysicalDeviceFeatures vkFeatures = VkPhysicalDeviceFeatures.calloc();
     vkPhysicalDevice().getPhysicalDeviceFeatures(device, vkFeatures);
     return vkFeatures;
   }
 
-  private VkPhysicalDeviceProperties fetchPhysicalDeviceProperties(
-      MemoryStack stack, org.lwjgl.vulkan.VkPhysicalDevice device) throws ThemisException {
+  private VkPhysicalDeviceProperties fetchPhysicalDeviceProperties(org.lwjgl.vulkan.VkPhysicalDevice device) throws ThemisException {
     VkPhysicalDeviceProperties vkProperties = VkPhysicalDeviceProperties.calloc();
     vkPhysicalDevice().getPhysicalDeviceProperties(device, vkProperties);
     return vkProperties;
   }
 
-  private VkQueueFamilyProperties.Buffer fetchQueueFamilyProperties(
-      MemoryStack stack, org.lwjgl.vulkan.VkPhysicalDevice device) throws ThemisException {
+  private VkQueueFamilyProperties.Buffer fetchQueueFamilyProperties(MemoryStack stack, org.lwjgl.vulkan.VkPhysicalDevice device) throws ThemisException {
 
     IntBuffer intBuffer = stack.mallocInt(1);
     vkPhysicalDevice().getPhysicalDeviceQueueFamilyProperties(device, intBuffer, null);
@@ -188,13 +184,15 @@ public class VkPhysicalDevice extends VulkanObject {
       VkQueueFamilyProperties familyProps = this.vkQueueFamilyProperties.get(i);
       this.queueFamilies.add(new VkQueueFamily(i, familyProps));
     }
+
   }
 
   private void showDevicesExtensions() {
+
     for (int i = 0; i < this.vkDeviceExtensions.capacity(); i++) {
-      LOG.tracef(
-          "Device extension found : %s ", this.vkDeviceExtensions.get(i).extensionNameString());
+      logger.trace("Device extension found : {}", this.vkDeviceExtensions.get(i).extensionNameString());
     }
+
   }
 
   public int memoryTypeFromProperties(int typeBits, int reqsMask) {
@@ -216,14 +214,17 @@ public class VkPhysicalDevice extends VulkanObject {
     }
 
     return result;
+
   }
 
   private void showQueueFamilyProperties() {
+
     for (int i = 0; i < this.vkQueueFamilyProperties.capacity(); i++) {
-      LOG.tracef(
-          "Queue family found : count = %d / flag = %d ",
+      logger.trace(
+          "Queue family found : count = {} / flag = {} ",
           this.vkQueueFamilyProperties.get(i).queueCount(),
           this.vkQueueFamilyProperties.get(i).queueFlags());
     }
+
   }
 }

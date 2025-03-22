@@ -18,4 +18,5 @@ public abstract class TObject {
   public abstract void setup() throws ThemisException;
 
   public abstract void cleanup() throws ThemisException;
+
 }

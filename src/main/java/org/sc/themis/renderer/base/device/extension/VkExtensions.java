@@ -6,16 +6,16 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.jboss.logging.Logger;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkExtensionProperties;
 import org.sc.themis.renderer.lang.VulkanObject;
 import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
+import org.slf4j.LoggerFactory;
 
 public class VkExtensions extends VulkanObject {
 
-  private static final org.jboss.logging.Logger LOG = Logger.getLogger(VkExtensions.class);
+  private static final org.slf4j.Logger logger = LoggerFactory.getLogger(VkExtensions.class);
 
   private final Set<VkExtension> extensions = new HashSet<>();
 
@@ -25,15 +25,15 @@ public class VkExtensions extends VulkanObject {
 
   @Override
   public void setup() throws ThemisException {
-
     try (MemoryStack stack = MemoryStack.stackPush()) {
+
       this.extensions.addAll(fetchExtensions(stack));
 
-      LOG.tracef("Extensions setup. Found %d layers.", size());
-
-      if (LOG.isTraceEnabled()) {
+      if (logger.isTraceEnabled()) {
+        logger.trace("Extensions setup. Found {} layers.", size());
         showExtensions();
       }
+
     }
   }
 
@@ -110,7 +110,7 @@ public class VkExtensions extends VulkanObject {
 
   private void showExtensions() {
     for (VkExtension extension : this.extensions) {
-      LOG.tracef("Extension found : %s", extension.getName());
+      logger.trace("Extension found : {}", extension.getName());
     }
   }
 }

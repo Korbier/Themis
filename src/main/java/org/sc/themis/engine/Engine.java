@@ -11,11 +11,12 @@ import org.sc.themis.shared.assertion.Assertions;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.tobject.TObject;
 import org.sc.themis.window.Window;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Engine extends TObject {
 
-  private static final org.jboss.logging.Logger LOG =
-      org.jboss.logging.Logger.getLogger(Engine.class);
+  private static final Logger logger = LoggerFactory.getLogger(Engine.class);
 
   private final Window window;
   private final Input input;
@@ -38,14 +39,14 @@ public class Engine extends TObject {
   @Override
   public void setup() throws ThemisException {
 
-    LOG.trace("Engine initialisation ... ");
+    logger.trace("Engine initialisation ... ");
 
     this.window.setup();
     this.input.setup();
     this.renderer.setup();
     this.scene.setup();
 
-    LOG.trace("Engine initialized");
+    logger.trace("Engine initialized");
   }
 
   @Override
@@ -142,4 +143,5 @@ public class Engine extends TObject {
   private void render(long tpf) throws ThemisException {
     this.renderer.render(this.scene, tpf);
   }
+
 }
