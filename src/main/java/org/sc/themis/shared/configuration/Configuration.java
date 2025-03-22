@@ -1,7 +1,6 @@
 package org.sc.themis.shared.configuration;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -19,14 +18,11 @@ public class Configuration {
     load(filename);
   }
 
-
   public Configuration load(String filename) {
 
     try (InputStream stream = new FileInputStream(filename) ){
       this.properties = new java.util.Properties();
       this.properties.load( stream );
-    } catch (FileNotFoundException e) {
-      throw new RuntimeException(e);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -35,37 +31,16 @@ public class Configuration {
 
   }
 
-  public String get(ConfigurationEnum property, String defaultValue ) {
-    return this.properties.getProperty( property.key(), defaultValue );
-  }
-
-  public int get(ConfigurationEnum property, int defaultValue ) {
-
+  public <T> T get(ConfigurationKey<T> property, T defaultValue ) {
     if ( this.properties.containsKey( property.key() ) ) {
-      return Integer.parseInt( this.properties.getProperty(property.key() ) );
+      return property.parse(this.properties.getProperty(property.key()));
+    } else {
+      return defaultValue;
     }
-
-    return defaultValue;
-
   }
 
-  public float get(ConfigurationEnum property, float defaultValue ) {
-
-    if ( this.properties.containsKey( property.key() ) ) {
-      return Float.parseFloat( this.properties.getProperty(property.key() ) );
-    }
-
-    return defaultValue;
-
+  public <T> T get(ConfigurationKey<T> property ) {
+    return get(property, property.defaultValue());
   }
 
-  public boolean get(ConfigurationEnum property, boolean defaultValue ) {
-
-    if ( this.properties.containsKey( property.key() ) ) {
-      return Boolean.parseBoolean( this.properties.getProperty(property.key() ) );
-    }
-
-    return defaultValue;
-
-  }
 }

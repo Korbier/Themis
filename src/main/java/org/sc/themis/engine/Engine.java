@@ -39,7 +39,7 @@ public class Engine extends TObject {
   @Override
   public void setup() throws ThemisException {
 
-    logger.trace("Engine initialisation ... ");
+    logger.info("Engine initialisation ... ");
 
     this.window.setup();
     this.input.setup();
