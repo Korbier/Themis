@@ -8,14 +8,13 @@ import org.sc.themis.renderer.base.resource.image.VkImage;
 import org.sc.themis.renderer.base.resource.image.VkImageDescriptor;
 import org.sc.themis.renderer.base.resource.image.VkImageView;
 import org.sc.themis.renderer.base.resource.image.VkImageViewDescriptor;
-import org.sc.themis.shared.Configuration;
+import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.assertion.Assertions;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.resource.Image;
 import org.sc.themis.shared.utils.MathUtils;
 
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 
 import static org.lwjgl.vulkan.VK10.*;
 

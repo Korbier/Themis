@@ -1,17 +1,18 @@
 package org.sc.themis.renderer.base.presentation;
 
 import java.nio.LongBuffer;
-import org.jboss.logging.Logger;
 import org.lwjgl.system.MemoryStack;
 import org.sc.themis.renderer.base.device.VkInstance;
 import org.sc.themis.renderer.lang.VulkanObject;
-import org.sc.themis.shared.Configuration;
+import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
+import org.sc.themis.shared.utils.LogUtils;
 import org.sc.themis.window.Window;
+import org.slf4j.LoggerFactory;
 
 public class VkSurface extends VulkanObject {
 
-  private static final org.jboss.logging.Logger LOG = Logger.getLogger(VkSurface.class);
+  private static final org.slf4j.Logger logger = LoggerFactory.getLogger(VkSurface.class);
 
   private final VkInstance instance;
   private final Window window;
@@ -27,7 +28,7 @@ public class VkSurface extends VulkanObject {
   @Override
   public void setup() throws ThemisException {
     setupWindowSurface();
-    LOG.trace("Surface initialized");
+    logger.trace("Surface initialised ({})", this);
   }
 
   @Override
@@ -39,6 +40,11 @@ public class VkSurface extends VulkanObject {
     return this.handle;
   }
 
+  @Override
+  public String toString() {
+    return getClass().getSimpleName() + "{handle=" + LogUtils.toHexString(getHandle()) + "}";
+  }
+
   private void setupWindowSurface() throws ThemisException {
     try (MemoryStack stack = MemoryStack.stackPush()) {
       LongBuffer pSurface = stack.mallocLong(1);
@@ -46,4 +52,5 @@ public class VkSurface extends VulkanObject {
       this.handle = pSurface.get(0);
     }
   }
+
 }

@@ -2,14 +2,14 @@ package org.sc.themis.shared.utils;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.slf4j.Logger;
+
 import org.slf4j.LoggerFactory;
 
 public class Timer {
 
-  private static final Logger logger = LoggerFactory.getLogger(Timer.class);
+  private static final org.slf4j.Logger logger = LoggerFactory.getLogger(Timer.class);
 
-  private List<Long> measures = new ArrayList<>();
+  private final List<Long> measures = new ArrayList<>();
   private long measure = 0;
 
   private String name;
@@ -36,12 +36,11 @@ public class Timer {
     this.currentDisplay = System.currentTimeMillis();
 
     if (this.lastDisplay > 1000) {
-      logger.info(
-          "{} > Average rendering time in ms : {}",
-          this.name,
-          this.measures.stream().mapToLong(l -> l).average().orElse(0));
+      logger.info("{} > Average rendering time in ms : {}", this.name, this.measures.stream().mapToLong(l -> l).average().orElse(0));
       this.measures.clear();
       this.lastDisplay = 0;
     }
+
   }
+
 }

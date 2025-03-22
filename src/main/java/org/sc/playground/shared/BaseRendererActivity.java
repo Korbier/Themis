@@ -29,7 +29,7 @@ import org.sc.themis.renderer.base.renderpass.VkRenderPassLayout;
 import org.sc.themis.renderer.base.renderpass.VkSubpass;
 import org.sc.themis.renderer.base.sync.VkFence;
 import org.sc.themis.scene.Scene;
-import org.sc.themis.shared.Configuration;
+import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 
 public abstract class BaseRendererActivity extends RendererActivity {

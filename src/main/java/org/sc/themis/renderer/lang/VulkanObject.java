@@ -1,6 +1,6 @@
 package org.sc.themis.renderer.lang;
 
-import org.sc.themis.shared.Configuration;
+import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.tobject.TObject;
 
 public abstract class VulkanObject extends TObject {

@@ -4,13 +4,13 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
+
 import org.lwjgl.util.shaderc.Shaderc;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class VkShaderSourceCompiler {
 
-  private static final Logger logger = LoggerFactory.getLogger(VkShaderSourceCompiler.class);
+  private static final org.slf4j.Logger logger = LoggerFactory.getLogger(VkShaderSourceCompiler.class);
 
   public static void compileShaderIfChanged(String glsShaderFile, int shaderType) {
     compileShaderIfChanged(glsShaderFile, glsShaderFile + ".spv", shaderType);
@@ -39,10 +39,7 @@ public class VkShaderSourceCompiler {
         Files.write(spvFile.toPath(), compiledShader);
 
       } else {
-        logger.debug(
-            "Shader {} already compiled. Loading compiled version: {}",
-            glslFile.getPath(),
-            spvFile.getPath());
+        logger.debug("Shader {} already compiled. Loading compiled version: {}", glslFile.getPath(), spvFile.getPath());
       }
 
     } catch (IOException excp) {
@@ -60,14 +57,10 @@ public class VkShaderSourceCompiler {
       compiler = Shaderc.shaderc_compiler_initialize();
       options = Shaderc.shaderc_compile_options_initialize();
 
-      long result =
-          Shaderc.shaderc_compile_into_spv(
-              compiler, shaderCode, shaderType, "shader.glsl", "main", options);
+      long result = Shaderc.shaderc_compile_into_spv(compiler, shaderCode, shaderType, "shader.glsl", "main", options);
 
-      if (Shaderc.shaderc_result_get_compilation_status(result)
-          != Shaderc.shaderc_compilation_status_success) {
-        throw new RuntimeException(
-            "Shader compilation failed: " + Shaderc.shaderc_result_get_error_message(result));
+      if (Shaderc.shaderc_result_get_compilation_status(result) != Shaderc.shaderc_compilation_status_success) {
+        throw new RuntimeException("Shader compilation failed: " + Shaderc.shaderc_result_get_error_message(result));
       }
 
       ByteBuffer buffer = Shaderc.shaderc_result_get_bytes(result);

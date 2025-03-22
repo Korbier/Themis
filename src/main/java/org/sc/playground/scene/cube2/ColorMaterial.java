@@ -16,7 +16,7 @@ import org.sc.themis.renderer.base.resource.buffer.VkBufferDescriptor;
 import org.sc.themis.renderer.material.Material;
 import org.sc.themis.renderer.material.MaterialProperty;
 import org.sc.themis.scene.descriptorset.SceneDescriptorSet;
-import org.sc.themis.shared.Configuration;
+import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.utils.MemorySizeUtils;
 
 public class ColorMaterial extends Material {

@@ -4,18 +4,18 @@ import static org.lwjgl.vulkan.VK10.VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_
 import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 
 import java.nio.LongBuffer;
-import org.jboss.logging.Logger;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkCommandPoolCreateInfo;
 import org.sc.themis.renderer.base.device.VkDevice;
 import org.sc.themis.renderer.base.queue.VkQueue;
 import org.sc.themis.renderer.lang.VulkanObject;
-import org.sc.themis.shared.Configuration;
+import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
+import org.slf4j.LoggerFactory;
 
 public class VkCommandPool extends VulkanObject {
 
-  private static final org.jboss.logging.Logger LOG = Logger.getLogger(VkCommandPool.class);
+  private static final org.slf4j.Logger logger = LoggerFactory.getLogger(VkCommandPool.class);
 
   private final VkDevice device;
   private final VkQueue queue;
@@ -29,10 +29,12 @@ public class VkCommandPool extends VulkanObject {
 
   @Override
   public void setup() throws ThemisException {
+
     try (MemoryStack stack = MemoryStack.stackPush()) {
       this.handle = this.vkCreateCommandPool(stack);
+      logger.trace("CommandPool initialized.");
     }
-    LOG.trace("CommandPool initialized.");
+
   }
 
   @Override
@@ -55,8 +57,7 @@ public class VkCommandPool extends VulkanObject {
 
   private long vkCreateCommandPool(MemoryStack stack) throws ThemisException {
 
-    VkCommandPoolCreateInfo cmdPoolInfo =
-        VkCommandPoolCreateInfo.calloc(stack)
+    VkCommandPoolCreateInfo cmdPoolInfo = VkCommandPoolCreateInfo.calloc(stack)
             .sType(VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO)
             .flags(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT)
             .queueFamilyIndex(this.queue.getQueueFamilyIndex());
@@ -66,6 +67,7 @@ public class VkCommandPool extends VulkanObject {
     vkCommand().createCommandPool(this.device.getHandle(), cmdPoolInfo, lp);
 
     return lp.get(0);
+
   }
 
   private void vkDestroyCommandPool() throws ThemisException {

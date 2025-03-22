@@ -15,7 +15,7 @@ import org.sc.themis.renderer.base.pipeline.VkShaderProgramStage;
 import org.sc.themis.renderer.base.pipeline.VkShaderSourceCompiler;
 import org.sc.themis.renderer.base.pipeline.VkVertexInputState;
 import org.sc.themis.renderer.base.renderpass.VkRenderPass;
-import org.sc.themis.shared.Configuration;
+import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.tobject.TObject;
 import org.sc.viewer.renderactivity.ViewerRendererActivity;

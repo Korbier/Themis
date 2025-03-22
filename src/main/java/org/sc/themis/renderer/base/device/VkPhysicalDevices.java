@@ -6,17 +6,17 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
+
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.sc.themis.renderer.lang.VulkanObject;
-import org.sc.themis.shared.Configuration;
+import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class VkPhysicalDevices extends VulkanObject {
 
-  private static final Logger logger = LoggerFactory.getLogger(VkPhysicalDevices.class);
+  private static final org.slf4j.Logger logger = LoggerFactory.getLogger(VkPhysicalDevices.class);
 
   private final Set<Long> physicalDevices = new HashSet<>();
   private final VkInstance instance;
@@ -51,9 +51,11 @@ public class VkPhysicalDevices extends VulkanObject {
       }
 
       device.cleanup();
+
     }
 
     return null;
+
   }
 
   public Set<Long> getPhysicalDevices() {
@@ -77,7 +79,10 @@ public class VkPhysicalDevices extends VulkanObject {
       }
     }
 
+    logger.trace("{} physical devices found", this.physicalDevices.size());
+
     return physicalDevices;
+
   }
 
   private PointerBuffer vkFetchPhysicalDevices(MemoryStack stack) throws ThemisException {

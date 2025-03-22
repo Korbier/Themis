@@ -1,25 +1,24 @@
 package org.sc.playground;
 
-import io.quarkus.runtime.QuarkusApplication;
-import io.quarkus.runtime.annotations.QuarkusMain;
-import jakarta.inject.Inject;
 import org.sc.themis.engine.Engine;
-import org.sc.themis.shared.Configuration;
+import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@QuarkusMain
-public class Bootstrap implements QuarkusApplication {
+public class Bootstrap {
 
-  private static final org.jboss.logging.Logger LOG =
-      org.jboss.logging.Logger.getLogger(Bootstrap.class);
+  private static final Logger logger = LoggerFactory.getLogger(Bootstrap.class);
 
-  @Inject Configuration configuration;
+  Configuration configuration;
 
-  @Override
   public int run(String... args) throws ThemisException {
 
+    Configuration configuration = new Configuration();
+
     Playgrounds playground = selectPlayground(args);
-    LOG.infof("Running %s playground ...", playground);
+
+    logger.info("Running {} playground ...", playground);
 
     Engine engine =
         new Engine(this.configuration, playground.rendererActivityFactory.apply(configuration));

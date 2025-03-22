@@ -1,14 +1,15 @@
 package org.sc.themis.scene.base.geometry;
 
-import org.jboss.logging.Logger;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Instance {
 
-  private static final org.jboss.logging.Logger LOG = Logger.getLogger(Instance.class);
+  private static final Logger logger = LoggerFactory.getLogger(Instance.class);
 
   private static final Vector4f identifierReference = new Vector4f(0, 0, 0, 1);
 
@@ -19,8 +20,8 @@ public class Instance {
     identifier[1] = identifierReference.y;
     identifier[2] = identifierReference.z;
     identifier[3] = identifierReference.w;
-    LOG.tracef(
-        "Provinding new instance identifier : [%f %f %f %f]",
+    logger.trace(
+        "Provinding new instance identifier : [{} {} {} {}]",
         identifier[0], identifier[1], identifier[2], identifier[3]);
     return identifier;
   }

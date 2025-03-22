@@ -3,25 +3,25 @@ package org.sc.themis.renderer.base.framebuffer;
 import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 
 import java.nio.LongBuffer;
-import org.jboss.logging.Logger;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkFramebufferCreateInfo;
 import org.sc.themis.renderer.base.device.VkDevice;
 import org.sc.themis.renderer.lang.VulkanObject;
-import org.sc.themis.shared.Configuration;
+import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
+import org.sc.themis.shared.utils.LogUtils;
+import org.slf4j.LoggerFactory;
 
 public class VkFrameBuffer extends VulkanObject {
 
-  private static final org.jboss.logging.Logger LOG = Logger.getLogger(VkFrameBuffer.class);
+  private static final org.slf4j.Logger logger = LoggerFactory.getLogger(VkFrameBuffer.class);
 
   private final VkDevice device;
   private final VkFrameBufferDescriptor descriptor;
 
   private long handle;
 
-  public VkFrameBuffer(
-      Configuration configuration, VkDevice device, VkFrameBufferDescriptor descriptor) {
+  public VkFrameBuffer(Configuration configuration, VkDevice device, VkFrameBufferDescriptor descriptor) {
     super(configuration);
     this.device = device;
     this.descriptor = descriptor;
@@ -32,12 +32,12 @@ public class VkFrameBuffer extends VulkanObject {
 
     try (MemoryStack stack = MemoryStack.stackPush()) {
       LongBuffer imageViewBuffer = createImageViewBuffer(stack);
-      VkFramebufferCreateInfo frameBufferCreateInfo =
-          createFramebufferCreateInfo(stack, imageViewBuffer, descriptor.layers());
+      VkFramebufferCreateInfo frameBufferCreateInfo = createFramebufferCreateInfo(stack, imageViewBuffer, descriptor.layers());
       this.handle = vkCreateFrameBuffer(stack, frameBufferCreateInfo);
     }
 
-    LOG.trace("VkFrameBuffer initialized");
+    logger.trace("VkFrameBuffer initialized(handle={})", LogUtils.toHexString(this.handle));
+
   }
 
   @Override
@@ -73,8 +73,7 @@ public class VkFrameBuffer extends VulkanObject {
     return attachmentsBuff;
   }
 
-  private VkFramebufferCreateInfo createFramebufferCreateInfo(
-      MemoryStack stack, LongBuffer imageViewBuffer, int layers) {
+  private VkFramebufferCreateInfo createFramebufferCreateInfo(MemoryStack stack, LongBuffer imageViewBuffer, int layers) {
     return VkFramebufferCreateInfo.calloc(stack)
         .sType(VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO)
         .pAttachments(imageViewBuffer)

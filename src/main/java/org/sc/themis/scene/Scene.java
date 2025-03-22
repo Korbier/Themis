@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.jboss.logging.Logger;
 import org.joml.Vector4f;
 import org.sc.themis.renderer.material.MaterialProperties;
 import org.sc.themis.scene.base.Camera;
@@ -17,14 +16,16 @@ import org.sc.themis.scene.base.geometry.Model;
 import org.sc.themis.scene.light.DirectionalLight;
 import org.sc.themis.scene.light.PointLight;
 import org.sc.themis.scene.light.SpotLight;
-import org.sc.themis.shared.Configuration;
+import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.tobject.TObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** Scene. */
 public class Scene extends TObject {
 
-  private static final Logger LOG = Logger.getLogger(Scene.class);
+  private static final Logger logger = LoggerFactory.getLogger(Scene.class);
 
   // Camera and projection
   private final Projection projection;
@@ -55,7 +56,7 @@ public class Scene extends TObject {
 
   @Override
   public void setup() {
-    LOG.trace("Scene initialized");
+    logger.trace("Scene initialized");
   }
 
   @Override

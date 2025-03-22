@@ -10,7 +10,7 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkShaderModuleCreateInfo;
 import org.sc.themis.renderer.base.device.VkDevice;
 import org.sc.themis.renderer.lang.VulkanObject;
-import org.sc.themis.shared.Configuration;
+import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 
 public class VkShaderProgram extends VulkanObject {

@@ -62,7 +62,7 @@ import org.sc.themis.scene.base.geometry.Model;
 import org.sc.themis.scene.descriptorset.FramebufferAttachmentDescriptorSet;
 import org.sc.themis.scene.descriptorset.MousePickingDescriptorSet;
 import org.sc.themis.scene.descriptorset.SceneDescriptorSet;
-import org.sc.themis.shared.Configuration;
+import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.utils.MemorySizeUtils;
 

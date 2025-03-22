@@ -29,7 +29,6 @@ import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CR
 
 import java.nio.LongBuffer;
 import java.util.Map;
-import org.jboss.logging.Logger;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkGraphicsPipelineCreateInfo;
 import org.lwjgl.vulkan.VkPipelineColorBlendAttachmentState;
@@ -43,12 +42,13 @@ import org.lwjgl.vulkan.VkPipelineShaderStageCreateInfo;
 import org.lwjgl.vulkan.VkPipelineViewportStateCreateInfo;
 import org.sc.themis.renderer.base.device.VkDevice;
 import org.sc.themis.renderer.lang.VulkanObject;
-import org.sc.themis.shared.Configuration;
+import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
+import org.slf4j.LoggerFactory;
 
 public class VkPipeline extends VulkanObject {
 
-  private static final org.jboss.logging.Logger LOG = Logger.getLogger(VkPipeline.class);
+  private static final org.slf4j.Logger logger = LoggerFactory.getLogger(VkPipeline.class);
 
   private final VkDevice device;
   private final VkPipelineDescriptor descriptor;
@@ -64,7 +64,8 @@ public class VkPipeline extends VulkanObject {
       VkPipelineDescriptor descriptor,
       VkShaderProgram shaderProgram,
       VkPipelineLayout layout,
-      VkVertexInputState vertexInputState) {
+      VkVertexInputState vertexInputState
+  ) {
     super(configuration);
     this.device = device;
     this.descriptor = descriptor;
@@ -78,24 +79,16 @@ public class VkPipeline extends VulkanObject {
 
     try (MemoryStack stack = MemoryStack.stackPush()) {
 
-      VkPipelineShaderStageCreateInfo.Buffer shaderStageCreateInfo =
-          createShaderStageCreateInfo(stack);
-      VkPipelineInputAssemblyStateCreateInfo inputAssemblyStageCreateInfo =
-          createInputAssemblyStateCreateInfo(stack);
-      VkPipelineViewportStateCreateInfo viewportStateCreateInfo =
-          createViewportStateCreateInfo(stack);
-      VkPipelineRasterizationStateCreateInfo rasterizationStateCreateInfo =
-          createRasterizationStateCreateInfo(stack);
-      VkPipelineMultisampleStateCreateInfo multisamplingStateCreateInfo =
-          createMultisamplingStateCreateInfo(stack);
-      VkPipelineColorBlendStateCreateInfo colorBlendStateCreateInfo =
-          createColorBlendStateCreateInfo(stack);
-      VkPipelineDepthStencilStateCreateInfo depthStencilStateCreateInfo =
-          createDepthStencilStateCreateInfo(stack);
+      VkPipelineShaderStageCreateInfo.Buffer shaderStageCreateInfo = createShaderStageCreateInfo(stack);
+      VkPipelineInputAssemblyStateCreateInfo inputAssemblyStageCreateInfo = createInputAssemblyStateCreateInfo(stack);
+      VkPipelineViewportStateCreateInfo viewportStateCreateInfo = createViewportStateCreateInfo(stack);
+      VkPipelineRasterizationStateCreateInfo rasterizationStateCreateInfo = createRasterizationStateCreateInfo(stack);
+      VkPipelineMultisampleStateCreateInfo multisamplingStateCreateInfo = createMultisamplingStateCreateInfo(stack);
+      VkPipelineColorBlendStateCreateInfo colorBlendStateCreateInfo = createColorBlendStateCreateInfo(stack);
+      VkPipelineDepthStencilStateCreateInfo depthStencilStateCreateInfo = createDepthStencilStateCreateInfo(stack);
       VkPipelineDynamicStateCreateInfo dynamicStateCreateInfo = createDynamicStateCreateInfo(stack);
 
-      VkGraphicsPipelineCreateInfo.Buffer graphicsPipelineCreateInfo =
-          createGraphicPipelineCreateInfo(
+      VkGraphicsPipelineCreateInfo.Buffer graphicsPipelineCreateInfo = createGraphicPipelineCreateInfo(
               stack,
               shaderStageCreateInfo,
               inputAssemblyStageCreateInfo,
@@ -104,11 +97,13 @@ public class VkPipeline extends VulkanObject {
               multisamplingStateCreateInfo,
               colorBlendStateCreateInfo,
               depthStencilStateCreateInfo,
-              dynamicStateCreateInfo);
+              dynamicStateCreateInfo
+      );
 
       this.handle = vkCreateGraphicPipeline(stack, graphicsPipelineCreateInfo);
 
-      LOG.trace("Pipeline initialized");
+      logger.trace("Pipeline initialised ({})", this);
+
     }
   }
 
@@ -272,13 +267,9 @@ public class VkPipeline extends VulkanObject {
         .pAttachments(blendAttachmentState);
   }
 
-  private long vkCreateGraphicPipeline(
-      MemoryStack stack, VkGraphicsPipelineCreateInfo.Buffer graphicsPipelineCreateInfo)
-      throws ThemisException {
+  private long vkCreateGraphicPipeline(MemoryStack stack, VkGraphicsPipelineCreateInfo.Buffer graphicsPipelineCreateInfo) throws ThemisException {
     LongBuffer lp = stack.mallocLong(1);
-    vkPipeline()
-        .createGraphicsPipelines(
-            this.device.getHandle(), VK_NULL_HANDLE, graphicsPipelineCreateInfo, lp);
+    vkPipeline().createGraphicsPipelines(this.device.getHandle(), VK_NULL_HANDLE, graphicsPipelineCreateInfo, lp);
     return lp.get(0);
   }
 }

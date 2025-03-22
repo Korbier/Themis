@@ -1,6 +1,5 @@
 package org.sc.themis.renderer;
 
-import org.jboss.logging.Logger;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkExtent2D;
 import org.sc.themis.input.Input;
@@ -22,21 +21,22 @@ import org.sc.themis.renderer.base.resource.image.VkImageView;
 import org.sc.themis.renderer.base.sync.VkSemaphore;
 import org.sc.themis.renderer.resource.VkStagingResourceAllocator;
 import org.sc.themis.scene.Scene;
-import org.sc.themis.shared.Configuration;
+import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.tobject.TObject;
 import org.sc.themis.shared.utils.Timer;
 import org.sc.themis.window.Window;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Renderer extends TObject {
 
-  private static final Logger LOG = Logger.getLogger(Renderer.class);
+  private static final Logger logger = LoggerFactory.getLogger(Renderer.class);
 
   protected static final int DEFAULT_QUEUE_INDEX = 0;
 
   /*** Framed object ***/
   private static final FrameKey<VkSemaphore> FK_ACQUIRE_SEMAPHORE = FrameKey.of(VkSemaphore.class);
-
   private static final FrameKey<VkSemaphore> FK_PRESENT_SEMAPHORE = FrameKey.of(VkSemaphore.class);
 
   private final Window window;
@@ -77,32 +77,33 @@ public class Renderer extends TObject {
   @Override
   public void setup() throws ThemisException {
 
-    /** Core setups * */
+    //Core setups
     this.instance.setup();
     this.setupPhysicalDevice();
     this.setupDevice();
     this.setupMemoryAllocator();
 
-    /** Presentation setup * */
+    //Presentation setup
     this.setupSurface();
     this.setupQueues();
     this.setupCommandPool();
     this.setupSwapChain();
 
-    /** Others * */
+    //Others
     this.setupResourceAllocator();
 
-    /** Frame dependent setups * */
+    //Frame dependent setups
     this.framesInFlight = new Frames(getFrameCount(), true, true);
     this.setupActivity();
     this.setupSemaphores();
 
-    LOG.trace("Renderer initialized");
+    logger.info("\uD83C\uDFA8 Renderer initialized");
+    logger.debug("⚠️ Additional information : frames in flight={}", this.getFramesInFlight().getSize());
+
   }
 
   private void setupResourceAllocator() throws ThemisException {
-    this.resourceAllocator =
-        new VkStagingResourceAllocator(getConfiguration(), this.device, this.memoryAllocator);
+    this.resourceAllocator = new VkStagingResourceAllocator(getConfiguration(), this.device, this.memoryAllocator);
     this.resourceAllocator.setup();
   }
 

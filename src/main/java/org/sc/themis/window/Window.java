@@ -18,22 +18,24 @@ import static org.lwjgl.glfw.GLFW.glfwWindowShouldClose;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.jboss.logging.Logger;
 import org.joml.Vector2i;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.glfw.GLFWVulkan;
 import org.lwjgl.system.MemoryUtil;
-import org.sc.themis.shared.Configuration;
+import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.assertion.Assertions;
+import org.sc.themis.shared.configuration.ConfigurationEnum;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.tobject.TObject;
+import org.sc.themis.shared.utils.LogUtils;
 import org.sc.themis.window.exception.WindowGlfwInitException;
 import org.sc.themis.window.exception.WindowVideoModeNotSupportedException;
 import org.sc.themis.window.exception.WindowVukanNotSupportedException;
+import org.slf4j.LoggerFactory;
 
 public class Window extends TObject {
 
-  private static final Logger LOG = Logger.getLogger(Window.class);
+  private static final org.slf4j.Logger logger = LoggerFactory.getLogger(Window.class);
 
   private final Vector2i size = new Vector2i();
   private final Vector2i resolution = new Vector2i();
@@ -56,21 +58,33 @@ public class Window extends TObject {
     Assertions.notNull(vidMode, new WindowVideoModeNotSupportedException());
 
     setupAttributes(
-        vidMode, getConfiguration().window().width(), getConfiguration().window().height());
+        vidMode,
+        getConfiguration().get(ConfigurationEnum.windowWidth, 800),
+        getConfiguration().get(ConfigurationEnum.windowHeight, 600)
+    );
     setupWindow(
-        getConfiguration().application().name(),
-        getConfiguration().window().resizable(),
-        getConfiguration().window().maximized());
+        getConfiguration().get(ConfigurationEnum.applicationName, "no-name"),
+        getConfiguration().get(ConfigurationEnum.windowResizable, true),
+        getConfiguration().get(ConfigurationEnum.windowMaximized, false)
+    );
     setupCallback();
 
-    LOG.tracef(
-        "Window initialized (Size=%dx%d, Resolution=%dx%d)",
-        this.size.x, this.size.y, this.resolution.x, this.resolution.y);
+    //noinspection UnnecessaryUnicodeEscape
+    logger.info("\uD83D\uDCFA Window initialized");
+
+    //noinspection UnnecessaryUnicodeEscape
+    logger.debug("\u26A0\uFE0F Additional information : handle={}, size={}x{}, resolution={}x{}", this, this.size.x, this.size.y, this.resolution.x, this.resolution.y);
+
   }
 
   @Override
   public void cleanup() {
     glfwSetWindowShouldClose(this.getHandle(), true);
+  }
+
+  @Override
+  public String toString() {
+    return getClass().getSimpleName() + "{handle=" + LogUtils.toHexString(getHandle()) + "}";
   }
 
   private void setupAttributes(GLFWVidMode vidMode, int width, int height) {

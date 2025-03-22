@@ -11,7 +11,6 @@ import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 import java.util.Arrays;
 import java.util.List;
-import org.jboss.logging.Logger;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.vulkan.KHRSurface;
@@ -30,13 +29,16 @@ import org.sc.themis.renderer.base.resource.image.VkImageView;
 import org.sc.themis.renderer.base.resource.image.VkImageViewDescriptor;
 import org.sc.themis.renderer.base.sync.VkSemaphore;
 import org.sc.themis.renderer.lang.VulkanObject;
-import org.sc.themis.shared.Configuration;
+import org.sc.themis.shared.configuration.Configuration;
+import org.sc.themis.shared.configuration.ConfigurationEnum;
 import org.sc.themis.shared.exception.ThemisException;
+import org.sc.themis.shared.utils.LogUtils;
 import org.sc.themis.window.Window;
+import org.slf4j.LoggerFactory;
 
 public class VkSwapChain extends VulkanObject {
 
-  private static final org.jboss.logging.Logger LOG = Logger.getLogger(VkSwapChain.class);
+  private static final org.slf4j.Logger logger = LoggerFactory.getLogger(VkSwapChain.class);
 
   private final Window window;
   private final VkDevice device;
@@ -82,8 +84,13 @@ public class VkSwapChain extends VulkanObject {
 
       this.currentFrame = 0;
 
-      LOG.tracef("SwapChain initialized (views : %d).", this.imageViews.length);
+      logger.trace("SwapChain initialized ({}, views : {}).", this, this.imageViews.length);
     }
+  }
+
+  @Override
+  public String toString() {
+    return getClass().getSimpleName() + "{handle=" + LogUtils.toHexString(this.handle) + "}";
   }
 
   private void setupImageViews() throws ThemisException {
@@ -287,7 +294,7 @@ public class VkSwapChain extends VulkanObject {
             .compositeAlpha(KHRSurface.VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR)
             .clipped(true);
 
-    if (getConfiguration().renderer().vsyncEnabled()) {
+    if (getConfiguration().get(ConfigurationEnum.rendererVSyncEnabled, true)) {
       swapchainCreateInfo.presentMode(KHRSurface.VK_PRESENT_MODE_FIFO_KHR);
     } else {
       swapchainCreateInfo.presentMode(KHRSurface.VK_PRESENT_MODE_IMMEDIATE_KHR);
@@ -333,13 +340,7 @@ public class VkSwapChain extends VulkanObject {
     }
 
     VkSurfaceFormatKHR.Buffer surfaceFormats = VkSurfaceFormatKHR.calloc(numFormats, stack);
-
-    vkSurface()
-        .getPhysicalDeviceSurfaceFormatsKHR(
-            this.device.getHandle().getPhysicalDevice(),
-            this.surface.getHandle(),
-            ip,
-            surfaceFormats);
+    vkSurface().getPhysicalDeviceSurfaceFormatsKHR(this.device.getHandle().getPhysicalDevice(),this.surface.getHandle(),ip,surfaceFormats);
 
     return surfaceFormats;
   }
@@ -348,7 +349,7 @@ public class VkSwapChain extends VulkanObject {
 
     int maxImages = capabilities.maxImageCount();
     int minImages = capabilities.minImageCount();
-    int requestedImages = getConfiguration().renderer().imageCount();
+    int requestedImages = getConfiguration().get(ConfigurationEnum.rendererImageCount, 3);
 
     int result = minImages;
 
@@ -359,16 +360,16 @@ public class VkSwapChain extends VulkanObject {
     result = Math.max(result, minImages);
 
     return result;
+
   }
 
-  private VkSurfaceCapabilitiesKHR vkRetrieveSurfaceCapabilities(MemoryStack stack)
-      throws ThemisException {
+  private VkSurfaceCapabilitiesKHR vkRetrieveSurfaceCapabilities(MemoryStack stack) throws ThemisException {
     VkSurfaceCapabilitiesKHR surfCapabilities = VkSurfaceCapabilitiesKHR.calloc(stack);
-    vkSurface()
-        .getPhysicalDeviceSurfaceCapabilities(
+    vkSurface().getPhysicalDeviceSurfaceCapabilities(
             this.device.getPhysicalDevice().getHandle(),
             this.surface.getHandle(),
-            surfCapabilities);
+            surfCapabilities
+    );
     return surfCapabilities;
   }
 }

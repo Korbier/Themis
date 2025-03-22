@@ -7,13 +7,11 @@ import org.sc.themis.shared.exception.ThemisException;
 
 public interface Gamestate {
 
-  void setup(Renderer renderer, Scene scene)
-      throws ThemisException; // Initialisation du gamestate => ajout des elements a la scene
+  // Initialisation du gamestate => ajout des elements a la scene
+  void setup(Renderer renderer, Scene scene) throws ThemisException;
 
-  void cleanup(Renderer renderer, Scene scene)
-      throws ThemisException; // Nettoyage du gamestate => Suppression des elements de la
-
-  // scene
+  // Nettoyage du gamestate => Suppression des elements de la scene
+  void cleanup(Renderer renderer, Scene scene) throws ThemisException;
 
   default void input(Scene scene, Input input, long tpf) {
     scene.getControllers().forEach(ctrl -> ctrl.input(input, tpf));

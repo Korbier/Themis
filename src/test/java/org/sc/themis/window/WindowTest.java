@@ -1,21 +1,13 @@
 package org.sc.themis.window;
 
-import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.TestProfile;
-import jakarta.inject.Inject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.sc.themis.Profiles;
-import org.sc.themis.shared.Configuration;
+import org.sc.TestWithConfiguration;
 import org.sc.themis.shared.exception.ThemisException;
 
-@QuarkusTest
-@TestProfile(Profiles.TagWithUiTest.class)
-public class WindowTest {
-
-  @Inject Configuration configuration;
+public class WindowTest extends TestWithConfiguration {
 
   @Test
   @DisplayName("Create window - nominal case")
@@ -23,7 +15,7 @@ public class WindowTest {
   void testCreateWindow_01() throws ThemisException {
 
     // Given
-    Window window = new Window(configuration);
+    Window window = new Window(getConfiguration());
 
     // When
     window.setup();

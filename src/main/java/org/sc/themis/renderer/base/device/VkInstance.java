@@ -16,7 +16,6 @@ import static org.lwjgl.vulkan.VK13.VK_API_VERSION_1_3;
 import java.nio.LongBuffer;
 import java.util.ArrayList;
 import java.util.List;
-import org.jboss.logging.Logger;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFWVulkan;
 import org.lwjgl.system.MemoryStack;
@@ -32,20 +31,24 @@ import org.sc.themis.renderer.base.device.layer.VkDefaultLayers;
 import org.sc.themis.renderer.base.device.layer.VkLayer;
 import org.sc.themis.renderer.base.device.layer.VkLayers;
 import org.sc.themis.renderer.lang.VulkanObject;
-import org.sc.themis.shared.Configuration;
+import org.sc.themis.shared.configuration.Configuration;
+import org.sc.themis.shared.configuration.ConfigurationEnum;
 import org.sc.themis.shared.exception.ThemisException;
+import org.sc.themis.shared.utils.LogUtils;
+import org.slf4j.LoggerFactory;
 
 public class VkInstance extends VulkanObject {
 
-  private static final org.jboss.logging.Logger LOG = Logger.getLogger(VkInstance.class);
+  private static final org.slf4j.Logger logger = LoggerFactory.getLogger(VkInstance.class);
 
   private static final int MESSAGE_SEVERITY_BITMASK =
       VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT
-          | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT;
+      | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT;
+
   private static final int MESSAGE_TYPE_BITMASK =
       VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT
-          | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT
-          | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+      | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT
+      | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
 
   private final VkLayers layers;
   private final VkExtensions extensions;
@@ -70,7 +73,7 @@ public class VkInstance extends VulkanObject {
     setupDebugMode();
     setupVkInstance();
     attachDebugMessengerToInstance();
-    LOG.trace("Instance initialized.");
+    logger.trace("Instance initialized (handle={}) [debug={}]", LogUtils.toHexString(this.handle.address()), this.vkDebugEnabled);
   }
 
   @Override
@@ -102,6 +105,7 @@ public class VkInstance extends VulkanObject {
       this.vkDebugMessenger.pfnUserCallback().free();
       this.vkDebugMessenger.free();
     }
+
   }
 
   public boolean isDebugEnabled() {
@@ -136,7 +140,7 @@ public class VkInstance extends VulkanObject {
   private void setupDebugMode() throws ThemisException {
     this.vkDebugEnabled = checkDebugMode();
     this.vkDebugMessenger = this.vkDebugEnabled ? createDebugMessenger() : null;
-    LOG.tracef("[VkInstance] Debug mode enabled : %b", this.vkDebugEnabled);
+    logger.trace("[VkInstance] Debug mode enabled : {}", this.vkDebugEnabled);
   }
 
   private void setupVkInstance() throws ThemisException {
@@ -148,8 +152,7 @@ public class VkInstance extends VulkanObject {
     }
   }
 
-  protected VkInstanceCreateInfo createInstanceCreateInfo(
-      MemoryStack stack, PointerBuffer extensions, PointerBuffer layers) throws ThemisException {
+  protected VkInstanceCreateInfo createInstanceCreateInfo(MemoryStack stack, PointerBuffer extensions, PointerBuffer layers) throws ThemisException {
 
     VkApplicationInfo applicationInfo = createApplicationInfo(stack);
 
@@ -159,19 +162,20 @@ public class VkInstance extends VulkanObject {
         .pApplicationInfo(applicationInfo)
         .ppEnabledLayerNames(layers)
         .ppEnabledExtensionNames(extensions);
+
   }
 
-  private VkApplicationInfo createApplicationInfo(MemoryStack stack) throws ThemisException {
+  private VkApplicationInfo createApplicationInfo(MemoryStack stack) {
     return VkApplicationInfo.calloc(stack)
         .sType(VK_STRUCTURE_TYPE_APPLICATION_INFO)
-        .pApplicationName(stack.UTF8(getConfiguration().application().name()))
-        .applicationVersion(getConfiguration().application().version())
-        .pEngineName(stack.UTF8(getConfiguration().engine().name()))
-        .engineVersion(getConfiguration().engine().version())
+        .pApplicationName(stack.UTF8(getConfiguration().get(ConfigurationEnum.applicationName, "no-name")))
+        .applicationVersion(getConfiguration().get(ConfigurationEnum.applicationVersion, 1))
+        .pEngineName(stack.UTF8(getConfiguration().get(ConfigurationEnum.engineName, "no-name")))
+        .engineVersion(getConfiguration().get(ConfigurationEnum.engineVersion, 1))
         .apiVersion(VK_API_VERSION_1_3);
   }
 
-  private PointerBuffer selectVkExtensions(MemoryStack stack) throws ThemisException {
+  private PointerBuffer selectVkExtensions(MemoryStack stack) {
 
     PointerBuffer extGlfw = this.fetchGlfwExtensions();
     VkExtension extDebug = this.fetchDebugExtensions();
@@ -189,14 +193,19 @@ public class VkInstance extends VulkanObject {
     extensions.flip();
 
     return extensions;
+
   }
 
   private PointerBuffer selectVkLayers(MemoryStack stack) {
+
     PointerBuffer requiredLayers = stack.mallocPointer(getValidationLayers().size());
+
     for (int i = 0; i < getValidationLayers().size(); i++) {
       requiredLayers.put(i, stack.ASCII(getValidationLayers().get(i).getName()));
     }
+
     return requiredLayers;
+
   }
 
   private PointerBuffer fetchGlfwExtensions() {
@@ -209,7 +218,7 @@ public class VkInstance extends VulkanObject {
 
   private boolean checkDebugMode() {
 
-    if (!getConfiguration().renderer().debug()) {
+    if (!getConfiguration().get(ConfigurationEnum.rendererDebug, false)) {
       return false;
     }
 
@@ -233,47 +242,52 @@ public class VkInstance extends VulkanObject {
     }
 
     return !getValidationLayers().isEmpty();
+
   }
 
   private VkDebugUtilsMessengerCreateInfoEXT createDebugMessenger() {
+
     return VkDebugUtilsMessengerCreateInfoEXT.calloc()
         .sType(VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT)
         .messageSeverity(MESSAGE_SEVERITY_BITMASK)
         .messageType(MESSAGE_TYPE_BITMASK)
         .pfnUserCallback(VkInstance::debugCallback);
+
   }
 
   private void attachDebugMessengerToInstance() throws ThemisException {
+
     if (this.isDebugEnabled()) {
+
       try (MemoryStack stack = MemoryStack.stackPush()) {
         LongBuffer buffer = stack.mallocLong(1);
         vkDebug().createDebugUtilsMessengerEXT(this.handle, this.vkDebugMessenger, buffer);
         this.debugMessengerHandler = buffer.get(0);
       }
+
     }
+
   }
 
-  private static int debugCallback(
-      int messageSeverity, int messageTypes, long pCallbackData, long pUserData) {
+  private static int debugCallback(int messageSeverity, int messageTypes, long pCallbackData, long pUserData) {
 
-    VkDebugUtilsMessengerCallbackDataEXT callbackData =
-        VkDebugUtilsMessengerCallbackDataEXT.create(pCallbackData);
+    VkDebugUtilsMessengerCallbackDataEXT callbackData = VkDebugUtilsMessengerCallbackDataEXT.create(pCallbackData);
 
     if ((messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT) != 0) {
-      LOG.infof("[Vulkan Debug] %s", callbackData.pMessageString());
+      logger.info("[Vulkan Debug] {}", callbackData.pMessageString());
     } else if ((messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) != 0) {
-      LOG.warnf("[Vulkan Debug] %s", callbackData.pMessageString());
+      logger.warn("[Vulkan Debug] {}", callbackData.pMessageString());
     } else if ((messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) != 0) {
-      LOG.errorf("[Vulkan Debug] %s", callbackData.pMessageString());
+      logger.error("[Vulkan Debug] {}", callbackData.pMessageString());
     } else {
-      LOG.debugf("[Vulkan Debug] %s", callbackData.pMessageString());
+      logger.debug("[Vulkan Debug] {}", callbackData.pMessageString());
     }
 
     return VK_FALSE;
+
   }
 
-  private org.lwjgl.vulkan.VkInstance vkCreateInstance(
-      MemoryStack stack, VkInstanceCreateInfo instanceCreateInfo) throws ThemisException {
+  private org.lwjgl.vulkan.VkInstance vkCreateInstance(MemoryStack stack, VkInstanceCreateInfo instanceCreateInfo) throws ThemisException {
     PointerBuffer pInstance = stack.mallocPointer(1);
     vkInstance().createInstance(instanceCreateInfo, pInstance);
     return new org.lwjgl.vulkan.VkInstance(pInstance.get(0), instanceCreateInfo);

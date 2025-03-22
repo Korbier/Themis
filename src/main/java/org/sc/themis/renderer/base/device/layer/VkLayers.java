@@ -6,12 +6,12 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.jboss.logging.Logger;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkLayerProperties;
 import org.sc.themis.renderer.lang.VulkanObject;
-import org.sc.themis.shared.Configuration;
+import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
+import org.slf4j.LoggerFactory;
 
 /**
  * Represents a collection of Vulkan layers available on the system.
@@ -24,7 +24,7 @@ import org.sc.themis.shared.exception.ThemisException;
  */
 public class VkLayers extends VulkanObject {
 
-  private static final org.jboss.logging.Logger LOG = Logger.getLogger(VkLayers.class);
+  private static final org.slf4j.Logger logger = LoggerFactory.getLogger(VkLayers.class);
 
   private final Set<VkLayer> layers = new HashSet<>();
 
@@ -38,11 +38,12 @@ public class VkLayers extends VulkanObject {
 
       this.layers.addAll(fetchLayers(stack));
 
-      LOG.debugf("Layers setup. Found %d layers.", size());
+      logger.debug("\uD83E\uDDF1 Vulkan layers fetched (found {} layers)", size());
 
-      if (LOG.isTraceEnabled()) {
+      if (logger.isTraceEnabled()) {
         showLayers();
       }
+
     }
   }
 
@@ -100,6 +101,7 @@ public class VkLayers extends VulkanObject {
     }
 
     return layers;
+
   }
 
   /**
@@ -124,7 +126,7 @@ public class VkLayers extends VulkanObject {
 
   private void showLayers() {
     for (VkLayer layer : layers) {
-      LOG.tracef("Layer found : %s", layer.getName());
+      logger.trace(". {}", layer.getName());
     }
   }
 }

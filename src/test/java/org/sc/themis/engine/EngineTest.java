@@ -1,27 +1,20 @@
 package org.sc.themis.engine;
 
-import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.TestProfile;
-import jakarta.inject.Inject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.sc.TestWithConfiguration;
 import org.sc.playground.Playgrounds;
 import org.sc.playground.noop.NoopRendererActivity;
-import org.sc.themis.Profiles;
 import org.sc.themis.engine.exception.EngineGamestateNotFoundException;
 import org.sc.themis.renderer.RendererActivity;
-import org.sc.themis.shared.Configuration;
+import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 
-@QuarkusTest
-@TestProfile(Profiles.TagWithUiTest.class)
-public class EngineTest {
-
-  @Inject Configuration configuration;
+public class EngineTest extends TestWithConfiguration {
 
   @ParameterizedTest
   @EnumSource(value = Playgrounds.class, names = "NOOP", mode = EnumSource.Mode.EXCLUDE)
@@ -29,8 +22,8 @@ public class EngineTest {
   void testRenderActivity(Playgrounds playground) throws ThemisException {
 
     // Given
-    RendererActivity activity = playground.getFactory().apply(this.configuration);
-    Engine engine = new Engine(configuration, activity);
+    RendererActivity activity = playground.getFactory().apply(getConfiguration());
+    Engine engine = new Engine(getConfiguration(), activity);
 
     // When
     engine.setup();
@@ -53,7 +46,7 @@ public class EngineTest {
 
     // Given
 
-    Engine engine = new Engine(configuration, new NoopRendererActivity(this.configuration));
+    Engine engine = new Engine(getConfiguration(), new NoopRendererActivity(getConfiguration()));
 
     // When
     engine.setup();

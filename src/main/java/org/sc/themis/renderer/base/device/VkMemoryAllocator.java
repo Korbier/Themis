@@ -5,10 +5,14 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.util.vma.VmaAllocatorCreateInfo;
 import org.lwjgl.util.vma.VmaVulkanFunctions;
 import org.sc.themis.renderer.lang.VulkanObject;
-import org.sc.themis.shared.Configuration;
+import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
+import org.sc.themis.shared.utils.LogUtils;
+import org.slf4j.LoggerFactory;
 
 public class VkMemoryAllocator extends VulkanObject {
+
+  private static final org.slf4j.Logger logger = LoggerFactory.getLogger(VkMemoryAllocator.class);
 
   private final VkInstance instance;
   private final VkDevice device;
@@ -16,11 +20,7 @@ public class VkMemoryAllocator extends VulkanObject {
 
   private long handle;
 
-  public VkMemoryAllocator(
-      Configuration configuration,
-      VkPhysicalDevice physicalDevice,
-      VkDevice device,
-      VkInstance instance) {
+  public VkMemoryAllocator(Configuration configuration, VkPhysicalDevice physicalDevice, VkDevice device, VkInstance instance) {
     super(configuration);
     this.physicalDevice = physicalDevice;
     this.device = device;
@@ -31,7 +31,8 @@ public class VkMemoryAllocator extends VulkanObject {
   public void setup() throws ThemisException {
     try (MemoryStack stack = MemoryStack.stackPush()) {
       VmaAllocatorCreateInfo allocatorCreateInfo = createAllocatorCreateInfo(stack);
-      this.handle = createMemoryAllcator(stack, allocatorCreateInfo);
+      this.handle = createMemoryAllocator(stack, allocatorCreateInfo);
+      logger.trace("Memory allocator initialized (handle={})", LogUtils.toHexString(this.handle));
     }
   }
 
@@ -44,8 +45,7 @@ public class VkMemoryAllocator extends VulkanObject {
     return this.handle;
   }
 
-  private long createMemoryAllcator(MemoryStack stack, VmaAllocatorCreateInfo allocatorCreateInfo)
-      throws ThemisException {
+  private long createMemoryAllocator(MemoryStack stack, VmaAllocatorCreateInfo allocatorCreateInfo) throws ThemisException {
     PointerBuffer pAllocator = stack.mallocPointer(1);
     vkMemoryAllocator().createAllocator(allocatorCreateInfo, pAllocator);
     return pAllocator.get(0);
@@ -53,16 +53,15 @@ public class VkMemoryAllocator extends VulkanObject {
 
   private VmaAllocatorCreateInfo createAllocatorCreateInfo(MemoryStack stack) {
 
-    VmaVulkanFunctions vmaVulkanFunctions =
-        VmaVulkanFunctions.calloc(stack).set(this.instance.getHandle(), this.device.getHandle());
+    VmaVulkanFunctions vmaVulkanFunctions = VmaVulkanFunctions.calloc(stack).set(this.instance.getHandle(), this.device.getHandle());
 
-    VmaAllocatorCreateInfo createInfo =
-        VmaAllocatorCreateInfo.calloc(stack)
+    VmaAllocatorCreateInfo createInfo = VmaAllocatorCreateInfo.calloc(stack)
             .instance(this.instance.getHandle())
             .device(this.device.getHandle())
             .physicalDevice(this.physicalDevice.getHandle())
             .pVulkanFunctions(vmaVulkanFunctions);
 
     return createInfo;
+
   }
 }

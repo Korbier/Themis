@@ -14,7 +14,6 @@ import static org.lwjgl.vulkan.VK10.VK_PIPELINE_BIND_POINT_GRAPHICS;
 import static org.lwjgl.vulkan.VK10.VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_VERTEX_BIT;
 
-import org.jboss.logging.Logger;
 import org.sc.themis.renderer.base.command.VkCommand;
 import org.sc.themis.renderer.base.device.VkDevice;
 import org.sc.themis.renderer.base.frame.FrameKey;
@@ -33,17 +32,18 @@ import org.sc.themis.scene.Scene;
 import org.sc.themis.scene.base.geometry.Instance;
 import org.sc.themis.scene.base.geometry.Mesh;
 import org.sc.themis.scene.base.geometry.Model;
-import org.sc.themis.shared.Configuration;
+import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.viewer.renderactivity.RenderPass;
 import org.sc.viewer.renderactivity.ViewerRendererActivity;
 import org.sc.viewer.renderactivity.geometry.material.ColorMaterial;
 import org.sc.viewer.renderactivity.geometry.material.NoLightColorMaterial;
+import org.slf4j.LoggerFactory;
 
 /** Geometry renderpass. */
 public class GeometryRenderPass extends RenderPass {
 
-  private static final org.jboss.logging.Logger LOG = Logger.getLogger(GeometryRenderPass.class);
+  private static final org.slf4j.Logger logger = LoggerFactory.getLogger(GeometryRenderPass.class);
 
   // Framed object
   private static final FrameKey<VkFrameBuffer> FK_FRAMEBUFFER = FrameKey.of(VkFrameBuffer.class);
@@ -104,10 +104,7 @@ public class GeometryRenderPass extends RenderPass {
               this.materialManager.select(mesh.getProperties(), model.getMaterialProperties());
 
           if (materialProperties == null) {
-            LOG.errorf(
-                "No suitable MaterialProperties Struct found for mesh {} (model {})",
-                mesh,
-                model.getIdentifier());
+            logger.error("No suitable MaterialProperties Struct found for mesh {} (model {})", mesh, model.getIdentifier());
           }
 
           this.materialManager.bindMaterialVariant(command, materialProperties, frame);

@@ -15,14 +15,15 @@ import static org.lwjgl.glfw.GLFW.glfwSetWindowShouldClose;
 import java.util.HashMap;
 import java.util.Map;
 import org.joml.Vector2f;
-import org.sc.themis.shared.Configuration;
+import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.tobject.TObject;
 import org.sc.themis.window.Window;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Input extends TObject {
 
-  private static final org.jboss.logging.Logger LOG =
-      org.jboss.logging.Logger.getLogger(Input.class);
+  private static final Logger logger = LoggerFactory.getLogger(Input.class);
 
   private final Window window;
 
@@ -47,7 +48,10 @@ public class Input extends TObject {
     setupMouseBoutonCallback();
     setupKeyCallback();
     setupPollListener();
-    LOG.trace("Input initialized");
+
+    //noinspection UnnecessaryUnicodeEscape
+    logger.info("\u2328\uFE0F Input initialized");
+
   }
 
   @Override
@@ -59,7 +63,8 @@ public class Input extends TObject {
         (_, xpos, ypos) -> {
           mousePosition.x = (float) xpos;
           mousePosition.y = (float) ypos;
-        });
+        }
+    );
   }
 
   private void setupCursorCallback() {
@@ -69,7 +74,7 @@ public class Input extends TObject {
   private void setupMouseBoutonCallback() {
     glfwSetMouseButtonCallback(
         this.window.getHandle(),
-        (_, button, action, mode) -> {
+        (_, button, action, _) -> {
           leftMouseButtonPressed = button == GLFW_MOUSE_BUTTON_1 && action == GLFW_PRESS;
           rightMouseButtonPressed = button == GLFW_MOUSE_BUTTON_2 && action == GLFW_PRESS;
         });
@@ -82,7 +87,8 @@ public class Input extends TObject {
           if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
             glfwSetWindowShouldClose(w, true);
           }
-        });
+        }
+    );
   }
 
   private void setupPollListener() {
