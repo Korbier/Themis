@@ -11,7 +11,6 @@ import org.sc.playground.Playgrounds;
 import org.sc.playground.noop.NoopRendererActivity;
 import org.sc.themis.engine.exception.EngineGamestateNotFoundException;
 import org.sc.themis.renderer.RendererActivity;
-import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 
 public class EngineTest extends TestWithConfiguration {

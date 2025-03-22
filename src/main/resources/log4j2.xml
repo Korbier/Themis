@@ -13,7 +13,7 @@
             <AppenderRef ref="Console"/>
         </Root>
 
-        <logger name="org.sc.themis" level="INFO" additivity="false">
+        <logger name="org.sc.themis" level="DEBUG" additivity="false">
             <AppenderRef ref="Console" />
         </logger>
 

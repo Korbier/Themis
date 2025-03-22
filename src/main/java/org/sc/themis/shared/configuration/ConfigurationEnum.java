@@ -15,6 +15,8 @@ public class ConfigurationEnum {
     public final static ConfigurationKey<String> engineName = ConfigurationKey.of("engine.name", String.class, "no-name", ConfigurationEnum.toString);
     public final static ConfigurationKey<Integer> engineVersion = ConfigurationKey.of("engine.version", Integer.class, 1, ConfigurationEnum.toInteger);
 
+    public final static ConfigurationKey<String> pathResources = ConfigurationKey.of("path.resources", String.class, "./data", ConfigurationEnum.toString);
+
     public final static ConfigurationKey<Integer> windowWidth = ConfigurationKey.of("window.width", Integer.class, 800, ConfigurationEnum.toInteger);
     public final static ConfigurationKey<Integer> windowHeight = ConfigurationKey.of("window.height", Integer.class, 600, ConfigurationEnum.toInteger);
     public final static ConfigurationKey<Boolean> windowResizable = ConfigurationKey.of("window.resizable", Boolean.class, true, ConfigurationEnum.toBoolean);

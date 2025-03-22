@@ -19,6 +19,9 @@ import org.sc.themis.scene.Scene;
 import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.resource.Image;
+import org.sc.themis.shared.resource.loader.descriptor.TextureResourceDescriptor;
+import org.sc.themis.shared.resource.loader.ResourceEnum;
+import org.sc.themis.shared.resource.ResourceLoader;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -51,8 +54,6 @@ public class TextureArrayRendererActivity extends BaseRendererActivity {
   private VkDescriptorPool descriptorPool;
 
   private VkSampler sampler;
-  private Image imageA;
-  private Image imageB;
   private VkStagingImage vkImage;
 
   public TextureArrayRendererActivity(Configuration configuration) {
@@ -196,10 +197,9 @@ public class TextureArrayRendererActivity extends BaseRendererActivity {
             new VkSamplerDescriptor(VK_FILTER_LINEAR, 1, true));
     this.sampler.setup();
 
-    this.imageA = Image.of("src/main/resources/playground/texturearray/mars.jpg");
-    this.imageB = Image.of("src/main/resources/playground/texturearray/mercure.jpg");
-
+    Image imageA = ResourceLoader.get().get(ResourceEnum.TEXTURE, TextureResourceDescriptor.of("planet/mars.png"));
+    Image imageB = ResourceLoader.get().get(ResourceEnum.TEXTURE, TextureResourceDescriptor.of("planet/mercure.png"));
     this.vkImage = this.renderer.getResourceAllocator().allocateImage(VK_FORMAT_R8G8B8A8_SRGB, 2);
-    this.vkImage.load(this.imageA, this.imageB);
+    this.vkImage.load(imageA, imageB);
   }
 }

@@ -34,6 +34,9 @@ import org.sc.themis.scene.Scene;
 import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.resource.Image;
+import org.sc.themis.shared.resource.loader.descriptor.TextureResourceDescriptor;
+import org.sc.themis.shared.resource.loader.ResourceEnum;
+import org.sc.themis.shared.resource.ResourceLoader;
 
 public class DescriptorsetImageSamplerRendererActivity extends BaseRendererActivity {
 
@@ -60,7 +63,6 @@ public class DescriptorsetImageSamplerRendererActivity extends BaseRendererActiv
   private VkDescriptorPool descriptorPool;
 
   private VkSampler sampler;
-  private Image image;
   private VkStagingImage vkImage;
 
   public DescriptorsetImageSamplerRendererActivity(Configuration configuration) {
@@ -196,16 +198,10 @@ public class DescriptorsetImageSamplerRendererActivity extends BaseRendererActiv
   }
 
   private void setupImage() throws ThemisException {
-
-    this.sampler =
-        new VkSampler(
-            getConfiguration(),
-            this.renderer.getDevice(),
-            new VkSamplerDescriptor(VK_FILTER_LINEAR, 1, true));
+    this.sampler = new VkSampler(getConfiguration(),this.renderer.getDevice(),new VkSamplerDescriptor(VK_FILTER_LINEAR, 1, true));
     this.sampler.setup();
-
-    this.image = Image.of("src/main/resources/playground/descriptorset/imagesampler/vulkan.png");
+    Image image = ResourceLoader.get().get(ResourceEnum.TEXTURE, TextureResourceDescriptor.of("vulkan.png"));
     this.vkImage = this.renderer.getResourceAllocator().allocateImage(VK_FORMAT_R8G8B8A8_SRGB);
-    this.vkImage.load(this.image);
+    this.vkImage.load(image);
   }
 }

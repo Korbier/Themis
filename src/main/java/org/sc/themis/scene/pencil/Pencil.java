@@ -3,7 +3,7 @@ package org.sc.themis.scene.pencil;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
-import org.sc.themis.shared.resource.font.Font;
+import org.sc.themis.shared.resource.Font;
 import org.sc.themis.shared.resource.font.FontCharacter;
 import org.sc.themis.shared.resource.font.FontRepository;
 
@@ -206,13 +206,6 @@ public class Pencil {
 
   private void appendData(float[] data, int idx, Vector2f position, Color color) {
     appendData(data, idx, position, new Vector2f(), color, new Vector4f());
-  }
-
-  private void appendData(
-      float[] data, int idx,
-      Vector2f position, Vector2f texture, Color color
-  ) {
-    appendData(data, idx, position, texture, color, new Vector4f());
   }
 
   private void appendData(
