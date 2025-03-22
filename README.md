@@ -10,7 +10,8 @@ The viewer is a sample application built with this engine.
   * Resource loading
     * Model
     * Texture
-    * Font
+    * Font (Standard and Signed Distance Field Fonts)
+    * Shader source
   * Light casters
     * Directional
     * Point
@@ -25,13 +26,16 @@ The viewer is a sample application built with this engine.
     * Toggle button
     * Panel
     * Label
-
+  
 * Viewer
   * Sample scene
   * Key mapping
   * User interface
     * Toggle TBN
     * Toggle main light
+
+* Other
+  * Native executable building with GraalVM Native Image
  
 ### 📝 Todo
 
@@ -46,22 +50,17 @@ The viewer is a sample application built with this engine.
   * Mouse picking
 
 # Screenshots
+### Default view
+ 
+![](./documentation/screenshots/001.png)
 
-* Default view
+### With TBN vectors
 
-![](./documentation/screenshots/screen_1.png)
+![](./documentation/screenshots/002.png)
 
-* With TBN vectors
-
-![](./documentation/screenshots/screen_2.png)
-
-* UI Panel & Toggle button
-
-![](./documentation/screenshots/screen_3.png)
-
-* UI Label
-
-![](./documentation/screenshots/screen_4.png)
+### UI Panel & Toggle button
+ 
+![](./documentation/screenshots/003.png)
 
  
  

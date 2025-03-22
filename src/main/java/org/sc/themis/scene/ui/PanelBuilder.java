@@ -78,8 +78,8 @@ public final class PanelBuilder extends ComponentBuilder<PanelBuilder> {
     }
 
     pencil().text(
-        new Vector2f(left + 2 * DEFAULT_BORDER_SIZE,  top + DEFAULT_BORDER_SIZE),
-        0, Color.of("FF0000"), "Configuration"
+        new Vector2f(left + 2 * DEFAULT_BORDER_SIZE, top + DEFAULT_BORDER_SIZE * 2 + 4),
+        0, Color.of("000000"), "Configuration"
     );
 
   }

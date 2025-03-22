@@ -11,9 +11,9 @@ public class ConfigurationEnum {
 
     public final static ConfigurationKey<String> applicationName = ConfigurationKey.of("application.name", String.class, "no-name", ConfigurationEnum.toString);
     public final static ConfigurationKey<Integer> applicationVersion = ConfigurationKey.of("application.version", Integer.class, 1, ConfigurationEnum.toInteger);
-
     public final static ConfigurationKey<String> engineName = ConfigurationKey.of("engine.name", String.class, "no-name", ConfigurationEnum.toString);
     public final static ConfigurationKey<Integer> engineVersion = ConfigurationKey.of("engine.version", Integer.class, 1, ConfigurationEnum.toInteger);
+    public final static ConfigurationKey<Integer> engineTargetFps = ConfigurationKey.of("engine.target-fps", Integer.class, 60, ConfigurationEnum.toInteger);
 
     public final static ConfigurationKey<String> pathResources = ConfigurationKey.of("path.resources", String.class, "./data", ConfigurationEnum.toString);
 

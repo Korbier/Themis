@@ -8,7 +8,6 @@ import org.sc.themis.scene.Scene;
 import org.sc.themis.scene.base.geometry.Model;
 import org.sc.themis.scene.controller.FpsCameraController;
 import org.sc.themis.scene.factory.MaterialFactory;
-import org.sc.themis.scene.factory.ModelFactory;
 import org.sc.themis.scene.light.DirectionalLight;
 import org.sc.themis.scene.light.PointLight;
 import org.sc.themis.scene.light.SpotLight;
@@ -42,8 +41,8 @@ public class ViewerGamestate implements Gamestate {
     FontRepository fontRepository = new FontRepository();
 
     try {
-      fontRepository.load(ResourceLoader.get().get(ResourceEnum.FONT, FontResourceDescriptor.sdf( Path.of("CenturyGothic.ttf"), 14, 0.46f, 0.09f )));
-      fontRepository.load(ResourceLoader.get().get(ResourceEnum.FONT, FontResourceDescriptor.sdf( Path.of("CenturyGothic.ttf"), 18, 0.46f, 0.09f )));
+      fontRepository.load(ResourceLoader.get().get(ResourceEnum.FONT, FontResourceDescriptor.sdf( Path.of("CenturyGothic.ttf"), 14, 0.47f, 0.050f )));
+      fontRepository.load(ResourceLoader.get().get(ResourceEnum.FONT, FontResourceDescriptor.sdf( Path.of("CenturyGothic.ttf"), 16, 0.46f, 0.09f )));
     } catch (ThemisException e) {
       e.printStackTrace(); //todo
     }
@@ -72,6 +71,14 @@ public class ViewerGamestate implements Gamestate {
   private void setupKeyMapping(Scene scene) {
     this.context.getKeyMapping().map(GLFW_KEY_1, false, () -> {
       DirectionalLight light = scene.getDirectionalLights().getFirst();
+      light.setVisible(!light.isVisible());
+    });
+    this.context.getKeyMapping().map(GLFW_KEY_2, false, () -> {
+      PointLight light = scene.getPointLights().getFirst();
+      light.setVisible(!light.isVisible());
+    });
+    this.context.getKeyMapping().map(GLFW_KEY_3, false, () -> {
+      SpotLight light = scene.getSpotLights().getFirst();
       light.setVisible(!light.isVisible());
     });
     scene.add(new KeyMappingController(this.context.getKeyMapping()));
@@ -127,7 +134,7 @@ public class ViewerGamestate implements Gamestate {
             new Vector3f(0.4f, 0.0f, 0.0f),
             new Vector3f(0.7f, 0.0f, 0.0f),
             new Vector3f(5.0f, 5.0f, 5.0f),
-            Attenuation.type1(128.0f, 64.0f)));
+            Attenuation.type1(256.0f, 64.0f)));
   }
 
   private Model createSphere(Renderer renderer, String id) throws ThemisException {
