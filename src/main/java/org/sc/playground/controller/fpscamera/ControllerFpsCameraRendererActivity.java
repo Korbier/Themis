@@ -36,14 +36,10 @@ import org.sc.themis.shared.utils.MemorySizeUtils;
 
 public class ControllerFpsCameraRendererActivity extends BaseRendererActivity {
 
-  private static final String SHADER_VERTEX_SOURCE =
-      "src/main/resources/playground/controller/fpscamera/vertex_shader.glsl";
-  private static final String SHADER_VERTEX_COMPILED =
-      "target/playground/controller/fpscamera/vertex_shader.spirv";
-  private static final String SHADER_FRAGMENT_SOURCE =
-      "src/main/resources/playground/controller/fpscamera/fragment_shader.glsl";
-  private static final String SHADER_FRAGMENT_COMPILED =
-      "target/playground/controller/fpscamera/fragment_shader.spirv";
+  private static final String SHADER_VERTEX_SOURCE = "src/main/resources/playground/controller/fpscamera/vertex_shader.glsl";
+  private static final String SHADER_VERTEX_COMPILED = "target/playground/controller/fpscamera/vertex_shader.spirv";
+  private static final String SHADER_FRAGMENT_SOURCE = "src/main/resources/playground/controller/fpscamera/fragment_shader.glsl";
+  private static final String SHADER_FRAGMENT_COMPILED = "target/playground/controller/fpscamera/fragment_shader.spirv";
 
   private VkShaderProgram shaderProgram;
   private VkPipelineLayout pipelineLayout;

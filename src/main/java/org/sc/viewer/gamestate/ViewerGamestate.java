@@ -15,8 +15,11 @@ import org.sc.themis.scene.light.SpotLight;
 import org.sc.themis.scene.light.attenuation.Attenuation;
 import org.sc.themis.scene.pencil.Pencil;
 import org.sc.themis.shared.exception.ThemisException;
-import org.sc.themis.shared.resource.font.Font;
+import org.sc.themis.shared.resource.loader.descriptor.FontResourceDescriptor;
+import org.sc.themis.shared.resource.loader.ResourceEnum;
+import org.sc.themis.shared.resource.ResourceLoader;
 import org.sc.themis.shared.resource.font.FontRepository;
+import org.sc.themis.shared.resource.loader.descriptor.ModelResourceDescriptor;
 import org.sc.viewer.ViewerContext;
 import org.sc.viewer.gamestate.controller.KeyMappingController;
 import org.sc.viewer.gamestate.controller.UiController;
@@ -26,7 +29,6 @@ import static org.lwjgl.glfw.GLFW.*;
 
 public class ViewerGamestate implements Gamestate {
 
-  private final ModelFactory modelFactory = new ModelFactory();
   private final MaterialFactory materialFactory = new MaterialFactory();
 
   private final ViewerContext context;
@@ -38,8 +40,13 @@ public class ViewerGamestate implements Gamestate {
     this.context = context;
 
     FontRepository fontRepository = new FontRepository();
-    fontRepository.load(Font.sdf(14, 0.46f, 0.09f, Path.of("./src/main/resources/playground/font/CenturyGothic.ttf")));
-    fontRepository.load(Font.sdf(18, 0.46f, 0.09f, Path.of("./src/main/resources/playground/font/CenturyGothic.ttf")));
+
+    try {
+      fontRepository.load(ResourceLoader.get().get(ResourceEnum.FONT, FontResourceDescriptor.sdf( Path.of("CenturyGothic.ttf"), 14, 0.46f, 0.09f )));
+      fontRepository.load(ResourceLoader.get().get(ResourceEnum.FONT, FontResourceDescriptor.sdf( Path.of("CenturyGothic.ttf"), 18, 0.46f, 0.09f )));
+    } catch (ThemisException e) {
+      e.printStackTrace(); //todo
+    }
 
     this.pencil = new Pencil(fontRepository);
 
@@ -124,10 +131,7 @@ public class ViewerGamestate implements Gamestate {
   }
 
   private Model createSphere(Renderer renderer, String id) throws ThemisException {
-    return this.modelFactory.create(
-        id,
-        renderer.getResourceAllocator(),
-        Path.of("./src/main/resources/model/sphere/scene.gltf")
-    );
+    return ResourceLoader.get().get(ResourceEnum.MODEL, ModelResourceDescriptor.of("sphere/scene.gltf", id, renderer.getResourceAllocator()));
   }
+
 }

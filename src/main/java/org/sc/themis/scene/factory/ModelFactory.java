@@ -46,6 +46,9 @@ import org.sc.themis.scene.exception.ModelFileNotFoundException;
 import org.sc.themis.shared.assertion.Assertions;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.resource.Image;
+import org.sc.themis.shared.resource.loader.descriptor.TextureResourceDescriptor;
+import org.sc.themis.shared.resource.loader.ResourceEnum;
+import org.sc.themis.shared.resource.ResourceLoader;
 import org.slf4j.LoggerFactory;
 
 public class ModelFactory {
@@ -60,13 +63,17 @@ public class ModelFactory {
           | aiProcess_CalcTangentSpace
           | aiProcess_PreTransformVertices;
 
+  private static final ModelFactory instance = new ModelFactory();
+
   public Model create(String identifier, Mesh... meshes) {
     return new Model(identifier, meshes);
   }
 
-  public Model create(String identifier, VkStagingResourceAllocator allocator, Path modelFile) throws ThemisException {
+  public static Model create(String identifier, VkStagingResourceAllocator allocator, Path modelFile) throws ThemisException {
+    return instance.doCreate(identifier, allocator, modelFile);
+  }
 
-    logger.info("Loading model from file {}", modelFile.toAbsolutePath());
+  public Model doCreate(String identifier, VkStagingResourceAllocator allocator, Path modelFile) throws ThemisException {
 
     Assertions.isTrue(modelFile.toFile()::exists, new ModelFileNotFoundException(modelFile));
 
@@ -82,7 +89,7 @@ public class ModelFactory {
     return modelIdentifier + ".mesh." + inc;
   }
 
-  private Mesh[] loadMeshs(VkStagingResourceAllocator allocator, String modelIdentifier, AIScene scene, List<MaterialProperties> properties)
+  public Mesh[] loadMeshs(VkStagingResourceAllocator allocator, String modelIdentifier, AIScene scene, List<MaterialProperties> properties)
       throws ThemisException {
 
     PointerBuffer aiMeshesBuffer = scene.mMeshes();
@@ -198,18 +205,19 @@ public class ModelFactory {
       MaterialProperty<VkStagingImage> property
   ) throws ThemisException {
 
-    String path = getTexturePath(workdir, aiMaterial, assimpAttr);
+    String path = getTexturePath(aiMaterial, assimpAttr);
 
     if (path != null) {
       logger.info("Loading texture property {} ({})", property.getName(), path);
       VkStagingImage stgImage = allocator.allocateImage(VK_FORMAT_R8G8B8A8_SRGB);
-      stgImage.load(Image.of(path));
+      Image image = ResourceLoader.get().get(ResourceEnum.TEXTURE, TextureResourceDescriptor.of(path), workdir);
+      stgImage.load(image);
       properties.put(property, stgImage);
     }
 
   }
 
-  private String getTexturePath(Path workdir, AIMaterial aiMaterial, int assimpAttr) {
+  private String getTexturePath(AIMaterial aiMaterial, int assimpAttr) {
 
     try (MemoryStack stack = MemoryStack.stackPush()) {
 
@@ -219,7 +227,7 @@ public class ModelFactory {
       String texturePath = aiTexturePath.dataString();
 
       if (!texturePath.isBlank()) {
-        return workdir.resolve(texturePath).toAbsolutePath().toString();
+        return texturePath;
       } else {
         return null;
       }

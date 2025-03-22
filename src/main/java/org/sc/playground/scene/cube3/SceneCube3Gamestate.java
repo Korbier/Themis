@@ -16,6 +16,9 @@ import org.sc.themis.scene.factory.MeshFactory;
 import org.sc.themis.scene.factory.ModelFactory;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.resource.Image;
+import org.sc.themis.shared.resource.loader.descriptor.TextureResourceDescriptor;
+import org.sc.themis.shared.resource.loader.ResourceEnum;
+import org.sc.themis.shared.resource.ResourceLoader;
 
 public class SceneCube3Gamestate implements Gamestate {
 
@@ -31,7 +34,7 @@ public class SceneCube3Gamestate implements Gamestate {
   @Override
   public void setup(Renderer renderer, Scene scene) throws ThemisException {
 
-    Image image = Image.of("src/main/resources/playground/descriptorset/imagesampler/vulkan.png");
+    Image image = ResourceLoader.get().get(ResourceEnum.TEXTURE, TextureResourceDescriptor.of("vulkan.png"));
     this.vkImage = renderer.getResourceAllocator().allocateImage(VK_FORMAT_R8G8B8A8_SRGB);
     this.vkImage.load(image);
 

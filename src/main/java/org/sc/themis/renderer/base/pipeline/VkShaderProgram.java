@@ -19,8 +19,7 @@ public class VkShaderProgram extends VulkanObject {
   private final VkShaderProgramStage[] stages;
   private final Map<Integer, Long> handles = new HashMap<>();
 
-  public VkShaderProgram(
-      Configuration configuration, VkDevice device, VkShaderProgramStage... stages) {
+  public VkShaderProgram(Configuration configuration, VkDevice device, VkShaderProgramStage... stages) {
     super(configuration);
     this.device = device;
     this.stages = stages;
@@ -58,8 +57,7 @@ public class VkShaderProgram extends VulkanObject {
   private long vkCreateShaderModule(MemoryStack stack, VkShaderProgramStage stage)
       throws ThemisException {
 
-    VkShaderModuleCreateInfo shaderModuleCreateInfo =
-        createShaderModuleCreateInfo(stack, stage.source());
+    VkShaderModuleCreateInfo shaderModuleCreateInfo = createShaderModuleCreateInfo(stack, stage.source());
     LongBuffer pShaderModule = stack.mallocLong(1);
 
     vkPipeline().createShaderModule(this.device.getHandle(), shaderModuleCreateInfo, pShaderModule);

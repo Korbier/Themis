@@ -5,6 +5,8 @@ import static org.lwjgl.stb.STBImage.stbi_load;
 
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
+import java.nio.file.Path;
+
 import org.lwjgl.system.MemoryStack;
 import org.sc.themis.shared.assertion.Assertions;
 import org.sc.themis.shared.resource.exception.ImageNotLoadedException;
@@ -17,18 +19,20 @@ public class Image {
   private final int width;
   private final int height;
 
-  public static Image of(String path) throws ImageNotLoadedException {
+  public static Image of(Path path) throws ImageNotLoadedException {
 
     try (MemoryStack stack = MemoryStack.stackPush()) {
+
+      String imagePath = path.toString();
 
       IntBuffer w = stack.mallocInt(1);
       IntBuffer h = stack.mallocInt(1);
       IntBuffer channels = stack.mallocInt(1);
 
-      ByteBuffer data = stbi_load(path, w, h, channels, 4);
-      Assertions.notNull(data, new ImageNotLoadedException(path, stbi_failure_reason()));
+      ByteBuffer data = stbi_load(imagePath, w, h, channels, 4);
+      Assertions.notNull(data, new ImageNotLoadedException(imagePath, stbi_failure_reason()));
 
-      return new Image(path, data, w.get(), h.get());
+      return new Image(imagePath, data, w.get(), h.get());
     }
 
   }

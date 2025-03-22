@@ -28,7 +28,7 @@ import org.sc.themis.scene.Scene;
 import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.resource.Image;
-import org.sc.themis.shared.resource.font.Font;
+import org.sc.themis.shared.resource.Font;
 
 public class FontRendererActivity extends BaseRendererActivity {
 
@@ -55,7 +55,6 @@ public class FontRendererActivity extends BaseRendererActivity {
   private VkDescriptorPool descriptorPool;
 
   private VkSampler sampler;
-  private Image image;
   private VkStagingImage vkImage;
 
   public FontRendererActivity(Configuration configuration) {

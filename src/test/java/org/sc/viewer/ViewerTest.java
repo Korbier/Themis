@@ -17,11 +17,7 @@ public class ViewerTest extends TestWithConfiguration {
     // Given
     ViewerContext context = ViewerContext.createDefault();
     ViewerGamestate gamestate = new ViewerGamestate(context);
-    Engine engine =
-        new Engine(
-            getConfiguration(),
-            new ViewerRendererActivity(getConfiguration(), context, gamestate)
-        );
+    Engine engine = new Engine(getConfiguration(), new ViewerRendererActivity(getConfiguration(), context, gamestate));
 
     // When
     engine.setup();
@@ -32,5 +28,6 @@ public class ViewerTest extends TestWithConfiguration {
 
     // Cleanup
     engine.cleanup();
+
   }
 }

@@ -3,6 +3,7 @@ package org.sc.viewer;
 import org.sc.themis.engine.Engine;
 import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
+import org.sc.themis.shared.resource.ResourceLoader;
 import org.sc.viewer.gamestate.ViewerGamestate;
 import org.sc.viewer.renderactivity.ViewerRendererActivity;
 
@@ -14,7 +15,9 @@ public class Bootstrap {
 
   private void run() throws ThemisException {
 
-    Configuration configuration = new Configuration("./src/main/resources/application.properties");
+    Configuration configuration = new Configuration("./application.properties");
+    ResourceLoader.get().apply(configuration);
+
     ViewerContext context = ViewerContext.createDefault();
 
     ViewerGamestate gamestate = new ViewerGamestate(context);

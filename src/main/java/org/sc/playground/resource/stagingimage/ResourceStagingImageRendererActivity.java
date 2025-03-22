@@ -26,6 +26,9 @@ import org.sc.themis.scene.Scene;
 import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.resource.Image;
+import org.sc.themis.shared.resource.loader.descriptor.TextureResourceDescriptor;
+import org.sc.themis.shared.resource.loader.ResourceEnum;
+import org.sc.themis.shared.resource.ResourceLoader;
 import org.sc.themis.shared.utils.LogUtils;
 import org.slf4j.LoggerFactory;
 
@@ -129,8 +132,7 @@ public class ResourceStagingImageRendererActivity extends BaseRendererActivity {
 
   private void setupImage() throws ThemisException {
 
-    /** Image * */
-    Image image = Image.of("src/main/resources/playground/descriptorset/imagesampler/vulkan.png");
+    Image image = ResourceLoader.get().get(ResourceEnum.TEXTURE, TextureResourceDescriptor.of("vulkan.png"));
     this.vkImage = this.renderer.getResourceAllocator().allocateImage(VK_FORMAT_R8G8B8A8_SRGB);
     this.vkImage.load(image);
 

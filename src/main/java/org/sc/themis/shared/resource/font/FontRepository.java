@@ -1,5 +1,6 @@
 package org.sc.themis.shared.resource.font;
 
+import org.sc.themis.shared.resource.Font;
 import org.sc.themis.shared.resource.Image;
 
 import java.util.ArrayList;
