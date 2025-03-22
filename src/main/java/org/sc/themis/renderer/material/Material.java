@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import org.jboss.logging.Logger;
 import org.sc.themis.renderer.Renderer;
 import org.sc.themis.renderer.base.device.VkDevice;
 import org.sc.themis.renderer.base.device.VkMemoryAllocator;
@@ -24,16 +23,14 @@ import org.sc.themis.renderer.base.resource.buffer.VkBuffer;
 import org.sc.themis.renderer.base.resource.buffer.VkBufferDescriptor;
 import org.sc.themis.renderer.base.resource.image.VkSampler;
 import org.sc.themis.renderer.base.resource.image.VkSamplerDescriptor;
-import org.sc.themis.scene.base.geometry.Instance;
 import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.tobject.TObject;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public abstract class Material extends TObject {
 
-  private static final org.slf4j.Logger logger = LoggerFactory.getLogger(Instance.class);
+  private static final org.slf4j.Logger logger = LoggerFactory.getLogger(Material.class);
 
   private static final int DESCRIPTORPOOL_SIZE = 10;
 
@@ -49,22 +46,15 @@ public abstract class Material extends TObject {
 
   @FunctionalInterface
   public interface CombinedImageSamplerSetter {
-    void set(
-        int binding,
-        VkDescriptorSet descriptorset,
-        VkSampler sampler,
-        MaterialProperties meshProperties)
-        throws ThemisException;
+    void set(int binding, VkDescriptorSet descriptorset, VkSampler sampler, MaterialProperties meshProperties) throws ThemisException;
   }
 
   private final Renderer renderer;
   private final String identifier;
 
   /** Variant identifier function **/
-  private Function<MaterialProperties, String> variantIdentifierFunction =
-      MaterialProperties::toString;
-
-  private Predicate<MaterialProperties> materialPropertiesPredicate = (m) -> true;
+  private Function<MaterialProperties, String> variantIdentifierFunction = MaterialProperties::toString;
+  private Predicate<MaterialProperties> materialPropertiesPredicate = (_) -> true;
 
   /** Pipeline * */
   private final MaterialPipeline pipeline;
@@ -160,9 +150,7 @@ public abstract class Material extends TObject {
 
       if (this.mainDescriptorSetLayout != null) {
 
-        // Si il existe déjà un variant principal, on le détruit afin de le recréer en
-        // ajoutant
-        // les nouvelles propriétés
+        // Si il existe déjà un variant principal, on le détruit afin de le recréer en ajoutant les nouvelles propriétés
         if (this.mainVariant != null) {
           this.mainDescriptorPool.cleanup();
           this.mainVariant.cleanup();
@@ -170,8 +158,7 @@ public abstract class Material extends TObject {
 
         this.setupMainDescriptorPool();
 
-        this.mainVariant =
-            new MaterialMainVariant(getConfiguration(), this, getIdentifier() + ".main");
+        this.mainVariant = new MaterialMainVariant(getConfiguration(), this, getIdentifier() + ".main");
         this.mainVariant.setup();
         // this.mainVariant.setProperties(offset, properties);
 
@@ -184,13 +171,11 @@ public abstract class Material extends TObject {
   }
 
   /** Material building methods - Variant Identifier function * */
-  protected void setMaterialPropertiesValidator(
-      Predicate<MaterialProperties> materialPropertiesPredicate) {
+  protected void setMaterialPropertiesValidator(Predicate<MaterialProperties> materialPropertiesPredicate) {
     this.materialPropertiesPredicate = materialPropertiesPredicate;
   }
 
-  protected void setVariantsIdentifierFunction(
-      Function<MaterialProperties, String> variantIdentifierFunction) {
+  protected void setVariantsIdentifierFunction(Function<MaterialProperties, String> variantIdentifierFunction) {
     this.variantIdentifierFunction = variantIdentifierFunction;
   }
 
@@ -212,8 +197,7 @@ public abstract class Material extends TObject {
   }
 
   /** Material building methods - Main * */
-  protected void addMainUniformDynamicBinding(
-      int binding, int shaderStage, VkBufferDescriptor bufferDescriptor) {
+  protected void addMainUniformDynamicBinding(int binding, int shaderStage, VkBufferDescriptor bufferDescriptor) {
     this.mainDescriptor.addUniformDynamicBinding(binding, shaderStage, bufferDescriptor);
   }
 
@@ -222,13 +206,11 @@ public abstract class Material extends TObject {
   }
 
   /** Material building methods - Variant * */
-  protected void addVariantsUniformBinding(
-      int binding, int shaderStage, VkBufferDescriptor bufferDescriptor) {
+  protected void addVariantsUniformBinding(int binding, int shaderStage, VkBufferDescriptor bufferDescriptor) {
     this.variantsDescriptor.addUniformBinding(binding, shaderStage, bufferDescriptor);
   }
 
-  protected void addVariantsCombinedImageSamplerBinding(
-      int binding, int shaderStage, VkSamplerDescriptor samplerDescriptor) {
+  protected void addVariantsCombinedImageSamplerBinding(int binding, int shaderStage, VkSamplerDescriptor samplerDescriptor) {
     this.variantsDescriptor.addCombinedImageSamplerBinding(binding, shaderStage, samplerDescriptor);
   }
 
@@ -236,8 +218,7 @@ public abstract class Material extends TObject {
     this.variantsUniformSetter = uniformSetter;
   }
 
-  protected void setVariantsCombinedImageSamplerSetter(
-      CombinedImageSamplerSetter combinedImageSamplerSetter) {
+  protected void setVariantsCombinedImageSamplerSetter(CombinedImageSamplerSetter combinedImageSamplerSetter) {
     this.variantsCombinedImageSamplerSetter = combinedImageSamplerSetter;
   }
 
@@ -352,30 +333,24 @@ public abstract class Material extends TObject {
   }
 
   private void setupMainDescriptorsetLayout() throws ThemisException {
-    VkDescriptorSetBinding[] bindings =
-        this.mainDescriptor.getBindings().values().toArray(new VkDescriptorSetBinding[0]);
+    VkDescriptorSetBinding[] bindings = this.mainDescriptor.getBindings().values().toArray(new VkDescriptorSetBinding[0]);
     if (bindings.length > 0) {
-      this.mainDescriptorSetLayout =
-          new VkDescriptorSetLayout(getConfiguration(), getDevice(), bindings);
+      this.mainDescriptorSetLayout = new VkDescriptorSetLayout(getConfiguration(), getDevice(), bindings);
       this.mainDescriptorSetLayout.setup();
     }
   }
 
   private void setupMainDescriptorPool() throws ThemisException {
     if (this.mainDescriptorSetLayout != null) {
-      this.mainDescriptorPool =
-          new VkDescriptorPool(
-              getConfiguration(), getDevice(), getFrames().getSize(), this.mainDescriptorSetLayout);
+      this.mainDescriptorPool = new VkDescriptorPool(getConfiguration(), getDevice(), getFrames().getSize(), this.mainDescriptorSetLayout);
       this.mainDescriptorPool.setup();
     }
   }
 
   private void setupVariantsDescriptorsetLayout() throws ThemisException {
-    VkDescriptorSetBinding[] bindings =
-        this.variantsDescriptor.getBindings().values().toArray(new VkDescriptorSetBinding[0]);
+    VkDescriptorSetBinding[] bindings = this.variantsDescriptor.getBindings().values().toArray(new VkDescriptorSetBinding[0]);
     if (bindings.length > 0) {
-      this.variantsDescriptorSetLayout =
-          new VkDescriptorSetLayout(getConfiguration(), getDevice(), bindings);
+      this.variantsDescriptorSetLayout = new VkDescriptorSetLayout(getConfiguration(), getDevice(), bindings);
       this.variantsDescriptorSetLayout.setup();
     }
   }
@@ -383,11 +358,7 @@ public abstract class Material extends TObject {
   private void setupVariantsDescriptorPool() throws ThemisException {
     if (this.variantsDescriptorSetLayout != null) {
       this.variantsDescriptorPool =
-          new VkDescriptorPool(
-              getConfiguration(),
-              getDevice(),
-              getFrames().getSize() * Material.DESCRIPTORPOOL_SIZE,
-              this.variantsDescriptorSetLayout);
+          new VkDescriptorPool(getConfiguration(), getDevice(), getFrames().getSize() * Material.DESCRIPTORPOOL_SIZE, this.variantsDescriptorSetLayout);
       this.variantsDescriptorPool.setup();
     }
   }
@@ -395,18 +366,28 @@ public abstract class Material extends TObject {
   private VkDescriptorSetLayout[] collectDescriptorsetLayouts() {
 
     int count = this.descriptorsetProviders != null ? this.descriptorsetProviders.length : 0;
-    if (this.mainDescriptorSetLayout != null) count++;
-    if (this.variantsDescriptorSetLayout != null) count++;
+    if (this.mainDescriptorSetLayout != null) {
+      count++;
+    }
+    if (this.variantsDescriptorSetLayout != null) {
+      count++;
+    }
 
     VkDescriptorSetLayout[] layouts = new VkDescriptorSetLayout[count];
-    if (this.variantsDescriptorSetLayout != null)
+    if (this.variantsDescriptorSetLayout != null) {
       layouts[--count] = this.variantsDescriptorSetLayout;
-    if (this.mainDescriptorSetLayout != null) layouts[--count] = this.mainDescriptorSetLayout;
+    }
+    if (this.mainDescriptorSetLayout != null) {
+      layouts[--count] = this.mainDescriptorSetLayout;
+    }
     if (this.descriptorsetProviders != null) {
-      for (int i = count - 1; i >= 0; i--)
+      for (int i = count - 1; i >= 0; i--) {
         layouts[i] = this.descriptorsetProviders[i].getDescriptorSetLayout();
+      }
     }
 
     return layouts;
+
   }
+
 }

@@ -5,7 +5,6 @@ import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 import java.nio.LongBuffer;
 import java.util.List;
 import java.util.Map;
-import org.jboss.logging.Logger;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkAttachmentDescription;
 import org.lwjgl.vulkan.VkAttachmentReference;
@@ -15,18 +14,19 @@ import org.sc.themis.renderer.base.device.VkDevice;
 import org.sc.themis.renderer.lang.VulkanObject;
 import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
+import org.sc.themis.shared.utils.LogUtils;
+import org.slf4j.LoggerFactory;
 
 public class VkRenderPass extends VulkanObject {
 
-  private static final org.jboss.logging.Logger LOG = Logger.getLogger(VkRenderPass.class);
+  private static final org.slf4j.Logger logger = LoggerFactory.getLogger(VkRenderPass.class);
 
   private final VkDevice device;
   private final VkRenderPassDescriptor descriptor;
 
   private long handle;
 
-  public VkRenderPass(
-      Configuration configuration, VkDevice device, VkRenderPassDescriptor descriptor) {
+  public VkRenderPass(Configuration configuration, VkDevice device, VkRenderPassDescriptor descriptor) {
     super(configuration);
     this.device = device;
     this.descriptor = descriptor;
@@ -41,19 +41,22 @@ public class VkRenderPass extends VulkanObject {
       VkSubpassDescription.Buffer subpassDescription = createSubpassDescription(stack);
       org.lwjgl.vulkan.VkSubpassDependency.Buffer dependencies = createSubpassDependencies(stack);
 
-      VkRenderPassCreateInfo renderPassCreateInfo =
-          createRenderPassCreateInfo(
-              stack, attachmentDescription, subpassDescription, dependencies);
+      VkRenderPassCreateInfo renderPassCreateInfo = createRenderPassCreateInfo(stack, attachmentDescription, subpassDescription, dependencies);
 
       this.handle = vkCreateRenderPass(stack, renderPassCreateInfo);
     }
 
-    LOG.trace("Renderpass initialised");
+    logger.trace("Renderpass initialised ({})", this);
   }
 
   @Override
   public void cleanup() throws ThemisException {
     vkRenderPass().destroyRenderPass(this.device.getHandle(), this.handle);
+  }
+
+  @Override
+  public String toString() {
+    return getClass().getSimpleName() + "{handle=" + LogUtils.toHexString(getHandle()) + "}";
   }
 
   public long getHandle() {

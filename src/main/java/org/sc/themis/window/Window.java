@@ -18,7 +18,6 @@ import static org.lwjgl.glfw.GLFW.glfwWindowShouldClose;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.jboss.logging.Logger;
 import org.joml.Vector2i;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.glfw.GLFWVulkan;
@@ -28,13 +27,15 @@ import org.sc.themis.shared.assertion.Assertions;
 import org.sc.themis.shared.configuration.ConfigurationEnum;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.tobject.TObject;
+import org.sc.themis.shared.utils.LogUtils;
 import org.sc.themis.window.exception.WindowGlfwInitException;
 import org.sc.themis.window.exception.WindowVideoModeNotSupportedException;
 import org.sc.themis.window.exception.WindowVukanNotSupportedException;
+import org.slf4j.LoggerFactory;
 
 public class Window extends TObject {
 
-  private static final Logger LOG = Logger.getLogger(Window.class);
+  private static final org.slf4j.Logger logger = LoggerFactory.getLogger(Window.class);
 
   private final Vector2i size = new Vector2i();
   private final Vector2i resolution = new Vector2i();
@@ -68,14 +69,18 @@ public class Window extends TObject {
     );
     setupCallback();
 
-    LOG.tracef(
-        "Window initialized (Size=%dx%d, Resolution=%dx%d)",
-        this.size.x, this.size.y, this.resolution.x, this.resolution.y);
+    logger.trace("Window initialised ({}, Size={}{}, Resolution={}{})", this, this.size.x, this.size.y, this.resolution.x, this.resolution.y);
+
   }
 
   @Override
   public void cleanup() {
     glfwSetWindowShouldClose(this.getHandle(), true);
+  }
+
+  @Override
+  public String toString() {
+    return getClass().getSimpleName() + "{handle=" + LogUtils.toHexString(getHandle()) + "}";
   }
 
   private void setupAttributes(GLFWVidMode vidMode, int width, int height) {

@@ -23,7 +23,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import org.jboss.logging.Logger;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -47,10 +46,11 @@ import org.sc.themis.scene.exception.ModelFileNotFoundException;
 import org.sc.themis.shared.assertion.Assertions;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.resource.Image;
+import org.slf4j.LoggerFactory;
 
 public class ModelFactory {
 
-  private static final org.jboss.logging.Logger LOG = Logger.getLogger(ModelFactory.class);
+  private static final org.slf4j.Logger logger = LoggerFactory.getLogger(ModelFactory.class);
 
   private static final int flags =
       aiProcess_GenSmoothNormals
@@ -64,31 +64,25 @@ public class ModelFactory {
     return new Model(identifier, meshes);
   }
 
-  public Model create(String identifier, VkStagingResourceAllocator allocator, Path modelFile)
-      throws ThemisException {
+  public Model create(String identifier, VkStagingResourceAllocator allocator, Path modelFile) throws ThemisException {
 
-    LOG.infof("Loading model from file %s", modelFile.toAbsolutePath().toString());
+    logger.info("Loading model from file {}", modelFile.toAbsolutePath());
 
     Assertions.isTrue(modelFile.toFile()::exists, new ModelFileNotFoundException(modelFile));
 
     try (AIScene scene = aiImportFile(modelFile.toAbsolutePath().toString(), flags)) {
-
       List<MaterialProperties> properties = loadProperties(scene, allocator, modelFile.getParent());
       Mesh[] meshes = loadMeshs(allocator, identifier, scene, properties);
-
       return new Model(identifier, meshes);
     }
+
   }
 
   private String getMeshIdentifier(String modelIdentifier, int inc) {
     return modelIdentifier + ".mesh." + inc;
   }
 
-  private Mesh[] loadMeshs(
-      VkStagingResourceAllocator allocator,
-      String modelIdentifier,
-      AIScene scene,
-      List<MaterialProperties> properties)
+  private Mesh[] loadMeshs(VkStagingResourceAllocator allocator, String modelIdentifier, AIScene scene, List<MaterialProperties> properties)
       throws ThemisException {
 
     PointerBuffer aiMeshesBuffer = scene.mMeshes();
@@ -106,6 +100,7 @@ public class ModelFactory {
       meshes[i] = new Mesh(allocator, getMeshIdentifier(modelIdentifier, i));
       meshes[i].set(vertices, indices);
       meshes[i].setProperties(properties.get(aiMesh.mMaterialIndex()));
+
     }
 
     return meshes;
@@ -134,15 +129,14 @@ public class ModelFactory {
               new Vector3f(aiVertex.x(), aiVertex.y(), aiVertex.z()),
               normal != null ? new Vector3f(normal.x(), normal.y(), normal.z()) : new Vector3f(),
               textCoord != null ? new Vector2f(textCoord.x(), 1 - textCoord.y()) : new Vector2f(),
-              tangent != null
-                  ? new Vector3f(tangent.x(), tangent.y(), tangent.z())
-                  : new Vector3f(),
-              bitangent != null
-                  ? new Vector3f(bitangent.x(), bitangent.y(), bitangent.z())
-                  : new Vector3f()));
+              tangent != null ? new Vector3f(tangent.x(), tangent.y(), tangent.z()) : new Vector3f(),
+              bitangent != null ? new Vector3f(bitangent.x(), bitangent.y(), bitangent.z()) : new Vector3f()
+          )
+      );
     }
 
-    return vertices.toArray(new Vertex[0]);
+    return vertices.toArray(Vertex[]::new);
+
   }
 
   protected int[] getIndices(AIMesh aiMesh) {
@@ -162,10 +156,10 @@ public class ModelFactory {
     }
 
     return indices.stream().mapToInt(Integer::intValue).toArray();
+
   }
 
-  private List<MaterialProperties> loadProperties(
-      AIScene scene, VkStagingResourceAllocator allocator, Path workdir) throws ThemisException {
+  private List<MaterialProperties> loadProperties(AIScene scene, VkStagingResourceAllocator allocator, Path workdir) throws ThemisException {
 
     List<MaterialProperties> result = new ArrayList<>();
 
@@ -174,7 +168,7 @@ public class ModelFactory {
 
     for (int i = 0; i < numMaterials; i++) {
 
-      LOG.infof("Loading material #%d", i);
+      logger.info("Loading material #{}", i);
 
       AIMaterial aiMaterial = AIMaterial.create(aiMaterialsBuffer.get(i));
       MaterialProperties properties = new MaterialProperties();
@@ -185,22 +179,11 @@ public class ModelFactory {
       setColor(aiMaterial, AI_MATKEY_COLOR_SPECULAR, properties, MaterialProperty.Color.SPECULAR);
       setFloat(aiMaterial, AI_MATKEY_SHININESS, properties, MaterialProperty.Property.SHININESS);
 
-      setImage(
-          workdir,
-          allocator,
-          aiMaterial,
-          aiTextureType_BASE_COLOR,
-          properties,
-          MaterialProperty.Texture.BASE);
-      setImage(
-          workdir,
-          allocator,
-          aiMaterial,
-          aiTextureType_NORMALS,
-          properties,
-          MaterialProperty.Texture.NORMALS);
+      setImage(workdir, allocator, aiMaterial, aiTextureType_BASE_COLOR, properties, MaterialProperty.Texture.BASE);
+      setImage( workdir, allocator, aiMaterial, aiTextureType_NORMALS, properties, MaterialProperty.Texture.NORMALS);
 
       result.add(properties);
+
     }
 
     return result;
@@ -212,17 +195,18 @@ public class ModelFactory {
       AIMaterial aiMaterial,
       int assimpAttr,
       MaterialProperties properties,
-      MaterialProperty<VkStagingImage> property)
-      throws ThemisException {
+      MaterialProperty<VkStagingImage> property
+  ) throws ThemisException {
 
     String path = getTexturePath(workdir, aiMaterial, assimpAttr);
 
     if (path != null) {
-      LOG.infof("Loading texture property %s (%s)", property.getName(), path);
+      logger.info("Loading texture property {} ({})", property.getName(), path);
       VkStagingImage stgImage = allocator.allocateImage(VK_FORMAT_R8G8B8A8_SRGB);
       stgImage.load(Image.of(path));
       properties.put(property, stgImage);
     }
+
   }
 
   private String getTexturePath(Path workdir, AIMaterial aiMaterial, int assimpAttr) {
@@ -230,8 +214,7 @@ public class ModelFactory {
     try (MemoryStack stack = MemoryStack.stackPush()) {
 
       AIString aiTexturePath = AIString.calloc(stack);
-      aiGetMaterialTexture(
-          aiMaterial, assimpAttr, 0, aiTexturePath, (IntBuffer) null, null, null, null, null, null);
+      aiGetMaterialTexture(aiMaterial, assimpAttr, 0, aiTexturePath, (IntBuffer) null, null, null, null, null, null);
 
       String texturePath = aiTexturePath.dataString();
 
@@ -243,31 +226,23 @@ public class ModelFactory {
     }
   }
 
-  private void setColor(
-      AIMaterial assimpMaterial,
-      String assimpAttr,
-      Map<MaterialProperty<?>, Object> properties,
-      MaterialProperty<Vector4f> property) {
+  private void setColor(AIMaterial assimpMaterial, String assimpAttr, Map<MaterialProperty<?>, Object> properties, MaterialProperty<Vector4f> property) {
 
     AIColor4D workColor = AIColor4D.create();
     aiGetMaterialColor(assimpMaterial, assimpAttr, 0, 0, workColor);
 
-    if (workColor.r() != 0.0f
-        || workColor.g() != 0.0f && workColor.b() != 0.0f
-        || workColor.a() != 0.0f) {
+    if (workColor.r() != 0.0f || workColor.g() != 0.0f && workColor.b() != 0.0f || workColor.a() != 0.0f) {
       Vector4f color = new Vector4f(workColor.r(), workColor.g(), workColor.b(), workColor.a());
-      LOG.infof("Loading color property %s (%s)", property.getName(), color);
+      logger.info("Loading color property {} ({})", property.getName(), color);
       properties.put(property, color);
     }
+
   }
 
-  private void setFloat(
-      AIMaterial assimpMaterial,
-      String assimpAttr,
-      Map<MaterialProperty<?>, Object> properties,
-      MaterialProperty<Float> property) {
+  private void setFloat(AIMaterial assimpMaterial, String assimpAttr, Map<MaterialProperty<?>, Object> properties, MaterialProperty<Float> property) {
     AIColor4D workColor = AIColor4D.create();
     aiGetMaterialColor(assimpMaterial, assimpAttr, 0, 0, workColor);
     properties.put(property, workColor.r());
   }
+
 }

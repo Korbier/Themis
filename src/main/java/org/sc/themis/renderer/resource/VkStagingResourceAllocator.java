@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
-import org.jboss.logging.Logger;
 import org.sc.themis.renderer.base.command.VkCommand;
 import org.sc.themis.renderer.base.device.VkDevice;
 import org.sc.themis.renderer.base.device.VkMemoryAllocator;
@@ -13,11 +12,11 @@ import org.sc.themis.renderer.base.sync.VkFence;
 import org.sc.themis.renderer.lang.VulkanObject;
 import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
+import org.slf4j.LoggerFactory;
 
 public class VkStagingResourceAllocator extends VulkanObject {
 
-  private static final org.jboss.logging.Logger LOG =
-      Logger.getLogger(VkStagingResourceAllocator.class);
+  private static final org.slf4j.Logger logger = LoggerFactory.getLogger(VkStagingResourceAllocator.class);
 
   private static final int STAGING_SIZE = 1024;
   private static final int ALIVED_SIZE = 1024;
@@ -26,14 +25,12 @@ public class VkStagingResourceAllocator extends VulkanObject {
   private final VkDevice device;
   private final VkMemoryAllocator allocator;
   private final Queue<VkStagingResource> staging = new ArrayBlockingQueue<>(STAGING_SIZE);
-  private final List<VkStagingResource> staged =
-      Collections.synchronizedList(new ArrayList<>(ALIVED_SIZE));
+  private final List<VkStagingResource> staged = Collections.synchronizedList(new ArrayList<>(ALIVED_SIZE));
   private final Queue<VkStagingResource> garbage = new ArrayBlockingQueue<>(GARBAGE_SIZE);
 
   private VkFence commitFence;
 
-  public VkStagingResourceAllocator(
-      Configuration configuration, VkDevice device, VkMemoryAllocator allocator) {
+  public VkStagingResourceAllocator(Configuration configuration, VkDevice device, VkMemoryAllocator allocator) {
     super(configuration);
     this.device = device;
     this.allocator = allocator;
@@ -41,7 +38,6 @@ public class VkStagingResourceAllocator extends VulkanObject {
 
   @Override
   public void setup() throws ThemisException {
-
     this.commitFence = new VkFence(getConfiguration(), this.device, false);
     this.commitFence.setup();
   }
@@ -60,7 +56,7 @@ public class VkStagingResourceAllocator extends VulkanObject {
     while ((resource = this.staging.poll()) != null) {
       resource.commit(command);
       this.staged.add(resource);
-      LOG.tracef("Staging resource commited (%d bytes)", resource.getBufferSize());
+      logger.trace("Staging resource commited ({} bytes)", resource.getBufferSize());
     }
 
     command.end();
@@ -69,27 +65,23 @@ public class VkStagingResourceAllocator extends VulkanObject {
     this.commitFence.waitForAndReset();
 
     releaseAllInThread();
+
   }
 
   public VkStagingBuffer allocateBuffer(int bufferUsage) {
-    VkStagingBuffer buffer =
-        new VkStagingBuffer(getConfiguration(), this, this.device, this.allocator, bufferUsage);
+    VkStagingBuffer buffer = new VkStagingBuffer(getConfiguration(), this, this.device, this.allocator, bufferUsage);
     buffer.setup();
     return buffer;
   }
 
   public VkStagingImage allocateImage(int imageFormat) {
-    VkStagingImage image = new VkStagingImage(
-        getConfiguration(), this, this.device, this.allocator, imageFormat, true, 1
-    );
+    VkStagingImage image = new VkStagingImage(getConfiguration(), this, this.device, this.allocator, imageFormat, true, 1);
     image.setup();
     return image;
   }
 
   public VkStagingImage allocateImage(int imageFormat, int layers) {
-    VkStagingImage image = new VkStagingImage(
-        getConfiguration(), this, this.device, this.allocator, imageFormat, false, layers
-    );
+    VkStagingImage image = new VkStagingImage(getConfiguration(), this, this.device, this.allocator, imageFormat, false, layers);
     image.setup();
     return image;
   }
@@ -104,31 +96,33 @@ public class VkStagingResourceAllocator extends VulkanObject {
   }
 
   private void releaseAll() throws ThemisException {
-    LOG.tracef("Releasing garbaged resources");
+
+    logger.trace("Releasing garbaged resources");
     VkStagingResource resource;
+
     while ((resource = this.garbage.poll()) != null) {
       resource.release();
-      LOG.tracef("Garbaging resource (%d bytes)", resource.getBufferSize());
+      logger.trace("Garbaging resource ({} bytes)", resource.getBufferSize());
     }
+
   }
 
   private void releaseAllInThread() {
     if (!this.garbage.isEmpty()) {
-      Thread.ofVirtual()
-          .start(
-              () -> {
-                try {
-                  releaseAll();
-                } catch (ThemisException e) {
-                  throw new RuntimeException(e);
-                }
-              });
+      Thread.ofVirtual().start(() -> {
+          try {
+            releaseAll();
+          } catch (ThemisException e) {
+            throw new RuntimeException(e); //todo
+          }
+      });
     }
   }
 
   private void garbageAndReleaseAll() throws ThemisException {
-    LOG.tracef("Garbaging all resources");
+    logger.trace("Garbaging all resources");
     new ArrayList<>(this.staged).forEach(this::garbage);
     releaseAll();
   }
+
 }

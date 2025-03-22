@@ -5,12 +5,12 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 
-import org.jboss.logging.Logger;
 import org.lwjgl.util.shaderc.Shaderc;
+import org.slf4j.LoggerFactory;
 
 public class VkShaderSourceCompiler {
 
-  private static final org.jboss.logging.Logger LOG = Logger.getLogger(VkShaderSourceCompiler.class);
+  private static final org.slf4j.Logger logger = LoggerFactory.getLogger(VkShaderSourceCompiler.class);
 
   public static void compileShaderIfChanged(String glsShaderFile, int shaderType) {
     compileShaderIfChanged(glsShaderFile, glsShaderFile + ".spv", shaderType);
@@ -30,19 +30,16 @@ public class VkShaderSourceCompiler {
       if (!spvFile.exists() || glslFile.lastModified() > spvFile.lastModified()) {
 
         if (!glslFile.exists()) {
-          LOG.debugf("Shader {} does not exists", glslFile.getPath());
+          logger.debug("Shader {} does not exists", glslFile.getPath());
         }
 
-        LOG.debugf("Compiling {} to {}", glslFile.getPath(), spvFile.getPath());
+        logger.debug("Compiling {} to {}", glslFile.getPath(), spvFile.getPath());
         String shaderCode = new String(Files.readAllBytes(glslFile.toPath()));
         compiledShader = compileShader(shaderCode, shaderType);
         Files.write(spvFile.toPath(), compiledShader);
 
       } else {
-        LOG.debugf(
-            "Shader {} already compiled. Loading compiled version: {}",
-            glslFile.getPath(),
-            spvFile.getPath());
+        logger.debug("Shader {} already compiled. Loading compiled version: {}", glslFile.getPath(), spvFile.getPath());
       }
 
     } catch (IOException excp) {
@@ -60,14 +57,10 @@ public class VkShaderSourceCompiler {
       compiler = Shaderc.shaderc_compiler_initialize();
       options = Shaderc.shaderc_compile_options_initialize();
 
-      long result =
-          Shaderc.shaderc_compile_into_spv(
-              compiler, shaderCode, shaderType, "shader.glsl", "main", options);
+      long result = Shaderc.shaderc_compile_into_spv(compiler, shaderCode, shaderType, "shader.glsl", "main", options);
 
-      if (Shaderc.shaderc_result_get_compilation_status(result)
-          != Shaderc.shaderc_compilation_status_success) {
-        throw new RuntimeException(
-            "Shader compilation failed: " + Shaderc.shaderc_result_get_error_message(result));
+      if (Shaderc.shaderc_result_get_compilation_status(result) != Shaderc.shaderc_compilation_status_success) {
+        throw new RuntimeException("Shader compilation failed: " + Shaderc.shaderc_result_get_error_message(result));
       }
 
       ByteBuffer buffer = Shaderc.shaderc_result_get_bytes(result);

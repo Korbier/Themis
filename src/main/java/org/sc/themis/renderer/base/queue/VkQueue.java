@@ -1,20 +1,16 @@
 package org.sc.themis.renderer.base.queue;
 
 import java.util.Objects;
-import org.jboss.logging.Logger;
 import org.sc.themis.renderer.lang.VulkanObject;
 import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 
 public class VkQueue extends VulkanObject {
 
-  private static final org.jboss.logging.Logger LOG = Logger.getLogger(VkQueue.class);
-
   private final org.lwjgl.vulkan.VkQueue vkQueue;
   private final int queueFamilyIndex;
 
-  public VkQueue(
-      Configuration configuration, org.lwjgl.vulkan.VkQueue queue, int queueFamilyIndex) {
+  public VkQueue(Configuration configuration, org.lwjgl.vulkan.VkQueue queue, int queueFamilyIndex) {
     super(configuration);
     this.vkQueue = queue;
     this.queueFamilyIndex = queueFamilyIndex;
@@ -45,4 +41,5 @@ public class VkQueue extends VulkanObject {
   public int getQueueFamilyIndex() {
     return this.queueFamilyIndex;
   }
+
 }
