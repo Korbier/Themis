@@ -18,6 +18,7 @@ The viewer is a sample application built with this engine.
     * Spot
   * Material
     * Basic color material (Phong lighting)
+    * Basic texture material (Phong lighting)
   * Mouse picking
   * Post processing
     * TBN display
@@ -32,7 +33,11 @@ The viewer is a sample application built with this engine.
   * Key mapping
   * User interface
     * Toggle TBN
-    * Toggle main light
+    * Toggle directional light
+    * Toggle point light
+    * Toggle spot light
+    * Toggle Material (color <-> texture)
+  * Mouse control
 
 * Other
   * Native executable building with GraalVM Native Image
@@ -41,7 +46,6 @@ The viewer is a sample application built with this engine.
 
 * Renderer
   * Material
-    * Basic texture material (Phong lighting)
     * PBR material
   * Post processing
     * Grid Display
@@ -50,17 +54,30 @@ The viewer is a sample application built with this engine.
   * Mouse picking
 
 # Screenshots
-### Default view
+### Sphere
+#### Default view
  
-![](./documentation/screenshots/001.png)
+![](documentation/sphere/001.png)
 
-### With TBN vectors
+#### With TBN vectors
 
-![](./documentation/screenshots/002.png)
+![](documentation/sphere/002.png)
 
-### UI Panel & Toggle button
+#### UI Panel & Toggle button
  
-![](./documentation/screenshots/003.png)
+![](documentation/sphere/003.png)
 
- 
+### Shark
+#### Material : color, all light
+
+![](./documentation/shark/001.png)
+
+#### Material : color, point light
+
+![](./documentation/shark/002.png)
+
+#### Material : texture, directional light
+
+![](./documentation/shark/003.png)
+
  
