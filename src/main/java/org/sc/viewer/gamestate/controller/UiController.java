@@ -1,9 +1,11 @@
 package org.sc.viewer.gamestate.controller;
 
+import java.util.Optional;
 import java.util.UUID;
 import org.sc.themis.input.Input;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.scene.base.Controller;
+import org.sc.themis.scene.base.geometry.Model;
 import org.sc.themis.scene.pencil.Color;
 import org.sc.themis.scene.pencil.Pencil;
 import org.sc.themis.scene.ui.LabelBuilder;
@@ -11,6 +13,7 @@ import org.sc.themis.scene.ui.PanelBuilder;
 import org.sc.themis.scene.ui.ToggleButtonBuilder;
 import org.sc.themis.scene.ui.UIBuilder;
 import org.sc.viewer.ViewerContext;
+import org.sc.viewer.renderactivity.geometry.material.TextureMaterial;
 import org.sc.viewer.renderactivity.postprocess.postprocessor.ShowTBNPostprocessor;
 
 import static org.lwjgl.glfw.GLFW.*;
@@ -88,6 +91,25 @@ public class UiController implements Controller {
             .isToggledSupplier(() -> scene.getSpotLights().getFirst().isVisible())
             .onClick(_ -> context.getKeyMapping().execute(GLFW_KEY_3));
 
+    LabelBuilder lblMaterial = this.builder.label(UUID.randomUUID().toString())
+        .location(2, 108)
+        .size(40, 20)
+        .text("Color / Texture");
+
+    ToggleButtonBuilder tglMaterial =
+        this.builder.toggleButton(UUID.randomUUID().toString())
+            .location(200 - 44, 108)
+            .size(40, 16)
+            .colorDefault(Color.of("CBD5E1"))
+            .colorHot(Color.of("94A3B8"))
+            .colorToggled(Color.of("7092BE"))
+            .isToggledSupplier(() -> {
+              Optional<Model> oModel = scene.getModels().stream().findFirst();
+              if (oModel.isEmpty()) return false;
+              return oModel.get().getMaterial().isPresent() && oModel.get().getMaterial().get().equals(TextureMaterial.MATERIAL_ID);
+            } )
+            .onClick(_ -> context.getKeyMapping().execute(GLFW_KEY_4));
+
     this.pnlConfiguration = this.builder.panel(UUID.randomUUID().toString())
         .location(2, 30)
         .size(200, 300)
@@ -95,7 +117,8 @@ public class UiController implements Controller {
             lblTBN, tglTBN,
             lblDirectionalLight, tglDirectionalLight,
             lblPointLight, tglPointLight,
-            lblSpotLight, tglSpotLight
+            lblSpotLight, tglSpotLight,
+            lblMaterial, tglMaterial
         );
 
   }

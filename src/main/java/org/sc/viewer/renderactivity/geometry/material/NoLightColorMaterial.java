@@ -75,14 +75,8 @@ public class NoLightColorMaterial extends Material {
 
             /******* STRUCTS - MATERIAL ******************/
             struct Material {
-                vec4 ambient;
                 vec4 diffuse;
-                vec4 specular;
-                float shininess;
             };
-
-            /******* STRUCTS - LIGHTS ******************/
-            $PHONG_LIGHT_STRUCT$
 
             /******* DESCRIPTORSET - 0 - Global Data ******************/
             layout(std140, set = 0, binding = 0) uniform Global {
@@ -95,71 +89,34 @@ public class NoLightColorMaterial extends Material {
                 uint utime;
             } global;
 
-            /******* DESCRIPTORSET - 1 - Lights ******************/
-            $PHONG_LIGHT_DESCRIPTORSET$
-
             /******* DESCRIPTORSET - 2 - Material ******************/
-            layout(std140, set = 2, binding = 0) uniform MaterialUni {
+            layout(std140, set = 1, binding = 0) uniform MaterialUni {
                 Material content;
             } material;
 
-            /**** FUNCTIONS - Lights ****/
-            $PHONG_LIGHT_FUNTIONS$
-
             /**** MAIN ****/
             void main() {
-
                 Material material = material.content;
-                vec3 nlNormal = normalize(inNormal);
-                vec3 position = inPosition;
-                vec3 finalColor = vec3(0.0f);
-
-                outColor = material.diffuse;
-                outColor = vec4(pow(outColor.rgb, vec3(2.2)), outColor.a);
-
+                outColor = vec4(material.diffuse.rgb, 1.0f);
             }
             """);
 
-  private static final int BUFFER_SIZE =
-      MemorySizeUtils.VEC4F // Ambient component
-          + MemorySizeUtils.VEC4F // Diffuse component
-          + MemorySizeUtils.VEC4F // Specular component
-          + MemorySizeUtils.FLOAT; // Shininess
-  private static final VkBufferDescriptor BUFFER_DESCRIPTOR =
-      VkBufferDescriptor.descriptorsetUniform(BUFFER_SIZE);
+  private static final int BUFFER_SIZE = MemorySizeUtils.VEC4F; // Diffuse component
+
+  private static final VkBufferDescriptor BUFFER_DESCRIPTOR = VkBufferDescriptor.descriptorsetUniform(BUFFER_SIZE);
 
   public NoLightColorMaterial(
-      Configuration configuration,
-      Renderer renderer,
-      VkRenderPass renderPass,
-      SceneDescriptorSet sceneDescriptorSet,
-      LightDescriptorSet lightDescriptorSet) {
+      Configuration configuration, Renderer renderer, VkRenderPass renderPass,
+      SceneDescriptorSet sceneDescriptorSet
+  ) {
 
     super(configuration, renderer, IDENTIFIER);
 
-    setMaterialPropertiesValidator(
-        props ->
-            props.containsKeys(
-                MaterialProperty.Color.BASE,
-                MaterialProperty.Color.DIFFUSE,
-                MaterialProperty.Color.SPECULAR,
-                MaterialProperty.Property.SHININESS));
+    setMaterialPropertiesValidator(props -> props.containsKeys(MaterialProperty.Color.DIFFUSE));
+    setVariantsIdentifierFunction( props -> props.generateVariantIdentifier(MaterialProperty.Color.DIFFUSE));
 
-    setVariantsIdentifierFunction(
-        props ->
-            props.generateVariantIdentifier(
-                MaterialProperty.Color.BASE,
-                MaterialProperty.Color.DIFFUSE,
-                MaterialProperty.Color.SPECULAR,
-                MaterialProperty.Property.SHININESS));
-
-    addShader(
-        VK_SHADER_STAGE_VERTEX_BIT,
-        VkShaderSourceCompiler.compileShader(VERTEX_SOURCE, Shaderc.shaderc_glsl_vertex_shader));
-    addShader(
-        VK_SHADER_STAGE_FRAGMENT_BIT,
-        VkShaderSourceCompiler.compileShader(
-            FRAGMENT_SOURCE, Shaderc.shaderc_glsl_fragment_shader));
+    addShader(VK_SHADER_STAGE_VERTEX_BIT, VkShaderSourceCompiler.compileShader(VERTEX_SOURCE, Shaderc.shaderc_glsl_vertex_shader));
+    addShader(VK_SHADER_STAGE_FRAGMENT_BIT, VkShaderSourceCompiler.compileShader(FRAGMENT_SOURCE, Shaderc.shaderc_glsl_fragment_shader));
     addConstantRange(VK_SHADER_STAGE_VERTEX_BIT, 0, MemorySizeUtils.MAT4x4F);
     setVertexInputDescriptor(
         new VkVertexInputStateDescriptor(VK_VERTEX_INPUT_RATE_VERTEX)
@@ -171,20 +128,11 @@ public class NoLightColorMaterial extends Material {
         );
     setPipelineDescriptor(new VkPipelineDescriptor(renderPass, 0, false, 1, true, 1, 1, 1));
 
-    addVariantsUniformBinding(
-        0, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, BUFFER_DESCRIPTOR);
-    setVariantsUniformSetter(
-        (binding, buffer, props) -> {
-          buffer.set(0, props.getProperty(MaterialProperty.Color.BASE));
-          buffer.set(MemorySizeUtils.VEC4F, props.getProperty(MaterialProperty.Color.DIFFUSE));
-          buffer.set(
-              MemorySizeUtils.VEC4F + MemorySizeUtils.VEC4F,
-              props.getProperty(MaterialProperty.Color.SPECULAR));
-          buffer.set(
-              MemorySizeUtils.VEC4F + MemorySizeUtils.VEC4F + MemorySizeUtils.VEC4F,
-              props.getProperty(MaterialProperty.Property.SHININESS));
-        });
+    addVariantsUniformBinding(0, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, BUFFER_DESCRIPTOR);
 
-    setDescriptorsetProviders(sceneDescriptorSet, lightDescriptorSet);
+    setVariantsUniformSetter((_, buffer, props) -> buffer.set(0, props.getProperty(MaterialProperty.Color.DIFFUSE)));
+
+    setDescriptorsetProviders(sceneDescriptorSet);
+
   }
 }
