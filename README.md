@@ -67,7 +67,7 @@ The viewer is a sample application built with this engine.
  
 ![](documentation/sphere/003.png)
 
-### Shark
+### Shark ([The model on https://sketchfab.com/](https://sketchfab.com/3d-models/anthro-shark-6e9d487cbce94dd58a4591fec7aff8f9))
 #### Material : color, all light
 
 ![](./documentation/shark/001.png)
