@@ -47,6 +47,10 @@ public class Camera {
     return viewMatrix;
   }
 
+  public void lookAt(Vector3f center) {
+    this.viewMatrix.lookAt(getPosition(), center, new Vector3f(0.0f, 1.0f, 0.0f));
+  }
+
   public void moveBackwards(float inc) {
     viewMatrix.positiveZ(direction).negate().mul(inc);
     position.sub(direction);
@@ -94,6 +98,7 @@ public class Camera {
     // https://community.khronos.org/t/get-direction-from-transformation-matrix-or-quat/65502/3
     this.viewMatrix.getRow(2, this.direction);
     this.front.set(-this.direction.x, -this.direction.y, -this.direction.z);
+
   }
 
   public void setPosition(Vector3f position) {

@@ -38,6 +38,7 @@ import org.sc.viewer.renderactivity.RenderPass;
 import org.sc.viewer.renderactivity.ViewerRendererActivity;
 import org.sc.viewer.renderactivity.geometry.material.ColorMaterial;
 import org.sc.viewer.renderactivity.geometry.material.NoLightColorMaterial;
+import org.sc.viewer.renderactivity.geometry.material.TextureMaterial;
 import org.slf4j.LoggerFactory;
 
 /** Geometry renderpass. */
@@ -100,8 +101,7 @@ public class GeometryRenderPass extends RenderPass {
 
         for (Mesh mesh : model.getMeshes()) {
 
-          MaterialProperties materialProperties =
-              this.materialManager.select(mesh.getProperties(), model.getMaterialProperties());
+          MaterialProperties materialProperties = this.materialManager.select(mesh.getProperties(), model.getMaterialProperties());
 
           if (materialProperties == null) {
             logger.error("No suitable MaterialProperties Struct found for mesh {} (model {})", mesh, model.getIdentifier());
@@ -141,24 +141,18 @@ public class GeometryRenderPass extends RenderPass {
   }
 
   private void setupFramebuffers() throws ThemisException {
-    getFrames()
-        .create(
-            FK_FRAMEBUFFER,
-            (frame) -> {
-              VkFrameBufferDescriptor descriptor =
-                  new VkFrameBufferDescriptor(
-                      getExtent2D(),
-                      this.renderPass.getHandle(),
-                      getGeometryFrameBufferAttachments()
-                          .get(ViewerRendererActivity.GEOMETRY_FB_ATTACHMENT_DEPTH)
-                          .getView()
-                          .getHandle(),
-                      getGeometryFrameBufferAttachments()
-                          .get(ViewerRendererActivity.GEOMETRY_FB_ATTACHMENT_COLOR)
-                          .getView()
-                          .getHandle());
-              return new VkFrameBuffer(getConfiguration(), getDevice(), descriptor);
-            });
+    getFrames().create(
+        FK_FRAMEBUFFER,
+        (_) -> {
+          VkFrameBufferDescriptor descriptor = new VkFrameBufferDescriptor(
+              getExtent2D(),
+              this.renderPass.getHandle(),
+              getGeometryFrameBufferAttachments().get(ViewerRendererActivity.GEOMETRY_FB_ATTACHMENT_DEPTH).getView().getHandle(),
+              getGeometryFrameBufferAttachments().get(ViewerRendererActivity.GEOMETRY_FB_ATTACHMENT_COLOR).getView().getHandle()
+          );
+          return new VkFrameBuffer(getConfiguration(), getDevice(), descriptor);
+        }
+    );
   }
 
   private void setupCommand() throws ThemisException {
@@ -169,28 +163,16 @@ public class GeometryRenderPass extends RenderPass {
 
     VkRenderPassLayout layout =
         new VkRenderPassLayout()
-            .add(
-                0,
-                getGeometryFrameBufferAttachments()
-                    .get(ViewerRendererActivity.GEOMETRY_FB_ATTACHMENT_DEPTH)
-                    .getFormat(),
-                VK_IMAGE_LAYOUT_UNDEFINED,
-                VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL,
-                VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-                VK_ATTACHMENT_STORE_OP_DONT_CARE,
-                VK_ATTACHMENT_LOAD_OP_CLEAR,
-                VK_ATTACHMENT_STORE_OP_STORE)
-            .add(
-                1,
-                getGeometryFrameBufferAttachments()
-                    .get(ViewerRendererActivity.GEOMETRY_FB_ATTACHMENT_COLOR)
-                    .getFormat(),
-                VK_IMAGE_LAYOUT_UNDEFINED,
-                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                VK_ATTACHMENT_LOAD_OP_CLEAR,
-                VK_ATTACHMENT_STORE_OP_STORE,
-                VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-                VK_ATTACHMENT_STORE_OP_DONT_CARE);
+            .add( 0, getGeometryFrameBufferAttachments().get(ViewerRendererActivity.GEOMETRY_FB_ATTACHMENT_DEPTH).getFormat(),
+                VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL,
+                VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE,
+                VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE
+            )
+            .add( 1, getGeometryFrameBufferAttachments().get(ViewerRendererActivity.GEOMETRY_FB_ATTACHMENT_COLOR).getFormat(),
+                VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE,
+                VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE
+            );
 
     VkSubpass subpass = new VkSubpass(device, VK_PIPELINE_BIND_POINT_GRAPHICS);
     subpass.depth(0, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
@@ -199,12 +181,9 @@ public class GeometryRenderPass extends RenderPass {
     VkRenderPassDescriptor descriptor = new VkRenderPassDescriptor(layout);
     descriptor.subpass(subpass);
     descriptor.dependency(
-        0,
-        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-        0,
-        VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-        0);
+        0, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+        0, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, 0
+    );
 
     return descriptor;
   }
@@ -214,14 +193,18 @@ public class GeometryRenderPass extends RenderPass {
     this.materials = new Material[] {
         new NoLightColorMaterial(
             getConfiguration(), getRenderer(), this.renderPass,
-            this.getViewerActivity().getSceneDescriptorset(),
-            this.getViewerActivity().getLighDescriptorset()
+            this.getViewerActivity().getSceneDescriptorset()
         ),
         new ColorMaterial(
             getConfiguration(), getRenderer(), this.renderPass,
             this.getViewerActivity().getSceneDescriptorset(),
             this.getViewerActivity().getLighDescriptorset()
         ),
+        new TextureMaterial(
+            getConfiguration(), getRenderer(), this.renderPass,
+            this.getViewerActivity().getSceneDescriptorset(),
+            this.getViewerActivity().getLighDescriptorset()
+        )
     };
 
     for (Material material : this.materials) {

@@ -1,12 +1,16 @@
 package org.sc.viewer.gamestate;
 
 import java.nio.file.Path;
+import java.util.Optional;
+
 import org.joml.Vector3f;
 import org.sc.themis.gamestate.Gamestate;
 import org.sc.themis.renderer.Renderer;
 import org.sc.themis.scene.Scene;
+import org.sc.themis.scene.base.geometry.Instance;
 import org.sc.themis.scene.base.geometry.Model;
 import org.sc.themis.scene.controller.FpsCameraController;
+import org.sc.themis.scene.controller.OrbitCameraController;
 import org.sc.themis.scene.factory.MaterialFactory;
 import org.sc.themis.scene.light.DirectionalLight;
 import org.sc.themis.scene.light.PointLight;
@@ -23,6 +27,7 @@ import org.sc.viewer.ViewerContext;
 import org.sc.viewer.gamestate.controller.KeyMappingController;
 import org.sc.viewer.gamestate.controller.UiController;
 import org.sc.viewer.renderactivity.geometry.material.ColorMaterial;
+import org.sc.viewer.renderactivity.geometry.material.TextureMaterial;
 
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -32,7 +37,7 @@ public class ViewerGamestate implements Gamestate {
 
   private final ViewerContext context;
   private final Pencil pencil;
-
+  private Instance instance;
   private Model model;
 
   public ViewerGamestate(ViewerContext context) {
@@ -81,12 +86,22 @@ public class ViewerGamestate implements Gamestate {
       SpotLight light = scene.getSpotLights().getFirst();
       light.setVisible(!light.isVisible());
     });
+    this.context.getKeyMapping().map(GLFW_KEY_4, false, () -> {
+      Optional<String> oMaterial = this.model.getMaterial();
+      if (oMaterial.isEmpty() || !oMaterial.get().equals(ColorMaterial.IDENTIFIER)) {
+        this.model.setMaterial(ColorMaterial.IDENTIFIER);
+      } else {
+        this.model.setMaterial(TextureMaterial.IDENTIFIER);
+      }
+
+
+    });
     scene.add(new KeyMappingController(this.context.getKeyMapping()));
   }
 
   private void setupCamera(Scene scene) {
-    scene.getCamera().setPosition(0.0f, 1.0f, 8.0f);
-    scene.add(new FpsCameraController(scene));
+    scene.getCamera().setPosition(-1.0f, -1.0f, 6f);
+    //scene.add(new FpsCameraController(scene));
   }
 
   private void setupUI(Scene scene) {
@@ -98,47 +113,41 @@ public class ViewerGamestate implements Gamestate {
     this.model = createSphere(renderer, "sphere-1");
     this.model.setMaterialProperties(this.materialFactory.color(1.0f, 1.0f, 1.0f, 128.0f));
     this.model.setMaterial(ColorMaterial.IDENTIFIER);
+   // this.model.setMaterial(TextureMaterial.IDENTIFIER);
 
-    scene.add(this.model.create().position(-3.0f, 3.0f, 0.0f));
-    scene.add(this.model.create().position(-3.0f, 0.0f, 0.0f));
-    scene.add(this.model.create().position(-3.0f, -3.0f, 0.0f));
-
-    scene.add(this.model.create().position(0.0f, 3.0f, 0.0f));
-    scene.add(this.model.create().position(0.0f, -3.0f, 0.0f));
-
-    scene.add(this.model.create().position(3.0f, 3.0f, 0.0f));
-    scene.add(this.model.create().position(3.0f, 0.0f, 0.0f));
-    scene.add(this.model.create().position(3.0f, -3.0f, 0.0f));
+    this.instance = this.model.create().position(0.0f, -3.8f, 0.0f);//.position(0, -60.0f, -20.0f).scale(0.5f);
+    scene.add(instance);
+    scene.add(new OrbitCameraController(scene, instance));
 
     scene.add(
         new SpotLight(
-            new Vector3f(0.0f, 0.0f, 0.1f),
+            new Vector3f(0.0f, 0.0f, 0.01f),
             new Vector3f(0.0f, 0.0f, 0.7f),
             new Vector3f(0.0f, 0.0f, 0.9f),
-            new Vector3f(0.0f, 0.5f, 10.0f),
-            new Vector3f(0.0f, 0.5f, -10.0f),
-            Attenuation.type1(128.0f, 64.0f),
-            (float) Math.cos(Math.toRadians(18.0f)),
-            (float) Math.cos(Math.toRadians(20.0f))));
+            new Vector3f(0.0f, 0.0f, 10.0f),
+            new Vector3f(0.0f, 0.0f, -10.0f),
+            Attenuation.type1(128.0f, 128.0f),
+            (float) Math.cos(Math.toRadians(12.0f)),
+            (float) Math.cos(Math.toRadians(16.0f))));
 
     scene.add(
         new DirectionalLight(
             new Vector3f(0.01f),
-            new Vector3f(0.1f),
-            new Vector3f(0.3f),
+            new Vector3f(0.5f),
+            new Vector3f(0.7f),
             new Vector3f(0.0f, 0.0f, -1.0f)));
 
     scene.add(
         new PointLight(
             new Vector3f(0.01f),
-            new Vector3f(0.4f, 0.0f, 0.0f),
             new Vector3f(0.7f, 0.0f, 0.0f),
-            new Vector3f(5.0f, 5.0f, 5.0f),
-            Attenuation.type1(256.0f, 64.0f)));
+            new Vector3f(0.9f, 0.0f, 0.0f),
+            new Vector3f(5.0f, 5.0f, 5.0f), //new Vector3f(5.0f, d5.0f, 5.0f),
+            Attenuation.type1(32.0f, 4.0f)));
   }
 
   private Model createSphere(Renderer renderer, String id) throws ThemisException {
-    return ResourceLoader.get().get(ResourceEnum.MODEL, ModelResourceDescriptor.of("sphere/scene.gltf", id, renderer.getResourceAllocator()));
+    return ResourceLoader.get().get(ResourceEnum.MODEL, ModelResourceDescriptor.of("anthro_shark/scene.gltf", id, renderer.getResourceAllocator()));
   }
 
 }

@@ -49,10 +49,10 @@ public final class PanelBuilder extends ComponentBuilder<PanelBuilder> {
   @Override
   protected void draw(int left, int top, int width, int height) {
 
-    Color borderColor = Color.of("7092BE");
-    Color backgroundColor = Color.of("eeeeee");
-    Color headerColor = Color.of("CBD5E1");
-    Color headerColorHot = Color.of("94A3B8");
+    Color borderColor = Color.of("555555");
+    Color backgroundColor = Color.of("222222"); //Color.of("eeeeee");
+    Color headerColor = Color.of("555555"); //Color.of("CBD5E1");
+    Color headerColorHot = Color.of("777777");
 
     pencil().rect(new Vector2f(left, top), new Vector2f(width, height), borderColor);
     pencil().rect(
@@ -78,8 +78,8 @@ public final class PanelBuilder extends ComponentBuilder<PanelBuilder> {
     }
 
     pencil().text(
-        new Vector2f(left + 2 * DEFAULT_BORDER_SIZE, top + DEFAULT_BORDER_SIZE * 2 + 4),
-        0, Color.of("000000"), "Configuration"
+        new Vector2f(left + 2 * DEFAULT_BORDER_SIZE, top + DEFAULT_BORDER_SIZE * 2),
+        0, Color.of("FFFFFF"), "Configuration"
     );
 
   }

@@ -8,7 +8,7 @@ public final class LabelBuilder extends ComponentBuilder<LabelBuilder> {
   public static final int DEFAULT_BORDER_SIZE = 2;
 
   private String text = null;
-  private Color color = Color.of("000000");
+  private Color color = Color.of("ffffff");
 
   LabelBuilder(UIBuilder builder) {
     super(builder);
