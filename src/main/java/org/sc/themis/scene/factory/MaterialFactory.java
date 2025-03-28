@@ -3,6 +3,8 @@ package org.sc.themis.scene.factory;
 import org.joml.Vector4f;
 import org.sc.themis.renderer.material.MaterialProperties;
 import org.sc.themis.renderer.material.MaterialProperty;
+import org.sc.themis.renderer.resource.VkStagingImage;
+import org.sc.themis.shared.resource.Image;
 
 public class MaterialFactory {
 
@@ -20,4 +22,12 @@ public class MaterialFactory {
     Vector4f color = new Vector4f(r, g, b, 1.0f);
     return color(color, color, color, shininess);
   }
+
+  public MaterialProperties textureWithNormalMap(VkStagingImage texture, VkStagingImage normalMap) {
+    MaterialProperties properties = new MaterialProperties();
+    properties.put(MaterialProperty.Texture.BASE, texture);
+    properties.put(MaterialProperty.Texture.NORMALS, normalMap);
+    return properties;
+  }
+
 }

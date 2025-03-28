@@ -83,7 +83,7 @@ public class ShowTBNPostprocessor implements PostProcessor {
                 uint utime;
             } global;
 
-            const float MAGNITUDE = 0.05;
+            const float MAGNITUDE = 0.2;
 
             void GenerateLine(vec3 v, int index)
             {

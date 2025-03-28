@@ -7,21 +7,21 @@ public final class DirectionalLight extends Light {
 
   public static final int SIZE = Light.SIZE + MemorySizeUtils.VEC3F;
 
-  private final Vector3f direction;
+  private final Vector3f position;
 
   public DirectionalLight(
-      Vector3f ambient, Vector3f diffuse, Vector3f specular, Vector3f direction) {
+      Vector3f ambient, Vector3f diffuse, Vector3f specular, Vector3f position) {
     super(ambient, diffuse, specular);
-    this.direction = new Vector3f(direction);
+    this.position = new Vector3f(position);
     setDirty();
   }
 
-  public void setDirection(Vector3f vector3f) {
-    this.direction.set(vector3f);
+  public void setPosition(Vector3f vector3f) {
+    this.position.set(vector3f);
     setDirty();
   }
 
-  public Vector3f getDirection() {
-    return new Vector3f(this.direction);
+  public Vector3f getPosition() {
+    return new Vector3f(this.position);
   }
 }

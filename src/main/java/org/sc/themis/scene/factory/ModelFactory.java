@@ -1,21 +1,6 @@
 package org.sc.themis.scene.factory;
 
-import static org.lwjgl.assimp.Assimp.AI_MATKEY_BASE_COLOR;
-import static org.lwjgl.assimp.Assimp.AI_MATKEY_COLOR_DIFFUSE;
-import static org.lwjgl.assimp.Assimp.AI_MATKEY_COLOR_EMISSIVE;
-import static org.lwjgl.assimp.Assimp.AI_MATKEY_COLOR_SPECULAR;
-import static org.lwjgl.assimp.Assimp.AI_MATKEY_SHININESS;
-import static org.lwjgl.assimp.Assimp.aiGetMaterialColor;
-import static org.lwjgl.assimp.Assimp.aiGetMaterialTexture;
-import static org.lwjgl.assimp.Assimp.aiImportFile;
-import static org.lwjgl.assimp.Assimp.aiProcess_CalcTangentSpace;
-import static org.lwjgl.assimp.Assimp.aiProcess_FixInfacingNormals;
-import static org.lwjgl.assimp.Assimp.aiProcess_GenSmoothNormals;
-import static org.lwjgl.assimp.Assimp.aiProcess_JoinIdenticalVertices;
-import static org.lwjgl.assimp.Assimp.aiProcess_PreTransformVertices;
-import static org.lwjgl.assimp.Assimp.aiProcess_Triangulate;
-import static org.lwjgl.assimp.Assimp.aiTextureType_BASE_COLOR;
-import static org.lwjgl.assimp.Assimp.aiTextureType_NORMALS;
+import static org.lwjgl.assimp.Assimp.*;
 import static org.lwjgl.vulkan.VK10.VK_FORMAT_R8G8B8A8_SRGB;
 
 import java.nio.IntBuffer;

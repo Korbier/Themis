@@ -181,34 +181,10 @@ public class ColorMaterial extends Material {
                return lightAmbientColor * materialColor;
            }
 
-           vec3 diffuseDirectional( vec3 nlNormal, vec3 materialColor, vec3 lightDiffuseColor, vec3 lightDirection ) {
-               vec3 oppLightDirection  = normalize( -lightDirection );
-               float diff = max( dot( nlNormal, oppLightDirection), 0.0 );
-               return lightDiffuseColor * materialColor * diff;
-           }
-
            vec3 diffuse( vec3 fragPosition, vec3 nlNormal, vec3 materialColor, vec3 lightDiffuseColor, vec3 lightPosition ) {
                vec3 lightDirection  = normalize( lightPosition - fragPosition );
                float diff = max( dot( nlNormal, lightDirection), 0.0 );
                return lightDiffuseColor * materialColor * diff;
-           }
-
-           vec3 specularDirectional( vec3 fragPosition, vec3 normal, vec3 materialSpecular, float materialShininess, vec3 lightSpecularColor, vec3 lightDirection ) {
-
-               vec3 oppLightDirection  = normalize( -lightDirection );
-               vec3 viewDirection = normalize( global.camera.xyz - fragPosition );
-               vec3 reflectDirection = reflect( -oppLightDirection, normal );
-
-               float specularFactor = max(dot(viewDirection, reflectDirection), 0.0);
-
-               //https://stackoverflow.com/questions/37051358/opengl-es-2-0-specular-light-generates-black-border
-               if ( specularFactor > 0.0 ) {
-                   float spec = pow(specularFactor, materialShininess);
-                   return lightSpecularColor * spec * materialSpecular;
-               } else {
-                   return vec3(0.0f);
-               }
-
            }
 
            vec3 specular( vec3 fragPosition, vec3 normal, vec3 materialSpecular, float materialShininess, vec3 lightSpecularColor, vec3 lightPosition ) {
@@ -231,8 +207,8 @@ public class ColorMaterial extends Material {
 
            vec3 directional( vec3 nlNormal, vec3 position, vec3 materialAmbient, vec3 materialDiffuse, vec3 materialSpecular, float materialShininess, DirectionalLight light ) {
                vec3 ambientColor = ambient( light.ambient.rgb, materialAmbient );
-               vec3 diffuseColor = diffuseDirectional( nlNormal, materialDiffuse, light.diffuse.rgb, light.direction.xyz );
-               vec3 specularColor = specularDirectional( position, nlNormal, materialSpecular, materialShininess, light.specular.rgb, light.direction.xyz );
+               vec3 diffuseColor = diffuse( position, nlNormal, materialDiffuse, light.diffuse.rgb, light.direction.xyz );
+               vec3 specularColor = specular( position, nlNormal, materialSpecular, materialShininess, light.specular.rgb, light.direction.xyz );
                return ambientColor + diffuseColor + specularColor;
            }
 

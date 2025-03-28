@@ -20,10 +20,8 @@ public interface MaterialProperty<D> {
 
   /** Texture properties. */
   interface Texture {
-    MaterialProperty<VkStagingImage> BASE =
-        MaterialProperty.of(VkStagingImage.class, "texture.base");
-    MaterialProperty<VkStagingImage> NORMALS =
-        MaterialProperty.of(VkStagingImage.class, "texture.normal");
+    MaterialProperty<VkStagingImage> BASE = MaterialProperty.of(VkStagingImage.class, "texture.base");
+    MaterialProperty<VkStagingImage> NORMALS = MaterialProperty.of(VkStagingImage.class, "texture.normal");
   }
 
   /** Other properties. */

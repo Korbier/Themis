@@ -39,6 +39,7 @@ import org.sc.viewer.renderactivity.ViewerRendererActivity;
 import org.sc.viewer.renderactivity.geometry.material.ColorMaterial;
 import org.sc.viewer.renderactivity.geometry.material.NoLightColorMaterial;
 import org.sc.viewer.renderactivity.geometry.material.TextureMaterial;
+import org.sc.viewer.renderactivity.geometry.material.TextureWithNormalMappingMaterial;
 import org.slf4j.LoggerFactory;
 
 /** Geometry renderpass. */
@@ -194,13 +195,18 @@ public class GeometryRenderPass extends RenderPass {
         new NoLightColorMaterial(
             getConfiguration(), getRenderer(), this.renderPass,
             this.getViewerActivity().getSceneDescriptorset()
-        ),
+        ),/*
         new ColorMaterial(
             getConfiguration(), getRenderer(), this.renderPass,
             this.getViewerActivity().getSceneDescriptorset(),
             this.getViewerActivity().getLighDescriptorset()
-        ),
+        ),*/
         new TextureMaterial(
+            getConfiguration(), getRenderer(), this.renderPass,
+            this.getViewerActivity().getSceneDescriptorset(),
+            this.getViewerActivity().getLighDescriptorset()
+        ),
+        new TextureWithNormalMappingMaterial(
             getConfiguration(), getRenderer(), this.renderPass,
             this.getViewerActivity().getSceneDescriptorset(),
             this.getViewerActivity().getLighDescriptorset()

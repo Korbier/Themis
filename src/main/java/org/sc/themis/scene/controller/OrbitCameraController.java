@@ -37,7 +37,7 @@ public class OrbitCameraController implements Controller {
 
   @Override
   public void input(Input input, long tpf) {
-    if (input.isLeftButtonPressed()) {
+    if (input.isRightButtonPressed()) {
       Vector2f displVec = input.getDisplayVector();
       float sensitivityX = this.inverseMouseX ? (-1 * MOUSE_SENSITIVITY) : MOUSE_SENSITIVITY;
       float sensitivityY = this.inverseMouseY ? (-1 * MOUSE_SENSITIVITY) : MOUSE_SENSITIVITY;

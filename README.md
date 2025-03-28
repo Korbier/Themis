@@ -18,7 +18,7 @@ The viewer is a sample application built with this engine.
     * Spot
   * Material
     * Basic color material (Phong lighting)
-    * Basic texture material (Phong lighting)
+    * Basic texture material (Phong lighting) + Normal mapping
   * Mouse picking
   * Post processing
     * TBN display
