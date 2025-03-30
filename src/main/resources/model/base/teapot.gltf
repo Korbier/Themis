@@ -57,7 +57,7 @@
         }
     ],
     "extensions" : {},
-    "materials" : [
+    "materialRenderers" : [
         {
             "name" : "Material",
             "pbrMetallicRoughness" : {}
@@ -73,7 +73,7 @@
                         "POSITION" : 1
                     },
                     "indices" : 2,
-                    "material" : 0
+                    "materialRenderer" : 0
                 }
             ]
         }

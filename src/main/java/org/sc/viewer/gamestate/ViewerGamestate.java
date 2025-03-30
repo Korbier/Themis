@@ -6,34 +6,29 @@ import java.util.Optional;
 import org.joml.Vector3f;
 import org.sc.themis.gamestate.Gamestate;
 import org.sc.themis.renderer.Renderer;
-import org.sc.themis.renderer.resource.VkStagingImage;
+import org.sc.themis.renderer.base.resource.staging.VkStagingImage;
 import org.sc.themis.scene.Scene;
-import org.sc.themis.scene.base.geometry.Instance;
-import org.sc.themis.scene.base.geometry.Model;
-import org.sc.themis.scene.controller.FpsCameraController;
+import org.sc.themis.renderer.resource.model.Instance;
+import org.sc.themis.renderer.resource.model.Model;
 import org.sc.themis.scene.controller.OrbitCameraController;
 import org.sc.themis.scene.factory.MaterialFactory;
-import org.sc.themis.scene.factory.ModelFactory;
 import org.sc.themis.scene.light.DirectionalLight;
 import org.sc.themis.scene.light.PointLight;
 import org.sc.themis.scene.light.SpotLight;
 import org.sc.themis.scene.light.attenuation.Attenuation;
 import org.sc.themis.scene.pencil.Pencil;
 import org.sc.themis.shared.exception.ThemisException;
-import org.sc.themis.shared.resource.Image;
-import org.sc.themis.shared.resource.loader.ResourceType;
-import org.sc.themis.shared.resource.loader.descriptor.FontResourceDescriptor;
-import org.sc.themis.shared.resource.loader.ResourceEnum;
-import org.sc.themis.shared.resource.ResourceLoader;
-import org.sc.themis.shared.resource.font.FontRepository;
-import org.sc.themis.shared.resource.loader.descriptor.ModelResourceDescriptor;
-import org.sc.themis.shared.resource.loader.descriptor.TextureResourceDescriptor;
+import org.sc.themis.renderer.resource.font.FontResourceDescriptor;
+import org.sc.themis.renderer.resource.ResourceEnum;
+import org.sc.themis.renderer.resource.ResourceLoader;
+import org.sc.themis.renderer.resource.font.FontRepository;
+import org.sc.themis.renderer.resource.model.ModelResourceDescriptor;
+import org.sc.themis.renderer.resource.image.ImageResourceDescriptor;
 import org.sc.viewer.ViewerContext;
 import org.sc.viewer.gamestate.controller.KeyMappingController;
 import org.sc.viewer.gamestate.controller.UiController;
-import org.sc.viewer.renderactivity.geometry.material.ColorMaterial;
-import org.sc.viewer.renderactivity.geometry.material.TextureMaterial;
-import org.sc.viewer.renderactivity.geometry.material.TextureWithNormalMappingMaterial;
+import org.sc.viewer.renderactivity.geometry.material.TextureMaterialRenderer;
+import org.sc.viewer.renderactivity.geometry.material.TextureWithNormalMappingMaterialRenderer;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.vulkan.VK10.VK_FORMAT_R8G8B8A8_SRGB;
@@ -95,13 +90,13 @@ public class ViewerGamestate implements Gamestate {
       light.setVisible(!light.isVisible());
     });
     this.context.getKeyMapping().map(GLFW_KEY_4, false, () -> {
-      Optional<String> oMaterial = this.model.getMaterial();
-      if (oMaterial.isEmpty() || !oMaterial.get().equals(TextureWithNormalMappingMaterial.MATERIAL_ID)) {
-        this.model.setMaterial(TextureWithNormalMappingMaterial.MATERIAL_ID);
+      Optional<String> oMaterial = this.model.getMaterialRenderer();
+      if (oMaterial.isEmpty() || !oMaterial.get().equals(TextureWithNormalMappingMaterialRenderer.MATERIAL_ID)) {
+        this.model.setMaterial(TextureWithNormalMappingMaterialRenderer.MATERIAL_ID);
       } else {
-        this.model.setMaterial(TextureMaterial.MATERIAL_ID);
+        this.model.setMaterial(TextureMaterialRenderer.MATERIAL_ID);
       }
-      System.out.println(this.model.getMaterial().get());
+      System.out.println(this.model.getMaterialRenderer().get());
 
 
     });
@@ -119,14 +114,14 @@ public class ViewerGamestate implements Gamestate {
   private void setupScene(Renderer renderer, Scene scene) throws ThemisException {
 
     VkStagingImage texture = renderer.getResourceAllocator().allocateImage(VK_FORMAT_R8G8B8A8_SRGB);
-    texture.load(ResourceLoader.get().get(ResourceEnum.TEXTURE, TextureResourceDescriptor.of("./src/main/resources/material/brickwall/brickwall_albedo.jpg"), Path.of(".")));
+    texture.load(ResourceLoader.get().get(ResourceEnum.IMAGE, ImageResourceDescriptor.of("./src/main/resources/material/brickwall/brickwall_albedo.jpg"), Path.of(".")));
 
     VkStagingImage normalMap = renderer.getResourceAllocator().allocateImage(VK_FORMAT_R8G8B8A8_UNORM);
-    normalMap.load(ResourceLoader.get().get(ResourceEnum.TEXTURE, TextureResourceDescriptor.of("./src/main/resources/material/brickwall/brickwall_normal.jpg"), Path.of(".")));
+    normalMap.load(ResourceLoader.get().get(ResourceEnum.IMAGE, ImageResourceDescriptor.of("./src/main/resources/material/brickwall/brickwall_normal.jpg"), Path.of(".")));
 
     this.model = createSphere(renderer, "sphere-1");
     this.model.setMaterialProperties(this.materialFactory.textureWithNormalMap(texture, normalMap));
-    this.model.setMaterial(TextureMaterial.MATERIAL_ID);
+    this.model.setMaterial(TextureMaterialRenderer.MATERIAL_ID);
 
     this.instance = this.model.create().scale(1.5f); //.position(0.0f, -3.8f, 0.0f);//.position(0, -60.0f, -20.0f).scale(0.5f);
     scene.add(instance);

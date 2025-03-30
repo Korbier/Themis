@@ -3,7 +3,7 @@ package org.sc.playground.controller.fpscamera;
 import org.sc.themis.gamestate.Gamestate;
 import org.sc.themis.renderer.Renderer;
 import org.sc.themis.scene.Scene;
-import org.sc.themis.scene.base.geometry.Model;
+import org.sc.themis.renderer.resource.model.Model;
 import org.sc.themis.scene.controller.FpsCameraController;
 import org.sc.themis.scene.factory.MeshFactory;
 import org.sc.themis.scene.factory.ModelFactory;

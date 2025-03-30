@@ -23,12 +23,11 @@ import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSetLayout;
 import org.sc.themis.renderer.base.resource.image.VkSampler;
 import org.sc.themis.renderer.base.resource.image.VkSamplerDescriptor;
 import org.sc.themis.renderer.base.sync.VkFence;
-import org.sc.themis.renderer.resource.VkStagingImage;
+import org.sc.themis.renderer.base.resource.staging.VkStagingImage;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
-import org.sc.themis.shared.resource.Image;
-import org.sc.themis.shared.resource.Font;
+import org.sc.themis.renderer.resource.font.Font;
 
 public class FontRendererActivity extends BaseRendererActivity {
 

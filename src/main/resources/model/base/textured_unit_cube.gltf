@@ -79,7 +79,7 @@
         }
     ],
     "extensions" : {},
-    "materials" : [
+    "materialRenderers" : [
         {
             "name" : "Material",
             "pbrMetallicRoughness" : {}
@@ -97,7 +97,7 @@
                         "TEXCOORD_0" : 3
                     },
                     "indices" : 4,
-                    "material" : 0
+                    "materialRenderer" : 0
                 }
             ]
         }

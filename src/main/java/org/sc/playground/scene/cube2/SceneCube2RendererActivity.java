@@ -7,9 +7,9 @@ import org.sc.themis.renderer.base.command.VkCommand;
 import org.sc.themis.renderer.base.framebuffer.VkFrameBuffer;
 import org.sc.themis.renderer.base.sync.VkFence;
 import org.sc.themis.scene.Scene;
-import org.sc.themis.scene.base.geometry.Instance;
-import org.sc.themis.scene.base.geometry.Mesh;
-import org.sc.themis.scene.base.geometry.Model;
+import org.sc.themis.renderer.resource.model.Instance;
+import org.sc.themis.renderer.resource.model.Mesh;
+import org.sc.themis.renderer.resource.model.Model;
 import org.sc.themis.scene.descriptorset.SceneDescriptorSet;
 import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
@@ -17,7 +17,7 @@ import org.sc.themis.shared.exception.ThemisException;
 public class SceneCube2RendererActivity extends BaseRendererActivity {
 
   private SceneDescriptorSet sceneDescriptorSet;
-  private ColorMaterial colorMaterial;
+  private ColorMaterialRenderer colorMaterial;
 
   public SceneCube2RendererActivity(Configuration configuration) {
     super(configuration);
@@ -90,7 +90,7 @@ public class SceneCube2RendererActivity extends BaseRendererActivity {
     this.sceneDescriptorSet.setup();
 
     this.colorMaterial =
-        new ColorMaterial(
+        new ColorMaterialRenderer(
             getConfiguration(), this.renderer, this.renderPass, this.sceneDescriptorSet);
     this.colorMaterial.setup();
   }

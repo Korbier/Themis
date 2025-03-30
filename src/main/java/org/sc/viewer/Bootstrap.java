@@ -3,7 +3,7 @@ package org.sc.viewer;
 import org.sc.themis.engine.Engine;
 import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
-import org.sc.themis.shared.resource.ResourceLoader;
+import org.sc.themis.renderer.resource.ResourceLoader;
 import org.sc.viewer.gamestate.ViewerGamestate;
 import org.sc.viewer.renderactivity.ViewerRendererActivity;
 

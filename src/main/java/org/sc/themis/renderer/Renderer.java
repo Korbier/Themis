@@ -19,7 +19,7 @@ import org.sc.themis.renderer.base.queue.VkQueue;
 import org.sc.themis.renderer.base.queue.VkQueueSelectors;
 import org.sc.themis.renderer.base.resource.image.VkImageView;
 import org.sc.themis.renderer.base.sync.VkSemaphore;
-import org.sc.themis.renderer.resource.VkStagingResourceAllocator;
+import org.sc.themis.renderer.base.resource.staging.VkStagingResourceAllocator;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;

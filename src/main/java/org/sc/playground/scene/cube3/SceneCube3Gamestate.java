@@ -6,19 +6,19 @@ import org.joml.Vector4f;
 import org.sc.themis.gamestate.Gamestate;
 import org.sc.themis.input.Input;
 import org.sc.themis.renderer.Renderer;
-import org.sc.themis.renderer.material.MaterialProperties;
-import org.sc.themis.renderer.material.MaterialProperty;
-import org.sc.themis.renderer.resource.VkStagingImage;
+import org.sc.themis.renderer.resource.material.Material;
+import org.sc.themis.renderer.resource.material.MaterialProperty;
+import org.sc.themis.renderer.base.resource.staging.VkStagingImage;
 import org.sc.themis.scene.Scene;
-import org.sc.themis.scene.base.geometry.Mesh;
-import org.sc.themis.scene.base.geometry.Model;
+import org.sc.themis.renderer.resource.model.Mesh;
+import org.sc.themis.renderer.resource.model.Model;
 import org.sc.themis.scene.factory.MeshFactory;
 import org.sc.themis.scene.factory.ModelFactory;
 import org.sc.themis.shared.exception.ThemisException;
-import org.sc.themis.shared.resource.Image;
-import org.sc.themis.shared.resource.loader.descriptor.TextureResourceDescriptor;
-import org.sc.themis.shared.resource.loader.ResourceEnum;
-import org.sc.themis.shared.resource.ResourceLoader;
+import org.sc.themis.renderer.resource.image.Image;
+import org.sc.themis.renderer.resource.image.ImageResourceDescriptor;
+import org.sc.themis.renderer.resource.ResourceEnum;
+import org.sc.themis.renderer.resource.ResourceLoader;
 
 public class SceneCube3Gamestate implements Gamestate {
 
@@ -34,7 +34,7 @@ public class SceneCube3Gamestate implements Gamestate {
   @Override
   public void setup(Renderer renderer, Scene scene) throws ThemisException {
 
-    Image image = ResourceLoader.get().get(ResourceEnum.TEXTURE, TextureResourceDescriptor.of("vulkan.png"));
+    Image image = ResourceLoader.get().get(ResourceEnum.IMAGE, ImageResourceDescriptor.of("vulkan.png"));
     this.vkImage = renderer.getResourceAllocator().allocateImage(VK_FORMAT_R8G8B8A8_SRGB);
     this.vkImage.load(image);
 
@@ -67,7 +67,7 @@ public class SceneCube3Gamestate implements Gamestate {
   private Model createCubeModel(String prefix, Renderer renderer, Vector4f color)
       throws ThemisException {
 
-    MaterialProperties material = new MaterialProperties();
+    Material material = new Material();
     material.put(MaterialProperty.Texture.BASE, vkImage);
 
     Mesh cube = this.meshFactory.createCube(renderer.getResourceAllocator(), prefix + "my-cube ");

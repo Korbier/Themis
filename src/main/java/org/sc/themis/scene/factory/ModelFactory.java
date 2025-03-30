@@ -20,20 +20,20 @@ import org.lwjgl.assimp.AIScene;
 import org.lwjgl.assimp.AIString;
 import org.lwjgl.assimp.AIVector3D;
 import org.lwjgl.system.MemoryStack;
-import org.sc.themis.renderer.material.MaterialProperties;
-import org.sc.themis.renderer.material.MaterialProperty;
-import org.sc.themis.renderer.resource.VkStagingImage;
-import org.sc.themis.renderer.resource.VkStagingResourceAllocator;
-import org.sc.themis.scene.base.geometry.Mesh;
-import org.sc.themis.scene.base.geometry.Model;
-import org.sc.themis.scene.base.geometry.Vertex;
+import org.sc.themis.renderer.resource.material.Material;
+import org.sc.themis.renderer.resource.material.MaterialProperty;
+import org.sc.themis.renderer.base.resource.staging.VkStagingImage;
+import org.sc.themis.renderer.base.resource.staging.VkStagingResourceAllocator;
+import org.sc.themis.renderer.resource.model.Mesh;
+import org.sc.themis.renderer.resource.model.Model;
+import org.sc.themis.renderer.resource.model.Vertex;
 import org.sc.themis.scene.exception.ModelFileNotFoundException;
 import org.sc.themis.shared.assertion.Assertions;
 import org.sc.themis.shared.exception.ThemisException;
-import org.sc.themis.shared.resource.Image;
-import org.sc.themis.shared.resource.loader.descriptor.TextureResourceDescriptor;
-import org.sc.themis.shared.resource.loader.ResourceEnum;
-import org.sc.themis.shared.resource.ResourceLoader;
+import org.sc.themis.renderer.resource.image.Image;
+import org.sc.themis.renderer.resource.image.ImageResourceDescriptor;
+import org.sc.themis.renderer.resource.ResourceEnum;
+import org.sc.themis.renderer.resource.ResourceLoader;
 import org.slf4j.LoggerFactory;
 
 public class ModelFactory {
@@ -63,7 +63,7 @@ public class ModelFactory {
     Assertions.isTrue(modelFile.toFile()::exists, new ModelFileNotFoundException(modelFile));
 
     try (AIScene scene = aiImportFile(modelFile.toAbsolutePath().toString(), flags)) {
-      List<MaterialProperties> properties = loadProperties(scene, allocator, modelFile.getParent());
+      List<Material> properties = loadProperties(scene, allocator, modelFile.getParent());
       Mesh[] meshes = loadMeshs(allocator, identifier, scene, properties);
       return new Model(identifier, meshes);
     }
@@ -74,7 +74,7 @@ public class ModelFactory {
     return modelIdentifier + ".mesh." + inc;
   }
 
-  public Mesh[] loadMeshs(VkStagingResourceAllocator allocator, String modelIdentifier, AIScene scene, List<MaterialProperties> properties)
+  public Mesh[] loadMeshs(VkStagingResourceAllocator allocator, String modelIdentifier, AIScene scene, List<Material> properties)
       throws ThemisException {
 
     PointerBuffer aiMeshesBuffer = scene.mMeshes();
@@ -151,9 +151,9 @@ public class ModelFactory {
 
   }
 
-  private List<MaterialProperties> loadProperties(AIScene scene, VkStagingResourceAllocator allocator, Path workdir) throws ThemisException {
+  private List<Material> loadProperties(AIScene scene, VkStagingResourceAllocator allocator, Path workdir) throws ThemisException {
 
-    List<MaterialProperties> result = new ArrayList<>();
+    List<Material> result = new ArrayList<>();
 
     PointerBuffer aiMaterialsBuffer = scene.mMaterials();
     int numMaterials = scene.mNumMaterials();
@@ -163,7 +163,7 @@ public class ModelFactory {
       logger.info("Loading material #{}", i);
 
       AIMaterial aiMaterial = AIMaterial.create(aiMaterialsBuffer.get(i));
-      MaterialProperties properties = new MaterialProperties();
+      Material properties = new Material();
 
       setColor(aiMaterial, AI_MATKEY_BASE_COLOR, properties, MaterialProperty.Color.BASE);
       setColor(aiMaterial, AI_MATKEY_COLOR_DIFFUSE, properties, MaterialProperty.Color.DIFFUSE);
@@ -186,7 +186,7 @@ public class ModelFactory {
       VkStagingResourceAllocator allocator,
       AIMaterial aiMaterial,
       int assimpAttr,
-      MaterialProperties properties,
+      Material properties,
       MaterialProperty<VkStagingImage> property
   ) throws ThemisException {
 
@@ -195,7 +195,7 @@ public class ModelFactory {
     if (path != null) {
       logger.info("Loading texture property {} ({})", property.getName(), path);
       VkStagingImage stgImage = allocator.allocateImage(VK_FORMAT_R8G8B8A8_SRGB);
-      Image image = ResourceLoader.get().get(ResourceEnum.TEXTURE, TextureResourceDescriptor.of(path), workdir);
+      Image image = ResourceLoader.get().get(ResourceEnum.IMAGE, ImageResourceDescriptor.of(path), workdir);
       stgImage.load(image);
       properties.put(property, stgImage);
     }

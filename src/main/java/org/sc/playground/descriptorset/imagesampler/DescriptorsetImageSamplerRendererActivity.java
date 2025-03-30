@@ -29,14 +29,14 @@ import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSetLayout;
 import org.sc.themis.renderer.base.resource.image.VkSampler;
 import org.sc.themis.renderer.base.resource.image.VkSamplerDescriptor;
 import org.sc.themis.renderer.base.sync.VkFence;
-import org.sc.themis.renderer.resource.VkStagingImage;
+import org.sc.themis.renderer.base.resource.staging.VkStagingImage;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
-import org.sc.themis.shared.resource.Image;
-import org.sc.themis.shared.resource.loader.descriptor.TextureResourceDescriptor;
-import org.sc.themis.shared.resource.loader.ResourceEnum;
-import org.sc.themis.shared.resource.ResourceLoader;
+import org.sc.themis.renderer.resource.image.Image;
+import org.sc.themis.renderer.resource.image.ImageResourceDescriptor;
+import org.sc.themis.renderer.resource.ResourceEnum;
+import org.sc.themis.renderer.resource.ResourceLoader;
 
 public class DescriptorsetImageSamplerRendererActivity extends BaseRendererActivity {
 
@@ -200,7 +200,7 @@ public class DescriptorsetImageSamplerRendererActivity extends BaseRendererActiv
   private void setupImage() throws ThemisException {
     this.sampler = new VkSampler(getConfiguration(),this.renderer.getDevice(),new VkSamplerDescriptor(VK_FILTER_LINEAR, 1, true));
     this.sampler.setup();
-    Image image = ResourceLoader.get().get(ResourceEnum.TEXTURE, TextureResourceDescriptor.of("vulkan.png"));
+    Image image = ResourceLoader.get().get(ResourceEnum.IMAGE, ImageResourceDescriptor.of("vulkan.png"));
     this.vkImage = this.renderer.getResourceAllocator().allocateImage(VK_FORMAT_R8G8B8A8_SRGB);
     this.vkImage.load(image);
   }

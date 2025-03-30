@@ -1,15 +1,10 @@
 package org.sc.themis.scene.controller;
 
-import org.joml.Quaternionf;
 import org.joml.Vector2f;
-import org.joml.Vector3f;
 import org.sc.themis.input.Input;
 import org.sc.themis.scene.Scene;
-import org.sc.themis.scene.base.Camera;
 import org.sc.themis.scene.base.Controller;
-import org.sc.themis.scene.base.geometry.Instance;
-
-import static org.lwjgl.glfw.GLFW.*;
+import org.sc.themis.renderer.resource.model.Instance;
 
 public class OrbitCameraController implements Controller {
 
