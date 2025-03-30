@@ -1,0 +1,10 @@
+{
+  "name": "alley-brick-wall",
+  "author": "freepbr.com",
+  "source" : "https://freepbr.com/product/alley-brick-wall-pbr/",
+  "dir": "alley-brick-wall-bl",
+  "properties": {
+     "albedo": "alley-brick-wall_albedo.png",
+     "normal": "alley-brick-wall_normal-ogl.png"
+  }
+}
