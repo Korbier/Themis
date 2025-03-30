@@ -1,17 +1,19 @@
 package org.sc.viewer.gamestate;
 
-import java.nio.file.Path;
-import java.util.Optional;
-
 import org.joml.Vector3f;
 import org.sc.themis.gamestate.Gamestate;
 import org.sc.themis.renderer.Renderer;
-import org.sc.themis.renderer.base.resource.staging.VkStagingImage;
+import org.sc.themis.renderer.resource.ResourceEnum;
+import org.sc.themis.renderer.resource.ResourceLoader;
+import org.sc.themis.renderer.resource.font.FontRepository;
+import org.sc.themis.renderer.resource.font.FontResourceDescriptor;
 import org.sc.themis.renderer.resource.material.Material;
 import org.sc.themis.renderer.resource.material.MaterialResourceDescriptor;
-import org.sc.themis.scene.Scene;
 import org.sc.themis.renderer.resource.model.Instance;
 import org.sc.themis.renderer.resource.model.Model;
+import org.sc.themis.renderer.resource.model.ModelResourceDescriptor;
+import org.sc.themis.scene.Scene;
+import org.sc.themis.scene.controller.FpsCameraController;
 import org.sc.themis.scene.controller.OrbitCameraController;
 import org.sc.themis.scene.factory.MaterialFactory;
 import org.sc.themis.scene.light.DirectionalLight;
@@ -20,21 +22,16 @@ import org.sc.themis.scene.light.SpotLight;
 import org.sc.themis.scene.light.attenuation.Attenuation;
 import org.sc.themis.scene.pencil.Pencil;
 import org.sc.themis.shared.exception.ThemisException;
-import org.sc.themis.renderer.resource.font.FontResourceDescriptor;
-import org.sc.themis.renderer.resource.ResourceEnum;
-import org.sc.themis.renderer.resource.ResourceLoader;
-import org.sc.themis.renderer.resource.font.FontRepository;
-import org.sc.themis.renderer.resource.model.ModelResourceDescriptor;
-import org.sc.themis.renderer.resource.image.ImageResourceDescriptor;
 import org.sc.viewer.ViewerContext;
 import org.sc.viewer.gamestate.controller.KeyMappingController;
 import org.sc.viewer.gamestate.controller.UiController;
 import org.sc.viewer.renderactivity.geometry.material.TextureMaterialRenderer;
 import org.sc.viewer.renderactivity.geometry.material.TextureWithNormalMappingMaterialRenderer;
 
+import java.nio.file.Path;
+import java.util.Optional;
+
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.vulkan.VK10.VK_FORMAT_R8G8B8A8_SRGB;
-import static org.lwjgl.vulkan.VK10.VK_FORMAT_R8G8B8A8_UNORM;
 
 public class ViewerGamestate implements Gamestate {
 
@@ -117,11 +114,14 @@ public class ViewerGamestate implements Gamestate {
 
     Material material = ResourceLoader.get().get(ResourceEnum.MATERIAL, MaterialResourceDescriptor.of("limestone3.json", renderer.getResourceAllocator()));
 
-    this.model = ResourceLoader.get().get(ResourceEnum.MODEL, ModelResourceDescriptor.of("anthro_shark/scene.gltf", "model", renderer.getResourceAllocator()));
+    this.model = ResourceLoader.get().get(ResourceEnum.MODEL, ModelResourceDescriptor.of("base/textured_unit_cube.gltf", "model", renderer.getResourceAllocator()));
     this.model.setMaterial(material);
     this.model.setMaterialRenderer(TextureMaterialRenderer.MATERIAL_ID);
 
-    this.instance = this.model.create().position(0.0f, -3f, 0.0f); //.position(0.0f, -3.8f, 0.0f);//.position(0, -60.0f, -20.0f).scale(0.5f);
+    this.instance = this.model.create().scale(1.8f).position(1.0f, 0.0f, 0.0f);
+    //anthro_shark = this.model.create().scale(1.0f).position(0.0f, -2.8f, 0.0f);
+    //mechanic_projection_sub = this.model.create().scale(2.5f);
+    //portrait_from_the_future = this.model.create().scale(0.5f).position(0.0f, -60.0f, -20.0f);
     scene.add(instance);
     //scene.add(new FpsCameraController(scene));
     scene.add(new OrbitCameraController(scene, instance));
@@ -142,14 +142,14 @@ public class ViewerGamestate implements Gamestate {
             new Vector3f(0.01f),
             new Vector3f(0.5f),
             new Vector3f(0.7f),
-            new Vector3f(0.0f, 5.0f, 5.0f)));
+            new Vector3f(0.0f, 0.0f, 5.0f)));
 
     scene.add(
         new PointLight(
             new Vector3f(0.01f),
             new Vector3f(0.7f, 0.0f, 0.0f),
             new Vector3f(0.9f, 0.0f, 0.0f),
-            new Vector3f(0.0f, -3.0f, 3.0f), //new Vector3f(5.0f, d5.0f, 5.0f),
+            new Vector3f(0.0f, 5.0f, 3.0f), //new Vector3f(5.0f, d5.0f, 5.0f),
             Attenuation.type1(32.0f, 4.0f)));
 
     scene.getPointLights().getFirst().setVisible(false);

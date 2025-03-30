@@ -33,3 +33,6 @@ build/
 
 ### Mac OS ###
 .DS_Store
+/src/main/resources/model/anthro_shark/
+/src/main/resources/model/mechanic_projection_sub-02/
+/src/main/resources/model/portrait_from_the_future/

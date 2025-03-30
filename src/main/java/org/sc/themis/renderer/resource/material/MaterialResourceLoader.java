@@ -37,7 +37,7 @@ public class MaterialResourceLoader implements BiFunctionWithException<Path, Mat
 
         MaterialProperty<VkStagingImage> materialProperty = MaterialProperties.get("texture." + key);
 
-        VkStagingImage stgImage = descriptor.getAllocator().allocateImage(selectImageFormat(materialProperty));
+        VkStagingImage stgImage = descriptor.getAllocator().allocateImage(materialProperty.getImageFormat());
         Image image = ResourceLoader.get().get(ResourceEnum.IMAGE, ImageResourceDescriptor.of(value), directory);
         stgImage.load(image);
 
@@ -51,11 +51,6 @@ public class MaterialResourceLoader implements BiFunctionWithException<Path, Mat
       throw new ThemisException("An exception was thrown while loading a material", e);
     }
 
-  }
-
-  private int selectImageFormat(MaterialProperty<?> property) {
-    if (property == MaterialProperties.TEXTURE_NORMAL) return VK_FORMAT_R8G8B8A8_UNORM;
-    return VK_FORMAT_R8G8B8A8_SRGB;
   }
 
   public static class MaterialFile {

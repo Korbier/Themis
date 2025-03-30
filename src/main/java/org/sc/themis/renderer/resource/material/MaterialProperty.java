@@ -20,6 +20,9 @@ public interface MaterialProperty<D> {
   /** Property name. */
   String getName();
 
+  /** Image format **/
+  int getImageFormat();
+
   /**
    * Property factory helper.
    *
@@ -27,7 +30,7 @@ public interface MaterialProperty<D> {
    * @param name Property name
    * @return Property of given type
    */
-  static <T> MaterialProperty<T> of(Class<T> clazz, String name) {
+  static <T> MaterialProperty<T> of(Class<T> clazz, String name, int imageFormat) {
     return new MaterialProperty<>() {
 
       @Override
@@ -38,6 +41,11 @@ public interface MaterialProperty<D> {
       @Override
       public String getName() {
         return name;
+      }
+
+      @Override
+      public int getImageFormat() {
+        return imageFormat;
       }
 
       @Override

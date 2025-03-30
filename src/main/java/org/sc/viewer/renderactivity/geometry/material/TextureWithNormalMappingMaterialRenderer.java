@@ -63,9 +63,9 @@ public class TextureWithNormalMappingMaterialRenderer extends MaterialRenderer {
                 
                 mat3 normalMatrix = transpose(inverse(mat3(instance.matrix)));
                 vec3 T = _normalize( normalMatrix, inTangent );
-                vec3 B = _normalize( normalMatrix, inBitangent );
                 vec3 N = _normalize( normalMatrix, inNormal );
-
+                vec3 B = _normalize( normalMatrix, inBitangent );
+                
                 outTBNMatrix = mat3(T, B, N);                           
 
             }

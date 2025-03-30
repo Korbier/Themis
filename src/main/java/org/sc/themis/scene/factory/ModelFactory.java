@@ -196,7 +196,7 @@ public class ModelFactory {
 
     if (path != null) {
       logger.info("Loading texture property {} ({})", property.getName(), path);
-      VkStagingImage stgImage = allocator.allocateImage(VK_FORMAT_R8G8B8A8_SRGB);
+      VkStagingImage stgImage = allocator.allocateImage(property.getImageFormat());
       Image image = ResourceLoader.get().get(ResourceEnum.IMAGE, ImageResourceDescriptor.of(path), workdir);
       stgImage.load(image);
       properties.put(property, stgImage);
