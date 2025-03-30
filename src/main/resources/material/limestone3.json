@@ -1,0 +1,10 @@
+{
+  "name": "limestone3",
+  "author": "freepbr.com",
+  "source" : "https://freepbr.com/product/limestone-3-rock-pbr-material/",
+  "dir": "limestone3_bl4",
+  "properties": {
+     "albedo": "limestone3_Base_Color.png",
+     "normal": "limestone3_Normal-ogl.png"
+  }
+}

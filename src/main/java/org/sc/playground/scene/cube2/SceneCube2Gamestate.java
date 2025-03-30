@@ -5,6 +5,7 @@ import org.sc.themis.gamestate.Gamestate;
 import org.sc.themis.input.Input;
 import org.sc.themis.renderer.Renderer;
 import org.sc.themis.renderer.resource.material.Material;
+import org.sc.themis.renderer.resource.material.MaterialProperties;
 import org.sc.themis.renderer.resource.material.MaterialProperty;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.renderer.resource.model.Mesh;
@@ -53,8 +54,8 @@ public class SceneCube2Gamestate implements Gamestate {
   private Model createCubeModel(String prefix, Renderer renderer, Vector4f color)
       throws ThemisException {
 
-    Material material = new Material();
-    material.put(MaterialProperty.Color.BASE, color);
+    Material material = new Material("cube");
+    material.put(MaterialProperties.COLOR_AMBIENT, color);
 
     Mesh cube = this.meshFactory.createCube(renderer.getResourceAllocator(), prefix + "my-cube ");
     cube.setProperties(material);

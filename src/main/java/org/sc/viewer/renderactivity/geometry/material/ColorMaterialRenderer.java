@@ -1,4 +1,4 @@
-package org.sc.viewer.renderactivity.geometry.materialRenderer;
+package org.sc.viewer.renderactivity.geometry.material;
 
 import static org.lwjgl.vulkan.VK10.VK_FORMAT_R32G32B32_SFLOAT;
 import static org.lwjgl.vulkan.VK10.VK_FORMAT_R32G32_SFLOAT;
@@ -14,7 +14,7 @@ import org.sc.themis.renderer.base.pipeline.VkVertexInputStateDescriptor;
 import org.sc.themis.renderer.base.renderpass.VkRenderPass;
 import org.sc.themis.renderer.base.resource.buffer.VkBufferDescriptor;
 import org.sc.themis.renderer.material.MaterialRenderer;
-import org.sc.themis.renderer.resource.material.MaterialProperty;
+import org.sc.themis.renderer.resource.material.MaterialProperties;
 import org.sc.themis.scene.descriptorset.SceneDescriptorSet;
 import org.sc.themis.scene.light.pipeline.LightDescriptorSet;
 import org.sc.themis.shared.configuration.Configuration;
@@ -298,14 +298,18 @@ public class ColorMaterialRenderer extends MaterialRenderer {
 
     super(configuration, renderer, IDENTIFIER);
 
-    addMandatoryProperties( MaterialProperty.Color.BASE, MaterialProperty.Color.DIFFUSE, MaterialProperty.Color.SPECULAR, MaterialProperty.Property.SHININESS );
+    addMandatoryProperties(
+        MaterialProperties.COLOR_AMBIENT,
+        MaterialProperties.COLOR_DIFFUSE,
+        MaterialProperties.COLOR_SPECULAR,
+        MaterialProperties.FLOAT_SHININESS);
 
     setVariantsIdentifierFunction(
         props -> props.generateVariantIdentifier(
-            MaterialProperty.Color.BASE,
-            MaterialProperty.Color.DIFFUSE,
-            MaterialProperty.Color.SPECULAR,
-            MaterialProperty.Property.SHININESS
+            MaterialProperties.COLOR_AMBIENT,
+            MaterialProperties.COLOR_DIFFUSE,
+            MaterialProperties.COLOR_SPECULAR,
+            MaterialProperties.FLOAT_SHININESS
         )
     );
 
@@ -324,10 +328,10 @@ public class ColorMaterialRenderer extends MaterialRenderer {
 
     addVariantsUniformBinding(0, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, BUFFER_DESCRIPTOR);
     setVariantsUniformSetter((_, buffer, props) -> {
-          buffer.set(0, props.getProperty(MaterialProperty.Color.BASE));
-          buffer.set(MemorySizeUtils.VEC4F, props.getProperty(MaterialProperty.Color.DIFFUSE));
-          buffer.set(MemorySizeUtils.VEC4F + MemorySizeUtils.VEC4F, props.getProperty(MaterialProperty.Color.SPECULAR));
-          buffer.set(MemorySizeUtils.VEC4F + MemorySizeUtils.VEC4F + MemorySizeUtils.VEC4F, props.getProperty(MaterialProperty.Property.SHININESS));
+          buffer.set(0, props.getProperty(MaterialProperties.COLOR_AMBIENT));
+          buffer.set(MemorySizeUtils.VEC4F, props.getProperty(MaterialProperties.COLOR_DIFFUSE));
+          buffer.set(MemorySizeUtils.VEC4F + MemorySizeUtils.VEC4F, props.getProperty(MaterialProperties.COLOR_SPECULAR));
+          buffer.set(MemorySizeUtils.VEC4F + MemorySizeUtils.VEC4F + MemorySizeUtils.VEC4F, props.getProperty(MaterialProperties.FLOAT_SHININESS));
     });
 
     setDescriptorsetProviders(sceneDescriptorSet, lightDescriptorSet);

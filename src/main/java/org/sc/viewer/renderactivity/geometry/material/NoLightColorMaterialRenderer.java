@@ -14,6 +14,7 @@ import org.sc.themis.renderer.base.pipeline.VkVertexInputStateDescriptor;
 import org.sc.themis.renderer.base.renderpass.VkRenderPass;
 import org.sc.themis.renderer.base.resource.buffer.VkBufferDescriptor;
 import org.sc.themis.renderer.material.MaterialRenderer;
+import org.sc.themis.renderer.resource.material.MaterialProperties;
 import org.sc.themis.renderer.resource.material.MaterialProperty;
 import org.sc.themis.scene.descriptorset.SceneDescriptorSet;
 import org.sc.themis.scene.light.pipeline.PhongShaderSource;
@@ -111,8 +112,8 @@ public class NoLightColorMaterialRenderer extends MaterialRenderer {
 
     super(configuration, renderer, IDENTIFIER);
 
-    addMandatoryProperties(MaterialProperty.Color.DIFFUSE);
-    setVariantsIdentifierFunction( props -> props.generateVariantIdentifier(MaterialProperty.Color.DIFFUSE));
+    addMandatoryProperties(MaterialProperties.COLOR_DIFFUSE);
+    setVariantsIdentifierFunction( props -> props.generateVariantIdentifier(MaterialProperties.COLOR_DIFFUSE));
 
     addShader(VK_SHADER_STAGE_VERTEX_BIT, VkShaderSourceCompiler.compileShader(VERTEX_SOURCE, Shaderc.shaderc_glsl_vertex_shader));
     addShader(VK_SHADER_STAGE_FRAGMENT_BIT, VkShaderSourceCompiler.compileShader(FRAGMENT_SOURCE, Shaderc.shaderc_glsl_fragment_shader));
@@ -129,7 +130,7 @@ public class NoLightColorMaterialRenderer extends MaterialRenderer {
 
     addVariantsUniformBinding(0, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, BUFFER_DESCRIPTOR);
 
-    setVariantsUniformSetter((_, buffer, props) -> buffer.set(0, props.getProperty(MaterialProperty.Color.DIFFUSE)));
+    setVariantsUniformSetter((_, buffer, props) -> buffer.set(0, props.getProperty(MaterialProperties.COLOR_DIFFUSE)));
 
     setDescriptorsetProviders(sceneDescriptorSet);
 
