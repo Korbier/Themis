@@ -170,11 +170,11 @@
             <artifactId>joml</artifactId>
             <version>${joml.version}</version>
         </dependency>
-        <!--dependency>
+        <dependency>
             <groupId>net.bytebuddy</groupId>
             <artifactId>byte-buddy</artifactId>
             <version>1.17.2</version>
-        </dependency-->
+        </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>

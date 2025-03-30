@@ -182,7 +182,8 @@ public class ModelFactory {
     return result;
   }
 
-  private void setImage(
+  private void
+  setImage(
       Path workdir,
       VkStagingResourceAllocator allocator,
       AIMaterial aiMaterial,

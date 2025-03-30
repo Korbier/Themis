@@ -117,11 +117,11 @@ public class ViewerGamestate implements Gamestate {
 
     Material material = ResourceLoader.get().get(ResourceEnum.MATERIAL, MaterialResourceDescriptor.of("limestone3.json", renderer.getResourceAllocator()));
 
-    this.model = ResourceLoader.get().get(ResourceEnum.MODEL, ModelResourceDescriptor.of("waterbottle/WaterBottle.gltf", "model", renderer.getResourceAllocator()));
+    this.model = ResourceLoader.get().get(ResourceEnum.MODEL, ModelResourceDescriptor.of("anthro_shark/scene.gltf", "model", renderer.getResourceAllocator()));
     this.model.setMaterial(material);
     this.model.setMaterialRenderer(TextureMaterialRenderer.MATERIAL_ID);
 
-    this.instance = this.model.create().scale(7.0f); //.position(0.0f, -3.8f, 0.0f);//.position(0, -60.0f, -20.0f).scale(0.5f);
+    this.instance = this.model.create().position(0.0f, -3f, 0.0f); //.position(0.0f, -3.8f, 0.0f);//.position(0, -60.0f, -20.0f).scale(0.5f);
     scene.add(instance);
     //scene.add(new FpsCameraController(scene));
     scene.add(new OrbitCameraController(scene, instance));
