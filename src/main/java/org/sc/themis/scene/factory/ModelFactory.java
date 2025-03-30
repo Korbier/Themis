@@ -21,6 +21,7 @@ import org.lwjgl.assimp.AIString;
 import org.lwjgl.assimp.AIVector3D;
 import org.lwjgl.system.MemoryStack;
 import org.sc.themis.renderer.resource.material.Material;
+import org.sc.themis.renderer.resource.material.MaterialProperties;
 import org.sc.themis.renderer.resource.material.MaterialProperty;
 import org.sc.themis.renderer.base.resource.staging.VkStagingImage;
 import org.sc.themis.renderer.base.resource.staging.VkStagingResourceAllocator;
@@ -63,7 +64,7 @@ public class ModelFactory {
     Assertions.isTrue(modelFile.toFile()::exists, new ModelFileNotFoundException(modelFile));
 
     try (AIScene scene = aiImportFile(modelFile.toAbsolutePath().toString(), flags)) {
-      List<Material> properties = loadProperties(scene, allocator, modelFile.getParent());
+      List<Material> properties = loadProperties(identifier, scene, allocator, modelFile.getParent());
       Mesh[] meshes = loadMeshs(allocator, identifier, scene, properties);
       return new Model(identifier, meshes);
     }
@@ -151,7 +152,7 @@ public class ModelFactory {
 
   }
 
-  private List<Material> loadProperties(AIScene scene, VkStagingResourceAllocator allocator, Path workdir) throws ThemisException {
+  private List<Material> loadProperties( String identifier, AIScene scene, VkStagingResourceAllocator allocator, Path workdir) throws ThemisException {
 
     List<Material> result = new ArrayList<>();
 
@@ -163,16 +164,16 @@ public class ModelFactory {
       logger.info("Loading material #{}", i);
 
       AIMaterial aiMaterial = AIMaterial.create(aiMaterialsBuffer.get(i));
-      Material properties = new Material();
+      Material properties = new Material( identifier + "#" + i);
 
-      setColor(aiMaterial, AI_MATKEY_BASE_COLOR, properties, MaterialProperty.Color.BASE);
-      setColor(aiMaterial, AI_MATKEY_COLOR_DIFFUSE, properties, MaterialProperty.Color.DIFFUSE);
-      setColor(aiMaterial, AI_MATKEY_COLOR_EMISSIVE, properties, MaterialProperty.Color.EMISSIVE);
-      setColor(aiMaterial, AI_MATKEY_COLOR_SPECULAR, properties, MaterialProperty.Color.SPECULAR);
-      setFloat(aiMaterial, AI_MATKEY_SHININESS, properties, MaterialProperty.Property.SHININESS);
+      setColor(aiMaterial, AI_MATKEY_BASE_COLOR, properties, MaterialProperties.COLOR_AMBIENT);
+      setColor(aiMaterial, AI_MATKEY_COLOR_DIFFUSE, properties, MaterialProperties.COLOR_DIFFUSE);
+      setColor(aiMaterial, AI_MATKEY_COLOR_EMISSIVE, properties, MaterialProperties.COLOR_EMISSIVE);
+      setColor(aiMaterial, AI_MATKEY_COLOR_SPECULAR, properties, MaterialProperties.COLOR_SPECULAR);
+      setFloat(aiMaterial, AI_MATKEY_SHININESS, properties, MaterialProperties.FLOAT_SHININESS);
 
-      setImage(workdir, allocator, aiMaterial, aiTextureType_BASE_COLOR, properties, MaterialProperty.Texture.BASE);
-      setImage( workdir, allocator, aiMaterial, aiTextureType_NORMALS, properties, MaterialProperty.Texture.NORMALS);
+      setImage(workdir, allocator, aiMaterial, aiTextureType_BASE_COLOR, properties, MaterialProperties.TEXTURE_ALBEDO);
+      setImage( workdir, allocator, aiMaterial, aiTextureType_NORMALS, properties, MaterialProperties.TEXTURE_NORMAL);
 
       result.add(properties);
 

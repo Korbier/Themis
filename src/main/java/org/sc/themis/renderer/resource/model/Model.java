@@ -30,7 +30,7 @@ public class Model {
     return Optional.ofNullable(this.materialRenderer);
   }
 
-  public void setMaterial(String materialRendererIdentifier) {
+  public void setMaterialRenderer(String materialRendererIdentifier) {
     this.materialRenderer = materialRendererIdentifier;
   }
 
@@ -65,11 +65,11 @@ public class Model {
     return this.instances;
   }
 
-  public void setMaterialProperties(Material properties) {
+  public void setMaterial(Material properties) {
     this.material = properties;
   }
 
-  public Material getMaterialProperties() {
+  public Material getMaterial() {
     return this.material;
   }
 

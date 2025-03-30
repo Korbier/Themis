@@ -15,6 +15,7 @@ import org.sc.themis.renderer.base.pipeline.VkVertexInputStateDescriptor;
 import org.sc.themis.renderer.base.renderpass.VkRenderPass;
 import org.sc.themis.renderer.base.resource.image.VkSamplerDescriptor;
 import org.sc.themis.renderer.material.MaterialRenderer;
+import org.sc.themis.renderer.resource.material.MaterialProperties;
 import org.sc.themis.renderer.resource.material.MaterialProperty;
 import org.sc.themis.scene.descriptorset.SceneDescriptorSet;
 import org.sc.themis.shared.configuration.Configuration;
@@ -98,8 +99,8 @@ public class TextureMaterialRenderer extends MaterialRenderer {
 
     super(configuration, renderer, MATERIAL_ID);
 
-    addMandatoryProperties(MaterialProperty.Texture.BASE);
-    setVariantsIdentifierFunction(props -> props.get(MaterialProperty.Texture.BASE).toString());
+    addMandatoryProperties(MaterialProperties.TEXTURE_ALBEDO);
+    setVariantsIdentifierFunction(props -> props.get(MaterialProperties.TEXTURE_ALBEDO).toString());
 
     /** Pipeline * */
     addShader(
@@ -125,7 +126,7 @@ public class TextureMaterialRenderer extends MaterialRenderer {
     setVariantsCombinedImageSamplerSetter(
         (binding, descriptorset, sampler, props) ->
             descriptorset.bind(
-                binding, props.getProperty(MaterialProperty.Texture.BASE).getView(), sampler));
+                binding, props.getProperty(MaterialProperties.TEXTURE_ALBEDO).getView(), sampler));
 
     /** Other descriptorsets * */
     setDescriptorsetProviders(sceneDescriptorSet);

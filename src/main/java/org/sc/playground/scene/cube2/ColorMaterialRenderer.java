@@ -14,6 +14,7 @@ import org.sc.themis.renderer.base.pipeline.VkVertexInputStateDescriptor;
 import org.sc.themis.renderer.base.renderpass.VkRenderPass;
 import org.sc.themis.renderer.base.resource.buffer.VkBufferDescriptor;
 import org.sc.themis.renderer.material.MaterialRenderer;
+import org.sc.themis.renderer.resource.material.MaterialProperties;
 import org.sc.themis.renderer.resource.material.MaterialProperty;
 import org.sc.themis.scene.descriptorset.SceneDescriptorSet;
 import org.sc.themis.shared.configuration.Configuration;
@@ -95,7 +96,7 @@ public class ColorMaterialRenderer extends MaterialRenderer {
 
     super(configuration, renderer, IDENTIFIER);
 
-    setVariantsIdentifierFunction(props -> props.get(MaterialProperty.Color.BASE).toString());
+    setVariantsIdentifierFunction(props -> props.get(MaterialProperties.COLOR_AMBIENT).toString());
 
     /** Pipeline * */
     addShader(
@@ -120,7 +121,7 @@ public class ColorMaterialRenderer extends MaterialRenderer {
     addVariantsUniformBinding(
         0, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, BUFFER_DESCRIPTOR);
     setVariantsUniformSetter(
-        (binding, buffer, props) -> buffer.set(0, props.getProperty(MaterialProperty.Color.BASE)));
+        (binding, buffer, props) -> buffer.set(0, props.getProperty(MaterialProperties.COLOR_AMBIENT)));
 
     /** Other descriptorsets * */
     setDescriptorsetProviders(sceneDescriptorSet);

@@ -157,7 +157,7 @@ public class Scene extends TObject {
 
     for (Model model : getModels()) {
 
-      materialProperties.add(model.getMaterialProperties());
+      materialProperties.add(model.getMaterial());
 
       for (Mesh mesh : model.getMeshes()) {
         materialProperties.add(mesh.getProperties());

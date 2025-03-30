@@ -101,7 +101,7 @@ public class GeometryRenderPass extends RenderPass {
 
         for (Mesh mesh : model.getMeshes()) {
 
-          Material material = this.materialManager.select(mesh.getProperties(), model.getMaterialProperties());
+          Material material = this.materialManager.select(mesh.getProperties(), model.getMaterial());
 
           if (material == null) {
             logger.error("No suitable MaterialProperties Struct found for mesh {} (model {})", mesh, model.getIdentifier());
@@ -191,15 +191,6 @@ public class GeometryRenderPass extends RenderPass {
   private void setupMaterialManager() throws ThemisException {
 
     this.materialRenderers = new MaterialRenderer[] {
-        new NoLightColorMaterialRenderer(
-            getConfiguration(), getRenderer(), this.renderPass,
-            this.getViewerActivity().getSceneDescriptorset()
-        ),/*
-        new ColorMaterial(
-            getConfiguration(), getRenderer(), this.renderPass,
-            this.getViewerActivity().getSceneDescriptorset(),
-            this.getViewerActivity().getLighDescriptorset()
-        ),*/
         new TextureMaterialRenderer(
             getConfiguration(), getRenderer(), this.renderPass,
             this.getViewerActivity().getSceneDescriptorset(),

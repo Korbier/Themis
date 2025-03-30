@@ -8,6 +8,7 @@ import org.sc.themis.renderer.base.pipeline.VkVertexInputStateDescriptor;
 import org.sc.themis.renderer.base.renderpass.VkRenderPass;
 import org.sc.themis.renderer.base.resource.image.VkSamplerDescriptor;
 import org.sc.themis.renderer.material.MaterialRenderer;
+import org.sc.themis.renderer.resource.material.MaterialProperties;
 import org.sc.themis.renderer.resource.material.MaterialProperty;
 import org.sc.themis.scene.descriptorset.SceneDescriptorSet;
 import org.sc.themis.scene.light.pipeline.LightDescriptorSet;
@@ -313,9 +314,9 @@ public class TextureWithNormalMappingMaterialRenderer extends MaterialRenderer {
 
     super(configuration, renderer, MATERIAL_ID);
 
-    addMandatoryProperties(MaterialProperty.Texture.BASE);
+    addMandatoryProperties(MaterialProperties.TEXTURE_ALBEDO);
 
-    setVariantsIdentifierFunction(props -> props.get(MaterialProperty.Texture.BASE).toString());
+    setVariantsIdentifierFunction(props -> props.get(MaterialProperties.TEXTURE_ALBEDO).toString());
 
     /** Pipeline * */
     addShader(VK_SHADER_STAGE_VERTEX_BIT, VkShaderSourceCompiler.compileShader(VERTEX_SOURCE, Shaderc.shaderc_glsl_vertex_shader));
@@ -336,8 +337,8 @@ public class TextureWithNormalMappingMaterialRenderer extends MaterialRenderer {
     setVariantsCombinedImageSamplerSetter(
         (binding, descriptorset, sampler, props) -> {
           switch (binding) {
-            case 0 -> descriptorset.bind(binding, props.getProperty(MaterialProperty.Texture.BASE).getView(), sampler);
-            case 1 -> descriptorset.bind(binding, props.getProperty(MaterialProperty.Texture.NORMALS).getView(), sampler);
+            case 0 -> descriptorset.bind(binding, props.getProperty(MaterialProperties.TEXTURE_ALBEDO).getView(), sampler);
+            case 1 -> descriptorset.bind(binding, props.getProperty(MaterialProperties.TEXTURE_NORMAL).getView(), sampler);
           }
         });
 
