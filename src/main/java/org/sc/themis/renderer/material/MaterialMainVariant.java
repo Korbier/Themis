@@ -11,6 +11,7 @@ import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSet;
 import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSetBinding;
 import org.sc.themis.renderer.base.resource.buffer.VkBuffer;
 import org.sc.themis.renderer.base.resource.buffer.VkBufferDescriptor;
+import org.sc.themis.renderer.resource.material.Material;
 import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.tobject.TObject;
@@ -18,19 +19,19 @@ import org.sc.themis.shared.tobject.TObject;
 public class MaterialMainVariant extends TObject {
 
   private final String identifier;
-  private final Material material;
+  private final MaterialRenderer materialRenderer;
 
   private final FrameKey<VkDescriptorSet> descriptorset = FrameKey.of(VkDescriptorSet.class);
   private final Map<Integer, FrameKey<VkBuffer>> buffers = new HashMap<>();
 
-  public MaterialMainVariant(Configuration configuration, Material material, String identifier) {
+  public MaterialMainVariant(Configuration configuration, MaterialRenderer materialRenderer, String identifier) {
     super(configuration);
-    this.material = material;
+    this.materialRenderer = materialRenderer;
     this.identifier = identifier;
   }
 
-  public Material getMaterial() {
-    return this.material;
+  public MaterialRenderer getMaterial() {
+    return this.materialRenderer;
   }
 
   public String getIdentifier() {
@@ -43,30 +44,30 @@ public class MaterialMainVariant extends TObject {
   }
 
   public VkDescriptorSet getDescriptorSet(int frame) {
-    return this.material.getFrames().get(frame, this.descriptorset);
+    return this.materialRenderer.getFrames().get(frame, this.descriptorset);
   }
 
   public int getAlignedOffset(int frame, int binding, int requestOffset) {
-    VkBuffer buffer = this.material.getFrames().get(frame, this.buffers.get(binding));
+    VkBuffer buffer = this.materialRenderer.getFrames().get(frame, this.buffers.get(binding));
     return buffer.isAligned() ? requestOffset * buffer.getAlignedSize() : requestOffset;
   }
 
-  public void setProperties(int offset, MaterialProperties properties) throws ThemisException {
+  public void setProperties(int offset, Material properties) throws ThemisException {
 
     for (Map.Entry<Integer, VkDescriptorSetBinding> bindingEntry :
-        this.material.getMainDescriptor().getBindings().entrySet()) {
+        this.materialRenderer.getMainDescriptor().getBindings().entrySet()) {
 
       int bindingIdx = bindingEntry.getKey();
       VkDescriptorSetBinding binding = bindingEntry.getValue();
 
       if (binding.getDescriptorType() == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC) {
         FrameKey<VkBuffer> bufferKey = this.buffers.get(bindingIdx);
-        this.material
+        this.materialRenderer
             .getFrames()
             .update(
                 bufferKey,
                 (buffer) ->
-                    this.material
+                    this.materialRenderer
                         .getMainUniformSetter()
                         .set(bindingIdx, buffer, offset, properties));
       }
@@ -74,45 +75,45 @@ public class MaterialMainVariant extends TObject {
   }
 
   public void cleanup() throws ThemisException {
-    this.material.getFrames().remove(this.descriptorset);
+    this.materialRenderer.getFrames().remove(this.descriptorset);
   }
 
   private void setupDescriptorset() throws ThemisException {
-    VkDescriptorPool pool = this.material.getMainDescriptorPool();
-    this.material.getFrames().create(this.descriptorset, pool::create);
+    VkDescriptorPool pool = this.materialRenderer.getMainDescriptorPool();
+    this.materialRenderer.getFrames().create(this.descriptorset, pool::create);
   }
 
   private void setupUniformDynamic() throws ThemisException {
 
     for (Map.Entry<Integer, VkDescriptorSetBinding> bindingEntry :
-        this.material.getVariantsDescriptor().getBindings().entrySet()) {
+        this.materialRenderer.getVariantsDescriptor().getBindings().entrySet()) {
 
       int bindingIdx = bindingEntry.getKey();
       VkDescriptorSetBinding binding = bindingEntry.getValue();
       VkBufferDescriptor bufferDescriptor =
-          this.material.getVariantsDescriptor().getBufferDescriptor(bindingIdx);
+          this.materialRenderer.getVariantsDescriptor().getBufferDescriptor(bindingIdx);
 
       if (binding.getDescriptorType() == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
           && bufferDescriptor != null) {
         FrameKey<VkBuffer> bufferKey = FrameKey.of(VkBuffer.class);
         this.buffers.put(bindingIdx, bufferKey);
-        this.material
+        this.materialRenderer
             .getFrames()
             .create(
                 bufferKey,
                 () ->
                     new VkBuffer(
                         getConfiguration(),
-                        this.material.getDevice(),
-                        this.material.getAllocator(),
+                        this.materialRenderer.getDevice(),
+                        this.materialRenderer.getAllocator(),
                         bufferDescriptor));
-        this.material
+        this.materialRenderer
             .getFrames()
             .update(
                 this.descriptorset,
                 (frame, descriptorset) ->
                     descriptorset.bind(
-                        bindingIdx, this.material.getFrames().get(frame, bufferKey)));
+                        bindingIdx, this.materialRenderer.getFrames().get(frame, bufferKey)));
       }
     }
   }

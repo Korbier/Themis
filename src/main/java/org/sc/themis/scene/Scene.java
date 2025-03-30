@@ -6,13 +6,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.joml.Vector4f;
-import org.sc.themis.renderer.material.MaterialProperties;
+import org.sc.themis.renderer.resource.material.Material;
 import org.sc.themis.scene.base.Camera;
 import org.sc.themis.scene.base.Controller;
 import org.sc.themis.scene.base.Projection;
-import org.sc.themis.scene.base.geometry.Instance;
-import org.sc.themis.scene.base.geometry.Mesh;
-import org.sc.themis.scene.base.geometry.Model;
+import org.sc.themis.renderer.resource.model.Instance;
+import org.sc.themis.renderer.resource.model.Mesh;
+import org.sc.themis.renderer.resource.model.Model;
 import org.sc.themis.scene.light.DirectionalLight;
 import org.sc.themis.scene.light.PointLight;
 import org.sc.themis.scene.light.SpotLight;
@@ -151,9 +151,9 @@ public class Scene extends TObject {
    *
    * @return Material propertis
    */
-  public MaterialProperties[] getMaterialsProperties() {
+  public Material[] getMaterialsProperties() {
 
-    Set<MaterialProperties> materialProperties = new HashSet<>();
+    Set<Material> materialProperties = new HashSet<>();
 
     for (Model model : getModels()) {
 
@@ -164,6 +164,6 @@ public class Scene extends TObject {
       }
     }
 
-    return materialProperties.toArray(new MaterialProperties[0]);
+    return materialProperties.toArray(new Material[0]);
   }
 }

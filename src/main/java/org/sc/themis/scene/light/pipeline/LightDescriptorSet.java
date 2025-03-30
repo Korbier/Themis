@@ -343,7 +343,7 @@ public class LightDescriptorSet extends TObject implements VkDescriptorSetProvid
       buffer.put(light.getDiffuse(), MemorySizeUtils.VEC4F);
       buffer.put(light.getSpecular(), MemorySizeUtils.VEC4F);
       buffer.put(light.getData(), MemorySizeUtils.VEC4F);
-      buffer.put(light.getDirection(), MemorySizeUtils.VEC4F);
+      buffer.put(light.getPosition(), MemorySizeUtils.VEC4F);
     }
   }
 

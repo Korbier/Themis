@@ -102,13 +102,13 @@
             "POSITION": 3
           },
           "indices": 4,
-          "material": 0
+          "materialRenderer": 0
         }
       ],
       "name": "WaterBottle"
     }
   ],
-  "materials": [
+  "materialRenderers": [
     {
       "pbrMetallicRoughness": {
         "baseColorTexture": {

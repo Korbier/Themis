@@ -6,11 +6,11 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.sc.TestWithConfiguration;
 import org.sc.themis.shared.exception.ThemisException;
-import org.sc.themis.shared.resource.Image;
-import org.sc.themis.shared.resource.ResourceLoader;
-import org.sc.themis.shared.resource.exception.ResourceFileNotFoundException;
-import org.sc.themis.shared.resource.loader.ResourceEnum;
-import org.sc.themis.shared.resource.loader.descriptor.TextureResourceDescriptor;
+import org.sc.themis.renderer.resource.image.Image;
+import org.sc.themis.renderer.resource.ResourceLoader;
+import org.sc.themis.renderer.resource.base.exception.ResourceFileNotFoundException;
+import org.sc.themis.renderer.resource.ResourceEnum;
+import org.sc.themis.renderer.resource.image.ImageResourceDescriptor;
 
 public class ResourceLoaderTextureTest extends TestWithConfiguration {
 
@@ -24,7 +24,7 @@ public class ResourceLoaderTextureTest extends TestWithConfiguration {
   void testLoadTexture_01() throws ThemisException {
     //Given
     //When
-    Image image = ResourceLoader.get().get(ResourceEnum.TEXTURE, TextureResourceDescriptor.of("vulkan.png"));
+    Image image = ResourceLoader.get().get(ResourceEnum.IMAGE, ImageResourceDescriptor.of("vulkan.png"));
     //Then
     Assertions.assertEquals(300, image.getWidth());
     Assertions.assertEquals(300, image.getHeight());
@@ -38,7 +38,7 @@ public class ResourceLoaderTextureTest extends TestWithConfiguration {
     //Given
     //When
     //Then
-    Assertions.assertThrows(ResourceFileNotFoundException.class, () -> ResourceLoader.get().get(ResourceEnum.TEXTURE, TextureResourceDescriptor.of("blabla.png")));
+    Assertions.assertThrows(ResourceFileNotFoundException.class, () -> ResourceLoader.get().get(ResourceEnum.IMAGE, ImageResourceDescriptor.of("blabla.png")));
   }
 
 }

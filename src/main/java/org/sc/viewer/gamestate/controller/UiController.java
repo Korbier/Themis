@@ -5,7 +5,7 @@ import java.util.UUID;
 import org.sc.themis.input.Input;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.scene.base.Controller;
-import org.sc.themis.scene.base.geometry.Model;
+import org.sc.themis.renderer.resource.model.Model;
 import org.sc.themis.scene.pencil.Color;
 import org.sc.themis.scene.pencil.Pencil;
 import org.sc.themis.scene.ui.LabelBuilder;
@@ -13,7 +13,7 @@ import org.sc.themis.scene.ui.PanelBuilder;
 import org.sc.themis.scene.ui.ToggleButtonBuilder;
 import org.sc.themis.scene.ui.UIBuilder;
 import org.sc.viewer.ViewerContext;
-import org.sc.viewer.renderactivity.geometry.material.TextureMaterial;
+import org.sc.viewer.renderactivity.geometry.material.TextureWithNormalMappingMaterialRenderer;
 import org.sc.viewer.renderactivity.postprocess.postprocessor.ShowTBNPostprocessor;
 
 import static org.lwjgl.glfw.GLFW.*;
@@ -94,7 +94,7 @@ public class UiController implements Controller {
     LabelBuilder lblMaterial = this.builder.label(UUID.randomUUID().toString())
         .location(2, 108)
         .size(40, 20)
-        .text("Color / Texture");
+        .text("Normal Mapping");
 
     ToggleButtonBuilder tglMaterial =
         this.builder.toggleButton(UUID.randomUUID().toString())
@@ -106,7 +106,7 @@ public class UiController implements Controller {
             .isToggledSupplier(() -> {
               Optional<Model> oModel = scene.getModels().stream().findFirst();
               if (oModel.isEmpty()) return false;
-              return oModel.get().getMaterial().isPresent() && oModel.get().getMaterial().get().equals(TextureMaterial.MATERIAL_ID);
+              return oModel.get().getMaterialRenderer().isPresent() && oModel.get().getMaterialRenderer().get().equals(TextureWithNormalMappingMaterialRenderer.MATERIAL_ID);
             } )
             .onClick(_ -> context.getKeyMapping().execute(GLFW_KEY_4));
 

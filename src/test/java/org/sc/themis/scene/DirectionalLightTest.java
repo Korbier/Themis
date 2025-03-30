@@ -6,7 +6,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.sc.TestWithConfiguration;
 import org.sc.themis.scene.light.DirectionalLight;
-import org.sc.themis.shared.configuration.Configuration;
 
 public class DirectionalLightTest extends TestWithConfiguration {
 
@@ -28,7 +27,7 @@ public class DirectionalLightTest extends TestWithConfiguration {
     Assertions.assertEquals(ambiantColor, light.getAmbient());
     Assertions.assertEquals(diffuseColor, light.getDiffuse());
     Assertions.assertEquals(specularColor, light.getSpecular());
-    Assertions.assertEquals(direction, light.getDirection());
+    Assertions.assertEquals(direction, light.getPosition());
   }
 
   @Test
@@ -56,6 +55,6 @@ public class DirectionalLightTest extends TestWithConfiguration {
     Assertions.assertEquals(
         scene.getDirectionalLights().getFirst().getSpecular(), light.getSpecular());
     Assertions.assertEquals(
-        scene.getDirectionalLights().getFirst().getDirection(), light.getDirection());
+        scene.getDirectionalLights().getFirst().getPosition(), light.getPosition());
   }
 }

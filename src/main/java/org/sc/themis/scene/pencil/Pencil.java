@@ -3,9 +3,9 @@ package org.sc.themis.scene.pencil;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
-import org.sc.themis.shared.resource.Font;
-import org.sc.themis.shared.resource.font.FontCharacter;
-import org.sc.themis.shared.resource.font.FontRepository;
+import org.sc.themis.renderer.resource.font.Font;
+import org.sc.themis.renderer.resource.font.FontCharacter;
+import org.sc.themis.renderer.resource.font.FontRepository;
 
 public class Pencil {
 

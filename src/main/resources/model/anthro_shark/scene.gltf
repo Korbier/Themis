@@ -2132,10 +2132,10 @@
       "uri": "textures/tail3_normal.png"
     }
   ],
-  "materials": [
+  "materialRenderers": [
     {
       "doubleSided": true,
-      "name": "material",
+      "name": "materialRenderer",
       "normalTexture": {
         "index": 2
       },
@@ -2536,7 +2536,7 @@
             "TEXCOORD_0": 3
           },
           "indices": 4,
-          "material": 0,
+          "materialRenderer": 0,
           "mode": 4
         }
       ]
@@ -2552,7 +2552,7 @@
             "TEXCOORD_0": 8
           },
           "indices": 9,
-          "material": 1,
+          "materialRenderer": 1,
           "mode": 4
         }
       ]
@@ -2568,7 +2568,7 @@
             "TEXCOORD_0": 13
           },
           "indices": 14,
-          "material": 2,
+          "materialRenderer": 2,
           "mode": 4
         }
       ]
@@ -2584,7 +2584,7 @@
             "TEXCOORD_0": 18
           },
           "indices": 19,
-          "material": 3,
+          "materialRenderer": 3,
           "mode": 4
         }
       ]
@@ -2600,7 +2600,7 @@
             "TEXCOORD_0": 23
           },
           "indices": 24,
-          "material": 4,
+          "materialRenderer": 4,
           "mode": 4
         }
       ]
@@ -2616,7 +2616,7 @@
             "TEXCOORD_0": 28
           },
           "indices": 29,
-          "material": 5,
+          "materialRenderer": 5,
           "mode": 4
         }
       ]
@@ -2632,7 +2632,7 @@
             "TEXCOORD_0": 33
           },
           "indices": 34,
-          "material": 6,
+          "materialRenderer": 6,
           "mode": 4
         }
       ]
@@ -2648,7 +2648,7 @@
             "TEXCOORD_0": 38
           },
           "indices": 39,
-          "material": 7,
+          "materialRenderer": 7,
           "mode": 4
         }
       ]
@@ -2664,7 +2664,7 @@
             "TEXCOORD_0": 43
           },
           "indices": 44,
-          "material": 8,
+          "materialRenderer": 8,
           "mode": 4
         }
       ]
@@ -2680,7 +2680,7 @@
             "TEXCOORD_0": 48
           },
           "indices": 49,
-          "material": 9,
+          "materialRenderer": 9,
           "mode": 4
         }
       ]
@@ -2696,7 +2696,7 @@
             "TEXCOORD_0": 53
           },
           "indices": 54,
-          "material": 10,
+          "materialRenderer": 10,
           "mode": 4
         }
       ]
@@ -2712,7 +2712,7 @@
             "TEXCOORD_0": 58
           },
           "indices": 59,
-          "material": 11,
+          "materialRenderer": 11,
           "mode": 4
         }
       ]
@@ -2728,7 +2728,7 @@
             "TEXCOORD_0": 63
           },
           "indices": 64,
-          "material": 12,
+          "materialRenderer": 12,
           "mode": 4
         }
       ]
@@ -2744,7 +2744,7 @@
             "TEXCOORD_0": 68
           },
           "indices": 69,
-          "material": 13,
+          "materialRenderer": 13,
           "mode": 4
         }
       ]
@@ -2760,7 +2760,7 @@
             "TEXCOORD_0": 73
           },
           "indices": 74,
-          "material": 14,
+          "materialRenderer": 14,
           "mode": 4
         }
       ]
@@ -2776,7 +2776,7 @@
             "TEXCOORD_0": 78
           },
           "indices": 79,
-          "material": 15,
+          "materialRenderer": 15,
           "mode": 4
         }
       ]
@@ -2792,7 +2792,7 @@
             "TEXCOORD_0": 83
           },
           "indices": 84,
-          "material": 16,
+          "materialRenderer": 16,
           "mode": 4
         }
       ]
@@ -2808,7 +2808,7 @@
             "TEXCOORD_0": 88
           },
           "indices": 89,
-          "material": 17,
+          "materialRenderer": 17,
           "mode": 4
         }
       ]
@@ -2824,7 +2824,7 @@
             "TEXCOORD_0": 93
           },
           "indices": 94,
-          "material": 18,
+          "materialRenderer": 18,
           "mode": 4
         }
       ]
@@ -2840,7 +2840,7 @@
             "TEXCOORD_0": 98
           },
           "indices": 99,
-          "material": 19,
+          "materialRenderer": 19,
           "mode": 4
         }
       ]
@@ -2856,7 +2856,7 @@
             "TEXCOORD_0": 103
           },
           "indices": 104,
-          "material": 20,
+          "materialRenderer": 20,
           "mode": 4
         }
       ]
@@ -2872,7 +2872,7 @@
             "TEXCOORD_0": 108
           },
           "indices": 109,
-          "material": 21,
+          "materialRenderer": 21,
           "mode": 4
         }
       ]
@@ -2888,7 +2888,7 @@
             "TEXCOORD_0": 113
           },
           "indices": 114,
-          "material": 22,
+          "materialRenderer": 22,
           "mode": 4
         }
       ]
@@ -2904,7 +2904,7 @@
             "TEXCOORD_0": 118
           },
           "indices": 119,
-          "material": 23,
+          "materialRenderer": 23,
           "mode": 4
         }
       ]
@@ -2920,7 +2920,7 @@
             "TEXCOORD_0": 123
           },
           "indices": 124,
-          "material": 24,
+          "materialRenderer": 24,
           "mode": 4
         }
       ]

@@ -6,11 +6,11 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.sc.TestWithConfiguration;
 import org.sc.themis.shared.exception.ThemisException;
-import org.sc.themis.shared.resource.Font;
-import org.sc.themis.shared.resource.ResourceLoader;
-import org.sc.themis.shared.resource.exception.ResourceFileNotFoundException;
-import org.sc.themis.shared.resource.loader.ResourceEnum;
-import org.sc.themis.shared.resource.loader.descriptor.FontResourceDescriptor;
+import org.sc.themis.renderer.resource.font.Font;
+import org.sc.themis.renderer.resource.ResourceLoader;
+import org.sc.themis.renderer.resource.base.exception.ResourceFileNotFoundException;
+import org.sc.themis.renderer.resource.ResourceEnum;
+import org.sc.themis.renderer.resource.font.FontResourceDescriptor;
 
 import java.nio.file.Path;
 

@@ -25,20 +25,20 @@ import org.sc.themis.renderer.base.renderpass.VkRenderPassLayout;
 import org.sc.themis.renderer.base.renderpass.VkSubpass;
 import org.sc.themis.renderer.base.sync.VkFence;
 import org.sc.themis.renderer.base.sync.VkSemaphore;
-import org.sc.themis.renderer.material.Material;
 import org.sc.themis.renderer.material.MaterialManager;
-import org.sc.themis.renderer.material.MaterialProperties;
+import org.sc.themis.renderer.material.MaterialRenderer;
+import org.sc.themis.renderer.resource.material.Material;
 import org.sc.themis.scene.Scene;
-import org.sc.themis.scene.base.geometry.Instance;
-import org.sc.themis.scene.base.geometry.Mesh;
-import org.sc.themis.scene.base.geometry.Model;
+import org.sc.themis.renderer.resource.model.Instance;
+import org.sc.themis.renderer.resource.model.Mesh;
+import org.sc.themis.renderer.resource.model.Model;
 import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.viewer.renderactivity.RenderPass;
 import org.sc.viewer.renderactivity.ViewerRendererActivity;
-import org.sc.viewer.renderactivity.geometry.material.ColorMaterial;
-import org.sc.viewer.renderactivity.geometry.material.NoLightColorMaterial;
-import org.sc.viewer.renderactivity.geometry.material.TextureMaterial;
+import org.sc.viewer.renderactivity.geometry.material.NoLightColorMaterialRenderer;
+import org.sc.viewer.renderactivity.geometry.material.TextureMaterialRenderer;
+import org.sc.viewer.renderactivity.geometry.material.TextureWithNormalMappingMaterialRenderer;
 import org.slf4j.LoggerFactory;
 
 /** Geometry renderpass. */
@@ -54,7 +54,7 @@ public class GeometryRenderPass extends RenderPass {
   private VkRenderPass renderPass;
 
   // Material
-  private Material[] materials;
+  private MaterialRenderer[] materialRenderers;
   private MaterialManager materialManager;
 
   public GeometryRenderPass(Configuration configuration) {
@@ -76,8 +76,8 @@ public class GeometryRenderPass extends RenderPass {
 
   @Override
   public void cleanup() throws ThemisException {
-    for (Material material : this.materials) {
-      material.cleanup();
+    for (MaterialRenderer materialRenderer : this.materialRenderers) {
+      materialRenderer.cleanup();
     }
     this.renderPass.cleanup();
   }
@@ -101,13 +101,13 @@ public class GeometryRenderPass extends RenderPass {
 
         for (Mesh mesh : model.getMeshes()) {
 
-          MaterialProperties materialProperties = this.materialManager.select(mesh.getProperties(), model.getMaterialProperties());
+          Material material = this.materialManager.select(mesh.getProperties(), model.getMaterialProperties());
 
-          if (materialProperties == null) {
+          if (material == null) {
             logger.error("No suitable MaterialProperties Struct found for mesh {} (model {})", mesh, model.getIdentifier());
           }
 
-          this.materialManager.bindMaterialVariant(command, materialProperties, frame);
+          this.materialManager.bindMaterialVariant(command, material, frame);
 
           command.bindBuffers(mesh.getVerticesBuffer(), mesh.getIndicesBuffer());
 
@@ -190,27 +190,32 @@ public class GeometryRenderPass extends RenderPass {
 
   private void setupMaterialManager() throws ThemisException {
 
-    this.materials = new Material[] {
-        new NoLightColorMaterial(
+    this.materialRenderers = new MaterialRenderer[] {
+        new NoLightColorMaterialRenderer(
             getConfiguration(), getRenderer(), this.renderPass,
             this.getViewerActivity().getSceneDescriptorset()
-        ),
+        ),/*
         new ColorMaterial(
             getConfiguration(), getRenderer(), this.renderPass,
             this.getViewerActivity().getSceneDescriptorset(),
             this.getViewerActivity().getLighDescriptorset()
+        ),*/
+        new TextureMaterialRenderer(
+            getConfiguration(), getRenderer(), this.renderPass,
+            this.getViewerActivity().getSceneDescriptorset(),
+            this.getViewerActivity().getLighDescriptorset()
         ),
-        new TextureMaterial(
+        new TextureWithNormalMappingMaterialRenderer(
             getConfiguration(), getRenderer(), this.renderPass,
             this.getViewerActivity().getSceneDescriptorset(),
             this.getViewerActivity().getLighDescriptorset()
         )
     };
 
-    for (Material material : this.materials) {
-      material.setup();
+    for (MaterialRenderer materialRenderer : this.materialRenderers) {
+      materialRenderer.setup();
     }
 
-    this.materialManager = new MaterialManager(this.materials[0], this.materials);
+    this.materialManager = new MaterialManager(this.materialRenderers[0], this.materialRenderers);
   }
 }

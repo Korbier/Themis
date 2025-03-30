@@ -5,33 +5,34 @@ import java.util.Map;
 import java.util.Optional;
 import org.sc.themis.renderer.base.command.VkCommand;
 import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSet;
-import org.sc.themis.scene.base.geometry.Model;
+import org.sc.themis.renderer.resource.material.Material;
+import org.sc.themis.renderer.resource.model.Model;
 import org.sc.themis.shared.exception.ThemisException;
 
 /** Material manager. */
 public class MaterialManager {
 
-  private final Material defaultMaterial;
-  private final Map<String, Material> availableMaterials = new HashMap<>();
-  private Material lastUsedMaterial = null;
+  private final MaterialRenderer defaultMaterialRenderer;
+  private final Map<String, MaterialRenderer> availableMaterials = new HashMap<>();
+  private MaterialRenderer lastUsedMaterialRenderer = null;
 
   /** Default constructor. */
-  public MaterialManager(Material defaultMaterial, Material ... materials) {
-    this.defaultMaterial = defaultMaterial;
-    for (Material material : materials) {
-      this.availableMaterials.put(material.getIdentifier(), material);
+  public MaterialManager(MaterialRenderer defaultMaterialRenderer, MaterialRenderer... materialRenderers) {
+    this.defaultMaterialRenderer = defaultMaterialRenderer;
+    for (MaterialRenderer materialRenderer : materialRenderers) {
+      this.availableMaterials.put(materialRenderer.getIdentifier(), materialRenderer);
     }
   }
 
   /** Compile given material properties. */
-  public void compile(MaterialProperties... properties) throws ThemisException {
+  public void compile(Material... properties) throws ThemisException {
 
-    for (MaterialProperties materialProperties : properties) {
+    for (Material materialProperties : properties) {
 
-      this.defaultMaterial.add(materialProperties);
+      this.defaultMaterialRenderer.add(materialProperties);
 
-      for (Material material : this.availableMaterials.values()) {
-        material.add(materialProperties);
+      for (MaterialRenderer materialRenderer : this.availableMaterials.values()) {
+        materialRenderer.add(materialProperties);
       }
 
     }
@@ -41,35 +42,35 @@ public class MaterialManager {
   /** Bind material pipeline for given model. */
   public void bindMaterial(VkCommand command, Model model) throws ThemisException {
 
-    Material material = select(model);
+    MaterialRenderer materialRenderer = select(model);
 
-    if (this.lastUsedMaterial == null || !this.lastUsedMaterial.equals(material)) {
-      this.lastUsedMaterial = material;
+    if (this.lastUsedMaterialRenderer == null || !this.lastUsedMaterialRenderer.equals(materialRenderer)) {
+      this.lastUsedMaterialRenderer = materialRenderer;
     }
 
-    command.bindPipeline(this.lastUsedMaterial.getPipeline());
+    command.bindPipeline(this.lastUsedMaterialRenderer.getPipeline());
 
   }
 
   /** Bind material variant (descriptorset) for given material properties. */
-  public void bindMaterialVariant(VkCommand command, MaterialProperties properties, int frame)
+  public void bindMaterialVariant(VkCommand command, Material properties, int frame)
       throws ThemisException {
     int[] indexedOffest = new int[0];
-    VkDescriptorSet[] descriptorsets = this.lastUsedMaterial.getDescriptorSets(frame, properties);
+    VkDescriptorSet[] descriptorsets = this.lastUsedMaterialRenderer.getDescriptorSets(frame, properties);
     command.bindDescriptorSets(indexedOffest, descriptorsets);
   }
 
-  private Material select(Model model) {
-    Optional<String> oMaterialIdentifier = model.getMaterial();
-    return oMaterialIdentifier.map(this.availableMaterials::get).orElse(this.defaultMaterial);
+  private MaterialRenderer select(Model model) {
+    Optional<String> oMaterialIdentifier = model.getMaterialRenderer();
+    return oMaterialIdentifier.map(this.availableMaterials::get).orElse(this.defaultMaterialRenderer);
   }
 
   /** Select material properties to use for current material. */
-  public MaterialProperties select(MaterialProperties... properties) {
+  public Material select(Material... properties) {
 
-    for (MaterialProperties materialProperties : properties) {
-      if (materialProperties.getVariantIdentifier(this.lastUsedMaterial) != null) {
-        return materialProperties;
+    for (Material material : properties) {
+      if (material.getVariantIdentifier(this.lastUsedMaterialRenderer) != null) {
+        return material;
       }
     }
 

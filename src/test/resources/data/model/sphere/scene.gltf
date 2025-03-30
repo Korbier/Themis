@@ -97,7 +97,7 @@
   "extensionsUsed": [
     "KHR_materials_transmission"
   ],
-  "materials": [
+  "materialRenderers": [
     {
       "extensions": {
         "KHR_materials_transmission": {
@@ -128,7 +128,7 @@
             "TEXCOORD_0": 2
           },
           "indices": 3,
-          "material": 0,
+          "materialRenderer": 0,
           "mode": 4
         }
       ]

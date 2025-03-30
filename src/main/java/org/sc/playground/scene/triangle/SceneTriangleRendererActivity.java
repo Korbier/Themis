@@ -25,7 +25,7 @@ import org.sc.themis.renderer.base.pipeline.VkVertexInputState;
 import org.sc.themis.renderer.base.pipeline.VkVertexInputStateDescriptor;
 import org.sc.themis.renderer.base.sync.VkFence;
 import org.sc.themis.scene.Scene;
-import org.sc.themis.scene.base.geometry.Mesh;
+import org.sc.themis.renderer.resource.model.Mesh;
 import org.sc.themis.scene.factory.MeshFactory;
 import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
