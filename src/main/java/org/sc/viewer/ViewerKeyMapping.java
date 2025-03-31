@@ -11,15 +11,14 @@ public class ViewerKeyMapping {
   private Map<Integer, Runnable> actions = new HashMap<>();
   private Map<Integer, Boolean> repeat = new HashMap<>();
 
-  //todo replace Object with a generic type
-  private Map<Integer, Supplier<Object>> stateSuppliers = new HashMap<>();
-  private Map<Integer, Object> states = new HashMap<>();
+  private final Map<Integer, Supplier<?>> stateSuppliers = new HashMap<>();
+  private final Map<Integer, Object> states = new HashMap<>();
 
   public void map(Integer key, boolean repeat, Runnable runnable) {
     map(key, repeat, runnable, null);
   }
 
-  public void map(Integer key, boolean repeat, Runnable runnable, Supplier<Object> stateSupplier) {
+  public <O> void map(Integer key, boolean repeat, Runnable runnable, Supplier<O> stateSupplier) {
 
     this.actions.put(key, runnable);
     this.repeat.put(key, repeat);
@@ -37,8 +36,8 @@ public class ViewerKeyMapping {
     }
   }
 
-  public Object getState(int key) {
-    return this.states.get(key);
+  public <T> T getState(int key) {
+      return (T) this.states.get(key);
   }
 
   public void input(Input input) {
@@ -60,9 +59,15 @@ public class ViewerKeyMapping {
   }
 
   private void doExecute(int key) {
+
     this.actions.get(key).run();
+
+    //Mise à jour de l'état lié a cette clé clavier
     if (this.stateSuppliers.containsKey(key)) {
-      this.states.put(key, this.stateSuppliers.get(key).get());
+      Supplier<?> supplier = this.stateSuppliers.get(key);
+      this.states.put(key, supplier.get());
     }
+
   }
+
 }

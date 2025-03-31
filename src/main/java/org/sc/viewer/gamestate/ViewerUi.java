@@ -69,7 +69,7 @@ public class ViewerUi extends UiSceneController {
     ToggleButtonBuilder lightDirTgl = builder().toggleButton()
         .position(COMPONENT_LEFT, 30)
         .size(40, 16)
-        .isToggledSupplier(() -> (Boolean) context.getKeyMapping().getState(GLFW_KEY_1))
+        .isToggledSupplier(() -> context.getKeyMapping().getState(GLFW_KEY_1))
         .onClick(_ -> context.getKeyMapping().execute(GLFW_KEY_1));
 
     LabelBuilder lightPtLbl = builder().label()
