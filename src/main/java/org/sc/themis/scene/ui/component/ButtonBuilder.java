@@ -1,8 +1,9 @@
-package org.sc.themis.scene.ui;
+package org.sc.themis.scene.ui.component;
 
 import java.util.function.Consumer;
 import org.joml.Vector2f;
 import org.sc.themis.scene.pencil.Color;
+import org.sc.themis.scene.ui.UiBuilder;
 
 
 public final class ButtonBuilder extends ComponentBuilder<ButtonBuilder> {
@@ -16,11 +17,11 @@ public final class ButtonBuilder extends ComponentBuilder<ButtonBuilder> {
   private Color clrHot = null;
   private Color clrActive = null;
 
-  ButtonBuilder(UIBuilder builder) {
+  public ButtonBuilder(UiBuilder builder) {
     super(builder);
   }
 
-  ButtonBuilder text(String text) {
+  public ButtonBuilder text(String text) {
     this.text = text;
     return this;
   }
@@ -40,7 +41,7 @@ public final class ButtonBuilder extends ComponentBuilder<ButtonBuilder> {
     return this;
   }
 
-  public ButtonBuilder onClick(Consumer<UIBuilder> eventListener) {
+  public ButtonBuilder onClick(Consumer<UiBuilder> eventListener) {
     addEvent(EVENT_ON_CLICK, eventListener);
     return this;
   }

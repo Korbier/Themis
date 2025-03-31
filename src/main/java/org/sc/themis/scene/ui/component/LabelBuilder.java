@@ -1,7 +1,8 @@
-package org.sc.themis.scene.ui;
+package org.sc.themis.scene.ui.component;
 
 import org.joml.Vector2f;
 import org.sc.themis.scene.pencil.Color;
+import org.sc.themis.scene.ui.UiBuilder;
 
 public final class LabelBuilder extends ComponentBuilder<LabelBuilder> {
 
@@ -10,7 +11,7 @@ public final class LabelBuilder extends ComponentBuilder<LabelBuilder> {
   private String text = null;
   private Color color = Color.of("ffffff");
 
-  LabelBuilder(UIBuilder builder) {
+  public LabelBuilder(UiBuilder builder) {
     super(builder);
   }
 

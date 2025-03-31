@@ -1,18 +1,21 @@
-package org.sc.themis.scene.ui;
+package org.sc.themis.scene.ui.component;
 
 import java.util.*;
 import java.util.function.Consumer;
 import org.sc.themis.scene.pencil.Pencil;
+import org.sc.themis.scene.ui.ComponentState;
+import org.sc.themis.scene.ui.UiBuilder;
+import org.sc.themis.scene.ui.UiState;
 
 public abstract sealed class ComponentBuilder<B extends ComponentBuilder<?>>
         permits
-          ButtonBuilder,
-          ToggleButtonBuilder,
-          PanelBuilder,
-          LabelBuilder {
+    ButtonBuilder,
+    ToggleButtonBuilder,
+    PanelBuilder,
+    LabelBuilder {
 
-  private final UIBuilder uiBuilder;
-  private final Map<String, Consumer<UIBuilder>> events = new HashMap<>();
+  private final UiBuilder uiBuilder;
+  private final Map<String, Consumer<UiBuilder>> events = new HashMap<>();
   private final List<ComponentBuilder<?>> children = new ArrayList<>();
 
   private final int[] region = new int[] {0, 0, 0, 0};
@@ -23,7 +26,7 @@ public abstract sealed class ComponentBuilder<B extends ComponentBuilder<?>>
   private int width = 0;
   private int height = 0;
 
-  protected ComponentBuilder(UIBuilder uiBuilder) {
+  protected ComponentBuilder(UiBuilder uiBuilder) {
     this.uiBuilder = uiBuilder;
   }
 
@@ -75,7 +78,7 @@ public abstract sealed class ComponentBuilder<B extends ComponentBuilder<?>>
     return (B) this;
   }
 
-  public B location(int left, int top) {
+  public B position(int left, int top) {
     this.left = left;
     this.top = top;
     return (B) this;
@@ -127,7 +130,7 @@ public abstract sealed class ComponentBuilder<B extends ComponentBuilder<?>>
     return this.uiBuilder.getPencil();
   }
 
-  protected void addEvent(String event, Consumer<UIBuilder> eventConsumer) {
+  protected void addEvent(String event, Consumer<UiBuilder> eventConsumer) {
     this.events.put(event, eventConsumer);
   }
 

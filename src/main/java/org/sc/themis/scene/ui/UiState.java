@@ -1,5 +1,7 @@
 package org.sc.themis.scene.ui;
 
+import org.sc.themis.scene.ui.component.ComponentBuilder;
+
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.HashMap;

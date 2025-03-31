@@ -1,19 +1,34 @@
-package org.sc.themis.scene.ui;
+package org.sc.themis.scene.ui.component;
 
 import org.joml.Vector2f;
 import org.joml.Vector2i;
 import org.sc.themis.scene.pencil.Color;
+import org.sc.themis.scene.ui.ComponentState;
+import org.sc.themis.scene.ui.UiBuilder;
 
 public final class PanelBuilder extends ComponentBuilder<PanelBuilder> {
 
   public static final int DEFAULT_BORDER_SIZE = 2;
   public static final int DEFAULT_HEADER_SIZE = 24;
 
+  private String text = null;
+  private int fontIndex = 0;
+
   public static final ComponentState<Vector2i> STATE_MOUSE_POSITION =
       ComponentState.of(Vector2i.class, "mouse.position");
 
-  PanelBuilder(UIBuilder builder) {
+  public PanelBuilder(UiBuilder builder) {
     super(builder);
+  }
+
+  public PanelBuilder text(String text) {
+    this.text = text;
+    return this;
+  }
+
+  public PanelBuilder fontIndex(int index) {
+    this.fontIndex = index;
+    return this;
   }
 
   @Override
@@ -32,7 +47,7 @@ public final class PanelBuilder extends ComponentBuilder<PanelBuilder> {
     if (contains(STATE_MOUSE_POSITION)) {
       Vector2i oldpos = get(STATE_MOUSE_POSITION);
       Vector2i newpos = new Vector2i(state().getMouseX(), state().getMouseY());
-      location(
+      position(
           left + (newpos.x - oldpos.x),
           top + (newpos.y - oldpos.y)
       );
@@ -77,10 +92,12 @@ public final class PanelBuilder extends ComponentBuilder<PanelBuilder> {
       );
     }
 
-    pencil().text(
-        new Vector2f(left + 2 * DEFAULT_BORDER_SIZE, top + DEFAULT_BORDER_SIZE * 2),
-        0, Color.of("FFFFFF"), "Configuration"
-    );
+    if (this.text != null) {
+      pencil().text(
+          new Vector2f(left + 2 * DEFAULT_BORDER_SIZE, top + DEFAULT_BORDER_SIZE * 2),
+          this.fontIndex, Color.of("FFFFFF"), this.text
+      );
+    }
 
   }
 

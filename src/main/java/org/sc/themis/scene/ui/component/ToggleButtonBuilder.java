@@ -1,8 +1,10 @@
-package org.sc.themis.scene.ui;
+package org.sc.themis.scene.ui.component;
 
 import org.joml.Vector2f;
 import org.sc.themis.scene.pencil.Color;
+import org.sc.themis.scene.ui.UiBuilder;
 
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -14,16 +16,16 @@ public final class ToggleButtonBuilder extends ComponentBuilder<ToggleButtonBuil
 
   private Supplier<Boolean> isToggledSupplier = null;
   private boolean isToggled = false;
-  private Color clrDefault = Color.of("ffffff");
-  private Color clrHot = null;
-  private Color clrToggled = null;
+  private Color clrDefault = Color.of("CBD5E1");
+  private Color clrHot = Color.of("94A3B8");
+  private Color clrToggled = Color.of("7092BE");
   private Color clrButton = null;
 
-  ToggleButtonBuilder(UIBuilder builder) {
+  public ToggleButtonBuilder(UiBuilder builder) {
     super(builder);
   }
 
-  public ToggleButtonBuilder onClick(Consumer<UIBuilder> eventListener) {
+  public ToggleButtonBuilder onClick(Consumer<UiBuilder> eventListener) {
     addEvent(EVENT_ON_CLICK, eventListener);
     return this;
   }
@@ -56,7 +58,7 @@ public final class ToggleButtonBuilder extends ComponentBuilder<ToggleButtonBuil
   @Override
   protected void configure(int left, int top, int width, int height) {
     if (this.isToggledSupplier != null) {
-      this.isToggled = this.isToggledSupplier.get();
+      this.isToggled = Objects.requireNonNullElse(this.isToggledSupplier.get(), false);
     }
   }
 
