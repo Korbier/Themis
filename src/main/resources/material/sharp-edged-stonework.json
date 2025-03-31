@@ -1,0 +1,10 @@
+{
+  "name": "sharp-edged-stonework",
+  "author": "freepbr.com",
+  "source" : "https://freepbr.com/product/sharp-edged-stonework/",
+  "dir": "sharp-edged-stonework-bl",
+  "properties": {
+     "albedo": "sharp-edged-stonework_albedo.png",
+     "normal": "sharp-edged-stonework_normal-ogl.png"
+  }
+}

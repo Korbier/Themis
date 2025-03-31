@@ -51,40 +51,29 @@ public class MaterialVariant extends TObject {
     return this.materialRenderer.getFrames().get(frame, this.descriptorset);
   }
 
-  public void setProperties(Material properties) throws ThemisException {
+  public void update(Material properties) throws ThemisException {
 
-    for (Map.Entry<Integer, VkDescriptorSetBinding> bindingEntry :
-        this.materialRenderer.getVariantsDescriptor().getBindings().entrySet()) {
+    for (Map.Entry<Integer, VkDescriptorSetBinding> bindingEntry : this.materialRenderer.getVariantsDescriptor().getBindings().entrySet()) {
 
       int bindingIdx = bindingEntry.getKey();
       VkDescriptorSetBinding binding = bindingEntry.getValue();
 
       if (binding.getDescriptorType() == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER) {
         FrameKey<VkBuffer> bufferKey = this.buffers.get(bindingIdx);
-        this.materialRenderer
-            .getFrames()
-            .update(
-                bufferKey,
-                (buffer) ->
-                    this.materialRenderer.getVariantsUniformSetter().set(bindingIdx, buffer, properties));
+        this.materialRenderer.getFrames().update(bufferKey, (buffer) -> this.materialRenderer.getVariantsUniformSetter().set(bindingIdx, buffer, properties));
       }
 
       if (binding.getDescriptorType() == VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER) {
         FrameKey<VkSampler> samplerKey = this.samplers.get(bindingIdx);
-        this.materialRenderer
-            .getFrames()
-            .update(
-                this.descriptorset,
-                (frame, descriptorset) ->
-                    this.materialRenderer
-                        .getVariantsCombinedImageSamplerSetter()
-                        .set(
-                            bindingIdx,
-                            descriptorset,
-                            this.materialRenderer.getFrames().get(frame, samplerKey),
-                            properties));
+        this.materialRenderer.getFrames().update( this.descriptorset, (frame, descriptorset) ->
+            this.materialRenderer
+                .getVariantsCombinedImageSamplerSetter()
+                .set(bindingIdx, descriptorset, this.materialRenderer.getFrames().get(frame, samplerKey), properties)
+        );
       }
+
     }
+
   }
 
   public void cleanup() throws ThemisException {

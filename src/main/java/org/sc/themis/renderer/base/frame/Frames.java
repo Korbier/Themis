@@ -63,8 +63,7 @@ public class Frames {
     }
   }
 
-  public <T extends TObject> void update(
-      FrameKey<T> key, BiConsumerWithException<Integer, T> consumer) throws ThemisException {
+  public <T extends TObject> void update( FrameKey<T> key, BiConsumerWithException<Integer, T> consumer) throws ThemisException {
     for (int i = 0; i < this.size; i++) {
       frames[i].update(key, i, consumer);
     }

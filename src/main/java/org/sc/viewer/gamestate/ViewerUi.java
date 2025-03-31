@@ -79,7 +79,7 @@ public class ViewerUi extends UiSceneController {
     ToggleButtonBuilder lightPtTgl = builder().toggleButton()
         .position(COMPONENT_LEFT, 50)
         .size(40, 16)
-        .isToggledSupplier(() -> (Boolean) context.getKeyMapping().getState(GLFW_KEY_2))
+        .isToggledSupplier(() -> context.getKeyMapping().getState(GLFW_KEY_2))
         .onClick(_ -> context.getKeyMapping().execute(GLFW_KEY_2));
 
     LabelBuilder lightSptLbl = builder().label()
@@ -89,7 +89,7 @@ public class ViewerUi extends UiSceneController {
     ToggleButtonBuilder lightSptTgl = builder().toggleButton()
         .position(COMPONENT_LEFT, 70)
         .size(40, 16)
-        .isToggledSupplier(() -> (Boolean) context.getKeyMapping().getState(GLFW_KEY_3))
+        .isToggledSupplier(() -> context.getKeyMapping().getState(GLFW_KEY_3))
         .onClick(_ -> context.getKeyMapping().execute(GLFW_KEY_3));
 
     return builder().panel()
@@ -118,7 +118,9 @@ public class ViewerUi extends UiSceneController {
 
     ToggleButtonBuilder matNormMappingTgl = builder().toggleButton()
         .position(COMPONENT_LEFT, 30)
-        .size(40, 16);
+        .size(40, 16)
+        .isToggledSupplier(() -> context.getKeyMapping().getState(GLFW_KEY_4))
+        .onClick(_ -> context.getKeyMapping().execute(GLFW_KEY_4));
 
     return builder().panel()
         .position(left, top)

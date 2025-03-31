@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.sc.TestWithConfiguration;
 import org.sc.themis.engine.Engine;
+import org.sc.themis.renderer.material.MaterialManager;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.viewer.gamestate.ViewerGamestate;
 import org.sc.viewer.renderactivity.ViewerRendererActivity;
@@ -16,8 +17,9 @@ public class ViewerTest extends TestWithConfiguration {
 
     // Given
     ViewerContext context = ViewerContext.createDefault();
-    ViewerGamestate gamestate = new ViewerGamestate(context);
-    Engine engine = new Engine(getConfiguration(), new ViewerRendererActivity(getConfiguration(), context, gamestate));
+    MaterialManager materialManager = new MaterialManager();
+    ViewerGamestate gamestate = new ViewerGamestate(context, materialManager);
+    Engine engine = new Engine(getConfiguration(), new ViewerRendererActivity(getConfiguration(), context, gamestate, materialManager));
 
     // When
     engine.setup();

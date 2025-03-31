@@ -36,9 +36,7 @@ import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.viewer.renderactivity.RenderPass;
 import org.sc.viewer.renderactivity.ViewerRendererActivity;
-import org.sc.viewer.renderactivity.geometry.material.NoLightColorMaterialRenderer;
 import org.sc.viewer.renderactivity.geometry.material.TextureMaterialRenderer;
-import org.sc.viewer.renderactivity.geometry.material.TextureWithNormalMappingMaterialRenderer;
 import org.slf4j.LoggerFactory;
 
 /** Geometry renderpass. */
@@ -57,8 +55,9 @@ public class GeometryRenderPass extends RenderPass {
   private MaterialRenderer[] materialRenderers;
   private MaterialManager materialManager;
 
-  public GeometryRenderPass(Configuration configuration) {
+  public GeometryRenderPass(Configuration configuration, MaterialManager materialManager) {
     super(configuration);
+    this.materialManager = materialManager;
   }
 
   @Override
@@ -71,7 +70,7 @@ public class GeometryRenderPass extends RenderPass {
 
   @Override
   public void setup(Scene scene) throws ThemisException {
-    this.materialManager.compile(scene.getMaterialsProperties());
+    this.materialManager.compile();
   }
 
   @Override
@@ -196,7 +195,7 @@ public class GeometryRenderPass extends RenderPass {
             this.getViewerActivity().getSceneDescriptorset(),
             this.getViewerActivity().getLighDescriptorset()
         ),
-        new TextureWithNormalMappingMaterialRenderer(
+        new TextureMaterialRenderer(
             getConfiguration(), getRenderer(), this.renderPass,
             this.getViewerActivity().getSceneDescriptorset(),
             this.getViewerActivity().getLighDescriptorset()
@@ -207,6 +206,7 @@ public class GeometryRenderPass extends RenderPass {
       materialRenderer.setup();
     }
 
-    this.materialManager = new MaterialManager(this.materialRenderers[0], this.materialRenderers);
+    this.materialManager.setMaterialRenderers(this.materialRenderers[0], this.materialRenderers);
+
   }
 }

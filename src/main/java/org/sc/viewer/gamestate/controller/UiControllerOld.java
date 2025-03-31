@@ -13,7 +13,7 @@ import org.sc.themis.scene.ui.component.PanelBuilder;
 import org.sc.themis.scene.ui.component.ToggleButtonBuilder;
 import org.sc.themis.scene.ui.UiBuilder;
 import org.sc.viewer.ViewerContext;
-import org.sc.viewer.renderactivity.geometry.material.TextureWithNormalMappingMaterialRenderer;
+import org.sc.viewer.renderactivity.geometry.material.TextureMaterialRenderer;
 import org.sc.viewer.renderactivity.postprocess.postprocessor.ShowTBNPostprocessor;
 
 import static org.lwjgl.glfw.GLFW.*;
@@ -106,7 +106,7 @@ public class UiControllerOld implements Controller {
             .isToggledSupplier(() -> {
               Optional<Model> oModel = scene.getModels().stream().findFirst();
               if (oModel.isEmpty()) return false;
-              return oModel.get().getMaterialRenderer().isPresent() && oModel.get().getMaterialRenderer().get().equals(TextureWithNormalMappingMaterialRenderer.MATERIAL_ID);
+              return oModel.get().getMaterialRenderer().isPresent() && oModel.get().getMaterialRenderer().get().equals(TextureMaterialRenderer.MATERIAL_ID);
             } )
             .onClick(_ -> context.getKeyMapping().execute(GLFW_KEY_4));
 

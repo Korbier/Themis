@@ -3,6 +3,7 @@ package org.sc.viewer.gamestate;
 import org.joml.Vector3f;
 import org.sc.themis.gamestate.Gamestate;
 import org.sc.themis.renderer.Renderer;
+import org.sc.themis.renderer.material.MaterialManager;
 import org.sc.themis.renderer.resource.ResourceEnum;
 import org.sc.themis.renderer.resource.ResourceLoader;
 import org.sc.themis.renderer.resource.font.FontRepository;
@@ -14,9 +15,7 @@ import org.sc.themis.renderer.resource.model.Model;
 import org.sc.themis.renderer.resource.model.ModelResourceDescriptor;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.scene.controller.OrbitCameraController;
-import org.sc.themis.scene.factory.MaterialFactory;
 import org.sc.themis.scene.light.DirectionalLight;
-import org.sc.themis.scene.light.Light;
 import org.sc.themis.scene.light.PointLight;
 import org.sc.themis.scene.light.SpotLight;
 import org.sc.themis.scene.light.attenuation.Attenuation;
@@ -25,7 +24,6 @@ import org.sc.themis.shared.exception.ThemisException;
 import org.sc.viewer.ViewerContext;
 import org.sc.viewer.gamestate.controller.KeyMappingController;
 import org.sc.viewer.renderactivity.geometry.material.TextureMaterialRenderer;
-import org.sc.viewer.renderactivity.geometry.material.TextureWithNormalMappingMaterialRenderer;
 
 import java.nio.file.Path;
 import java.util.Optional;
@@ -35,12 +33,15 @@ import static org.lwjgl.glfw.GLFW.*;
 public class ViewerGamestate implements Gamestate {
 
   private final ViewerContext context;
+  private final MaterialManager materialManager;
   private final Pencil pencil;
   private Instance instance;
   private Model model;
 
-  public ViewerGamestate(ViewerContext context) {
+  public ViewerGamestate(ViewerContext context, MaterialManager materialManager) {
+
     this.context = context;
+    this.materialManager = materialManager;
 
     FontRepository fontRepository = new FontRepository();
 
@@ -73,17 +74,17 @@ public class ViewerGamestate implements Gamestate {
   }
 
   private void setupKeyMapping(Scene scene) {
+    /**
     this.context.getKeyMapping().map(GLFW_KEY_4, false, () -> {
       Optional<String> oMaterial = this.model.getMaterialRenderer();
-      if (oMaterial.isEmpty() || !oMaterial.get().equals(TextureWithNormalMappingMaterialRenderer.MATERIAL_ID)) {
-        this.model.setMaterialRenderer(TextureWithNormalMappingMaterialRenderer.MATERIAL_ID);
+      if (oMaterial.isEmpty() || !oMaterial.get().equals(TextureMaterialRenderer.MATERIAL_ID)) {
+        this.model.setMaterialRenderer(TextureMaterialRenderer.MATERIAL_ID);
       } else {
         this.model.setMaterialRenderer(TextureMaterialRenderer.MATERIAL_ID);
       }
       System.out.println(this.model.getMaterialRenderer().get());
-
-
     });
+     **/
     scene.add(new KeyMappingController(this.context.getKeyMapping()));
   }
 
@@ -98,6 +99,11 @@ public class ViewerGamestate implements Gamestate {
   private void setupScene(Renderer renderer, Scene scene) throws ThemisException {
 
     Material material = ResourceLoader.get().get(ResourceEnum.MATERIAL, MaterialResourceDescriptor.of("limestone3.json", renderer.getResourceAllocator()));
+    this.materialManager.addMaterials(material);
+
+
+    TextureMaterialRenderer materialRenderer = (TextureMaterialRenderer) materialManager.get(TextureMaterialRenderer.MATERIAL_ID);
+    this.context.getKeyMapping().map(GLFW_KEY_4, false, materialRenderer::switchEnableNormal, materialRenderer::isNormalEnabled);
 
     this.model = ResourceLoader.get().get(ResourceEnum.MODEL, ModelResourceDescriptor.of("base/textured_unit_cube.gltf", "model", renderer.getResourceAllocator()));
     this.model.setMaterial(material);

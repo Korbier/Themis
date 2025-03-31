@@ -14,6 +14,7 @@ import org.sc.themis.renderer.base.frame.Frames;
 import org.sc.themis.renderer.base.framebuffer.VkFrameBufferAttachments;
 import org.sc.themis.renderer.base.sync.VkFence;
 import org.sc.themis.renderer.base.sync.VkSemaphore;
+import org.sc.themis.renderer.material.MaterialManager;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.scene.descriptorset.InputDescriptorSet;
 import org.sc.themis.scene.descriptorset.MousePickingDescriptorSet;
@@ -68,12 +69,12 @@ public class ViewerRendererActivity extends RendererActivity {
    * @param gamestate gamestate
    */
   public ViewerRendererActivity(
-      Configuration configuration, ViewerContext context, ViewerGamestate gamestate) {
+      Configuration configuration, ViewerContext context, ViewerGamestate gamestate, MaterialManager materialManager) {
     super(configuration);
     this.gamestate = gamestate;
     this.mousePickingRenderPass = new MousePickingRenderPass(configuration);
     this.shadowRenderPass = new ShadowRenderPass(configuration);
-    this.geometryRenderPass = new GeometryRenderPass(configuration);
+    this.geometryRenderPass = new GeometryRenderPass(configuration, materialManager);
     this.postProcessRenderPass = new PostProcessRenderPass(configuration, context);
     this.uiRenderPass = new UiRenderPass(configuration, gamestate.getPencil());
   }
