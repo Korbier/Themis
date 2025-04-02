@@ -96,11 +96,13 @@ public class GeometryRenderPass extends RenderPass {
     for (Model model : scene.getModels()) {
       if (model.isRenderable()) {
 
-        this.materialManager.bindMaterial(command, model);
+        this.materialManager.bindMaterialRenderer(command, model);
 
         for (Mesh mesh : model.getMeshes()) {
 
           Material material = this.materialManager.select(mesh.getProperties(), model.getMaterial());
+
+          this.materialManager.updateMaterialRenderer(material);
 
           if (material == null) {
             logger.error("No suitable MaterialProperties Struct found for mesh {} (model {})", mesh, model.getIdentifier());

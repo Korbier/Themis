@@ -3,9 +3,7 @@ package org.sc.viewer.gamestate;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.scene.pencil.Pencil;
 import org.sc.themis.scene.ui.UiSceneController;
-import org.sc.themis.scene.ui.component.LabelBuilder;
-import org.sc.themis.scene.ui.component.PanelBuilder;
-import org.sc.themis.scene.ui.component.ToggleButtonBuilder;
+import org.sc.themis.scene.ui.component.*;
 import org.sc.viewer.ViewerContext;
 
 import static org.lwjgl.glfw.GLFW.*;
@@ -18,7 +16,13 @@ public class ViewerUi extends UiSceneController {
   private final static int PANEL_HEIGHT = 120;
   private final static int PANEL_SPACE  =  10;
 
-  private final static int COMPONENT_LEFT = PANEL_WIDTH - 46;
+  private final static int PANEL_MARGIN = 2;
+  private final static int PANEL_COLUMN_A_LEFT  = PanelBuilder.DEFAULT_BORDER_SIZE + PANEL_MARGIN;
+  private final static int PANEL_COLUMN_A_WIDTH = 190;
+  private final static int PANEL_COLUMN_B_LEFT  = PANEL_COLUMN_A_LEFT + PANEL_COLUMN_A_WIDTH + PANEL_MARGIN ;
+  private final static int PANEL_COLUMN_B_WIDTH  = PANEL_WIDTH - (PANEL_COLUMN_B_LEFT + PANEL_MARGIN + PanelBuilder.DEFAULT_BORDER_SIZE);
+
+  private final static int PANEL_ROW_HEIGHT = 20;
 
   private final PanelBuilder infoPnl;
   private LabelBuilder infoMaterialLblValue;
@@ -44,11 +48,13 @@ public class ViewerUi extends UiSceneController {
 
     LabelBuilder infoFpsLbl = builder().label()
         .text("Fps")
-        .position(2, 26);
+        .size(PANEL_COLUMN_A_WIDTH, PANEL_ROW_HEIGHT)
+        .position(PANEL_COLUMN_A_LEFT, PanelBuilder.DEFAULT_HEADER_SIZE + PANEL_MARGIN);
 
     this.infoMaterialLblValue = builder().label()
         .text("-")
-        .position(COMPONENT_LEFT, 26);
+        .size(PANEL_COLUMN_B_WIDTH, PANEL_ROW_HEIGHT)
+        .position(PANEL_COLUMN_B_LEFT, PanelBuilder.DEFAULT_HEADER_SIZE + PANEL_MARGIN);
 
     return builder().panel()
         .position(left, top)
@@ -64,31 +70,34 @@ public class ViewerUi extends UiSceneController {
 
     LabelBuilder lightDirLbl = builder().label()
         .text("Directional")
-        .position(2, 26);
+        .size(PANEL_COLUMN_A_WIDTH, PANEL_ROW_HEIGHT)
+        .position(PANEL_COLUMN_A_LEFT, PanelBuilder.DEFAULT_HEADER_SIZE + PANEL_MARGIN);
 
     ToggleButtonBuilder lightDirTgl = builder().toggleButton()
-        .position(COMPONENT_LEFT, 30)
-        .size(40, 16)
+        .position(PANEL_COLUMN_B_LEFT, PanelBuilder.DEFAULT_HEADER_SIZE + PANEL_MARGIN + PANEL_MARGIN)
+        .size(PANEL_COLUMN_B_WIDTH, PANEL_ROW_HEIGHT - PANEL_MARGIN * 2)
         .isToggledSupplier(() -> context.getKeyMapping().getState(GLFW_KEY_1))
         .onClick(_ -> context.getKeyMapping().execute(GLFW_KEY_1));
 
     LabelBuilder lightPtLbl = builder().label()
         .text("Point")
-        .position(2, 46);
+        .size(PANEL_COLUMN_A_WIDTH, PANEL_ROW_HEIGHT)
+        .position(PANEL_COLUMN_A_LEFT, PanelBuilder.DEFAULT_HEADER_SIZE + PANEL_MARGIN + PANEL_ROW_HEIGHT + PANEL_MARGIN );
 
     ToggleButtonBuilder lightPtTgl = builder().toggleButton()
-        .position(COMPONENT_LEFT, 50)
-        .size(40, 16)
+        .position(PANEL_COLUMN_B_LEFT, PanelBuilder.DEFAULT_HEADER_SIZE + PANEL_MARGIN + PANEL_MARGIN + PANEL_ROW_HEIGHT + PANEL_MARGIN)
+        .size(PANEL_COLUMN_B_WIDTH, PANEL_ROW_HEIGHT - PANEL_MARGIN * 2)
         .isToggledSupplier(() -> context.getKeyMapping().getState(GLFW_KEY_2))
         .onClick(_ -> context.getKeyMapping().execute(GLFW_KEY_2));
 
     LabelBuilder lightSptLbl = builder().label()
         .text("Spot")
-        .position(2, 66);
+        .size(PANEL_COLUMN_A_WIDTH, PANEL_ROW_HEIGHT)
+        .position(PANEL_COLUMN_A_LEFT, PanelBuilder.DEFAULT_HEADER_SIZE + PANEL_MARGIN + (PANEL_ROW_HEIGHT + PANEL_MARGIN) * 2 );
 
     ToggleButtonBuilder lightSptTgl = builder().toggleButton()
-        .position(COMPONENT_LEFT, 70)
-        .size(40, 16)
+        .position(PANEL_COLUMN_B_LEFT, PanelBuilder.DEFAULT_HEADER_SIZE + PANEL_MARGIN + PANEL_MARGIN + (PANEL_ROW_HEIGHT + PANEL_MARGIN) * 2 )
+        .size(PANEL_COLUMN_B_WIDTH, PANEL_ROW_HEIGHT - PANEL_MARGIN * 2)
         .isToggledSupplier(() -> context.getKeyMapping().getState(GLFW_KEY_3))
         .onClick(_ -> context.getKeyMapping().execute(GLFW_KEY_3));
 
@@ -112,13 +121,18 @@ public class ViewerUi extends UiSceneController {
 
   private PanelBuilder createMaterialPanel(int left, int top) {
 
+    ComboboxBuilder matRendererCmb = builder().combobox()
+        .size(PANEL_COLUMN_A_WIDTH + PANEL_MARGIN + PANEL_COLUMN_B_WIDTH , PANEL_ROW_HEIGHT - PANEL_MARGIN * 2)
+        .position(PANEL_COLUMN_A_LEFT, PanelBuilder.DEFAULT_HEADER_SIZE + PANEL_MARGIN + PANEL_MARGIN);
+
     LabelBuilder matNormMappingLbl = builder().label()
         .text("Normal Mapping")
-        .position(2, 26);
+        .size(PANEL_COLUMN_A_WIDTH, PANEL_ROW_HEIGHT)
+        .position(PANEL_COLUMN_A_LEFT, PanelBuilder.DEFAULT_HEADER_SIZE + PANEL_MARGIN + PANEL_ROW_HEIGHT + PANEL_MARGIN );
 
     ToggleButtonBuilder matNormMappingTgl = builder().toggleButton()
-        .position(COMPONENT_LEFT, 30)
-        .size(40, 16)
+        .position(PANEL_COLUMN_B_LEFT, PanelBuilder.DEFAULT_HEADER_SIZE + PANEL_MARGIN + PANEL_MARGIN + PANEL_ROW_HEIGHT + PANEL_MARGIN)
+        .size(PANEL_COLUMN_B_WIDTH, PANEL_ROW_HEIGHT - PANEL_MARGIN * 2)
         .isToggledSupplier(() -> context.getKeyMapping().getState(GLFW_KEY_4))
         .onClick(_ -> context.getKeyMapping().execute(GLFW_KEY_4));
 
@@ -127,6 +141,7 @@ public class ViewerUi extends UiSceneController {
         .size(PANEL_WIDTH, PANEL_HEIGHT)
         .text("Material")
         .child(
+            matRendererCmb,
             matNormMappingLbl, matNormMappingTgl
         );
   }

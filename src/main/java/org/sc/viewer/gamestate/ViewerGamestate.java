@@ -138,13 +138,13 @@ public class ViewerGamestate implements Gamestate {
 
     SpotLight slight = new SpotLight(
         new Vector3f(0.0f, 0.0f, 0.01f),
-        new Vector3f(0.0f, 0.0f, 0.7f),
+        new Vector3f(0.0f, 0.0f, 0.8f),
         new Vector3f(0.0f, 0.0f, 0.9f),
         new Vector3f(0.0f, 0.0f, 10.0f),
         new Vector3f(0.0f, 0.0f, -10.0f),
-        Attenuation.type1(128.0f, 128.0f),
-        (float) Math.cos(Math.toRadians(12.0f)),
-        (float) Math.cos(Math.toRadians(16.0f))
+        Attenuation.type1(512.0f, 256.0f),
+        (float) Math.cos(Math.toRadians(4.0f)),
+        (float) Math.cos(Math.toRadians(8.0f))
     );
     scene.add(slight);
     this.context.getKeyMapping().map(GLFW_KEY_3, false, slight::switchVisible, slight::isVisible);

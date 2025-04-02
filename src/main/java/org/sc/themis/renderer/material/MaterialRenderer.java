@@ -275,12 +275,12 @@ public abstract class MaterialRenderer extends TObject {
     return this.variantsDescriptor;
   }
 
-  public void update(int frame, Material properties) throws ThemisException {
+  public void update(Material material) throws ThemisException {
 
     try {
       if (this.dirty) {
-        String variantIdentifier = properties.getVariantIdentifier(this);
-        this.variants.get(variantIdentifier).update(properties);
+        String variantIdentifier = material.getVariantIdentifier(this);
+        this.variants.get(variantIdentifier).update(material);
       }
     } finally {
       this.dirty = false;

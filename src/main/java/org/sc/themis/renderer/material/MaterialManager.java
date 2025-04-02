@@ -44,7 +44,7 @@ public class MaterialManager {
   }
 
   /** Bind material pipeline for given model. */
-  public void bindMaterial(VkCommand command, Model model) throws ThemisException {
+  public void bindMaterialRenderer(VkCommand command, Model model) throws ThemisException {
 
     MaterialRenderer materialRenderer = select(model);
 
@@ -56,11 +56,14 @@ public class MaterialManager {
 
   }
 
-  /** Bind material variant (descriptorset) for given material properties. */
-  public void bindMaterialVariant(VkCommand command, Material properties, int frame) throws ThemisException {
+  public void updateMaterialRenderer(Material material) throws ThemisException {
+    this.lastUsedMaterialRenderer.update(material);
+  }
+
+  /** Bind material variant (descriptorset) for given material. */
+  public void bindMaterialVariant(VkCommand command, Material material, int frame) throws ThemisException {
     int[] indexedOffest = new int[0];
-    this.lastUsedMaterialRenderer.update(frame, properties);
-    VkDescriptorSet[] descriptorsets = this.lastUsedMaterialRenderer.getDescriptorSets(frame, properties);
+    VkDescriptorSet[] descriptorsets = this.lastUsedMaterialRenderer.getDescriptorSets(frame, material);
     command.bindDescriptorSets(indexedOffest, descriptorsets);
   }
 

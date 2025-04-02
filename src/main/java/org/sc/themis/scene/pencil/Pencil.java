@@ -65,7 +65,7 @@ public class Pencil {
     for (FontCharacter fchar : characters) {
 
       float posX = position.x() + decal + fchar.bearing().x();
-      float posY = position.y() + font.getFontSize() - fchar.bearing().y();
+      float posY = position.y() + font.getMaxYBearing() - fchar.bearing().y();
 
       Vector3f fontProperties = new Vector3f(
           fontIdx,

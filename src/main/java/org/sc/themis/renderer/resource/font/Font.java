@@ -18,6 +18,7 @@ import org.lwjgl.util.freetype.FT_GlyphSlot;
 import org.sc.themis.renderer.resource.image.Image;
 
 //https://levelup.gitconnected.com/how-to-create-a-bitmap-font-with-freetype-58e8c31878a9
+//https://gamedev.net/forums/topic/691352-freetype-characters-are-not-on-the-base-line/5352486/
 public class Font {
 
   private static final char firstChar = (char) 32;
@@ -32,6 +33,7 @@ public class Font {
   private final float sdfEdge;
 
   private Image texture;
+  private long maxYBearing = 0;
 
   public static Font normal(int size, Path font) {
     return new Font(size, false, 0.0f, 0.0f, font);
@@ -64,6 +66,10 @@ public class Font {
 
   public float getSdfEdge() {
     return this.sdfEdge;
+  }
+
+  public long getMaxYBearing() {
+    return this.maxYBearing;
   }
 
   public FontCharacter[] toCharacters(String text) {
@@ -163,7 +169,6 @@ public class Font {
 
       ByteBuffer charBitmapBuffer = charBitmap.buffer(charWidth * charHeight);
 
-
       int x = (i % bitmapCols) * (this.size + bitmapPadding);
       int y = (i / bitmapCols) * (this.size + bitmapPadding);
 
@@ -178,6 +183,10 @@ public class Font {
           new Vector2f((float) (x + charBitmap.width()) / imageWidth, (float) (y + charBitmap.rows()) / imageHeight),
           glyph.advance().x() / 64
       );
+
+      if ((glyph.metrics().horiBearingY() / 64) > this.maxYBearing) {
+        this.maxYBearing = glyph.metrics().horiBearingY() / 64;
+      }
 
       this.characters.put(currentChar, fontChar);
 

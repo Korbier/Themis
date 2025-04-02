@@ -2,22 +2,22 @@ package org.sc.themis.scene.ui.component;
 
 import java.util.*;
 import java.util.function.Consumer;
+
+import org.joml.Vector2f;
+import org.sc.themis.scene.pencil.Color;
 import org.sc.themis.scene.pencil.Pencil;
 import org.sc.themis.scene.ui.ComponentState;
 import org.sc.themis.scene.ui.UiBuilder;
 import org.sc.themis.scene.ui.UiState;
 
 public abstract sealed class ComponentBuilder<B extends ComponentBuilder<?>>
-        permits
-    ButtonBuilder,
-    ToggleButtonBuilder,
-    PanelBuilder,
-    LabelBuilder {
+    permits ButtonBuilder, ComboboxBuilder, LabelBuilder, PanelBuilder, ToggleButtonBuilder {
 
   private final UiBuilder uiBuilder;
   private final Map<String, Consumer<UiBuilder>> events = new HashMap<>();
   private final List<ComponentBuilder<?>> children = new ArrayList<>();
 
+  private final int[] pushedRegion = new int[] {0, 0, 0, 0};
   private final int[] region = new int[] {0, 0, 0, 0};
 
   private String identifier;
@@ -25,6 +25,8 @@ public abstract sealed class ComponentBuilder<B extends ComponentBuilder<?>>
   private int top = 0;
   private int width = 0;
   private int height = 0;
+
+  private boolean debug = false;
 
   protected ComponentBuilder(UiBuilder uiBuilder) {
     this.uiBuilder = uiBuilder;
@@ -43,9 +45,14 @@ public abstract sealed class ComponentBuilder<B extends ComponentBuilder<?>>
     int height = this.height;
 
     setRegion(left, top, width, height);
+    pushRegion();
 
     configure(left, top, width, height);
     checkState();
+
+    if (debug()) {
+      pencil().rect(new Vector2f(left, top), new Vector2f(width, height), Color.of("ff0000"));
+    }
 
     draw(left, top, width, height);
     triggerEvents();
@@ -78,6 +85,11 @@ public abstract sealed class ComponentBuilder<B extends ComponentBuilder<?>>
     return (B) this;
   }
 
+  public B debug(boolean debug) {
+    this.debug = debug;
+    return (B) this;
+  }
+
   public B position(int left, int top) {
     this.left = left;
     this.top = top;
@@ -95,6 +107,10 @@ public abstract sealed class ComponentBuilder<B extends ComponentBuilder<?>>
     return (B) this;
   }
 
+  public boolean debug() {
+    return this.debug;
+  }
+
   protected ComponentBuilder<?> getParent() {
     return state().getParent();
   }
@@ -104,6 +120,20 @@ public abstract sealed class ComponentBuilder<B extends ComponentBuilder<?>>
     this.region[1] = top;
     this.region[2] = width;
     this.region[3] = height;
+  }
+
+  protected void pushRegion() {
+    this.pushedRegion[0] = this.region[0];
+    this.pushedRegion[1] = this.region[1];
+    this.pushedRegion[2] = this.region[2];
+    this.pushedRegion[3] = this.region[3];
+  }
+
+  protected void popRegion() {
+    this.region[0] = this.pushedRegion[0];
+    this.region[1] = this.pushedRegion[1];
+    this.region[2] = this.pushedRegion[2];
+    this.region[3] = this.pushedRegion[3];
   }
 
   protected <T> void set(ComponentState<T> state, T value) {

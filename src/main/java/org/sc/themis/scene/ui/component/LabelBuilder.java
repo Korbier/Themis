@@ -1,15 +1,15 @@
 package org.sc.themis.scene.ui.component;
 
 import org.joml.Vector2f;
+import org.sc.themis.renderer.resource.font.Font;
 import org.sc.themis.scene.pencil.Color;
 import org.sc.themis.scene.ui.UiBuilder;
 
 public final class LabelBuilder extends ComponentBuilder<LabelBuilder> {
 
-  public static final int DEFAULT_BORDER_SIZE = 2;
-
   private String text = null;
   private Color color = Color.of("ffffff");
+  private int fontIdx = 0;
 
   public LabelBuilder(UiBuilder builder) {
     super(builder);
@@ -25,6 +25,11 @@ public final class LabelBuilder extends ComponentBuilder<LabelBuilder> {
     return this;
   }
 
+  public LabelBuilder font(int fontIdx) {
+    this.fontIdx = fontIdx;
+    return this;
+  }
+
   @Override
   protected void configure(int left, int top, int width, int height) {
     //Nothing to do
@@ -33,11 +38,15 @@ public final class LabelBuilder extends ComponentBuilder<LabelBuilder> {
   @Override
   protected void draw(int left, int top, int width, int height) {
 
+    int decal = 0;
+
+    Font font = this.pencil().getFontRepository().get(this.fontIdx);
+    if (height > font.getFontSize()) {
+      decal = (height - font.getFontSize()) / 2;
+    }
+
     if (this.text != null) {
-      pencil().text(
-          new Vector2f(left + 2 * DEFAULT_BORDER_SIZE, top + 2 * DEFAULT_BORDER_SIZE),
-          0, this.color, this.text
-      );
+      pencil().text(new Vector2f(left, top + decal), 0, this.color, this.text);
     }
 
   }

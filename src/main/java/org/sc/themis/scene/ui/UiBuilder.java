@@ -1,11 +1,9 @@
 package org.sc.themis.scene.ui;
 
+import org.apache.logging.log4j.core.config.builder.api.ComponentBuilder;
 import org.sc.themis.input.Input;
 import org.sc.themis.scene.pencil.Pencil;
-import org.sc.themis.scene.ui.component.ButtonBuilder;
-import org.sc.themis.scene.ui.component.LabelBuilder;
-import org.sc.themis.scene.ui.component.PanelBuilder;
-import org.sc.themis.scene.ui.component.ToggleButtonBuilder;
+import org.sc.themis.scene.ui.component.*;
 
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -68,6 +66,10 @@ public class UiBuilder {
 
   public LabelBuilder label() {
     return new LabelBuilder(this).identifier(identifierSupplier.get());
+  }
+
+  public ComboboxBuilder combobox() {
+    return new ComboboxBuilder(this).identifier(identifierSupplier.get());
   }
 
 }
