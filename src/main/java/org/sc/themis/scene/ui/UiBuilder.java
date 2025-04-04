@@ -2,6 +2,8 @@ package org.sc.themis.scene.ui;
 
 import org.apache.logging.log4j.core.config.builder.api.ComponentBuilder;
 import org.sc.themis.input.Input;
+import org.sc.themis.renderer.pencil2d.Pencil2D;
+import org.sc.themis.renderer.pencil2d.Pencil2DLayer;
 import org.sc.themis.scene.pencil.Pencil;
 import org.sc.themis.scene.ui.component.*;
 
@@ -10,13 +12,17 @@ import java.util.function.Supplier;
 
 public class UiBuilder {
 
-  private final Pencil pencil;
+  private final Pencil2D pencil;
   private final UiState uiState = new UiState();
 
   private Supplier<String> identifierSupplier = () -> UUID.randomUUID().toString();
+  private Pencil2DLayer background;
+  private Pencil2DLayer foreground;
 
-  public UiBuilder(Pencil pencil) {
+  public UiBuilder(Pencil2D pencil) {
     this.pencil = pencil;
+    this.background = this.pencil.layer(0);
+    this.foreground = this.pencil.layer(1);
   }
 
   public void begin() {
@@ -44,8 +50,12 @@ public class UiBuilder {
     this.uiState.setMouseDown(input.isLeftButtonPressed());
   }
 
-  public Pencil getPencil() {
-    return this.pencil;
+  public Pencil2DLayer background() {
+    return this.background;
+  }
+
+  public Pencil2DLayer foreground() {
+    return this.foreground;
   }
 
   public UiState getState() {

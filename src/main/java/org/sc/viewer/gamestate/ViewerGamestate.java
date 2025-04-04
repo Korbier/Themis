@@ -4,6 +4,7 @@ import org.joml.Vector3f;
 import org.sc.themis.gamestate.Gamestate;
 import org.sc.themis.renderer.Renderer;
 import org.sc.themis.renderer.material.MaterialManager;
+import org.sc.themis.renderer.pencil2d.Pencil2D;
 import org.sc.themis.renderer.resource.ResourceEnum;
 import org.sc.themis.renderer.resource.ResourceLoader;
 import org.sc.themis.renderer.resource.font.FontRepository;
@@ -19,14 +20,12 @@ import org.sc.themis.scene.light.DirectionalLight;
 import org.sc.themis.scene.light.PointLight;
 import org.sc.themis.scene.light.SpotLight;
 import org.sc.themis.scene.light.attenuation.Attenuation;
-import org.sc.themis.scene.pencil.Pencil;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.viewer.ViewerContext;
 import org.sc.viewer.gamestate.controller.KeyMappingController;
 import org.sc.viewer.renderactivity.geometry.material.TextureMaterialRenderer;
 
 import java.nio.file.Path;
-import java.util.Optional;
 
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -34,25 +33,16 @@ public class ViewerGamestate implements Gamestate {
 
   private final ViewerContext context;
   private final MaterialManager materialManager;
-  private final Pencil pencil;
+  private final Pencil2D pencil;
   private Instance instance;
   private Model model;
 
-  public ViewerGamestate(ViewerContext context, MaterialManager materialManager) {
+  public ViewerGamestate(ViewerContext context, FontRepository fontRepository, MaterialManager materialManager) {
 
     this.context = context;
     this.materialManager = materialManager;
 
-    FontRepository fontRepository = new FontRepository();
-
-    try {
-      fontRepository.load(ResourceLoader.get().get(ResourceEnum.FONT, FontResourceDescriptor.sdf( Path.of("CenturyGothic.ttf"), 14, 0.47f, 0.060f )));
-      fontRepository.load(ResourceLoader.get().get(ResourceEnum.FONT, FontResourceDescriptor.sdf( Path.of("CenturyGothic.ttf"), 16, 0.46f, 0.09f )));
-    } catch (ThemisException e) {
-      e.printStackTrace(); //todo
-    }
-
-    this.pencil = new Pencil(fontRepository);
+    this.pencil = new Pencil2D(fontRepository);
 
   }
 
@@ -69,7 +59,7 @@ public class ViewerGamestate implements Gamestate {
     this.model.cleanup();
   }
 
-  public Pencil getPencil() {
+  public Pencil2D getPencil() {
     return this.pencil;
   }
 

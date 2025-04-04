@@ -1,7 +1,7 @@
 package org.sc.themis.scene.ui.component;
 
 import org.joml.Vector2f;
-import org.sc.themis.scene.pencil.Color;
+import org.sc.themis.renderer.pencil2d.Color;
 import org.sc.themis.scene.ui.UiBuilder;
 
 public final class ComboboxBuilder extends ComponentBuilder<ComboboxBuilder> {
@@ -15,6 +15,10 @@ public final class ComboboxBuilder extends ComponentBuilder<ComboboxBuilder> {
     super(uiBuilder);
   }
 
+  public boolean isOpen() {
+    return this.isOpen;
+  }
+
   @Override
   protected void configure(int left, int top, int width, int height) {
     addEvent(EVENT_ON_OPEN, _ -> this.isOpen = !this.isOpen );
@@ -22,7 +26,7 @@ public final class ComboboxBuilder extends ComponentBuilder<ComboboxBuilder> {
 
   @Override
   protected void draw(int left, int top, int width, int height) {
-
+/*
     Color defaultColor = Color.of("CBD5E1");
     Color hotColor = Color.of("94A3B8");
 
@@ -60,7 +64,7 @@ public final class ComboboxBuilder extends ComponentBuilder<ComboboxBuilder> {
     }
 
     pencil().text(new Vector2f(left + 2, top + 2), 0, Color.of("000000"), "test");
-
+*/
   }
 
   @Override

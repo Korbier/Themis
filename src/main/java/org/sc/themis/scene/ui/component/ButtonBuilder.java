@@ -2,7 +2,7 @@ package org.sc.themis.scene.ui.component;
 
 import java.util.function.Consumer;
 import org.joml.Vector2f;
-import org.sc.themis.scene.pencil.Color;
+import org.sc.themis.renderer.pencil2d.Color;
 import org.sc.themis.scene.ui.UiBuilder;
 
 
@@ -57,7 +57,7 @@ public final class ButtonBuilder extends ComponentBuilder<ButtonBuilder> {
     Color defaultColor = this.clrDefault;
     Color hotColor = this.clrHot != null ? this.clrHot : this.clrDefault;
     Color activeColor = this.clrActive != null ? this.clrActive : this.clrDefault;
-
+/*
     pencil().rect(new Vector2f(left, top), new Vector2f(width, height), activeColor);
 
     if (isHotItem()) {
@@ -89,7 +89,7 @@ public final class ButtonBuilder extends ComponentBuilder<ButtonBuilder> {
           this.text
       );
     }
-
+*/
   }
 
   @Override

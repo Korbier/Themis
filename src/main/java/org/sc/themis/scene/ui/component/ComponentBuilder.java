@@ -4,7 +4,9 @@ import java.util.*;
 import java.util.function.Consumer;
 
 import org.joml.Vector2f;
-import org.sc.themis.scene.pencil.Color;
+import org.sc.themis.renderer.pencil2d.Color;
+import org.sc.themis.renderer.pencil2d.Pencil2D;
+import org.sc.themis.renderer.pencil2d.Pencil2DLayer;
 import org.sc.themis.scene.pencil.Pencil;
 import org.sc.themis.scene.ui.ComponentState;
 import org.sc.themis.scene.ui.UiBuilder;
@@ -51,7 +53,8 @@ public abstract sealed class ComponentBuilder<B extends ComponentBuilder<?>>
     checkState();
 
     if (debug()) {
-      pencil().rect(new Vector2f(left, top), new Vector2f(width, height), Color.of("ff0000"));
+      //pencil().rect(new Vector2f(left, top), new Vector2f(width, height), Color.of("ff0000"));
+      background().rect(left, top, width, height);
     }
 
     draw(left, top, width, height);
@@ -156,8 +159,8 @@ public abstract sealed class ComponentBuilder<B extends ComponentBuilder<?>>
     return this.uiBuilder.getState();
   }
 
-  protected Pencil pencil() {
-    return this.uiBuilder.getPencil();
+  protected Pencil2DLayer background() {
+    return this.uiBuilder.background();
   }
 
   protected void addEvent(String event, Consumer<UiBuilder> eventConsumer) {

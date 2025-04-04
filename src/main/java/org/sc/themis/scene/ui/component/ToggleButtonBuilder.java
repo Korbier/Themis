@@ -1,7 +1,7 @@
 package org.sc.themis.scene.ui.component;
 
 import org.joml.Vector2f;
-import org.sc.themis.scene.pencil.Color;
+import org.sc.themis.renderer.pencil2d.Color;
 import org.sc.themis.scene.ui.UiBuilder;
 
 import java.util.Objects;
@@ -64,7 +64,7 @@ public final class ToggleButtonBuilder extends ComponentBuilder<ToggleButtonBuil
 
   @Override
   protected void draw(int left, int top, int width, int height) {
-
+/*
     Color defaultColor = this.clrDefault;
     Color hotColor = this.clrHot != null ? this.clrHot : this.clrDefault;
     Color toggledColor = this.clrToggled != null ? this.clrToggled : this.clrDefault;
@@ -111,7 +111,7 @@ public final class ToggleButtonBuilder extends ComponentBuilder<ToggleButtonBuil
       );
 
     }
-
+*/
   }
 
   @Override

@@ -1,5 +1,6 @@
 package org.sc.viewer.gamestate;
 
+import org.sc.themis.renderer.pencil2d.Pencil2D;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.scene.pencil.Pencil;
 import org.sc.themis.scene.ui.UiSceneController;
@@ -31,7 +32,7 @@ public class ViewerUi extends UiSceneController {
   private final PanelBuilder meshPnl;
   private final PanelBuilder materialPnl;
 
-  public ViewerUi(Scene scene, Pencil pencil, ViewerContext context) {
+  public ViewerUi(Scene scene, Pencil2D pencil, ViewerContext context) {
 
     super(scene, pencil);
 
@@ -142,7 +143,8 @@ public class ViewerUi extends UiSceneController {
         .text("Material")
         .child(
             matRendererCmb,
-            matNormMappingLbl, matNormMappingTgl
+            matNormMappingLbl, 
+            matNormMappingTgl
         );
   }
 

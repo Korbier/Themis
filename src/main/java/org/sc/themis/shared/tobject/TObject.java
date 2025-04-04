@@ -1,9 +1,8 @@
 package org.sc.themis.shared.tobject;
 
 import org.sc.themis.shared.configuration.Configuration;
-import org.sc.themis.shared.exception.ThemisException;
 
-public abstract class TObject {
+public abstract class TObject implements LifeCycle {
 
   private final Configuration configuration;
 
@@ -14,9 +13,5 @@ public abstract class TObject {
   public Configuration getConfiguration() {
     return this.configuration;
   }
-
-  public abstract void setup() throws ThemisException;
-
-  public abstract void cleanup() throws ThemisException;
 
 }

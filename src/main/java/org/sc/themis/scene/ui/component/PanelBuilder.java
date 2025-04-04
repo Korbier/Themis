@@ -1,8 +1,7 @@
 package org.sc.themis.scene.ui.component;
 
-import org.joml.Vector2f;
 import org.joml.Vector2i;
-import org.sc.themis.scene.pencil.Color;
+import org.sc.themis.renderer.pencil2d.Color;
 import org.sc.themis.scene.ui.ComponentState;
 import org.sc.themis.scene.ui.UiBuilder;
 
@@ -65,6 +64,41 @@ public final class PanelBuilder extends ComponentBuilder<PanelBuilder> {
   protected void draw(int left, int top, int width, int height) {
 
     Color borderColor = Color.of("555555");
+    Color backgroundColor = Color.of("222222");
+    Color headerColor = Color.of("555555");
+    Color headerColorHot = Color.of("777777");
+
+    background().reset();
+
+    background()
+        .color(borderColor)
+        .rect(left, top, width, height)
+        .color(backgroundColor)
+        .rect(left + DEFAULT_BORDER_SIZE, top + DEFAULT_BORDER_SIZE, width - 2 * DEFAULT_BORDER_SIZE, height - 2 * DEFAULT_BORDER_SIZE)
+    ;
+
+    if (isHotItem()) {
+      background()
+          .color(headerColorHot)
+          .rect(left + DEFAULT_BORDER_SIZE, top + DEFAULT_BORDER_SIZE, width - 2 * DEFAULT_BORDER_SIZE, DEFAULT_HEADER_SIZE)
+      ;
+    } else {
+      background()
+          .color(headerColor)
+          .rect(left + DEFAULT_BORDER_SIZE, top + DEFAULT_BORDER_SIZE, width - 2 * DEFAULT_BORDER_SIZE, DEFAULT_HEADER_SIZE)
+      ;
+    }
+
+    if (this.text != null) {
+      background()
+          .font(0)
+          .color(Color.of("FFFFFF"))
+          .text(left + 2 * DEFAULT_BORDER_SIZE, top + DEFAULT_BORDER_SIZE * 2, this.text)
+      ;
+    }
+
+/*
+    Color borderColor = Color.of("555555");
     Color backgroundColor = Color.of("222222"); //Color.of("eeeeee");
     Color headerColor = Color.of("555555"); //Color.of("CBD5E1");
     Color headerColorHot = Color.of("777777");
@@ -98,7 +132,7 @@ public final class PanelBuilder extends ComponentBuilder<PanelBuilder> {
           this.fontIndex, Color.of("FFFFFF"), this.text
       );
     }
-
+*/
   }
 
   @Override

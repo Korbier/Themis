@@ -6,7 +6,7 @@ import org.sc.themis.input.Input;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.scene.base.Controller;
 import org.sc.themis.renderer.resource.model.Model;
-import org.sc.themis.scene.pencil.Color;
+import org.sc.themis.renderer.pencil2d.Color;
 import org.sc.themis.scene.pencil.Pencil;
 import org.sc.themis.scene.ui.component.LabelBuilder;
 import org.sc.themis.scene.ui.component.PanelBuilder;
@@ -26,7 +26,7 @@ public class UiControllerOld implements Controller {
 
   public UiControllerOld(Pencil pencil, Scene scene, ViewerContext context) {
 
-    this.builder = new UiBuilder(pencil);
+    this.builder = new UiBuilder(null);
 
     this.lblElapsed = this.builder.label()
         .position(2, 2)

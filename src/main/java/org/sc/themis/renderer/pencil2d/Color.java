@@ -1,4 +1,4 @@
-package org.sc.themis.scene.pencil;
+package org.sc.themis.renderer.pencil2d;
 
 public class Color {
 
