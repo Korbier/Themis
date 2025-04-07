@@ -1,7 +1,5 @@
 package org.sc.themis.scene.ui.component;
 
-import org.joml.Vector2f;
-import org.sc.themis.renderer.resource.font.Font;
 import org.sc.themis.renderer.pencil2d.Color;
 import org.sc.themis.scene.ui.UiBuilder;
 
@@ -37,18 +35,22 @@ public final class LabelBuilder extends ComponentBuilder<LabelBuilder> {
 
   @Override
   protected void draw(int left, int top, int width, int height) {
-/*
-    int decal = 0;
 
-    Font font = this.pencil().getFontRepository().get(this.fontIdx);
+    int decal = 0;
+/*
+    Font font = this.background().getFontRepository().get(this.fontIdx);
+
     if (height > font.getFontSize()) {
       decal = (height - font.getFontSize()) / 2;
     }
-
-    if (this.text != null) {
-      pencil().text(new Vector2f(left, top + decal), 0, this.color, this.text);
-    }
 */
+    if (this.text != null) {
+      pencil()
+          .color(this.color)
+          .font(this.fontIdx)
+          .text(left, top + decal, this.text);
+    }
+
   }
 
   @Override

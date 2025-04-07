@@ -1,10 +1,8 @@
 package org.sc.themis.scene.ui;
 
-import org.apache.logging.log4j.core.config.builder.api.ComponentBuilder;
 import org.sc.themis.input.Input;
 import org.sc.themis.renderer.pencil2d.Pencil2D;
 import org.sc.themis.renderer.pencil2d.Pencil2DLayer;
-import org.sc.themis.scene.pencil.Pencil;
 import org.sc.themis.scene.ui.component.*;
 
 import java.util.UUID;
@@ -12,17 +10,17 @@ import java.util.function.Supplier;
 
 public class UiBuilder {
 
-  private final Pencil2D pencil;
+  public final static int MAIN_LAYER_INDEX = 10;
+
+  private final Pencil2D pencil2D;
   private final UiState uiState = new UiState();
 
   private Supplier<String> identifierSupplier = () -> UUID.randomUUID().toString();
-  private Pencil2DLayer background;
-  private Pencil2DLayer foreground;
+  private Pencil2DLayer pencil;
 
-  public UiBuilder(Pencil2D pencil) {
-    this.pencil = pencil;
-    this.background = this.pencil.layer(0);
-    this.foreground = this.pencil.layer(1);
+  public UiBuilder(Pencil2D pencil2D) {
+    this.pencil2D = pencil2D;
+    this.pencil = this.pencil2D.layer(MAIN_LAYER_INDEX);
   }
 
   public void begin() {
@@ -50,12 +48,8 @@ public class UiBuilder {
     this.uiState.setMouseDown(input.isLeftButtonPressed());
   }
 
-  public Pencil2DLayer background() {
-    return this.background;
-  }
-
-  public Pencil2DLayer foreground() {
-    return this.foreground;
+  public Pencil2DLayer pencil() {
+    return this.pencil;
   }
 
   public UiState getState() {

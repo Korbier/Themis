@@ -46,7 +46,7 @@ public class ViewerUi extends UiSceneController {
 
   private PanelBuilder createInfoPanel(int left, int top) {
 
-    LabelBuilder infoFpsLbl = builder().label()
+    LabelBuilder infoFpsLbl = builder().label().debug(true)
         .text("Fps")
         .size(PANEL_COLUMN_A_WIDTH, PANEL_ROW_HEIGHT)
         .position(PANEL_COLUMN_A_LEFT, PanelBuilder.DEFAULT_HEADER_SIZE + PANEL_MARGIN);

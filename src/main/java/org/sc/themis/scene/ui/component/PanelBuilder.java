@@ -68,11 +68,9 @@ public final class PanelBuilder extends ComponentBuilder<PanelBuilder> {
     Color headerColor = Color.of("555555");
     Color headerColorHot = Color.of("777777");
 
-    Pencil2DLayer layer = background();
+    pencil().reset();
 
-    layer.reset();
-
-    layer
+    pencil()
         .color(borderColor)
         .rect(left, top, width, height)
         .color(backgroundColor)
@@ -80,61 +78,25 @@ public final class PanelBuilder extends ComponentBuilder<PanelBuilder> {
     ;
 
     if (isHotItem()) {
-      layer
+      pencil()
           .color(headerColorHot)
           .rect(left + DEFAULT_BORDER_SIZE, top + DEFAULT_BORDER_SIZE, width - 2 * DEFAULT_BORDER_SIZE, DEFAULT_HEADER_SIZE)
       ;
     } else {
-      layer
+      pencil()
           .color(headerColor)
           .rect(left + DEFAULT_BORDER_SIZE, top + DEFAULT_BORDER_SIZE, width - 2 * DEFAULT_BORDER_SIZE, DEFAULT_HEADER_SIZE)
       ;
     }
 
     if (this.text != null) {
-      layer
+      pencil()
           .font(this.fontIndex)
           .color(Color.of("FFFFFF"))
           .text(left + 2 * DEFAULT_BORDER_SIZE, top + DEFAULT_BORDER_SIZE * 2, this.text)
       ;
     }
 
-/*
-    Color borderColor = Color.of("555555");
-    Color backgroundColor = Color.of("222222"); //Color.of("eeeeee");
-    Color headerColor = Color.of("555555"); //Color.of("CBD5E1");
-    Color headerColorHot = Color.of("777777");
-
-    pencil().rect(new Vector2f(left, top), new Vector2f(width, height), borderColor);
-    pencil().rect(
-        new Vector2f(left + DEFAULT_BORDER_SIZE, top + DEFAULT_BORDER_SIZE),
-        new Vector2f(width - 2 * DEFAULT_BORDER_SIZE, height - 2 * DEFAULT_BORDER_SIZE),
-        backgroundColor
-    );
-
-    if (isHotItem()) {
-      pencil().rect(
-          new Vector2f(left + DEFAULT_BORDER_SIZE, top + DEFAULT_BORDER_SIZE),
-          new Vector2f(width - 2 * DEFAULT_BORDER_SIZE, DEFAULT_HEADER_SIZE),
-          headerColorHot
-      );
-
-
-    } else {
-      pencil().rect(
-          new Vector2f(left + DEFAULT_BORDER_SIZE, top + DEFAULT_BORDER_SIZE),
-          new Vector2f(width - 2 * DEFAULT_BORDER_SIZE, DEFAULT_HEADER_SIZE),
-          headerColor
-      );
-    }
-
-    if (this.text != null) {
-      pencil().text(
-          new Vector2f(left + 2 * DEFAULT_BORDER_SIZE, top + DEFAULT_BORDER_SIZE * 2),
-          this.fontIndex, Color.of("FFFFFF"), this.text
-      );
-    }
-*/
   }
 
   @Override

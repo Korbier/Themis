@@ -56,7 +56,7 @@ public abstract sealed class ComponentBuilder<B extends ComponentBuilder<?>>
     checkState();
 
     if (debug()) {
-      background().rect(left, top, width, height);
+      pencil().color(Color.of("FF0000")).rect(left, top, width, height);
     }
 
     draw(left, top, width, height);
@@ -162,12 +162,8 @@ public abstract sealed class ComponentBuilder<B extends ComponentBuilder<?>>
     return this.uiBuilder.getState();
   }
 
-  protected Pencil2DLayer background() {
-    return this.uiBuilder.background();
-  }
-
-  protected Pencil2DLayer foreground() {
-    return this.uiBuilder.foreground();
+  protected Pencil2DLayer pencil() {
+    return this.uiBuilder.pencil();
   }
 
   protected void addEvent(String event, Consumer<UiBuilder> eventConsumer) {
