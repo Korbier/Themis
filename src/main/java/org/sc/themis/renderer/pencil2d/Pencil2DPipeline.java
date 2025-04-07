@@ -77,7 +77,7 @@ public class Pencil2DPipeline extends TObject {
   public void draw(VkCommand command, int frame) throws ThemisException {
     for (Pencil2DLayer layer : this.pencil.layers()) {
       drawChannel(command, frame, layer.getTriangleChannel(), this.trianglePipeline);
-      drawChannel(command, frame, layer.getTextChannel(), this.textPipeline);
+      //drawChannel(command, frame, layer.getTextChannel(), this.textPipeline);
     }
   }
 
@@ -97,26 +97,42 @@ public class Pencil2DPipeline extends TObject {
 
   private ChannelBuffers getBuffers(Pencil2DChannel channel) throws ThemisException {
 
-    ChannelBuffers cBuffers;
+    ChannelBuffers cBuffers = null;
+
+    long channelVertexSize = (long) channel.getVertexLength() * MemorySizeUtils.FLOAT;
+    long channelIndiceSize = (long) channel.getIndiceCount() * MemorySizeUtils.INT;
+
     if (this.buffers.containsKey(channel)) {
+
       cBuffers = this.buffers.get(channel);
-    } else {
 
+      if (cBuffers.drawCommandVertexBuffer.getRequestedSize() < channelVertexSize) {
+        cBuffers.drawCommandVertexBuffer.cleanup();
+        cBuffers.drawCommandVertexBuffer = null;
+      }
+
+      if (cBuffers.drawCommandIndiceBuffer.getRequestedSize() < channelIndiceSize) {
+        cBuffers.drawCommandIndiceBuffer.cleanup();
+        cBuffers.drawCommandIndiceBuffer = null;
+      }
+
+    }
+
+    if (cBuffers == null) {
       cBuffers = new ChannelBuffers();
+      this.buffers.put(channel, cBuffers);
+    }
 
-      long dataSize = (long) channel.getVertexLength() * MemorySizeUtils.FLOAT;
-      long indiceSize = (long) channel.getIndiceCount() * MemorySizeUtils.INT;
-
-      VkBufferDescriptor decriptor = VkBufferDescriptor.vertexBuffer(dataSize);
+    if (cBuffers.drawCommandVertexBuffer == null) {
+      VkBufferDescriptor decriptor = VkBufferDescriptor.vertexBuffer(channelVertexSize);
       cBuffers.drawCommandVertexBuffer = new VkBuffer(getConfiguration(), this.renderer.getDevice(), this.renderer.getMemoryAllocator(), decriptor);
       cBuffers.drawCommandVertexBuffer.setup();
+    }
 
-      VkBufferDescriptor decriptorIndices = VkBufferDescriptor.indiceBuffer(indiceSize);
+    if (cBuffers.drawCommandIndiceBuffer == null) {
+      VkBufferDescriptor decriptorIndices = VkBufferDescriptor.indiceBuffer(channelIndiceSize);
       cBuffers.drawCommandIndiceBuffer = new VkBuffer(getConfiguration(), this.renderer.getDevice(), this.renderer.getMemoryAllocator(), decriptorIndices);
       cBuffers.drawCommandIndiceBuffer.setup();
-
-      this.buffers.put(channel, cBuffers);
-
     }
 
     cBuffers.drawCommandVertexBuffer.set(0, channel.getVertices());
@@ -167,7 +183,7 @@ public class Pencil2DPipeline extends TObject {
   }
 
   private class ChannelBuffers {
-    public VkBuffer drawCommandVertexBuffer;
-    public VkBuffer drawCommandIndiceBuffer;
+    public VkBuffer drawCommandVertexBuffer = null;
+    public VkBuffer drawCommandIndiceBuffer = null;
   }
 }

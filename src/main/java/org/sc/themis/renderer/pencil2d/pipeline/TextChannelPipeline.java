@@ -58,7 +58,7 @@ public class TextChannelPipeline extends TObject implements Pencil2DChannelPipel
                 float originAlpha = texture(textureSampler, vec3(inTexture,inProperties.x)).r;
                 float distance = 1.0 - originAlpha;
                 float alpha = 1.0 - smoothstep(inProperties.y, inProperties.y + inProperties.z, distance);
-                outFragColor = vec4(pow(inColor.rgb, vec3(2.2)), alpha);
+                outFragColor = vec4(inColor.rgb, alpha);
             }
             """;
   private final Renderer renderer;

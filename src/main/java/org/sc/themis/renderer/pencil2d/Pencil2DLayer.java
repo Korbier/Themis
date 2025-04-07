@@ -83,13 +83,6 @@ public class Pencil2DLayer {
       float posX = x + decal + fchar.bearing().x();
       float posY = y + font.getMaxYBearing() - fchar.bearing().y();
 
-      Vector4f fontProperties = new Vector4f(
-          fontIdx,
-          font.isSdfFont() ? font.getSdfWidth() : 0.0f,
-          font.isSdfFont() ? font.getSdfEdge() : 0.0f,
-          0.0f
-      );
-
       character(
           posX, posY, fchar.size().x(), fchar.size().y(),
           fchar.uv0().x, fchar.uv0().y, fchar.uv1().x, fchar.uv1().y,
@@ -105,12 +98,12 @@ public class Pencil2DLayer {
 
   private void character(float x, float y, float w, float h, float uMin, float vMin, float uMax, float vMax, float fontIdx, float sdfW, float sdfE) {
 
-    Pencil2DVertex a = new Pencil2DVertex(x,     y,     uMin, vMin, color.r(), color.g(), color.b(), 1.0f, fontIdx, sdfW, sdfE, 0.0f);
-    Pencil2DVertex b = new Pencil2DVertex(x + w, y,     uMax, vMin, color.r(), color.g(), color.b(), 1.0f, fontIdx, sdfW, sdfE, 0.0f);
-    Pencil2DVertex c = new Pencil2DVertex(x + w, y + h, uMax, vMax, color.r(), color.g(), color.b(), 1.0f, fontIdx, sdfW, sdfE, 0.0f);
-    Pencil2DVertex d = new Pencil2DVertex(x,     y + h, uMin, vMax, color.r(), color.g(), color.b(), 1.0f, fontIdx, sdfW, sdfE, 0.0f);
+    Pencil2DVertex a = new Pencil2DVertex(x,     y,     uMin, vMin, color.r(), color.g(), color.b(), 1.0f, fontIdx, sdfW, sdfE, 1.0f);
+    Pencil2DVertex b = new Pencil2DVertex(x + w, y,     uMax, vMin, color.r(), color.g(), color.b(), 1.0f, fontIdx, sdfW, sdfE, 1.0f);
+    Pencil2DVertex c = new Pencil2DVertex(x + w, y + h, uMax, vMax, color.r(), color.g(), color.b(), 1.0f, fontIdx, sdfW, sdfE, 1.0f);
+    Pencil2DVertex d = new Pencil2DVertex(x,     y + h, uMin, vMax, color.r(), color.g(), color.b(), 1.0f, fontIdx, sdfW, sdfE, 1.0f);
 
-    this.textChannel.append(new Pencil2DVertex[] {a, b, c, d}, new int[] {0, 1, 3, 1, 2, 3});
+    this.triangleChannel.append(new Pencil2DVertex[] {a, b, c, d}, new int[] {0, 1, 3, 1, 2, 3});
 
   }
 

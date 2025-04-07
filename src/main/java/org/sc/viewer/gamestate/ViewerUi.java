@@ -25,12 +25,8 @@ public class ViewerUi extends UiSceneController {
 
   private final static int PANEL_ROW_HEIGHT = 20;
 
-  private final PanelBuilder infoPnl;
+  private final ContainerBuilder desktop;
   private LabelBuilder infoMaterialLblValue;
-
-  private final PanelBuilder lightPnl;
-  private final PanelBuilder meshPnl;
-  private final PanelBuilder materialPnl;
 
   public ViewerUi(Scene scene, Pencil2D pencil, ViewerContext context) {
 
@@ -38,10 +34,13 @@ public class ViewerUi extends UiSceneController {
 
     this.context = context;
 
-    this.infoPnl = createInfoPanel(PANEL_SPACE, PANEL_SPACE);
-    this.lightPnl = createLightPanel(PANEL_SPACE, PANEL_SPACE * 2 + PANEL_HEIGHT);
-    this.meshPnl = createMeshPanel(PANEL_SPACE, PANEL_SPACE * 3 + PANEL_HEIGHT* 2);
-    this.materialPnl = createMaterialPanel(PANEL_SPACE, PANEL_SPACE * 4 + PANEL_HEIGHT * 3);
+    PanelBuilder infoPnl = createInfoPanel(PANEL_SPACE, PANEL_SPACE);
+    PanelBuilder lightPnl = createLightPanel(PANEL_SPACE, PANEL_SPACE * 2 + PANEL_HEIGHT);
+    PanelBuilder meshPnl = createMeshPanel(PANEL_SPACE, PANEL_SPACE * 3 + PANEL_HEIGHT* 2);
+    PanelBuilder materialPnl = createMaterialPanel(PANEL_SPACE, PANEL_SPACE * 4 + PANEL_HEIGHT * 3);
+
+    this.desktop = builder().container();
+    this.desktop.child(infoPnl, lightPnl, meshPnl, materialPnl);
 
   }
 
@@ -150,14 +149,8 @@ public class ViewerUi extends UiSceneController {
 
   @Override
   protected void build(long tpf) {
-
     this.updateFPS(tpf);
-
-    this.infoPnl.build();
-    this.lightPnl.build();
-    this.meshPnl.build();
-    this.materialPnl.build();
-
+    this.desktop.build();
   }
 
   private long cumul = 0;

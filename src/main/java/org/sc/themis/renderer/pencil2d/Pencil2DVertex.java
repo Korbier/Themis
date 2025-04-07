@@ -23,6 +23,6 @@ public record Pencil2DVertex(
   }
 
   public Pencil2DVertex( float x, float y, float r, float g, float b, float a ) {
-    this(new Vector2f(x, y), new Vector2f(), new Vector4f(r, g, b, a), new Vector4f());
+    this(new Vector2f(x, y), new Vector2f(), new Vector4f(r, g, b, a), new Vector4f(0.0f));
   }
 }

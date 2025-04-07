@@ -40,11 +40,7 @@ public class VkBuffer extends VulkanObject {
 
   private ByteBuffer mappedContent;
 
-  public VkBuffer(
-      Configuration configuration,
-      VkDevice device,
-      VkMemoryAllocator allocator,
-      VkBufferDescriptor descriptor) {
+  public VkBuffer( Configuration configuration, VkDevice device, VkMemoryAllocator allocator, VkBufferDescriptor descriptor) {
     super(configuration);
     this.device = device;
     this.allocator = allocator;
@@ -70,7 +66,9 @@ public class VkBuffer extends VulkanObject {
       setupBuffer(stack, bufferCreateInfo, allocInfo);
 
       map();
+
     }
+
   }
 
   @Override
@@ -83,31 +81,27 @@ public class VkBuffer extends VulkanObject {
     return VkBufferFiller.of(this);
   }
 
-  private void setupBuffer(
-      MemoryStack stack, VkBufferCreateInfo bufferCreateInfo, VmaAllocationCreateInfo allocInfo)
-      throws ThemisException {
+  public void flush() {
+
+  }
+
+  private void setupBuffer(MemoryStack stack, VkBufferCreateInfo bufferCreateInfo, VmaAllocationCreateInfo allocInfo) throws ThemisException {
     PointerBuffer pAllocation = stack.callocPointer(1);
     LongBuffer pBuffer = stack.mallocLong(1);
-    vkMemoryAllocator()
-        .createBuffer(
-            this.allocator.getHandle(), bufferCreateInfo, allocInfo, pBuffer, pAllocation);
+    vkMemoryAllocator().createBuffer(this.allocator.getHandle(), bufferCreateInfo, allocInfo, pBuffer, pAllocation);
     this.handle = pBuffer.get(0);
     this.allocation = pAllocation.get(0);
   }
 
   private VmaAllocationCreateInfo createAllocatorCreateInfo(MemoryStack stack) {
-    return VmaAllocationCreateInfo.calloc(stack)
-        .requiredFlags(this.descriptor.requiredFlags())
-        .usage(this.descriptor.memoryUsage());
+    return VmaAllocationCreateInfo.calloc(stack).requiredFlags(this.descriptor.requiredFlags()).usage(this.descriptor.memoryUsage());
   }
 
   @Override
   public String toString() {
     return getClass().getSimpleName()
-        + "{handle="
-        + Long.toHexString(getHandle())
-        + " mapped_memory_handle="
-        + (isMapped() ? Long.toHexString(this.mappedMemoryHandle) : "NULL")
+        + "{handle=" + Long.toHexString(getHandle())
+        + " mapped_memory_handle=" + (isMapped() ? Long.toHexString(this.mappedMemoryHandle) : "NULL")
         + "}";
   }
 
@@ -137,11 +131,9 @@ public class VkBuffer extends VulkanObject {
 
   public void map() throws ThemisException {
     if (isMappable()) {
-      vkMemoryAllocator()
-          .mapMemory(this.allocator.getHandle(), this.allocation, this.mappingPointer);
+      vkMemoryAllocator().mapMemory(this.allocator.getHandle(), this.allocation, this.mappingPointer);
       this.mappedMemoryHandle = this.mappingPointer.get(0);
-      this.mappedContent =
-          MemoryUtil.memByteBuffer(this.mappedMemoryHandle, (int) getRequestedSize());
+      this.mappedContent = MemoryUtil.memByteBuffer(this.mappedMemoryHandle, (int) getRequestedSize());
     }
   }
 
@@ -215,8 +207,7 @@ public class VkBuffer extends VulkanObject {
   private int calcAlignedSize(VkDevice device, long originalSize) {
 
     VkPhysicalDevice physDevice = device.getPhysicalDevice();
-    long minUboAlignment =
-        physDevice.getVkPhysicalDeviceProperties().limits().minUniformBufferOffsetAlignment();
+    long minUboAlignment = physDevice.getVkPhysicalDeviceProperties().limits().minUniformBufferOffsetAlignment();
     long alignedSize = originalSize;
 
     if (minUboAlignment > 0) {
@@ -224,5 +215,6 @@ public class VkBuffer extends VulkanObject {
     }
 
     return (int) alignedSize;
+
   }
 }

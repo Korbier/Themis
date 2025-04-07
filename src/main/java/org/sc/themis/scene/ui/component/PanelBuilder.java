@@ -2,6 +2,7 @@ package org.sc.themis.scene.ui.component;
 
 import org.joml.Vector2i;
 import org.sc.themis.renderer.pencil2d.Color;
+import org.sc.themis.renderer.pencil2d.Pencil2DLayer;
 import org.sc.themis.scene.ui.ComponentState;
 import org.sc.themis.scene.ui.UiBuilder;
 
@@ -13,8 +14,7 @@ public final class PanelBuilder extends ComponentBuilder<PanelBuilder> {
   private String text = null;
   private int fontIndex = 0;
 
-  public static final ComponentState<Vector2i> STATE_MOUSE_POSITION =
-      ComponentState.of(Vector2i.class, "mouse.position");
+  public static final ComponentState<Vector2i> STATE_MOUSE_POSITION = ComponentState.of(Vector2i.class, "mouse.position");
 
   public PanelBuilder(UiBuilder builder) {
     super(builder);
@@ -68,9 +68,11 @@ public final class PanelBuilder extends ComponentBuilder<PanelBuilder> {
     Color headerColor = Color.of("555555");
     Color headerColorHot = Color.of("777777");
 
-    background().reset();
+    Pencil2DLayer layer = background();
 
-    background()
+    layer.reset();
+
+    layer
         .color(borderColor)
         .rect(left, top, width, height)
         .color(backgroundColor)
@@ -78,20 +80,20 @@ public final class PanelBuilder extends ComponentBuilder<PanelBuilder> {
     ;
 
     if (isHotItem()) {
-      background()
+      layer
           .color(headerColorHot)
           .rect(left + DEFAULT_BORDER_SIZE, top + DEFAULT_BORDER_SIZE, width - 2 * DEFAULT_BORDER_SIZE, DEFAULT_HEADER_SIZE)
       ;
     } else {
-      background()
+      layer
           .color(headerColor)
           .rect(left + DEFAULT_BORDER_SIZE, top + DEFAULT_BORDER_SIZE, width - 2 * DEFAULT_BORDER_SIZE, DEFAULT_HEADER_SIZE)
       ;
     }
 
     if (this.text != null) {
-      background()
-          .font(0)
+      layer
+          .font(this.fontIndex)
           .color(Color.of("FFFFFF"))
           .text(left + 2 * DEFAULT_BORDER_SIZE, top + DEFAULT_BORDER_SIZE * 2, this.text)
       ;

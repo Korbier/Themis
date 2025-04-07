@@ -53,8 +53,17 @@ public class TriangleChannelPipeline extends TObject implements Pencil2DChannelP
 
             layout(location = 0) out vec4 outFragColor;
 
+            layout(set = 0, binding = 1) uniform sampler2DArray textureSampler;
+            
             void main() {
-                outFragColor = inColor;
+                if (inProperties.w == 1.0) {
+                  float originAlpha = texture(textureSampler, vec3(inTexture,inProperties.x)).r;
+                  float distance = 1.0 - originAlpha;
+                  float alpha = 1.0 - smoothstep(inProperties.y, inProperties.y + inProperties.z, distance);
+                  outFragColor = vec4(inColor.rgb, alpha);
+                } else {
+                  outFragColor = vec4(inColor.rgb, 1.0f);
+                }
             }
             """;
   private final Renderer renderer;

@@ -1,5 +1,7 @@
 package org.sc.themis.renderer.pencil2d;
 
+import org.sc.themis.shared.utils.MemorySizeUtils;
+
 public class Pencil2DChannel {
 
   private Pencil2DVertex[] vertices = new Pencil2DVertex[0];

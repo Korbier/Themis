@@ -62,6 +62,10 @@ public class UiBuilder {
     return this.uiState;
   }
 
+  public ContainerBuilder container() {
+    return new ContainerBuilder(this).identifier(identifierSupplier.get());
+  }
+
   public ButtonBuilder button(String text) {
     return new ButtonBuilder(this).identifier(identifierSupplier.get()).text(text);
   }

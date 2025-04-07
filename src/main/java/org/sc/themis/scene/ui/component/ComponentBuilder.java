@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.function.Consumer;
 
 import org.joml.Vector2f;
+import org.joml.Vector2i;
 import org.sc.themis.renderer.pencil2d.Color;
 import org.sc.themis.renderer.pencil2d.Pencil2D;
 import org.sc.themis.renderer.pencil2d.Pencil2DLayer;
@@ -13,11 +14,13 @@ import org.sc.themis.scene.ui.UiBuilder;
 import org.sc.themis.scene.ui.UiState;
 
 public abstract sealed class ComponentBuilder<B extends ComponentBuilder<?>>
-    permits ButtonBuilder, ComboboxBuilder, LabelBuilder, PanelBuilder, ToggleButtonBuilder {
+    permits ButtonBuilder, ComboboxBuilder, ContainerBuilder, LabelBuilder, PanelBuilder, ToggleButtonBuilder {
 
   private final UiBuilder uiBuilder;
   private final Map<String, Consumer<UiBuilder>> events = new HashMap<>();
   private final List<ComponentBuilder<?>> children = new ArrayList<>();
+
+  public static final ComponentState<String> STATE_LAST_ACTIVE = ComponentState.of(String.class, "last.active");
 
   private final int[] pushedRegion = new int[] {0, 0, 0, 0};
   private final int[] region = new int[] {0, 0, 0, 0};
@@ -53,7 +56,6 @@ public abstract sealed class ComponentBuilder<B extends ComponentBuilder<?>>
     checkState();
 
     if (debug()) {
-      //pencil().rect(new Vector2f(left, top), new Vector2f(width, height), Color.of("ff0000"));
       background().rect(left, top, width, height);
     }
 
@@ -63,6 +65,7 @@ public abstract sealed class ComponentBuilder<B extends ComponentBuilder<?>>
     if (!this.children.isEmpty()) {
       state().pushParent(this);
       try {
+        bringActiveChildToFront();
         this.children.forEach(ComponentBuilder::build);
       } finally {
         state().popParent();
@@ -163,6 +166,10 @@ public abstract sealed class ComponentBuilder<B extends ComponentBuilder<?>>
     return this.uiBuilder.background();
   }
 
+  protected Pencil2DLayer foreground() {
+    return this.uiBuilder.foreground();
+  }
+
   protected void addEvent(String event, Consumer<UiBuilder> eventConsumer) {
     this.events.put(event, eventConsumer);
   }
@@ -192,8 +199,39 @@ public abstract sealed class ComponentBuilder<B extends ComponentBuilder<?>>
 
       if (state().getActiveItem() == null && state().isMouseDown()) {
         state().setActiveItem(this.identifier);
+        if (getParent() != null) {
+          getParent().set(STATE_LAST_ACTIVE, this.identifier);
+        }
       }
 
+    }
+
+  }
+
+  private String getActiveChild() {
+    return this.children.stream().filter(ComponentBuilder::isActiveItem).map(ComponentBuilder::identifier).findFirst().orElse(null);
+  }
+
+  private void bringActiveChildToFront() {
+
+    String activeIdentifier = getActiveChild();
+
+    if (activeIdentifier == null) {
+      activeIdentifier = get(STATE_LAST_ACTIVE);
+    }
+
+    if (activeIdentifier != null) {
+      int idx = -1;
+      for (int i = 0; i < this.children.size(); i++) {
+        if (this.children.get(i).identifier().equals(activeIdentifier)) {
+          idx = i;
+        }
+      }
+      if (idx > -1) {
+        ComponentBuilder<?> cmp = this.children.get(idx);
+        this.children.remove(idx);
+        this.children.add(cmp);
+      }
     }
 
   }

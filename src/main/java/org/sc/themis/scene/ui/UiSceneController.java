@@ -4,7 +4,6 @@ import org.sc.themis.input.Input;
 import org.sc.themis.renderer.pencil2d.Pencil2D;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.scene.base.Controller;
-import org.sc.themis.scene.pencil.Pencil;
 
 public class UiSceneController implements Controller {
 
