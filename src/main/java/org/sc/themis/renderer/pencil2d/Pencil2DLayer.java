@@ -1,8 +1,8 @@
 package org.sc.themis.renderer.pencil2d;
 
-import org.joml.Vector4f;
 import org.sc.themis.renderer.resource.font.Font;
 import org.sc.themis.renderer.resource.font.FontCharacter;
+import org.sc.themis.renderer.resource.font.FontRepository;
 
 public class Pencil2DLayer {
 
@@ -113,7 +113,11 @@ public class Pencil2DLayer {
     this.lineChannel.clear();
   }
 
-  private boolean isFontRepositoryAvailable() {
+  public FontRepository getFont() {
+    return this.parent.fonts();
+  }
+
+  public boolean isFontRepositoryAvailable() {
     return this.parent.fonts() != null && this.parent.fonts().size() > 0;
   }
 

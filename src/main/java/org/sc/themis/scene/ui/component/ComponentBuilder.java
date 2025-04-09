@@ -3,12 +3,9 @@ package org.sc.themis.scene.ui.component;
 import java.util.*;
 import java.util.function.Consumer;
 
-import org.joml.Vector2f;
-import org.joml.Vector2i;
 import org.sc.themis.renderer.pencil2d.Color;
-import org.sc.themis.renderer.pencil2d.Pencil2D;
 import org.sc.themis.renderer.pencil2d.Pencil2DLayer;
-import org.sc.themis.scene.pencil.Pencil;
+import org.sc.themis.renderer.resource.font.FontRepository;
 import org.sc.themis.scene.ui.ComponentState;
 import org.sc.themis.scene.ui.UiBuilder;
 import org.sc.themis.scene.ui.UiState;
@@ -22,8 +19,8 @@ public abstract sealed class ComponentBuilder<B extends ComponentBuilder<?>>
 
   public static final ComponentState<String> STATE_LAST_ACTIVE = ComponentState.of(String.class, "last.active");
 
-  private final int[] pushedRegion = new int[] {0, 0, 0, 0};
-  private final int[] region = new int[] {0, 0, 0, 0};
+  private final int[] hotRegion = new int[] {0, 0, 0, 0};
+  private final int[] childrenOffsets = new int[] {0, 0};
 
   private String identifier;
   private int left = 0;
@@ -44,14 +41,12 @@ public abstract sealed class ComponentBuilder<B extends ComponentBuilder<?>>
   public void build() {
 
     ComponentBuilder<?> parent = getParent();
-    int left = parent != null ? parent.left + this.left : this.left;
-    int top = parent != null ? parent.top + this.top : this.top;
+    int left = parent != null ? parent.left + parent.childrenOffsets[0] + this.left : this.left;
+    int top = parent != null ? parent.top + parent.childrenOffsets[1] + this.top : this.top;
     int width = this.width;
     int height = this.height;
 
-    setRegion(left, top, width, height);
-    pushRegion();
-
+    setHotRegion(left, top, width, height);
     configure(left, top, width, height);
     checkState();
 
@@ -60,13 +55,16 @@ public abstract sealed class ComponentBuilder<B extends ComponentBuilder<?>>
     }
 
     draw(left, top, width, height);
+
     triggerEvents();
 
     if (!this.children.isEmpty()) {
       state().pushParent(this);
       try {
         bringActiveChildToFront();
-        this.children.forEach(ComponentBuilder::build);
+        for (ComponentBuilder<?> child : children) {
+          child.build();
+        }
       } finally {
         state().popParent();
       }
@@ -121,25 +119,16 @@ public abstract sealed class ComponentBuilder<B extends ComponentBuilder<?>>
     return state().getParent();
   }
 
-  protected void setRegion(int left, int top, int width, int height) {
-    this.region[0] = left;
-    this.region[1] = top;
-    this.region[2] = width;
-    this.region[3] = height;
+  protected void setChildrenOffsets(int left, int top) {
+    this.childrenOffsets[0] = left;
+    this.childrenOffsets[1] = top;
   }
 
-  protected void pushRegion() {
-    this.pushedRegion[0] = this.region[0];
-    this.pushedRegion[1] = this.region[1];
-    this.pushedRegion[2] = this.region[2];
-    this.pushedRegion[3] = this.region[3];
-  }
-
-  protected void popRegion() {
-    this.region[0] = this.pushedRegion[0];
-    this.region[1] = this.pushedRegion[1];
-    this.region[2] = this.pushedRegion[2];
-    this.region[3] = this.pushedRegion[3];
+  protected void setHotRegion(int left, int top, int width, int height) {
+    this.hotRegion[0] = left;
+    this.hotRegion[1] = top;
+    this.hotRegion[2] = width;
+    this.hotRegion[3] = height;
   }
 
   protected <T> void set(ComponentState<T> state, T value) {
@@ -166,6 +155,14 @@ public abstract sealed class ComponentBuilder<B extends ComponentBuilder<?>>
     return this.uiBuilder.pencil();
   }
 
+  protected boolean areFontsAvailable() {
+    return pencil().isFontRepositoryAvailable();
+  }
+
+  protected FontRepository getFonts() {
+    return pencil().getFont();
+  }
+
   protected void addEvent(String event, Consumer<UiBuilder> eventConsumer) {
     this.events.put(event, eventConsumer);
   }
@@ -180,16 +177,16 @@ public abstract sealed class ComponentBuilder<B extends ComponentBuilder<?>>
     return this.events.containsKey(event);
   }
 
-  private boolean regionHit() {
-    return !((state().getMouseX() < this.region[0])
-        || (state().getMouseY() < this.region[1])
-        || (state().getMouseX() >= (this.region[0] + this.region[2]))
-        || (state().getMouseY() >= (this.region[1] + this.region[3])));
+  private boolean hotRegionHit() {
+    return !((state().getMouseX() < this.hotRegion[0])
+        || (state().getMouseY() < this.hotRegion[1])
+        || (state().getMouseX() >= (this.hotRegion[0] + this.hotRegion[2]))
+        || (state().getMouseY() >= (this.hotRegion[1] + this.hotRegion[3])));
   }
 
   private void checkState() {
 
-    if (regionHit()) {
+    if (hotRegionHit()) {
 
       state().setHotItem(this.identifier);
 
