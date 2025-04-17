@@ -1,9 +1,9 @@
 package org.sc.themis.scene.ui.component;
 
-import org.joml.Vector2f;
 import org.sc.themis.renderer.pencil2d.Color;
 import org.sc.themis.scene.ui.UiBuilder;
 
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -11,15 +11,22 @@ import java.util.function.Supplier;
 public final class ToggleButtonBuilder extends ComponentBuilder<ToggleButtonBuilder> {
 
   public static final int DEFAULT_BORDER_SIZE = 2;
+  public static final int DEFAULT_MARGIN_SIZE = 2;
 
   public static final String EVENT_ON_CLICK = "togglebutton.event.onclick";
 
   private Supplier<Boolean> isToggledSupplier = null;
   private boolean isToggled = false;
-  private Color clrDefault = Color.of("CBD5E1");
-  private Color clrHot = Color.of("94A3B8");
-  private Color clrToggled = Color.of("7092BE");
-  private Color clrButton = null;
+
+  private Color backgroundColor = Color.of("222222");
+
+  private Color color = Color.of("555555");
+  private Color hotColor = Color.of("777777");
+
+  private Color buttonColor = Color.of("552222");
+  private Color buttonHotColor = Color.of("772222");
+  private Color buttonToggledColor = Color.of("225522");
+  private Color buttonToggledHotColor = Color.of("227722");
 
   public ToggleButtonBuilder(UiBuilder builder) {
     super(builder);
@@ -35,24 +42,35 @@ public final class ToggleButtonBuilder extends ComponentBuilder<ToggleButtonBuil
     return this;
   }
 
-  public ToggleButtonBuilder colorDefault(Color color) {
-    this.clrDefault = color;
+  public ToggleButtonBuilder color(Color color) {
+    this.color = color;
     return this;
   }
 
-  public ToggleButtonBuilder colorHot(Color color) {
-    this.clrHot = color;
+  public ToggleButtonBuilder hotColor(Color color) {
+    this.hotColor = color;
     return this;
   }
 
-  public ToggleButtonBuilder colorToggled(Color color) {
-    this.clrToggled = color;
+  public ToggleButtonBuilder backgroundColor(Color color) {
+    this.backgroundColor = color;
     return this;
   }
 
-  public ToggleButtonBuilder colorButton(Color color) {
-    this.clrButton = color;
-    return this;
+  public void buttonColor(Color buttonColor) {
+    this.buttonColor = buttonColor;
+  }
+
+  public void buttonHotColor(Color buttonHotColor) {
+    this.buttonHotColor = buttonHotColor;
+  }
+
+  public void buttonToggledColor(Color buttonToggledColor) {
+    this.buttonToggledColor = buttonToggledColor;
+  }
+
+  public void buttonToggledHotColor(Color buttonToggledHotColor) {
+    this.buttonToggledHotColor = buttonToggledHotColor;
   }
 
   @Override
@@ -64,54 +82,26 @@ public final class ToggleButtonBuilder extends ComponentBuilder<ToggleButtonBuil
 
   @Override
   protected void draw(int left, int top, int width, int height) {
-/*
-    Color defaultColor = this.clrDefault;
-    Color hotColor = this.clrHot != null ? this.clrHot : this.clrDefault;
-    Color toggledColor = this.clrToggled != null ? this.clrToggled : this.clrDefault;
-    Color buttonColor = this.clrButton != null ? this.clrButton : Color.of("ffffff");
 
-    float middle = (float) width / 2;
-    float btnTop = top + DEFAULT_BORDER_SIZE;
-    float btnWidth = width - 2 * DEFAULT_BORDER_SIZE - middle;
-    float btnHeight = height - 2 * DEFAULT_BORDER_SIZE;
+      pencil().reset();
 
-    if (this.isToggled) {
-      pencil().rect(
-          new Vector2f(left, top),
-          new Vector2f(width, height),
-          toggledColor
-      );
+      //Cursor position
+      float middle = (float) width / 2;
+      float buttonX = this.isToggled ? left + DEFAULT_BORDER_SIZE + DEFAULT_MARGIN_SIZE + middle : left + DEFAULT_BORDER_SIZE + DEFAULT_MARGIN_SIZE;
+      float buttonY = top + DEFAULT_BORDER_SIZE + DEFAULT_MARGIN_SIZE;
+      float buttonW = width - 2 * DEFAULT_BORDER_SIZE - 2 * DEFAULT_MARGIN_SIZE - middle;
+      float buttonH = height - 2 * DEFAULT_BORDER_SIZE - 2 * DEFAULT_MARGIN_SIZE;
 
-      pencil().rect(
-          new Vector2f(left + DEFAULT_BORDER_SIZE + middle, btnTop),
-          new Vector2f(btnWidth, btnHeight),
-          buttonColor
-      );
+      pencil()
+        .color(isHotItem() ? this.hotColor : this.color)
+        .rect(left, top, width, height)
+        .color(this.backgroundColor)
+        .rect(left + DEFAULT_BORDER_SIZE, top + DEFAULT_BORDER_SIZE, width - 2 * DEFAULT_BORDER_SIZE, height - 2 * DEFAULT_BORDER_SIZE)
+        .color(isHotItem()
+            ? isToggled ? this.buttonToggledHotColor : this.buttonHotColor
+            : isToggled ? this.buttonToggledColor : this.buttonColor)
+        .rect(buttonX, buttonY, buttonW, buttonH);
 
-    } else {
-
-      if (isHotItem()) {
-        pencil().rect(
-            new Vector2f(left, top),
-            new Vector2f(width, height),
-            hotColor
-        );
-      } else {
-        pencil().rect(
-            new Vector2f(left, top),
-            new Vector2f(width, height),
-            defaultColor
-        );
-      }
-
-      pencil().rect(
-          new Vector2f(left + DEFAULT_BORDER_SIZE, btnTop),
-          new Vector2f(btnWidth, btnHeight),
-          buttonColor
-      );
-
-    }
-*/
   }
 
   @Override
@@ -121,7 +111,11 @@ public final class ToggleButtonBuilder extends ComponentBuilder<ToggleButtonBuil
     }
   }
 
-  private boolean shouldTriggerOnClickEvent() {
+  private boolean shouldTriggerOnClickEvent() {/*
+    System.out.println("isEventDefined(EVENT_ON_CLICK)=" + isEventDefined(EVENT_ON_CLICK)
+        + "; !state().isMouseDown()=" + !state().isMouseDown()
+        + "; isHotItem()=" + isHotItem()
+        + "; isActiveItem()=" + isActiveItem() );*/
     return isEventDefined(EVENT_ON_CLICK)
         && !state().isMouseDown()
         && isHotItem()

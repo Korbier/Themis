@@ -19,7 +19,7 @@ public abstract sealed class ComponentBuilder<B extends ComponentBuilder<?>>
 
   public static final ComponentState<String> STATE_LAST_ACTIVE = ComponentState.of(String.class, "last.active");
 
-  private final int[] hotRegion = new int[] {0, 0, 0, 0};
+  protected final int[] hotRegion = new int[] {0, 0, 0, 0};
   private final int[] childrenOffsets = new int[] {0, 0};
 
   private String identifier;
@@ -190,11 +190,18 @@ public abstract sealed class ComponentBuilder<B extends ComponentBuilder<?>>
 
       state().setHotItem(this.identifier);
 
-      if (state().getActiveItem() == null && state().isMouseDown()) {
+      boolean canBeActive =
+          state().getActiveItem() == null
+          || (getParent() != null && state().getActiveItem().equals(getParent().identifier));
+
+      if (canBeActive && state().isMouseDown()) {
+
         state().setActiveItem(this.identifier);
+
         if (getParent() != null) {
           getParent().set(STATE_LAST_ACTIVE, this.identifier);
         }
+
       }
 
     }

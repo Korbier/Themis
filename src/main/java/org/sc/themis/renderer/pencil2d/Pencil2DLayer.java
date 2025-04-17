@@ -52,7 +52,7 @@ public class Pencil2DLayer {
     return this;
   }
 
-  public Pencil2DLayer rect(int x, int y, int width, int height) {
+  public Pencil2DLayer rect(float x, float y, float width, float height) {
 
     Pencil2DVertex a = new Pencil2DVertex(x,         y,          color.r(), color.g(), color.b(), 1.0f);
     Pencil2DVertex b = new Pencil2DVertex(x + width, y,          color.r(), color.g(), color.b(), 1.0f);
@@ -65,7 +65,7 @@ public class Pencil2DLayer {
 
   }
 
-  public Pencil2DLayer text(int x, int y, String text) {
+  public Pencil2DLayer text(float x, float y, String text) {
 
     if (this.fontIdx < 0 || !isFontRepositoryAvailable()) {
       //todo put a warning here
