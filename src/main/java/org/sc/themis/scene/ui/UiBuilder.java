@@ -2,7 +2,6 @@ package org.sc.themis.scene.ui;
 
 import org.sc.themis.input.Input;
 import org.sc.themis.renderer.pencil2d.Pencil2D;
-import org.sc.themis.renderer.pencil2d.Pencil2DLayer;
 import org.sc.themis.scene.ui.component.*;
 
 import java.util.UUID;
@@ -10,17 +9,13 @@ import java.util.function.Supplier;
 
 public class UiBuilder {
 
-  public final static int MAIN_LAYER_INDEX = 10;
-
   private final Pencil2D pencil2D;
   private final UiState uiState = new UiState();
 
   private Supplier<String> identifierSupplier = () -> UUID.randomUUID().toString();
-  private Pencil2DLayer pencil;
 
   public UiBuilder(Pencil2D pencil2D) {
     this.pencil2D = pencil2D;
-    this.pencil = this.pencil2D.layer(MAIN_LAYER_INDEX);
   }
 
   public void begin() {
@@ -46,10 +41,6 @@ public class UiBuilder {
     this.uiState.setMouseX((int) input.getMousePosition().x);
     this.uiState.setMouseY((int) input.getMousePosition().y);
     this.uiState.setMouseDown(input.isLeftButtonPressed());
-  }
-
-  public Pencil2DLayer pencil() {
-    return this.pencil;
   }
 
   public Pencil2D pencil2D() {
@@ -78,6 +69,10 @@ public class UiBuilder {
 
   public LabelBuilder label() {
     return new LabelBuilder(this).identifier(identifierSupplier.get());
+  }
+
+  public LabelBuilder label(int layer) {
+    return new LabelBuilder(this, layer).identifier(identifierSupplier.get());
   }
 
   public ComboboxBuilder combobox() {

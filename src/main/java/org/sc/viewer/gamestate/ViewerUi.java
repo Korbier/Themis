@@ -150,9 +150,10 @@ public class ViewerUi extends UiSceneController {
         .size(PANEL_WIDTH, PANEL_HEIGHT)
         .text("Material")
         .child(
-            matNormMappingLbl, matNormMappingTgl,
-            matCbx
-        );
+            matCbx, matCbx.getComboboxContent(),
+            matNormMappingLbl, matNormMappingTgl
+        )
+        .childVisibilityRule(matCbx.getComboboxContent(), matCbx::isOpen);
   }
 
   @Override

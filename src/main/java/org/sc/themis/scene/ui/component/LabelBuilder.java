@@ -14,6 +14,10 @@ public final class LabelBuilder extends ComponentBuilder<LabelBuilder> {
     super(builder);
   }
 
+  public LabelBuilder(UiBuilder uiBuilder, int layer) {
+    super(uiBuilder, layer);
+  }
+
   public LabelBuilder color(Color color) {
     this.color = color;
     return this;

@@ -30,9 +30,16 @@ public class Pencil2D {
   }
 
   public Pencil2DLayer layer(int zindex) {
-    Pencil2DLayer layer = new Pencil2DLayer(this);
-    this.layers.put(zindex, layer);
+
+    Pencil2DLayer layer = this.layers.get(zindex);
+
+    if (layer == null) {
+      layer = new Pencil2DLayer(this);
+      this.layers.put(zindex, layer);
+    }
+
     return layer;
+
   }
 
   public Collection<Pencil2DLayer> layers() {

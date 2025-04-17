@@ -2,6 +2,8 @@ package org.sc.themis.scene.ui.component;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import org.sc.themis.renderer.pencil2d.Color;
 import org.sc.themis.renderer.pencil2d.Pencil2DLayer;
@@ -10,12 +12,17 @@ import org.sc.themis.scene.ui.ComponentState;
 import org.sc.themis.scene.ui.UiBuilder;
 import org.sc.themis.scene.ui.UiState;
 
-public abstract sealed class ComponentBuilder<B extends ComponentBuilder<?>>
-    permits ButtonBuilder, ComboboxBuilder, ContainerBuilder, LabelBuilder, PanelBuilder, ToggleButtonBuilder {
+public abstract class ComponentBuilder<B extends ComponentBuilder<?>> {
+
+  public final static int MAIN_LAYER_INDEX = 10;
 
   private final UiBuilder uiBuilder;
+  private final Pencil2DLayer layer;
+
   private final Map<String, Consumer<UiBuilder>> events = new HashMap<>();
+
   private final List<ComponentBuilder<?>> children = new ArrayList<>();
+  private final Map<ComponentBuilder<?>, Supplier<Boolean>> childrenVisibilityRules = new HashMap<>();
 
   public static final ComponentState<String> STATE_LAST_ACTIVE = ComponentState.of(String.class, "last.active");
 
@@ -31,7 +38,12 @@ public abstract sealed class ComponentBuilder<B extends ComponentBuilder<?>>
   private boolean debug = false;
 
   protected ComponentBuilder(UiBuilder uiBuilder) {
+    this(uiBuilder, MAIN_LAYER_INDEX);
+  }
+
+  protected ComponentBuilder(UiBuilder uiBuilder, int layer) {
     this.uiBuilder = uiBuilder;
+    this.layer = this.uiBuilder.pencil2D().layer(layer);
   }
 
   protected abstract void configure(int left, int top, int width, int height);
@@ -61,9 +73,11 @@ public abstract sealed class ComponentBuilder<B extends ComponentBuilder<?>>
     if (!this.children.isEmpty()) {
       state().pushParent(this);
       try {
-        bringActiveChildToFront();
+        //bringActiveChildToFront(); // => break active component (ex: combobox over toggle button)
         for (ComponentBuilder<?> child : children) {
-          child.build();
+          if (isVisible(child)) {
+            child.build();
+          }
         }
       } finally {
         state().popParent();
@@ -74,6 +88,26 @@ public abstract sealed class ComponentBuilder<B extends ComponentBuilder<?>>
 
   public String identifier() {
     return this.identifier;
+  }
+
+  public int left() {
+    return this.left;
+  }
+
+  public int top() {
+    return this.top;
+  }
+
+  public int width() {
+    return width;
+  }
+
+  public int height() {
+    return height;
+  }
+
+  public int[] hotRegion() {
+    return this.hotRegion;
   }
 
   public boolean isHotItem() {
@@ -109,6 +143,15 @@ public abstract sealed class ComponentBuilder<B extends ComponentBuilder<?>>
   public B child(ComponentBuilder<?> ... children) {
     this.children.addAll(Arrays.asList(children));
     return (B) this;
+  }
+
+  public B childVisibilityRule(ComponentBuilder<?> child,  Supplier<Boolean> rule) {
+    this.childrenVisibilityRules.put(child, rule);
+    return (B) this;
+  }
+
+  public boolean isVisible(ComponentBuilder<?> child) {
+    return !this.childrenVisibilityRules.containsKey(child) || this.childrenVisibilityRules.get(child).get();
   }
 
   public boolean debug() {
@@ -152,7 +195,7 @@ public abstract sealed class ComponentBuilder<B extends ComponentBuilder<?>>
   }
 
   protected Pencil2DLayer pencil() {
-    return this.uiBuilder.pencil();
+    return this.layer;
   }
 
   protected boolean areFontsAvailable() {
@@ -190,6 +233,8 @@ public abstract sealed class ComponentBuilder<B extends ComponentBuilder<?>>
 
       state().setHotItem(this.identifier);
 
+     // System.out.println(this.identifier + " => " + getClass() + "; active="+state().getActiveItem());
+
       boolean canBeActive =
           state().getActiveItem() == null
           || (getParent() != null && state().getActiveItem().equals(getParent().identifier));
@@ -221,17 +266,21 @@ public abstract sealed class ComponentBuilder<B extends ComponentBuilder<?>>
     }
 
     if (activeIdentifier != null) {
+
       int idx = -1;
+
       for (int i = 0; i < this.children.size(); i++) {
         if (this.children.get(i).identifier().equals(activeIdentifier)) {
           idx = i;
         }
       }
+
       if (idx > -1) {
         ComponentBuilder<?> cmp = this.children.get(idx);
         this.children.remove(idx);
         this.children.add(cmp);
       }
+
     }
 
   }
