@@ -53,7 +53,7 @@ public final class LabelBuilder extends ComponentBuilder<LabelBuilder> {
       pencil()
           .color(this.color)
           .font(this.fontIdx)
-          .text(left, top + decal, this.text);
+          .text(left, top + decal, width, height, this.text);
     }
 
   }

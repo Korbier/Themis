@@ -1,8 +1,10 @@
 package org.sc.themis.renderer.pencil2d;
 
+import org.joml.Vector2f;
 import org.sc.themis.renderer.resource.font.Font;
 import org.sc.themis.renderer.resource.font.FontCharacter;
 import org.sc.themis.renderer.resource.font.FontRepository;
+import org.sc.themis.scene.pencil.Pencil;
 
 public class Pencil2DLayer {
 
@@ -65,7 +67,23 @@ public class Pencil2DLayer {
 
   }
 
+  public Pencil2DLayer triangle(float aX, float aY, float bX, float bY, float cX, float cY) {
+
+    Pencil2DVertex a = new Pencil2DVertex(aX, aY, color.r(), color.g(), color.b(), 1.0f);
+    Pencil2DVertex b = new Pencil2DVertex(bX, bY, color.r(), color.g(), color.b(), 1.0f);
+    Pencil2DVertex c = new Pencil2DVertex(cX, cY, color.r(), color.g(), color.b(), 1.0f);
+
+    this.triangleChannel.append(new Pencil2DVertex[] {a, b, c}, new int[] {0, 1, 2});
+
+    return this;
+
+  }
+
   public Pencil2DLayer text(float x, float y, String text) {
+    return text(x, y, -1.0f, -1.0f, text);
+  }
+
+  public Pencil2DLayer text(float x, float y, float width, float height, String text) {
 
     if (this.fontIdx < 0 || !isFontRepositoryAvailable()) {
       //todo put a warning here
@@ -80,6 +98,10 @@ public class Pencil2DLayer {
 
     for (FontCharacter fchar : characters) {
 
+      if (width > -1 && (fchar.size().x() + decal + fchar.bearing().x()) >= width ) {
+        return this;
+      }
+
       float posX = x + decal + fchar.bearing().x();
       float posY = y + font.getMaxYBearing() - fchar.bearing().y();
 
@@ -92,6 +114,7 @@ public class Pencil2DLayer {
       decal += fchar.advance();
 
     }
+
     return this;
 
   }

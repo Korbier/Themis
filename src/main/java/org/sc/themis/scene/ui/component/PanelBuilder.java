@@ -7,7 +7,7 @@ import org.sc.themis.scene.ui.UiBuilder;
 
 public final class PanelBuilder extends ComponentBuilder<PanelBuilder> {
 
-  public static final int DEFAULT_BORDER_SIZE = 2;
+  public static final int DEFAULT_BORDER_SIZE = 1;
   public static final int DEFAULT_HEADER_SIZE = 20;
 
   private LabelBuilder lblTitle = null;

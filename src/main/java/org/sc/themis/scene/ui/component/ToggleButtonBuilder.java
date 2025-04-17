@@ -10,8 +10,8 @@ import java.util.function.Supplier;
 
 public final class ToggleButtonBuilder extends ComponentBuilder<ToggleButtonBuilder> {
 
-  public static final int DEFAULT_BORDER_SIZE = 2;
-  public static final int DEFAULT_MARGIN_SIZE = 2;
+  public static final int DEFAULT_BORDER_SIZE = 1;
+  public static final int DEFAULT_MARGIN_SIZE = 1;
 
   public static final String EVENT_ON_CLICK = "togglebutton.event.onclick";
 
@@ -19,7 +19,6 @@ public final class ToggleButtonBuilder extends ComponentBuilder<ToggleButtonBuil
   private boolean isToggled = false;
 
   private Color backgroundColor = Color.of("222222");
-
   private Color color = Color.of("555555");
   private Color hotColor = Color.of("777777");
 

@@ -1,12 +1,12 @@
 package org.sc.viewer.gamestate;
 
-import org.sc.themis.renderer.pencil2d.Color;
 import org.sc.themis.renderer.pencil2d.Pencil2D;
 import org.sc.themis.scene.Scene;
-import org.sc.themis.scene.pencil.Pencil;
 import org.sc.themis.scene.ui.UiSceneController;
 import org.sc.themis.scene.ui.component.*;
 import org.sc.viewer.ViewerContext;
+import org.sc.viewer.renderactivity.geometry.material.ColorMaterialRenderer;
+import org.sc.viewer.renderactivity.geometry.material.TextureMaterialRenderer;
 
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -18,7 +18,7 @@ public class ViewerUi extends UiSceneController {
   private final static int PANEL_HEIGHT = 120;
   private final static int PANEL_SPACE  =  10;
 
-  private final static int PANEL_MARGIN = 2;
+  private final static int PANEL_MARGIN = 1;
   private final static int PANEL_COLUMN_A_LEFT  = PanelBuilder.DEFAULT_BORDER_SIZE + PANEL_MARGIN;
   private final static int PANEL_COLUMN_A_WIDTH = 190;
   private final static int PANEL_COLUMN_B_LEFT  = PANEL_COLUMN_A_LEFT + PANEL_COLUMN_A_WIDTH;
@@ -122,24 +122,36 @@ public class ViewerUi extends UiSceneController {
 
   private PanelBuilder createMaterialPanel(int left, int top) {
 
+    ComboboxBuilder matCbx = builder().combobox()
+        .size( PANEL_COLUMN_A_WIDTH + PANEL_MARGIN + PANEL_COLUMN_B_WIDTH, PANEL_ROW_HEIGHT)
+        .position(PANEL_MARGIN, PANEL_MARGIN)
+        .content(
+            new ComboboxBuilder.Item(TextureMaterialRenderer.IDENTIFIER, TextureMaterialRenderer.IDENTIFIER),
+            new ComboboxBuilder.Item(ColorMaterialRenderer.IDENTIFIER, ColorMaterialRenderer.IDENTIFIER)
+        )
+        .selection(0);
+
     LabelBuilder matNormMappingLbl = builder().label()
         .size(PANEL_COLUMN_A_WIDTH, PANEL_ROW_HEIGHT)
-        .position(PANEL_MARGIN, PANEL_MARGIN)
+        .position(PANEL_MARGIN, (PANEL_ROW_HEIGHT + PANEL_MARGIN) + PANEL_MARGIN)
         .text("Normal Mapping");
 
     ToggleButtonBuilder matNormMappingTgl = builder().toggleButton()
         .size(PANEL_COLUMN_B_WIDTH, PANEL_ROW_HEIGHT)
-        .position(PANEL_COLUMN_B_LEFT, PANEL_MARGIN)
+        .position(PANEL_COLUMN_B_LEFT, (PANEL_ROW_HEIGHT + PANEL_MARGIN) + PANEL_MARGIN)
         .isToggledSupplier(() -> context.getKeyMapping().getState(GLFW_KEY_4))
         .onClick(_ -> context.getKeyMapping().execute(GLFW_KEY_4));
+
+        //.isToggledSupplier(() -> context.getKeyMapping().getState(GLFW_KEY_2))
+        //.onClick(_ -> context.getKeyMapping().execute(GLFW_KEY_2));
 
     return builder().panel()
         .position(left, top)
         .size(PANEL_WIDTH, PANEL_HEIGHT)
         .text("Material")
         .child(
-            matNormMappingLbl,
-            matNormMappingTgl
+            matNormMappingLbl, matNormMappingTgl,
+            matCbx
         );
   }
 

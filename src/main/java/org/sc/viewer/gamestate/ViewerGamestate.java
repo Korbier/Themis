@@ -8,7 +8,6 @@ import org.sc.themis.renderer.pencil2d.Pencil2D;
 import org.sc.themis.renderer.resource.ResourceEnum;
 import org.sc.themis.renderer.resource.ResourceLoader;
 import org.sc.themis.renderer.resource.font.FontRepository;
-import org.sc.themis.renderer.resource.font.FontResourceDescriptor;
 import org.sc.themis.renderer.resource.material.Material;
 import org.sc.themis.renderer.resource.material.MaterialResourceDescriptor;
 import org.sc.themis.renderer.resource.model.Instance;
@@ -24,8 +23,6 @@ import org.sc.themis.shared.exception.ThemisException;
 import org.sc.viewer.ViewerContext;
 import org.sc.viewer.gamestate.controller.KeyMappingController;
 import org.sc.viewer.renderactivity.geometry.material.TextureMaterialRenderer;
-
-import java.nio.file.Path;
 
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -91,13 +88,12 @@ public class ViewerGamestate implements Gamestate {
     Material material = ResourceLoader.get().get(ResourceEnum.MATERIAL, MaterialResourceDescriptor.of("limestone3.json", renderer.getResourceAllocator()));
     this.materialManager.addMaterials(material);
 
-
-    TextureMaterialRenderer materialRenderer = (TextureMaterialRenderer) materialManager.get(TextureMaterialRenderer.MATERIAL_ID);
+    TextureMaterialRenderer materialRenderer = (TextureMaterialRenderer) materialManager.get(TextureMaterialRenderer.IDENTIFIER);
     this.context.getKeyMapping().map(GLFW_KEY_4, false, materialRenderer::switchEnableNormal, materialRenderer::isNormalEnabled);
 
     this.model = ResourceLoader.get().get(ResourceEnum.MODEL, ModelResourceDescriptor.of("base/textured_unit_cube.gltf", "model", renderer.getResourceAllocator()));
     this.model.setMaterial(material);
-    this.model.setMaterialRenderer(TextureMaterialRenderer.MATERIAL_ID);
+    this.model.setMaterialRenderer(TextureMaterialRenderer.IDENTIFIER);
 
     this.instance = this.model.create().scale(1.8f).position(1.0f, 0.0f, 0.0f);
     //anthro_shark = this.model.create().scale(1.0f).position(0.0f, -2.8f, 0.0f);

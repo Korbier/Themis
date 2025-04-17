@@ -9,7 +9,6 @@ import org.sc.themis.renderer.base.renderpass.VkRenderPass;
 import org.sc.themis.renderer.base.resource.buffer.VkBufferDescriptor;
 import org.sc.themis.renderer.base.resource.image.VkSamplerDescriptor;
 import org.sc.themis.renderer.material.MaterialRenderer;
-import org.sc.themis.renderer.resource.material.Material;
 import org.sc.themis.renderer.resource.material.MaterialProperties;
 import org.sc.themis.scene.descriptorset.SceneDescriptorSet;
 import org.sc.themis.scene.light.pipeline.LightDescriptorSet;
@@ -314,7 +313,7 @@ public class TextureMaterialRenderer extends MaterialRenderer {
             }
             """);
 
-  public static final String MATERIAL_ID = "materialRenderer.texture-with-normalmapping";
+  public static final String IDENTIFIER = "materialRenderer.texture-with-normalmapping";
   private static final VkSamplerDescriptor DESCRIPTOR = new VkSamplerDescriptor(VK_FILTER_LINEAR, 1, true);
   private static final VkBufferDescriptor BUFFER_DESCRIPTOR = VkBufferDescriptor.descriptorsetUniform(MemorySizeUtils.FLOAT);
 
@@ -327,7 +326,7 @@ public class TextureMaterialRenderer extends MaterialRenderer {
       SceneDescriptorSet sceneDescriptorSet,
       LightDescriptorSet lightDescriptorSet) {
 
-    super(configuration, renderer, MATERIAL_ID);
+    super(configuration, renderer, IDENTIFIER);
 
     addMandatoryProperties(MaterialProperties.TEXTURE_ALBEDO);
     setVariantsIdentifierFunction(props -> props.get(MaterialProperties.TEXTURE_ALBEDO).toString());

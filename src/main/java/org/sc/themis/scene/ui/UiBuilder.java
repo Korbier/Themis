@@ -25,7 +25,7 @@ public class UiBuilder {
 
   public void begin() {
     uiState.setHotItem(null);
-    this.pencil.clear();
+    this.pencil2D.clear();
   }
 
   public void end() {
@@ -50,6 +50,10 @@ public class UiBuilder {
 
   public Pencil2DLayer pencil() {
     return this.pencil;
+  }
+
+  public Pencil2D pencil2D() {
+    return this.pencil2D;
   }
 
   public UiState getState() {
