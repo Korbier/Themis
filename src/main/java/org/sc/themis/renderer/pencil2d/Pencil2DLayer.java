@@ -1,10 +1,8 @@
 package org.sc.themis.renderer.pencil2d;
 
-import org.joml.Vector2f;
 import org.sc.themis.renderer.resource.font.Font;
 import org.sc.themis.renderer.resource.font.FontCharacter;
 import org.sc.themis.renderer.resource.font.FontRepository;
-import org.sc.themis.scene.pencil.Pencil;
 
 public class Pencil2DLayer {
 

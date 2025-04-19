@@ -1,5 +1,6 @@
 package org.sc.themis.scene.ui.component;
 
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import org.joml.Vector2f;
 import org.sc.themis.renderer.pencil2d.Color;
@@ -41,7 +42,7 @@ public final class ButtonBuilder extends ComponentBuilder<ButtonBuilder> {
     return this;
   }
 
-  public ButtonBuilder onClick(Consumer<UiBuilder> eventListener) {
+  public ButtonBuilder onClick(BiConsumer<UiBuilder, ButtonBuilder> eventListener) {
     addEvent(EVENT_ON_CLICK, eventListener);
     return this;
   }

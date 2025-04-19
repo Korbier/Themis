@@ -96,4 +96,12 @@ public final class PanelBuilder extends ComponentBuilder<PanelBuilder> {
   protected void triggerEvents() {
   }
 
+  @Override
+  public PanelBuilder position(int left, int top) {
+    applyToChildren( c -> c.position(c.left()-left(), c.top()-top()));
+    super.position(left, top);
+    applyToChildren( c -> c.position(c.left()+left(), c.top()+top()));
+    return this;
+  }
+
 }

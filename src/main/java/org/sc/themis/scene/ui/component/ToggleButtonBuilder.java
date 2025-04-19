@@ -5,6 +5,7 @@ import org.sc.themis.scene.ui.UiBuilder;
 
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -31,7 +32,7 @@ public final class ToggleButtonBuilder extends ComponentBuilder<ToggleButtonBuil
     super(builder);
   }
 
-  public ToggleButtonBuilder onClick(Consumer<UiBuilder> eventListener) {
+  public ToggleButtonBuilder onClick(BiConsumer<UiBuilder, ToggleButtonBuilder> eventListener) {
     addEvent(EVENT_ON_CLICK, eventListener);
     return this;
   }
@@ -110,11 +111,7 @@ public final class ToggleButtonBuilder extends ComponentBuilder<ToggleButtonBuil
     }
   }
 
-  private boolean shouldTriggerOnClickEvent() {/*
-    System.out.println("isEventDefined(EVENT_ON_CLICK)=" + isEventDefined(EVENT_ON_CLICK)
-        + "; !state().isMouseDown()=" + !state().isMouseDown()
-        + "; isHotItem()=" + isHotItem()
-        + "; isActiveItem()=" + isActiveItem() );*/
+  private boolean shouldTriggerOnClickEvent() {
     return isEventDefined(EVENT_ON_CLICK)
         && !state().isMouseDown()
         && isHotItem()

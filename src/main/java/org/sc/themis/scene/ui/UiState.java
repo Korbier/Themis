@@ -12,8 +12,9 @@ public class UiState {
   private int mouseX = -1;
   private int mouseY = -1;
   private boolean mouseDown = false;
-  private String hotItem = null;
-  private String activeItem = null;
+
+  private ComponentBuilder<?> hotItem = null;
+  private ComponentBuilder<?> activeItem = null;
 
   private Deque<ComponentBuilder<?>> parentStack = new ArrayDeque<ComponentBuilder<?>>();
 
@@ -43,19 +44,19 @@ public class UiState {
     this.mouseDown = mouseDown;
   }
 
-  public String getHotItem() {
+  public ComponentBuilder<?> getHotItem() {
     return hotItem;
   }
 
-  public void setHotItem(String hotItem) {
+  public void setHotItem(ComponentBuilder<?> hotItem) {
     this.hotItem = hotItem;
   }
 
-  public String getActiveItem() {
+  public ComponentBuilder<?> getActiveItem() {
     return activeItem;
   }
 
-  public void setActiveItem(String activeItem) {
+  public void setActiveItem(ComponentBuilder<?> activeItem) {
     this.activeItem = activeItem;
   }
 

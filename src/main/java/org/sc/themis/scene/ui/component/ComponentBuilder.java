@@ -1,8 +1,8 @@
 package org.sc.themis.scene.ui.component;
 
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import org.sc.themis.renderer.pencil2d.Color;
@@ -18,16 +18,18 @@ public abstract class ComponentBuilder<B extends ComponentBuilder<?>> {
 
   private final UiBuilder uiBuilder;
   private final Pencil2DLayer layer;
+  private final int layerIndex;
 
-  private final Map<String, Consumer<UiBuilder>> events = new HashMap<>();
+  private final Map<String, BiConsumer<UiBuilder, B>> events = new HashMap<>();
 
   private final List<ComponentBuilder<?>> children = new ArrayList<>();
   private final Map<ComponentBuilder<?>, Supplier<Boolean>> childrenVisibilityRules = new HashMap<>();
 
-  public static final ComponentState<String> STATE_LAST_ACTIVE = ComponentState.of(String.class, "last.active");
+  public static final ComponentState<ComponentBuilder> STATE_LAST_ACTIVE = ComponentState.of(ComponentBuilder.class, "last.active");
 
   protected final int[] hotRegion = new int[] {0, 0, 0, 0};
   private final int[] childrenOffsets = new int[] {0, 0};
+  private boolean isActivable = true;
 
   private String identifier;
   private int left = 0;
@@ -43,7 +45,8 @@ public abstract class ComponentBuilder<B extends ComponentBuilder<?>> {
 
   protected ComponentBuilder(UiBuilder uiBuilder, int layer) {
     this.uiBuilder = uiBuilder;
-    this.layer = this.uiBuilder.pencil2D().layer(layer);
+    this.layerIndex = layer;
+    this.layer = this.uiBuilder.pencil2D().layer(this.layerIndex);
   }
 
   protected abstract void configure(int left, int top, int width, int height);
@@ -53,8 +56,8 @@ public abstract class ComponentBuilder<B extends ComponentBuilder<?>> {
   public void build() {
 
     ComponentBuilder<?> parent = getParent();
-    int left = parent != null ? parent.left + parent.childrenOffsets[0] + this.left : this.left;
-    int top = parent != null ? parent.top + parent.childrenOffsets[1] + this.top : this.top;
+    int left = parent != null ? parent.childrenOffsets[0] + this.left : this.left;
+    int top = parent != null ? parent.childrenOffsets[1] + this.top : this.top;
     int width = this.width;
     int height = this.height;
 
@@ -86,6 +89,10 @@ public abstract class ComponentBuilder<B extends ComponentBuilder<?>> {
 
   }
 
+  public int getLayerIndex() {
+    return this.layerIndex;
+  }
+
   public String identifier() {
     return this.identifier;
   }
@@ -111,11 +118,11 @@ public abstract class ComponentBuilder<B extends ComponentBuilder<?>> {
   }
 
   public boolean isHotItem() {
-    return identifier().equals(state().getHotItem());
+    return equals(state().getHotItem());
   }
 
   public boolean isActiveItem() {
-    return identifier().equals(state().getActiveItem());
+    return equals(state().getActiveItem());
   }
 
   public B identifier(String identifier) {
@@ -140,9 +147,39 @@ public abstract class ComponentBuilder<B extends ComponentBuilder<?>> {
     return (B) this;
   }
 
-  public B child(ComponentBuilder<?> ... children) {
-    this.children.addAll(Arrays.asList(children));
+  public B activable(boolean activable) {
+    this.isActivable = activable;
     return (B) this;
+  }
+
+  public B child(ComponentBuilder<?> ... children) {
+
+    List<ComponentBuilder<?>> newChildren = Arrays.asList(children);
+    newChildren.forEach(c -> {
+      c.left += left;
+      c.top += top;
+      this.children.add(c);
+    });
+
+    return (B) this;
+
+  }
+
+  public B remove(ComponentBuilder<?> ... children) {
+
+    List<ComponentBuilder<?>> newChildren = Arrays.asList(children);
+    newChildren.forEach(c -> {
+      c.left -= left;
+      c.top -= top;
+      this.children.remove(c);
+    });
+
+    return (B) this;
+
+  }
+
+  public void applyToChildren(Consumer<ComponentBuilder<?>> childConsumer) {
+    this.children.forEach(childConsumer);
   }
 
   public B childVisibilityRule(ComponentBuilder<?> child,  Supplier<Boolean> rule) {
@@ -206,13 +243,13 @@ public abstract class ComponentBuilder<B extends ComponentBuilder<?>> {
     return pencil().getFont();
   }
 
-  protected void addEvent(String event, Consumer<UiBuilder> eventConsumer) {
+  protected void addEvent(String event, BiConsumer<UiBuilder, B> eventConsumer) {
     this.events.put(event, eventConsumer);
   }
 
   protected void fireEvent(String event) {
     if (isEventDefined(event)) {
-      this.events.get(event).accept(this.uiBuilder);
+      this.events.get(event).accept(this.uiBuilder, (B) this);
     }
   }
 
@@ -229,22 +266,24 @@ public abstract class ComponentBuilder<B extends ComponentBuilder<?>> {
 
   private void checkState() {
 
+    if (!this.isActivable) return;
+
     if (hotRegionHit()) {
 
-      state().setHotItem(this.identifier);
-
-     // System.out.println(this.identifier + " => " + getClass() + "; active="+state().getActiveItem());
+      state().setHotItem(this);
 
       boolean canBeActive =
-          state().getActiveItem() == null
-          || (getParent() != null && state().getActiveItem().equals(getParent().identifier));
+        state().getActiveItem() == null //No activated component defined
+        || this.getLayerIndex() > state().getActiveItem().getLayerIndex() //Current component on top of activated component
+        || (getParent() != null && state().getActiveItem().equals(getParent())) //Current component is child of activated component
+      ;
 
       if (canBeActive && state().isMouseDown()) {
 
-        state().setActiveItem(this.identifier);
+        state().setActiveItem(this);
 
         if (getParent() != null) {
-          getParent().set(STATE_LAST_ACTIVE, this.identifier);
+          getParent().set(STATE_LAST_ACTIVE, this);
         }
 
       }
@@ -253,13 +292,13 @@ public abstract class ComponentBuilder<B extends ComponentBuilder<?>> {
 
   }
 
-  private String getActiveChild() {
-    return this.children.stream().filter(ComponentBuilder::isActiveItem).map(ComponentBuilder::identifier).findFirst().orElse(null);
+  private ComponentBuilder<?> getActiveChild() {
+    return this.children.stream().filter(ComponentBuilder::isActiveItem).findFirst().orElse(null);
   }
 
   private void bringActiveChildToFront() {
 
-    String activeIdentifier = getActiveChild();
+    ComponentBuilder<?> activeIdentifier = getActiveChild();
 
     if (activeIdentifier == null) {
       activeIdentifier = get(STATE_LAST_ACTIVE);
@@ -270,7 +309,7 @@ public abstract class ComponentBuilder<B extends ComponentBuilder<?>> {
       int idx = -1;
 
       for (int i = 0; i < this.children.size(); i++) {
-        if (this.children.get(i).identifier().equals(activeIdentifier)) {
+        if (this.children.get(i).equals(activeIdentifier)) {
           idx = i;
         }
       }

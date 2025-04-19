@@ -4,6 +4,8 @@ import org.sc.themis.renderer.pencil2d.Pencil2D;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.scene.ui.UiSceneController;
 import org.sc.themis.scene.ui.component.*;
+import org.sc.themis.scene.ui.component.combobox.ComboboxBuilder;
+import org.sc.themis.scene.ui.component.combobox.ComboboxItem;
 import org.sc.viewer.ViewerContext;
 import org.sc.viewer.renderactivity.geometry.material.ColorMaterialRenderer;
 import org.sc.viewer.renderactivity.geometry.material.TextureMaterialRenderer;
@@ -78,7 +80,7 @@ public class ViewerUi extends UiSceneController {
         .size(PANEL_COLUMN_B_WIDTH, PANEL_ROW_HEIGHT)
         .position(PANEL_COLUMN_B_LEFT, PANEL_MARGIN)
         .isToggledSupplier(() -> context.getKeyMapping().getState(GLFW_KEY_1))
-        .onClick(_ -> context.getKeyMapping().execute(GLFW_KEY_1));
+        .onClick((_,_) -> context.getKeyMapping().execute(GLFW_KEY_1));
 
     LabelBuilder lightPtLbl = builder().label()
         .size(PANEL_COLUMN_A_WIDTH, PANEL_ROW_HEIGHT)
@@ -89,7 +91,7 @@ public class ViewerUi extends UiSceneController {
         .size(PANEL_COLUMN_B_WIDTH, PANEL_ROW_HEIGHT)
         .position(PANEL_COLUMN_B_LEFT, (PANEL_ROW_HEIGHT + PANEL_MARGIN) + PANEL_MARGIN)
         .isToggledSupplier(() -> context.getKeyMapping().getState(GLFW_KEY_2))
-        .onClick(_ -> context.getKeyMapping().execute(GLFW_KEY_2));
+        .onClick((_,_) -> context.getKeyMapping().execute(GLFW_KEY_2));
 
     LabelBuilder lightSptLbl = builder().label()
         .size(PANEL_COLUMN_A_WIDTH, PANEL_ROW_HEIGHT)
@@ -100,7 +102,7 @@ public class ViewerUi extends UiSceneController {
         .size(PANEL_COLUMN_B_WIDTH, PANEL_ROW_HEIGHT)
         .position(PANEL_COLUMN_B_LEFT, (PANEL_ROW_HEIGHT + PANEL_MARGIN) * 2 + PANEL_MARGIN )
         .isToggledSupplier(() -> context.getKeyMapping().getState(GLFW_KEY_3))
-        .onClick(_ -> context.getKeyMapping().execute(GLFW_KEY_3));
+        .onClick((_,_) -> context.getKeyMapping().execute(GLFW_KEY_3));
 
     return builder().panel()
         .size(PANEL_WIDTH, PANEL_HEIGHT)
@@ -126,8 +128,8 @@ public class ViewerUi extends UiSceneController {
         .size( PANEL_COLUMN_A_WIDTH + PANEL_MARGIN + PANEL_COLUMN_B_WIDTH, PANEL_ROW_HEIGHT)
         .position(PANEL_MARGIN, PANEL_MARGIN)
         .content(
-            new ComboboxBuilder.Item(TextureMaterialRenderer.IDENTIFIER, TextureMaterialRenderer.IDENTIFIER),
-            new ComboboxBuilder.Item(ColorMaterialRenderer.IDENTIFIER, ColorMaterialRenderer.IDENTIFIER)
+            new ComboboxItem("Textured", null),
+            new ComboboxItem("Colorized", null)
         )
         .selection(0);
 
@@ -140,20 +142,17 @@ public class ViewerUi extends UiSceneController {
         .size(PANEL_COLUMN_B_WIDTH, PANEL_ROW_HEIGHT)
         .position(PANEL_COLUMN_B_LEFT, (PANEL_ROW_HEIGHT + PANEL_MARGIN) + PANEL_MARGIN)
         .isToggledSupplier(() -> context.getKeyMapping().getState(GLFW_KEY_4))
-        .onClick(_ -> context.getKeyMapping().execute(GLFW_KEY_4));
-
-        //.isToggledSupplier(() -> context.getKeyMapping().getState(GLFW_KEY_2))
-        //.onClick(_ -> context.getKeyMapping().execute(GLFW_KEY_2));
+        .onClick((_,_) -> context.getKeyMapping().execute(GLFW_KEY_4));
 
     return builder().panel()
         .position(left, top)
         .size(PANEL_WIDTH, PANEL_HEIGHT)
         .text("Material")
         .child(
-            matCbx, matCbx.getComboboxContent(),
+            matCbx,
             matNormMappingLbl, matNormMappingTgl
-        )
-        .childVisibilityRule(matCbx.getComboboxContent(), matCbx::isOpen);
+        );
+        //.childVisibilityRule(matCbx.getComboboxContent(), matCbx::isOpen);
   }
 
   @Override
