@@ -3,23 +3,40 @@ Themis is a Vulkan rendering engine written in Java.
 The viewer is a sample application built with this engine.
 
 # Screenshots
-### Sphere (all lights on / With tangent,bitangent and normal vectors / Spot light only)
-![](documentation/sphere/001.png)
-![](documentation/sphere/002.png)
-![](documentation/sphere/003.png)
+### Shark (Color material / Texture material)
 
-### Shark (Color material / Texture material) ([The model on https://sketchfab.com/](https://sketchfab.com/3d-models/anthro-shark-6e9d487cbce94dd58a4591fec7aff8f9))
+Model : [https://sketchfab.com/3d-models/anthro-shark-6e9d487cbce94dd58a4591fec7aff8f9](https://sketchfab.com/3d-models/anthro-shark-6e9d487cbce94dd58a4591fec7aff8f9)
+
 ![](./documentation/shark/001.png)
 ![](./documentation/shark/003.png)
 
-### Wall (Without normal mapping / Widh normal mapping)
+### Sed 2.0 With TBN vectors
+
+Model : [https://sketchfab.com/3d-models/sed-2-0-41831eb62be54000b10eb1cf13d4ba39](https://sketchfab.com/3d-models/sed-2-0-41831eb62be54000b10eb1cf13d4ba39)
+
+![](documentation/sed-2_0/001.png)
+
+### Sed 2.0 - Color renderer (No light / Phong)
+
+Model : [https://sketchfab.com/3d-models/sed-2-0-41831eb62be54000b10eb1cf13d4ba39](https://sketchfab.com/3d-models/sed-2-0-41831eb62be54000b10eb1cf13d4ba39)
+
+![](documentation/sed-2_0/002.png)
+![](documentation/sed-2_0/003.png)
+
+### Sed 2.0 - Texture renderer (Without normal mapping / With normal mapping)
+
+Model : [https://sketchfab.com/3d-models/sed-2-0-41831eb62be54000b10eb1cf13d4ba39](https://sketchfab.com/3d-models/sed-2-0-41831eb62be54000b10eb1cf13d4ba39)
+
+![](documentation/sed-2_0/004.png)
+![](documentation/sed-2_0/005.png)
+
+### Wall (Without normal mapping / With normal mapping)
 ![](documentation/wall/001.png)
 ![](documentation/wall/002.png)
 
 ## Features
-### ✨ Done
 
-* Renderer
+* ✨Renderer
   * Resource loading
     * Model
     * Texture
@@ -38,8 +55,9 @@ The viewer is a sample application built with this engine.
     * Toggle button
     * Panel
     * Label
+    * Combo box
 
-* Viewer
+* ✨Viewer
   * Sample scene
   * Key mapping
   * User interface
@@ -49,9 +67,10 @@ The viewer is a sample application built with this engine.
     * Toggle spot light
     * Toggle Normal mapping
   * Mouse control
-  * Material
-    * Color material
-    * Texture material + Normal mapping
+  * Material renderer
+    * Color material renderer (no light)
+    * Color material renderer (Phong)
+    * Texture material renderer + Normal mapping
   
-* Other
+* ✨Other
   * Native executable building with GraalVM Native Image

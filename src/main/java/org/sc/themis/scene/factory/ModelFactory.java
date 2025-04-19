@@ -20,6 +20,7 @@ import org.lwjgl.assimp.AIScene;
 import org.lwjgl.assimp.AIString;
 import org.lwjgl.assimp.AIVector3D;
 import org.lwjgl.system.MemoryStack;
+import org.sc.themis.renderer.material.MaterialManager;
 import org.sc.themis.renderer.resource.material.Material;
 import org.sc.themis.renderer.resource.material.MaterialProperties;
 import org.sc.themis.renderer.resource.material.MaterialProperty;
@@ -56,15 +57,19 @@ public class ModelFactory {
   }
 
   public static Model create(String identifier, VkStagingResourceAllocator allocator, Path modelFile) throws ThemisException {
-    return instance.doCreate(identifier, allocator, modelFile);
+    return instance.doCreate(identifier, allocator, null, modelFile);
   }
 
-  public Model doCreate(String identifier, VkStagingResourceAllocator allocator, Path modelFile) throws ThemisException {
+  public static Model create(String identifier, VkStagingResourceAllocator allocator, MaterialManager manager, Path modelFile) throws ThemisException {
+    return instance.doCreate(identifier, allocator, manager, modelFile);
+  }
+
+  public Model doCreate(String identifier, VkStagingResourceAllocator allocator, MaterialManager manager, Path modelFile) throws ThemisException {
 
     Assertions.isTrue(modelFile.toFile()::exists, new ModelFileNotFoundException(modelFile));
 
     try (AIScene scene = aiImportFile(modelFile.toAbsolutePath().toString(), flags)) {
-      List<Material> properties = loadProperties(identifier, scene, allocator, modelFile.getParent());
+      List<Material> properties = loadProperties(identifier, scene, allocator, manager, modelFile.getParent());
       Mesh[] meshes = loadMeshs(allocator, identifier, scene, properties);
       return new Model(identifier, meshes);
     }
@@ -152,7 +157,7 @@ public class ModelFactory {
 
   }
 
-  private List<Material> loadProperties( String identifier, AIScene scene, VkStagingResourceAllocator allocator, Path workdir) throws ThemisException {
+  private List<Material> loadProperties( String identifier, AIScene scene, VkStagingResourceAllocator allocator, MaterialManager manager, Path workdir) throws ThemisException {
 
     List<Material> result = new ArrayList<>();
 
@@ -174,6 +179,10 @@ public class ModelFactory {
 
       setImage(workdir, allocator, aiMaterial, aiTextureType_BASE_COLOR, properties, MaterialProperties.TEXTURE_ALBEDO);
       setImage( workdir, allocator, aiMaterial, aiTextureType_NORMALS, properties, MaterialProperties.TEXTURE_NORMAL);
+
+      if (manager != null) {
+        manager.addMaterials(properties);
+      }
 
       result.add(properties);
 
