@@ -52,7 +52,6 @@ public class GeometryRenderPass extends RenderPass {
   private VkRenderPass renderPass;
 
   // Material
-  private MaterialRenderer[] materialRenderers;
   private MaterialManager materialManager;
 
   public GeometryRenderPass(Configuration configuration, MaterialManager materialManager) {
@@ -75,7 +74,7 @@ public class GeometryRenderPass extends RenderPass {
 
   @Override
   public void cleanup() throws ThemisException {
-    for (MaterialRenderer materialRenderer : this.materialRenderers) {
+    for (MaterialRenderer materialRenderer : this.materialManager.getMaterialRenderers()) {
       materialRenderer.cleanup();
     }
     this.renderPass.cleanup();
@@ -190,25 +189,8 @@ public class GeometryRenderPass extends RenderPass {
   }
 
   private void setupMaterialManager() throws ThemisException {
-
-    this.materialRenderers = new MaterialRenderer[] {
-        new TextureMaterialRenderer(
-            getConfiguration(), getRenderer(), this.renderPass,
-            this.getViewerActivity().getSceneDescriptorset(),
-            this.getViewerActivity().getLighDescriptorset()
-        ),
-        new TextureMaterialRenderer(
-            getConfiguration(), getRenderer(), this.renderPass,
-            this.getViewerActivity().getSceneDescriptorset(),
-            this.getViewerActivity().getLighDescriptorset()
-        )
-    };
-
-    for (MaterialRenderer materialRenderer : this.materialRenderers) {
-      materialRenderer.setup();
+    for (MaterialRenderer renderer : this.materialManager.getMaterialRenderers() ) {
+      renderer.setup(getRenderer(), this.renderPass, this.getViewerActivity().getSceneDescriptorset(), this.getViewerActivity().getLighDescriptorset());
     }
-
-    this.materialManager.setMaterialRenderers(this.materialRenderers[0], this.materialRenderers);
-
   }
 }

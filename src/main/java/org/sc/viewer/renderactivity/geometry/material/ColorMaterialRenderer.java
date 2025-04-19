@@ -11,6 +11,7 @@ import org.sc.themis.renderer.Renderer;
 import org.sc.themis.renderer.base.pipeline.VkPipelineDescriptor;
 import org.sc.themis.renderer.base.pipeline.VkShaderSourceCompiler;
 import org.sc.themis.renderer.base.pipeline.VkVertexInputStateDescriptor;
+import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSetProvider;
 import org.sc.themis.renderer.base.renderpass.VkRenderPass;
 import org.sc.themis.renderer.base.resource.buffer.VkBufferDescriptor;
 import org.sc.themis.renderer.material.MaterialRenderer;
@@ -18,6 +19,7 @@ import org.sc.themis.renderer.resource.material.MaterialProperties;
 import org.sc.themis.scene.descriptorset.SceneDescriptorSet;
 import org.sc.themis.scene.light.pipeline.LightDescriptorSet;
 import org.sc.themis.shared.configuration.Configuration;
+import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.utils.MemorySizeUtils;
 
 public class ColorMaterialRenderer extends MaterialRenderer {
@@ -291,12 +293,9 @@ public class ColorMaterialRenderer extends MaterialRenderer {
 
   private static final VkBufferDescriptor BUFFER_DESCRIPTOR = VkBufferDescriptor.descriptorsetUniform(BUFFER_SIZE);
 
-  public ColorMaterialRenderer(
-      Configuration configuration, Renderer renderer, VkRenderPass renderPass,
-      SceneDescriptorSet sceneDescriptorSet, LightDescriptorSet lightDescriptorSet
-  ) {
+  public ColorMaterialRenderer(Configuration configuration) {
 
-    super(configuration, renderer, IDENTIFIER);
+    super(configuration, IDENTIFIER);
 
     addMandatoryProperties(
         MaterialProperties.COLOR_AMBIENT,
@@ -313,6 +312,11 @@ public class ColorMaterialRenderer extends MaterialRenderer {
         )
     );
 
+  }
+
+  @Override
+  public void setup(Renderer renderer, VkRenderPass renderpass, VkDescriptorSetProvider... descriptorsets) throws ThemisException {
+
     addShader( VK_SHADER_STAGE_VERTEX_BIT, VkShaderSourceCompiler.compileShader(VERTEX_SOURCE, Shaderc.shaderc_glsl_vertex_shader));
     addShader( VK_SHADER_STAGE_FRAGMENT_BIT, VkShaderSourceCompiler.compileShader( FRAGMENT_SOURCE, Shaderc.shaderc_glsl_fragment_shader));
     addConstantRange(VK_SHADER_STAGE_VERTEX_BIT, 0, MemorySizeUtils.MAT4x4F);
@@ -323,17 +327,20 @@ public class ColorMaterialRenderer extends MaterialRenderer {
             .attribute(VK_FORMAT_R32G32_SFLOAT, MemorySizeUtils.VEC2F) // Texture
             .attribute(VK_FORMAT_R32G32B32_SFLOAT, MemorySizeUtils.VEC3F) // Tangent
             .attribute(VK_FORMAT_R32G32B32_SFLOAT, MemorySizeUtils.VEC3F) // Bitangentr
-        );
-    setPipelineDescriptor(new VkPipelineDescriptor(renderPass, 0, false, 1, true, 1, 1, 1));
+    );
+    setPipelineDescriptor(new VkPipelineDescriptor(renderpass, 0, false, 1, true, 1, 1, 1));
 
     addVariantsUniformBinding(0, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, BUFFER_DESCRIPTOR);
     setVariantsUniformSetter((_, buffer, props) -> {
-          buffer.set(0, props.getProperty(MaterialProperties.COLOR_AMBIENT));
-          buffer.set(MemorySizeUtils.VEC4F, props.getProperty(MaterialProperties.COLOR_DIFFUSE));
-          buffer.set(MemorySizeUtils.VEC4F + MemorySizeUtils.VEC4F, props.getProperty(MaterialProperties.COLOR_SPECULAR));
-          buffer.set(MemorySizeUtils.VEC4F + MemorySizeUtils.VEC4F + MemorySizeUtils.VEC4F, props.getProperty(MaterialProperties.FLOAT_SHININESS));
+      buffer.set(0, props.getProperty(MaterialProperties.COLOR_AMBIENT));
+      buffer.set(MemorySizeUtils.VEC4F, props.getProperty(MaterialProperties.COLOR_DIFFUSE));
+      buffer.set(MemorySizeUtils.VEC4F + MemorySizeUtils.VEC4F, props.getProperty(MaterialProperties.COLOR_SPECULAR));
+      buffer.set(MemorySizeUtils.VEC4F + MemorySizeUtils.VEC4F + MemorySizeUtils.VEC4F, props.getProperty(MaterialProperties.FLOAT_SHININESS));
     });
 
-    setDescriptorsetProviders(sceneDescriptorSet, lightDescriptorSet);
+    setDescriptorsetProviders(descriptorsets);
+
+    super.setup(renderer, renderpass, descriptorsets);
+
   }
 }

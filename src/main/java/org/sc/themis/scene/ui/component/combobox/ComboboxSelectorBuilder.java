@@ -8,7 +8,7 @@ import org.sc.themis.scene.ui.component.LabelBuilder;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ComboboxSelectorBuilder extends ComponentBuilder<ComboboxSelectorBuilder> {
+public class ComboboxSelectorBuilder<C> extends ComponentBuilder<ComboboxSelectorBuilder<C>> {
 
   public final static int COMBOBOX_SELECTOR_LAYER_INDEX = 15;
 
@@ -22,10 +22,10 @@ public class ComboboxSelectorBuilder extends ComponentBuilder<ComboboxSelectorBu
   private Color hotColor = Color.of("777777");
 
   private final UiBuilder builder;
-  private final ComboboxBuilder combobox;
-  private Map<LabelBuilder, ComboboxItem> labels = null;
+  private final ComboboxBuilder<C> combobox;
+  private Map<LabelBuilder, C> labels = null;
 
-  protected ComboboxSelectorBuilder(UiBuilder uiBuilder, ComboboxBuilder combobox) {
+  protected ComboboxSelectorBuilder(UiBuilder uiBuilder, ComboboxBuilder<C> combobox) {
 
     super(uiBuilder, COMBOBOX_SELECTOR_LAYER_INDEX);
 
@@ -43,16 +43,17 @@ public class ComboboxSelectorBuilder extends ComponentBuilder<ComboboxSelectorBu
 
       for (int i=0; i<this.combobox.content().size(); i++) {
 
-        ComboboxItem item = this.combobox.content().get(i);
+        C item = this.combobox.content().get(i);
 
         LabelBuilder lbl = this.builder.label(COMBOBOX_SELECTOR_LAYER_INDEX)
             .activable(true)
             .position(DEFAULT_BORDER_SIZE + DEFAULT_MARGIN_SIZE, i * 20 + DEFAULT_BORDER_SIZE + DEFAULT_MARGIN_SIZE)
             .size(width - 2 * (DEFAULT_BORDER_SIZE + DEFAULT_MARGIN_SIZE), 20 - 2 * (DEFAULT_BORDER_SIZE + DEFAULT_MARGIN_SIZE))
-            .text(this.combobox.content().get(i).label())
+            .text(item.toString())
             .onClick((_, c) -> {
-              this.combobox.selection(this.labels.get(c));
+              C currentItem = this.labels.get(c);
               this.combobox.setOpen(false);
+              this.combobox.triggerOnSelect(currentItem);
             } );
 
         child(lbl);

@@ -11,6 +11,7 @@ import org.sc.themis.renderer.Renderer;
 import org.sc.themis.renderer.base.pipeline.VkPipelineDescriptor;
 import org.sc.themis.renderer.base.pipeline.VkShaderSourceCompiler;
 import org.sc.themis.renderer.base.pipeline.VkVertexInputStateDescriptor;
+import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSetProvider;
 import org.sc.themis.renderer.base.renderpass.VkRenderPass;
 import org.sc.themis.renderer.base.resource.buffer.VkBufferDescriptor;
 import org.sc.themis.renderer.material.MaterialRenderer;
@@ -18,6 +19,7 @@ import org.sc.themis.renderer.resource.material.MaterialProperties;
 import org.sc.themis.renderer.resource.material.MaterialProperty;
 import org.sc.themis.scene.descriptorset.SceneDescriptorSet;
 import org.sc.themis.shared.configuration.Configuration;
+import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.utils.MemorySizeUtils;
 
 public class ColorMaterialRenderer extends MaterialRenderer {
@@ -88,15 +90,18 @@ public class ColorMaterialRenderer extends MaterialRenderer {
   private static final VkBufferDescriptor BUFFER_DESCRIPTOR =
       VkBufferDescriptor.descriptorsetDynamicUniform(BUFFER_SIZE, 3);
 
-  public ColorMaterialRenderer(
-      Configuration configuration,
-      Renderer renderer,
-      VkRenderPass renderPass,
-      SceneDescriptorSet sceneDescriptorSet) {
+  public ColorMaterialRenderer(Configuration configuration) {
 
-    super(configuration, renderer, IDENTIFIER);
+    super(configuration, IDENTIFIER);
 
     setVariantsIdentifierFunction(props -> props.get(MaterialProperties.COLOR_AMBIENT).toString());
+
+  }
+
+  @Override
+  public void setup(Renderer renderer, VkRenderPass renderpass, VkDescriptorSetProvider... descriptorsets) throws ThemisException {
+
+    super.setup(renderer, renderpass, descriptorsets);
 
     /** Pipeline * */
     addShader(
@@ -114,8 +119,8 @@ public class ColorMaterialRenderer extends MaterialRenderer {
             .attribute(VK_FORMAT_R32G32_SFLOAT, MemorySizeUtils.VEC2F) // Texture
             .attribute(VK_FORMAT_R32G32B32_SFLOAT, MemorySizeUtils.VEC3F) // Tangent
             .attribute(VK_FORMAT_R32G32B32_SFLOAT, MemorySizeUtils.VEC3F) // Bitangentr
-        );
-    setPipelineDescriptor(new VkPipelineDescriptor(renderPass, 0, false, 1, true, 1, 1, 1));
+    );
+    setPipelineDescriptor(new VkPipelineDescriptor(renderpass, 0, false, 1, true, 1, 1, 1));
 
     /** Variant layout * */
     addMainUniformDynamicBinding(
@@ -125,6 +130,7 @@ public class ColorMaterialRenderer extends MaterialRenderer {
             buffer.set(offset, props.getProperty(MaterialProperties.COLOR_AMBIENT)));
 
     /** Other descriptorsets * */
-    setDescriptorsetProviders(sceneDescriptorSet);
+    setDescriptorsetProviders(descriptorsets);
+
   }
 }

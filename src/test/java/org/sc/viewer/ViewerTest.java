@@ -12,6 +12,9 @@ import org.sc.themis.renderer.resource.font.FontResourceDescriptor;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.viewer.gamestate.ViewerGamestate;
 import org.sc.viewer.renderactivity.ViewerRendererActivity;
+import org.sc.viewer.renderactivity.geometry.material.ColorMaterialRenderer;
+import org.sc.viewer.renderactivity.geometry.material.NoLightColorMaterialRenderer;
+import org.sc.viewer.renderactivity.geometry.material.TextureMaterialRenderer;
 
 import java.nio.file.Path;
 
@@ -22,8 +25,13 @@ public class ViewerTest extends TestWithConfiguration {
   void runViewer() throws ThemisException {
 
     // Given
-    ViewerContext context = ViewerContext.createDefault();
     MaterialManager materialManager = new MaterialManager();
+    materialManager.setMaterialRenderers(
+        new TextureMaterialRenderer(getConfiguration()),
+        new ColorMaterialRenderer(getConfiguration()),
+        new NoLightColorMaterialRenderer(getConfiguration())
+    );
+    ViewerContext context = ViewerContext.createDefault(materialManager.getDefaultMaterialRenderer());
 
     FontRepository fRepository = new FontRepository();
     try {

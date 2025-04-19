@@ -1,20 +1,20 @@
 package org.sc.viewer.gamestate;
 
+import org.sc.themis.renderer.material.MaterialManager;
+import org.sc.themis.renderer.material.MaterialRenderer;
 import org.sc.themis.renderer.pencil2d.Pencil2D;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.scene.ui.UiSceneController;
 import org.sc.themis.scene.ui.component.*;
 import org.sc.themis.scene.ui.component.combobox.ComboboxBuilder;
-import org.sc.themis.scene.ui.component.combobox.ComboboxItem;
 import org.sc.viewer.ViewerContext;
-import org.sc.viewer.renderactivity.geometry.material.ColorMaterialRenderer;
-import org.sc.viewer.renderactivity.geometry.material.TextureMaterialRenderer;
 
 import static org.lwjgl.glfw.GLFW.*;
 
 public class ViewerUi extends UiSceneController {
 
   private final ViewerContext context;
+  private final MaterialManager materialManager;
 
   private final static int PANEL_WIDTH  = 240;
   private final static int PANEL_HEIGHT = 120;
@@ -31,11 +31,12 @@ public class ViewerUi extends UiSceneController {
   private final ContainerBuilder desktop;
   private LabelBuilder infoMaterialLblValue;
 
-  public ViewerUi(Scene scene, Pencil2D pencil, ViewerContext context) {
+  public ViewerUi(Scene scene, Pencil2D pencil, ViewerContext context, MaterialManager materialManager) {
 
     super(scene, pencil);
 
     this.context = context;
+    this.materialManager = materialManager;
 
     PanelBuilder infoPnl = createInfoPanel(PANEL_SPACE, PANEL_SPACE);
     PanelBuilder lightPnl = createLightPanel(PANEL_SPACE, PANEL_SPACE * 2 + PANEL_HEIGHT);
@@ -124,14 +125,17 @@ public class ViewerUi extends UiSceneController {
 
   private PanelBuilder createMaterialPanel(int left, int top) {
 
-    ComboboxBuilder matCbx = builder().combobox()
+    ComboboxBuilder<MaterialRenderer> matCbx = builder().<MaterialRenderer>combobox()
         .size( PANEL_COLUMN_A_WIDTH + PANEL_MARGIN + PANEL_COLUMN_B_WIDTH, PANEL_ROW_HEIGHT)
-        .position(PANEL_MARGIN, PANEL_MARGIN)
-        .content(
-            new ComboboxItem("Textured", null),
-            new ComboboxItem("Colorized", null)
-        )
-        .selection(0);
+        .position(PANEL_MARGIN, PANEL_MARGIN);
+
+    this.materialManager.getMaterialRenderers().forEach(r -> matCbx.content(r));
+    matCbx
+        .onSelect( (c) -> {
+          this.context.setActiveRenderer(c);
+          context.getKeyMapping().execute("TRIGGER.CHANGE.RENDERER");
+        })
+        .selectionSupplier(this.context::activeRenderer);
 
     LabelBuilder matNormMappingLbl = builder().label()
         .size(PANEL_COLUMN_A_WIDTH, PANEL_ROW_HEIGHT)

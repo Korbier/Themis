@@ -15,6 +15,7 @@ import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSet;
 import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSetBinding;
 import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSetLayout;
 import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSetProvider;
+import org.sc.themis.renderer.base.renderpass.VkRenderPass;
 import org.sc.themis.renderer.base.resource.buffer.VkBufferDescriptor;
 import org.sc.themis.renderer.base.resource.image.VkSamplerDescriptor;
 import org.sc.themis.renderer.material.setter.CombinedImageSamplerSetter;
@@ -33,7 +34,7 @@ public abstract class MaterialRenderer extends TObject {
 
   private static final int DESCRIPTORPOOL_SIZE = 10;
 
-  private final Renderer renderer;
+  private Renderer renderer;
   private final String identifier;
 
   /** Variant identifier function **/
@@ -41,7 +42,7 @@ public abstract class MaterialRenderer extends TObject {
   private Function<Material, String> variantIdentifierFunction = Material::toString;
 
   /** Pipeline * */
-  private final MaterialPipeline pipeline;
+  private MaterialPipeline pipeline;
 
   /** Main * */
   private final Map<String, Integer> variantOffsets = new HashMap<>();
@@ -67,20 +68,29 @@ public abstract class MaterialRenderer extends TObject {
 
   private boolean dirty = false;
 
-  public MaterialRenderer(Configuration configuration, Renderer renderer, String identifier) {
+  public MaterialRenderer(Configuration configuration, String identifier) {
     super(configuration);
-    this.renderer = renderer;
     this.identifier = identifier;
-    this.pipeline = new MaterialPipeline(configuration, renderer);
+    this.pipeline = new MaterialPipeline(getConfiguration());
   }
 
-  @Override
-  public void setup() throws ThemisException {
+  public void setup(Renderer renderer, VkRenderPass renderpass, VkDescriptorSetProvider ... descriptorsets) throws ThemisException {
+    this.renderer = renderer;
     this.setupVariantsDescriptorsetLayout();
     this.setupVariantsDescriptorPool();
     this.setupMainDescriptorsetLayout();
     this.setupMainDescriptorPool();
-    this.pipeline.setup(collectDescriptorsetLayouts());
+    this.pipeline.setup(renderer, collectDescriptorsetLayouts());
+  }
+
+  @Override
+  public String toString() {
+    return getIdentifier();
+  }
+
+  @Override
+  public void setup() throws ThemisException {
+    //Do nothing
   }
 
   @Override

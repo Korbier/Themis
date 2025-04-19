@@ -34,7 +34,7 @@ public class ComboboxSelectionBuilder extends ComponentBuilder<ComboboxSelection
       this.lblSelection
           .position(left + DEFAULT_BORDER_SIZE + DEFAULT_TEXT_MARGIN, top + DEFAULT_BORDER_SIZE + DEFAULT_TEXT_MARGIN)
           .size(width - DEFAULT_BORDER_SIZE * 2 - DEFAULT_TEXT_MARGIN * 2, height - DEFAULT_BORDER_SIZE * 2 - DEFAULT_TEXT_MARGIN * 2)
-          .text(this.combobox.getSelection().label());
+          .text( this.combobox.getSelection().toString());
     }
 
   }

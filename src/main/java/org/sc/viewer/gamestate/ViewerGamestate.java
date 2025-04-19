@@ -1,6 +1,7 @@
 package org.sc.viewer.gamestate;
 
 import org.joml.Vector3f;
+import org.joml.Vector4f;
 import org.sc.themis.gamestate.Gamestate;
 import org.sc.themis.renderer.Renderer;
 import org.sc.themis.renderer.material.MaterialManager;
@@ -9,6 +10,8 @@ import org.sc.themis.renderer.resource.ResourceEnum;
 import org.sc.themis.renderer.resource.ResourceLoader;
 import org.sc.themis.renderer.resource.font.FontRepository;
 import org.sc.themis.renderer.resource.material.Material;
+import org.sc.themis.renderer.resource.material.MaterialProperties;
+import org.sc.themis.renderer.resource.material.MaterialProperty;
 import org.sc.themis.renderer.resource.material.MaterialResourceDescriptor;
 import org.sc.themis.renderer.resource.model.Instance;
 import org.sc.themis.renderer.resource.model.Model;
@@ -61,17 +64,6 @@ public class ViewerGamestate implements Gamestate {
   }
 
   private void setupKeyMapping(Scene scene) {
-    /**
-    this.context.getKeyMapping().map(GLFW_KEY_4, false, () -> {
-      Optional<String> oMaterial = this.model.getMaterialRenderer();
-      if (oMaterial.isEmpty() || !oMaterial.get().equals(TextureMaterialRenderer.MATERIAL_ID)) {
-        this.model.setMaterialRenderer(TextureMaterialRenderer.MATERIAL_ID);
-      } else {
-        this.model.setMaterialRenderer(TextureMaterialRenderer.MATERIAL_ID);
-      }
-      System.out.println(this.model.getMaterialRenderer().get());
-    });
-     **/
     scene.add(new KeyMappingController(this.context.getKeyMapping()));
   }
 
@@ -80,25 +72,37 @@ public class ViewerGamestate implements Gamestate {
   }
 
   private void setupUI(Scene scene) {
-    scene.add(new ViewerUi(scene, this.pencil, this.context));
+    scene.add(new ViewerUi(scene, this.pencil, this.context, this.materialManager));
   }
 
   private void setupScene(Renderer renderer, Scene scene) throws ThemisException {
 
     Material material = ResourceLoader.get().get(ResourceEnum.MATERIAL, MaterialResourceDescriptor.of("limestone3.json", renderer.getResourceAllocator()));
+    material.put(MaterialProperties.COLOR_AMBIENT, new Vector4f(1.0f) );
+    material.put(MaterialProperties.COLOR_DIFFUSE, new Vector4f(1.0f) );
+    material.put(MaterialProperties.COLOR_SPECULAR, new Vector4f(1.0f) );
+    material.put(MaterialProperties.FLOAT_SHININESS, 128.0f );
     this.materialManager.addMaterials(material);
 
     TextureMaterialRenderer materialRenderer = (TextureMaterialRenderer) materialManager.get(TextureMaterialRenderer.IDENTIFIER);
     this.context.getKeyMapping().map(GLFW_KEY_4, false, materialRenderer::switchEnableNormal, materialRenderer::isNormalEnabled);
 
-    this.model = ResourceLoader.get().get(ResourceEnum.MODEL, ModelResourceDescriptor.of("base/textured_unit_cube.gltf", "model", renderer.getResourceAllocator()));
+    //this.model = ResourceLoader.get().get(ResourceEnum.MODEL, ModelResourceDescriptor.of("base/textured_unit_cube.gltf", "model", renderer.getResourceAllocator()));
+    this.model = ResourceLoader.get().get(ResourceEnum.MODEL, ModelResourceDescriptor.of("portrait_from_the_future/scene.gltf", "model", renderer.getResourceAllocator()));
     this.model.setMaterial(material);
-    this.model.setMaterialRenderer(TextureMaterialRenderer.IDENTIFIER);
+    this.model.setMaterialRenderer(this.context.activeRenderer().getIdentifier());
 
-    this.instance = this.model.create().scale(1.8f).position(1.0f, 0.0f, 0.0f);
+    this.context.getKeyMapping().mapTrigger(
+        "TRIGGER.CHANGE.RENDERER",
+        () -> this.model.setMaterialRenderer(this.context.activeRenderer().getIdentifier()),
+        () -> this.model.getMaterialRenderer().orElse(null)
+    );
+
+    this.instance = this.model.create().scale(0.5f).position(5.0f, -60.0f, -20.0f);
+    //base/cube    = this.model.create().scale(1.8f).position(1.0f, 0.0f, 0.0f);
     //anthro_shark = this.model.create().scale(1.0f).position(0.0f, -2.8f, 0.0f);
     //mechanic_projection_sub = this.model.create().scale(2.5f);
-    //portrait_from_the_future = this.model.create().scale(0.5f).position(0.0f, -60.0f, -20.0f);
+    //portrait_from_the_future = this.model.create().scale(0.5f).position(1.0f, -60.0f, -20.0f);
     scene.add(instance);
     //scene.add(new FpsCameraController(scene));
     scene.add(new OrbitCameraController(scene, instance));

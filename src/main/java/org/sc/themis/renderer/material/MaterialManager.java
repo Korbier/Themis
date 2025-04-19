@@ -1,6 +1,8 @@
 package org.sc.themis.renderer.material;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.sc.themis.renderer.base.command.VkCommand;
 import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSet;
@@ -12,14 +14,29 @@ import org.sc.themis.shared.exception.ThemisException;
 public class MaterialManager {
 
   private final Map<String, MaterialRenderer> availableMaterials = new HashMap<>();
+  private MaterialRenderer defaultMaterialRenderer = null;
   private MaterialRenderer lastUsedMaterialRenderer = null;
 
   private final List<Material> materials = new ArrayList<>();
 
-  public void setMaterialRenderers(MaterialRenderer defaultMaterialRenderer, MaterialRenderer... materialRenderers) {
+  public void setMaterialRenderers(MaterialRenderer... materialRenderers) {
+
+    if (this.defaultMaterialRenderer == null) {
+      this.defaultMaterialRenderer = materialRenderers[0];
+    }
+
     for (MaterialRenderer materialRenderer : materialRenderers) {
       this.availableMaterials.put(materialRenderer.getIdentifier(), materialRenderer);
     }
+
+  }
+
+  public MaterialRenderer getDefaultMaterialRenderer() {
+    return this.defaultMaterialRenderer;
+  }
+
+  public Collection<MaterialRenderer> getMaterialRenderers() {
+    return this.availableMaterials.values();
   }
 
   public MaterialRenderer get(String id) {

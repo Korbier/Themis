@@ -83,8 +83,8 @@ public class UiBuilder {
     return new LabelBuilder(this, layer).identifier(getIdentifier());
   }
 
-  public ComboboxBuilder combobox() {
-    return new ComboboxBuilder(this).identifier(getIdentifier());
+  public <T> ComboboxBuilder<T> combobox() {
+    return new ComboboxBuilder<T>(this).identifier(getIdentifier());
   }
 
 }

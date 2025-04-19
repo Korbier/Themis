@@ -6,46 +6,55 @@ import org.sc.themis.scene.ui.component.ComponentBuilder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
-public class ComboboxBuilder extends ComponentBuilder<ComboboxBuilder>  {
+public class ComboboxBuilder<C> extends ComponentBuilder<ComboboxBuilder<C>>  {
 
   public static final String EVENT_ON_OPEN = "combobox.event.onopen";
 
   private final ComboboxSelectionBuilder cmbSelection;
-  private final ComboboxSelectorBuilder cmbSelector;
+  private final ComboboxSelectorBuilder<C> cmbSelector;
 
-  private final List<ComboboxItem> content = new ArrayList<>();
-  private ComboboxItem selection = null;
+  private final List<C> content = new ArrayList<>();
+  private Supplier<C> selectionSupplier = null;
   private boolean isOpen = false;
+
+  private Consumer<C> onSelectConsumer = null;
 
   public ComboboxBuilder(UiBuilder uiBuilder) {
     super(uiBuilder);
     this.cmbSelection = new ComboboxSelectionBuilder(uiBuilder, this).identifier(uiBuilder.getIdentifier());
-    this.cmbSelector = new ComboboxSelectorBuilder(uiBuilder, this).identifier(uiBuilder.getIdentifier());
+    this.cmbSelector = new ComboboxSelectorBuilder<>(uiBuilder, this).identifier(uiBuilder.getIdentifier());
     child(this.cmbSelection);
   }
 
-  public ComboboxBuilder content(ComboboxItem ... items) {
+  public ComboboxBuilder<C> content(C ... items) {
     this.content.addAll(Arrays.asList(items));
     return this;
   }
 
-  public List<ComboboxItem> content() {
+  public List<C> content() {
     return this.content;
   }
 
-  public ComboboxBuilder selection(ComboboxItem selection) {
-    this.selection = selection;
+  public ComboboxBuilder<C> onSelect(Consumer<C> consumer) {
+    this.onSelectConsumer = consumer;
     return this;
   }
 
-  public ComboboxBuilder selection(int index) {
-    this.selection = this.content.get(index);
-    return this;
+  public void triggerOnSelect(C item) {
+    if (this.onSelectConsumer != null) {
+      this.onSelectConsumer.accept(item);
+    }
   }
 
-  public ComboboxItem getSelection() {
-    return this.selection;
+  public void selectionSupplier(Supplier<C> supplier) {
+    this.selectionSupplier = supplier;
+  }
+
+  public C getSelection() {
+    return this.selectionSupplier != null ? this.selectionSupplier.get() : null;
   }
 
   public boolean isOpen() {

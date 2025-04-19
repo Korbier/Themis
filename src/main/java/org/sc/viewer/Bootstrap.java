@@ -10,6 +10,9 @@ import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.renderer.resource.ResourceLoader;
 import org.sc.viewer.gamestate.ViewerGamestate;
 import org.sc.viewer.renderactivity.ViewerRendererActivity;
+import org.sc.viewer.renderactivity.geometry.material.ColorMaterialRenderer;
+import org.sc.viewer.renderactivity.geometry.material.NoLightColorMaterialRenderer;
+import org.sc.viewer.renderactivity.geometry.material.TextureMaterialRenderer;
 
 import java.nio.file.Path;
 
@@ -24,8 +27,14 @@ public class Bootstrap {
     Configuration configuration = new Configuration("./application.properties");
     ResourceLoader.get().apply(configuration);
 
-    ViewerContext   context  = ViewerContext.createDefault();
     MaterialManager mManager = new MaterialManager();
+    mManager.setMaterialRenderers(
+        new TextureMaterialRenderer(configuration),
+        new ColorMaterialRenderer(configuration),
+        new NoLightColorMaterialRenderer(configuration)
+    );
+
+    ViewerContext   context  = ViewerContext.createDefault(mManager.getDefaultMaterialRenderer());
 
     FontRepository fRepository = new FontRepository();
     try {
