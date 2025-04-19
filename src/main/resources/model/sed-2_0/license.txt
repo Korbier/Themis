@@ -1,0 +1,11 @@
+Model Information:
+* title:	Sed-2_0
+* source:	https://sketchfab.com/3d-models/sed-2-0-41831eb62be54000b10eb1cf13d4ba39
+* author:	Vasian-Digital3D (https://sketchfab.com/Vasian-Digital3D)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Sed-2_0" (https://sketchfab.com/3d-models/sed-2-0-41831eb62be54000b10eb1cf13d4ba39) by Vasian-Digital3D (https://sketchfab.com/Vasian-Digital3D) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

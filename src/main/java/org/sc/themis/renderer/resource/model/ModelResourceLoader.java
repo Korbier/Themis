@@ -10,7 +10,7 @@ public class ModelResourceLoader implements BiFunctionWithException<Path, ModelR
 
   @Override
   public Model apply(Path path, ModelResourceDescriptor descriptor) throws ThemisException {
-    return ModelFactory.create(descriptor.identifier(), descriptor.allocator(), path);
+    return ModelFactory.create(descriptor.identifier(), descriptor.allocator(), descriptor.materialManager(), path);
   }
 
 }

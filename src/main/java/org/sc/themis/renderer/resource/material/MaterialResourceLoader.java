@@ -13,9 +13,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Map;
 
-import static org.lwjgl.vulkan.VK10.VK_FORMAT_R8G8B8A8_SRGB;
-import static org.lwjgl.vulkan.VK10.VK_FORMAT_R8G8B8A8_UNORM;
-
 public class MaterialResourceLoader implements BiFunctionWithException<Path, MaterialResourceDescriptor, Material> {
 
   private final ObjectMapper oMapper = new ObjectMapper();
