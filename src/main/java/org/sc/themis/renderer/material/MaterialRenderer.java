@@ -15,10 +15,13 @@ import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSet;
 import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSetBinding;
 import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSetLayout;
 import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSetProvider;
-import org.sc.themis.renderer.base.resource.buffer.VkBuffer;
+import org.sc.themis.renderer.base.renderpass.VkRenderPass;
 import org.sc.themis.renderer.base.resource.buffer.VkBufferDescriptor;
-import org.sc.themis.renderer.base.resource.image.VkSampler;
 import org.sc.themis.renderer.base.resource.image.VkSamplerDescriptor;
+import org.sc.themis.renderer.material.setter.CombinedImageSamplerSetter;
+import org.sc.themis.renderer.material.setter.UniformDynamicSetter;
+import org.sc.themis.renderer.material.setter.UniformSetter;
+import org.sc.themis.renderer.resource.material.Material;
 import org.sc.themis.renderer.resource.material.MaterialProperty;
 import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
@@ -31,32 +34,15 @@ public abstract class MaterialRenderer extends TObject {
 
   private static final int DESCRIPTORPOOL_SIZE = 10;
 
-  @FunctionalInterface
-  public interface UniformDynamicSetter {
-    void set(int binding, VkBuffer buffer, int offset, org.sc.themis.renderer.resource.material.Material properties);
-  }
-
-  @FunctionalInterface
-  public interface UniformSetter {
-    void set(int binding, VkBuffer buffer, org.sc.themis.renderer.resource.material.Material properties);
-  }
-
-  @FunctionalInterface
-  public interface CombinedImageSamplerSetter {
-    void set(int binding, VkDescriptorSet descriptorset, VkSampler sampler, org.sc.themis.renderer.resource.material.Material meshProperties) throws ThemisException;
-  }
-
-  private final Renderer renderer;
+  private Renderer renderer;
   private final String identifier;
 
   /** Variant identifier function **/
   private Set<MaterialProperty<?>> mandatoryMaterials = new HashSet<>();
-  //private Predicate<org.sc.themis.renderer.resource.material.Material> materialPropertiesPredicate = (_) -> true;
-
-  private Function<org.sc.themis.renderer.resource.material.Material, String> variantIdentifierFunction = org.sc.themis.renderer.resource.material.Material::toString;
+  private Function<Material, String> variantIdentifierFunction = Material::toString;
 
   /** Pipeline * */
-  private final MaterialPipeline pipeline;
+  private MaterialPipeline pipeline;
 
   /** Main * */
   private final Map<String, Integer> variantOffsets = new HashMap<>();
@@ -80,20 +66,31 @@ public abstract class MaterialRenderer extends TObject {
   /** Others Descriptorset and descriptorsetLayout * */
   private VkDescriptorSetProvider[] descriptorsetProviders;
 
-  public MaterialRenderer(Configuration configuration, Renderer renderer, String identifier) {
+  private boolean dirty = false;
+
+  public MaterialRenderer(Configuration configuration, String identifier) {
     super(configuration);
-    this.renderer = renderer;
     this.identifier = identifier;
-    this.pipeline = new MaterialPipeline(configuration, renderer);
+    this.pipeline = new MaterialPipeline(getConfiguration());
   }
 
-  @Override
-  public void setup() throws ThemisException {
+  public void setup(Renderer renderer, VkRenderPass renderpass, VkDescriptorSetProvider ... descriptorsets) throws ThemisException {
+    this.renderer = renderer;
     this.setupVariantsDescriptorsetLayout();
     this.setupVariantsDescriptorPool();
     this.setupMainDescriptorsetLayout();
     this.setupMainDescriptorPool();
-    this.pipeline.setup(collectDescriptorsetLayouts());
+    this.pipeline.setup(renderer, collectDescriptorsetLayouts());
+  }
+
+  @Override
+  public String toString() {
+    return getIdentifier();
+  }
+
+  @Override
+  public void setup() throws ThemisException {
+    //Do nothing
   }
 
   @Override
@@ -116,7 +113,7 @@ public abstract class MaterialRenderer extends TObject {
   }
 
   /** Material usage methods - create and store variant for provided properties * */
-  public String add(org.sc.themis.renderer.resource.material.Material properties) throws ThemisException {
+  public String add(Material properties) throws ThemisException {
 
     for (MaterialProperty<?> mandatory : this.mandatoryMaterials) {
       if (!properties.containsKeys(mandatory)) {
@@ -144,7 +141,7 @@ public abstract class MaterialRenderer extends TObject {
 
         MaterialVariant variant = new MaterialVariant(getConfiguration(), this, variantIdentifier);
         variant.setup();
-        variant.setProperties(properties);
+        variant.update(properties);
 
         this.variants.put(variantIdentifier, variant);
       }
@@ -169,6 +166,11 @@ public abstract class MaterialRenderer extends TObject {
     }
 
     return variantIdentifier;
+  }
+
+  //Provoque un rechargement des uniforms
+  public void setDirty() {
+    this.dirty = true;
   }
 
   /** Material building methods - Variant Identifier function * */
@@ -283,7 +285,20 @@ public abstract class MaterialRenderer extends TObject {
     return this.variantsDescriptor;
   }
 
-  public int[] getDynamicOffset(int frame, org.sc.themis.renderer.resource.material.Material properties) {
+  public void update(Material material) throws ThemisException {
+
+    try {
+      if (this.dirty) {
+        String variantIdentifier = material.getVariantIdentifier(this);
+        this.variants.get(variantIdentifier).update(material);
+      }
+    } finally {
+      this.dirty = false;
+    }
+
+  }
+
+  public int[] getDynamicOffset(int frame, Material properties) {
 
     String variantIdentifier = properties.getVariantIdentifier(this);
 
@@ -297,7 +312,7 @@ public abstract class MaterialRenderer extends TObject {
     return offsets;
   }
 
-  public VkDescriptorSet[] getDescriptorSets(int frame, org.sc.themis.renderer.resource.material.Material properties) {
+  public VkDescriptorSet[] getDescriptorSets(int frame, Material properties) {
 
     String variantIdentifier = properties.getVariantIdentifier(this);
 

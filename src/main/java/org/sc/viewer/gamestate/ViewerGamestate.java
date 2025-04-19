@@ -1,60 +1,48 @@
 package org.sc.viewer.gamestate;
 
 import org.joml.Vector3f;
+import org.joml.Vector4f;
 import org.sc.themis.gamestate.Gamestate;
 import org.sc.themis.renderer.Renderer;
+import org.sc.themis.renderer.material.MaterialManager;
+import org.sc.themis.renderer.pencil2d.Pencil2D;
 import org.sc.themis.renderer.resource.ResourceEnum;
 import org.sc.themis.renderer.resource.ResourceLoader;
 import org.sc.themis.renderer.resource.font.FontRepository;
-import org.sc.themis.renderer.resource.font.FontResourceDescriptor;
 import org.sc.themis.renderer.resource.material.Material;
+import org.sc.themis.renderer.resource.material.MaterialProperties;
+import org.sc.themis.renderer.resource.material.MaterialProperty;
 import org.sc.themis.renderer.resource.material.MaterialResourceDescriptor;
 import org.sc.themis.renderer.resource.model.Instance;
 import org.sc.themis.renderer.resource.model.Model;
 import org.sc.themis.renderer.resource.model.ModelResourceDescriptor;
 import org.sc.themis.scene.Scene;
-import org.sc.themis.scene.controller.FpsCameraController;
 import org.sc.themis.scene.controller.OrbitCameraController;
-import org.sc.themis.scene.factory.MaterialFactory;
 import org.sc.themis.scene.light.DirectionalLight;
 import org.sc.themis.scene.light.PointLight;
 import org.sc.themis.scene.light.SpotLight;
 import org.sc.themis.scene.light.attenuation.Attenuation;
-import org.sc.themis.scene.pencil.Pencil;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.viewer.ViewerContext;
 import org.sc.viewer.gamestate.controller.KeyMappingController;
-import org.sc.viewer.gamestate.controller.UiController;
 import org.sc.viewer.renderactivity.geometry.material.TextureMaterialRenderer;
-import org.sc.viewer.renderactivity.geometry.material.TextureWithNormalMappingMaterialRenderer;
-
-import java.nio.file.Path;
-import java.util.Optional;
 
 import static org.lwjgl.glfw.GLFW.*;
 
 public class ViewerGamestate implements Gamestate {
 
-  private final MaterialFactory materialFactory = new MaterialFactory();
-
   private final ViewerContext context;
-  private final Pencil pencil;
+  private final MaterialManager materialManager;
+  private final Pencil2D pencil;
   private Instance instance;
   private Model model;
 
-  public ViewerGamestate(ViewerContext context) {
+  public ViewerGamestate(ViewerContext context, FontRepository fontRepository, MaterialManager materialManager) {
+
     this.context = context;
+    this.materialManager = materialManager;
 
-    FontRepository fontRepository = new FontRepository();
-
-    try {
-      fontRepository.load(ResourceLoader.get().get(ResourceEnum.FONT, FontResourceDescriptor.sdf( Path.of("CenturyGothic.ttf"), 14, 0.47f, 0.050f )));
-      fontRepository.load(ResourceLoader.get().get(ResourceEnum.FONT, FontResourceDescriptor.sdf( Path.of("CenturyGothic.ttf"), 16, 0.46f, 0.09f )));
-    } catch (ThemisException e) {
-      e.printStackTrace(); //todo
-    }
-
-    this.pencil = new Pencil(fontRepository);
+    this.pencil = new Pencil2D(fontRepository);
 
   }
 
@@ -71,34 +59,11 @@ public class ViewerGamestate implements Gamestate {
     this.model.cleanup();
   }
 
-  public Pencil getPencil() {
+  public Pencil2D getPencil() {
     return this.pencil;
   }
 
   private void setupKeyMapping(Scene scene) {
-    this.context.getKeyMapping().map(GLFW_KEY_1, false, () -> {
-      DirectionalLight light = scene.getDirectionalLights().getFirst();
-      light.setVisible(!light.isVisible());
-    });
-    this.context.getKeyMapping().map(GLFW_KEY_2, false, () -> {
-      PointLight light = scene.getPointLights().getFirst();
-      light.setVisible(!light.isVisible());
-    });
-    this.context.getKeyMapping().map(GLFW_KEY_3, false, () -> {
-      SpotLight light = scene.getSpotLights().getFirst();
-      light.setVisible(!light.isVisible());
-    });
-    this.context.getKeyMapping().map(GLFW_KEY_4, false, () -> {
-      Optional<String> oMaterial = this.model.getMaterialRenderer();
-      if (oMaterial.isEmpty() || !oMaterial.get().equals(TextureWithNormalMappingMaterialRenderer.MATERIAL_ID)) {
-        this.model.setMaterialRenderer(TextureWithNormalMappingMaterialRenderer.MATERIAL_ID);
-      } else {
-        this.model.setMaterialRenderer(TextureMaterialRenderer.MATERIAL_ID);
-      }
-      System.out.println(this.model.getMaterialRenderer().get());
-
-
-    });
     scene.add(new KeyMappingController(this.context.getKeyMapping()));
   }
 
@@ -107,54 +72,72 @@ public class ViewerGamestate implements Gamestate {
   }
 
   private void setupUI(Scene scene) {
-    scene.add(new UiController(this.pencil, scene, this.context));
+    scene.add(new ViewerUi(scene, this.pencil, this.context, this.materialManager));
   }
 
   private void setupScene(Renderer renderer, Scene scene) throws ThemisException {
 
     Material material = ResourceLoader.get().get(ResourceEnum.MATERIAL, MaterialResourceDescriptor.of("limestone3.json", renderer.getResourceAllocator()));
+    material.put(MaterialProperties.COLOR_AMBIENT, new Vector4f(1.0f) );
+    material.put(MaterialProperties.COLOR_DIFFUSE, new Vector4f(1.0f) );
+    material.put(MaterialProperties.COLOR_SPECULAR, new Vector4f(1.0f) );
+    material.put(MaterialProperties.FLOAT_SHININESS, 128.0f );
+    this.materialManager.addMaterials(material);
 
-    this.model = ResourceLoader.get().get(ResourceEnum.MODEL, ModelResourceDescriptor.of("base/textured_unit_cube.gltf", "model", renderer.getResourceAllocator()));
+    TextureMaterialRenderer materialRenderer = (TextureMaterialRenderer) materialManager.get(TextureMaterialRenderer.IDENTIFIER);
+    this.context.getKeyMapping().map(GLFW_KEY_4, false, materialRenderer::switchEnableNormal, materialRenderer::isNormalEnabled);
+
+    //this.model = ResourceLoader.get().get(ResourceEnum.MODEL, ModelResourceDescriptor.of("base/textured_unit_cube.gltf", "model", renderer.getResourceAllocator()));
+    this.model = ResourceLoader.get().get(ResourceEnum.MODEL, ModelResourceDescriptor.of("portrait_from_the_future/scene.gltf", "model", renderer.getResourceAllocator()));
     this.model.setMaterial(material);
-    this.model.setMaterialRenderer(TextureMaterialRenderer.MATERIAL_ID);
+    this.model.setMaterialRenderer(this.context.activeRenderer().getIdentifier());
 
-    this.instance = this.model.create().scale(1.8f).position(1.0f, 0.0f, 0.0f);
+    this.context.getKeyMapping().mapTrigger(
+        "TRIGGER.CHANGE.RENDERER",
+        () -> this.model.setMaterialRenderer(this.context.activeRenderer().getIdentifier()),
+        () -> this.model.getMaterialRenderer().orElse(null)
+    );
+
+    this.instance = this.model.create().scale(0.5f).position(5.0f, -60.0f, -20.0f);
+    //base/cube    = this.model.create().scale(1.8f).position(1.0f, 0.0f, 0.0f);
     //anthro_shark = this.model.create().scale(1.0f).position(0.0f, -2.8f, 0.0f);
     //mechanic_projection_sub = this.model.create().scale(2.5f);
-    //portrait_from_the_future = this.model.create().scale(0.5f).position(0.0f, -60.0f, -20.0f);
+    //portrait_from_the_future = this.model.create().scale(0.5f).position(1.0f, -60.0f, -20.0f);
     scene.add(instance);
     //scene.add(new FpsCameraController(scene));
     scene.add(new OrbitCameraController(scene, instance));
 
-    scene.add(
-        new SpotLight(
-            new Vector3f(0.0f, 0.0f, 0.01f),
-            new Vector3f(0.0f, 0.0f, 0.7f),
-            new Vector3f(0.0f, 0.0f, 0.9f),
-            new Vector3f(0.0f, 0.0f, 10.0f),
-            new Vector3f(0.0f, 0.0f, -10.0f),
-            Attenuation.type1(128.0f, 128.0f),
-            (float) Math.cos(Math.toRadians(12.0f)),
-            (float) Math.cos(Math.toRadians(16.0f))));
+    DirectionalLight dLight = new DirectionalLight(
+        new Vector3f(0.01f),
+        new Vector3f(0.5f),
+        new Vector3f(0.7f),
+        new Vector3f(0.0f, 0.0f, 5.0f)
+    );
+    scene.add(dLight);
+    this.context.getKeyMapping().map(GLFW_KEY_1, false, dLight::switchVisible, dLight::isVisible);
 
-    scene.add(
-        new DirectionalLight(
-            new Vector3f(0.01f),
-            new Vector3f(0.5f),
-            new Vector3f(0.7f),
-            new Vector3f(0.0f, 0.0f, 5.0f)));
+    PointLight pLight = new PointLight(
+        new Vector3f(0.01f),
+        new Vector3f(0.7f, 0.0f, 0.0f),
+        new Vector3f(0.9f, 0.0f, 0.0f),
+        new Vector3f(0.0f, 5.0f, 3.0f), //new Vector3f(5.0f, d5.0f, 5.0f),
+        Attenuation.type1(32.0f, 4.0f)
+    );
+    scene.add(pLight);
+    this.context.getKeyMapping().map(GLFW_KEY_2, false, pLight::switchVisible, pLight::isVisible);
 
-    scene.add(
-        new PointLight(
-            new Vector3f(0.01f),
-            new Vector3f(0.7f, 0.0f, 0.0f),
-            new Vector3f(0.9f, 0.0f, 0.0f),
-            new Vector3f(0.0f, 5.0f, 3.0f), //new Vector3f(5.0f, d5.0f, 5.0f),
-            Attenuation.type1(32.0f, 4.0f)));
-
-    scene.getPointLights().getFirst().setVisible(false);
-    scene.getSpotLights().getFirst().setVisible(false);
-
+    SpotLight slight = new SpotLight(
+        new Vector3f(0.0f, 0.0f, 0.01f),
+        new Vector3f(0.0f, 0.0f, 0.8f),
+        new Vector3f(0.0f, 0.0f, 0.9f),
+        new Vector3f(0.0f, 0.0f, 10.0f),
+        new Vector3f(0.0f, 0.0f, -10.0f),
+        Attenuation.type1(512.0f, 256.0f),
+        (float) Math.cos(Math.toRadians(4.0f)),
+        (float) Math.cos(Math.toRadians(8.0f))
+    );
+    scene.add(slight);
+    this.context.getKeyMapping().map(GLFW_KEY_3, false, slight::switchVisible, slight::isVisible);
 
   }
 

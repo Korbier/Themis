@@ -12,9 +12,10 @@ import org.sc.themis.renderer.base.sync.VkFence;
 import org.sc.themis.renderer.lang.VulkanObject;
 import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
+import org.sc.themis.shared.service.Service;
 import org.slf4j.LoggerFactory;
 
-public class VkStagingResourceAllocator extends VulkanObject {
+public class VkStagingResourceAllocator extends VulkanObject implements Service {
 
   private static final org.slf4j.Logger logger = LoggerFactory.getLogger(VkStagingResourceAllocator.class);
 

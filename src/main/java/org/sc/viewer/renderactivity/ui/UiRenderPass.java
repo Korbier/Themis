@@ -23,6 +23,8 @@ import org.sc.themis.renderer.base.renderpass.VkRenderPassLayout;
 import org.sc.themis.renderer.base.renderpass.VkSubpass;
 import org.sc.themis.renderer.base.sync.VkFence;
 import org.sc.themis.renderer.base.sync.VkSemaphore;
+import org.sc.themis.renderer.pencil2d.Pencil2D;
+import org.sc.themis.renderer.pencil2d.Pencil2DPipeline;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.scene.pencil.Pencil;
 import org.sc.themis.scene.pencil.PencilPipeline;
@@ -47,12 +49,12 @@ public class UiRenderPass extends RenderPass {
   private UIBackPipeline UIBackPipeline;
 
   // Pencil
-  private PencilPipeline pencilPipeline;
-  private Pencil pencil;
+  private Pencil2DPipeline pencilPipeline;
+  private Pencil2D pencil2d;
 
-  public UiRenderPass(Configuration configuration, Pencil pencil) {
+  public UiRenderPass(Configuration configuration, Pencil2D pencil2d) {
     super(configuration);
-    this.pencil = pencil;
+    this.pencil2d = pencil2d;
   }
 
   @Override
@@ -66,14 +68,12 @@ public class UiRenderPass extends RenderPass {
   }
 
   private void setupBackPipeline() throws ThemisException {
-    this.UIBackPipeline =
-        new UIBackPipeline(getConfiguration(), getDevice(), getViewerActivity(), this.renderPass);
+    this.UIBackPipeline = new UIBackPipeline(getConfiguration(), getDevice(), getViewerActivity(), this.renderPass);
     this.UIBackPipeline.setup();
   }
 
   private void setupFrontPipeline() throws ThemisException {
-    this.pencilPipeline =
-        new PencilPipeline(getConfiguration(), getRenderer(), this.renderPass, this.pencil);
+    this.pencilPipeline = new Pencil2DPipeline(getConfiguration(), getRenderer(), this.renderPass, this.pencil2d);
     this.pencilPipeline.setup();
   }
 
@@ -103,8 +103,7 @@ public class UiRenderPass extends RenderPass {
     command.viewportAndScissor(getExtent2D());
 
     command.bindPipeline(this.UIBackPipeline.getPipeline());
-    command.bindDescriptorSets(
-        new int[0], getViewerActivity().getGeometryDescriptorset().getDescriptorSet(frame));
+    command.bindDescriptorSets(new int[0], getViewerActivity().getGeometryDescriptorset().getDescriptorSet(frame));
     command.draw(3, 1, 0, 0);
 
     this.pencilPipeline.draw(command, frame);

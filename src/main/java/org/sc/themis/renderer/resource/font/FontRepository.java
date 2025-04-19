@@ -1,13 +1,21 @@
 package org.sc.themis.renderer.resource.font;
 
 import org.sc.themis.renderer.resource.image.Image;
+import org.sc.themis.shared.exception.ThemisException;
+import org.sc.themis.shared.service.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class FontRepository {
+public class FontRepository implements Service {
 
   private final List<Font> fonts = new ArrayList<>();
+
+  @Override
+  public void setup() throws ThemisException {}
+
+  @Override
+  public void cleanup() throws ThemisException {}
 
   public int load(Font font) {
     int idx = this.fonts.size();

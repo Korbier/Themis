@@ -12,6 +12,7 @@ import org.sc.themis.renderer.Renderer;
 import org.sc.themis.renderer.base.pipeline.VkPipelineDescriptor;
 import org.sc.themis.renderer.base.pipeline.VkShaderSourceCompiler;
 import org.sc.themis.renderer.base.pipeline.VkVertexInputStateDescriptor;
+import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSetProvider;
 import org.sc.themis.renderer.base.renderpass.VkRenderPass;
 import org.sc.themis.renderer.base.resource.image.VkSamplerDescriptor;
 import org.sc.themis.renderer.material.MaterialRenderer;
@@ -19,6 +20,7 @@ import org.sc.themis.renderer.resource.material.MaterialProperties;
 import org.sc.themis.renderer.resource.material.MaterialProperty;
 import org.sc.themis.scene.descriptorset.SceneDescriptorSet;
 import org.sc.themis.shared.configuration.Configuration;
+import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.utils.MemorySizeUtils;
 
 public class TextureMaterialRenderer extends MaterialRenderer {
@@ -97,10 +99,17 @@ public class TextureMaterialRenderer extends MaterialRenderer {
       VkRenderPass renderPass,
       SceneDescriptorSet sceneDescriptorSet) {
 
-    super(configuration, renderer, MATERIAL_ID);
+    super(configuration, MATERIAL_ID);
 
     addMandatoryProperties(MaterialProperties.TEXTURE_ALBEDO);
     setVariantsIdentifierFunction(props -> props.get(MaterialProperties.TEXTURE_ALBEDO).toString());
+
+  }
+
+  @Override
+  public void setup(Renderer renderer, VkRenderPass renderpass, VkDescriptorSetProvider... descriptorsets) throws ThemisException {
+
+    super.setup(renderer, renderpass, descriptorsets);
 
     /** Pipeline * */
     addShader(
@@ -118,7 +127,7 @@ public class TextureMaterialRenderer extends MaterialRenderer {
             .attribute(VK_FORMAT_R32G32_SFLOAT, MemorySizeUtils.VEC2F) // Texture
             .attribute(VK_FORMAT_R32G32B32_SFLOAT, MemorySizeUtils.VEC3F) // Tangent
             .attribute(VK_FORMAT_R32G32B32_SFLOAT, MemorySizeUtils.VEC3F));
-    setPipelineDescriptor(new VkPipelineDescriptor(renderPass, 0, false, 1, true, 1, 1, 1));
+    setPipelineDescriptor(new VkPipelineDescriptor(renderpass, 0, false, 1, true, 1, 1, 1));
 
     /** Variant layout * */
     addVariantsCombinedImageSamplerBinding(
@@ -129,6 +138,7 @@ public class TextureMaterialRenderer extends MaterialRenderer {
                 binding, props.getProperty(MaterialProperties.TEXTURE_ALBEDO).getView(), sampler));
 
     /** Other descriptorsets * */
-    setDescriptorsetProviders(sceneDescriptorSet);
+    setDescriptorsetProviders(descriptorsets);
+
   }
 }

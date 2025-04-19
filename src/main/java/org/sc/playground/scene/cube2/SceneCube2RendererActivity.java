@@ -89,9 +89,8 @@ public class SceneCube2RendererActivity extends BaseRendererActivity {
     this.sceneDescriptorSet = new SceneDescriptorSet(getConfiguration(), this.renderer);
     this.sceneDescriptorSet.setup();
 
-    this.colorMaterial =
-        new ColorMaterialRenderer(
-            getConfiguration(), this.renderer, this.renderPass, this.sceneDescriptorSet);
+    this.colorMaterial = new ColorMaterialRenderer(getConfiguration());
+    this.colorMaterial.setup(this.renderer, this.renderPass, this.sceneDescriptorSet);
     this.colorMaterial.setup();
   }
 }

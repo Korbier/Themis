@@ -23,6 +23,7 @@ import org.sc.themis.renderer.base.resource.staging.VkStagingResourceAllocator;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
+import org.sc.themis.shared.service.ServiceContainer;
 import org.sc.themis.shared.tobject.TObject;
 import org.sc.themis.shared.utils.Timer;
 import org.sc.themis.window.Window;
@@ -39,6 +40,7 @@ public class Renderer extends TObject {
   private static final FrameKey<VkSemaphore> FK_ACQUIRE_SEMAPHORE = FrameKey.of(VkSemaphore.class);
   private static final FrameKey<VkSemaphore> FK_PRESENT_SEMAPHORE = FrameKey.of(VkSemaphore.class);
 
+  /** Renderer core objects **/
   private final Window window;
   private final Input input;
   private final RendererActivity activity;
@@ -47,7 +49,6 @@ public class Renderer extends TObject {
   private VkPhysicalDevice physicalDevice;
   private VkDevice device;
   private VkMemoryAllocator memoryAllocator;
-  private VkStagingResourceAllocator resourceAllocator;
 
   private VkSurface surface;
   private VkSwapChain swapChain;
@@ -63,10 +64,12 @@ public class Renderer extends TObject {
   private Frames framesInFlight;
   private final Timer timer = new Timer();
 
+  /*** Renderer service container **/
+  private final ServiceContainer services = new ServiceContainer();
+
   boolean isSceneConfigured = false;
 
-  public Renderer(
-      Configuration configuration, Window window, Input input, RendererActivity activity) {
+  public Renderer(Configuration configuration, Window window, Input input, RendererActivity activity) {
     super(configuration);
     this.window = window;
     this.input = input;
@@ -103,8 +106,7 @@ public class Renderer extends TObject {
   }
 
   private void setupResourceAllocator() throws ThemisException {
-    this.resourceAllocator = new VkStagingResourceAllocator(getConfiguration(), this.device, this.memoryAllocator);
-    this.resourceAllocator.setup();
+    getServices().set( VkStagingResourceAllocator.class, new VkStagingResourceAllocator(getConfiguration(), this.device, this.memoryAllocator) );
   }
 
   @Override
@@ -118,11 +120,15 @@ public class Renderer extends TObject {
     this.transfertQueue.cleanup();
     this.graphicQueue.cleanup();
     this.surface.cleanup();
-    this.resourceAllocator.cleanup();
+    this.services.cleanup();
     this.memoryAllocator.cleanup();
     this.device.cleanup();
     this.physicalDevice.cleanup();
     this.instance.cleanup();
+  }
+
+  public ServiceContainer getServices() {
+    return this.services;
   }
 
   public void render(Scene scene, long tpf) throws ThemisException {
@@ -145,8 +151,7 @@ public class Renderer extends TObject {
   public int acquire(Scene scene) throws ThemisException {
 
     try (MemoryStack stack = MemoryStack.stackPush()) {
-      if (this.window.isResized()
-          || this.swapChain.acquire(stack, getAcquireSemaphore(getCurrentFrame()))) {
+      if (this.window.isResized() || this.swapChain.acquire(stack, getAcquireSemaphore(getCurrentFrame()))) {
         this.window.resetResized();
         this.resize(scene);
         this.swapChain.acquire(stack, getAcquireSemaphore(getCurrentFrame()));
@@ -185,7 +190,7 @@ public class Renderer extends TObject {
   }
 
   public VkStagingResourceAllocator getResourceAllocator() {
-    return this.resourceAllocator;
+    return getServices().get(VkStagingResourceAllocator.class);
   }
 
   public int getFrameCount() {

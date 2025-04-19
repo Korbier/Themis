@@ -21,7 +21,7 @@ import org.sc.themis.shared.exception.ThemisException;
 public class MaterialPipeline {
 
   private final Configuration configuration;
-  private final Renderer renderer;
+  private Renderer renderer;
 
   private final List<VkShaderProgramStage> shaderProgramStages = new ArrayList<>();
   private final List<VkPushConstantRange> pushConstantRanges = new ArrayList<>();
@@ -32,12 +32,12 @@ public class MaterialPipeline {
   private VkPipelineLayout layout;
   private VkPipeline pipeline;
 
-  public MaterialPipeline(Configuration configuration, Renderer renderer) {
+  public MaterialPipeline(Configuration configuration) {
     this.configuration = configuration;
-    this.renderer = renderer;
   }
 
-  public void setup(VkDescriptorSetLayout... layouts) throws ThemisException {
+  public void setup(Renderer renderer, VkDescriptorSetLayout... layouts) throws ThemisException {
+    this.renderer = renderer;
     setupShaderProgram();
     setupPipelineLayout(layouts);
     setupPipeline();

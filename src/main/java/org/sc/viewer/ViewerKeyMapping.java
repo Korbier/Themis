@@ -2,6 +2,8 @@ package org.sc.viewer;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
+
 import org.sc.themis.input.Input;
 
 public class ViewerKeyMapping {
@@ -9,15 +11,58 @@ public class ViewerKeyMapping {
   private Map<Integer, Runnable> actions = new HashMap<>();
   private Map<Integer, Boolean> repeat = new HashMap<>();
 
+  private final Map<Integer, Supplier<?>> stateSuppliers = new HashMap<>();
+  private final Map<Integer, Object> states = new HashMap<>();
+
+  private Map<String, Runnable> triggers = new HashMap<>();
+  private final Map<String, Supplier<?>> triggersStateSuppliers = new HashMap<>();
+  private final Map<String, Object> triggersStates = new HashMap<>();
+
   public void map(Integer key, boolean repeat, Runnable runnable) {
+    map(key, repeat, runnable, null);
+  }
+
+  public <O> void map(Integer key, boolean repeat, Runnable runnable, Supplier<O> stateSupplier) {
+
     this.actions.put(key, runnable);
     this.repeat.put(key, repeat);
+
+    if (stateSupplier != null) {
+      this.stateSuppliers.put(key, stateSupplier);
+      this.states.put(key, stateSupplier.get());
+    }
+
+  }
+
+  public <O> void mapTrigger(String code, Runnable runnable, Supplier<O> stateSupplier) {
+
+    this.triggers.put(code, runnable);
+
+    if (stateSupplier != null) {
+      this.triggersStateSuppliers.put(code, stateSupplier);
+      this.triggersStates.put(code, stateSupplier.get());
+    }
+
   }
 
   public void execute(int key) {
     if (this.actions.containsKey(key)) {
-      this.actions.get(key).run();
+      doExecute(key);
     }
+  }
+
+  public void execute(String trigger) {
+    if (this.triggers.containsKey(trigger)) {
+      doExecute(trigger);
+    }
+  }
+
+  public <T> T getState(int key) {
+      return (T) this.states.get(key);
+  }
+
+  public <T> T getState(String key) {
+    return (T) this.triggersStates.get(key);
   }
 
   public void input(Input input) {
@@ -33,8 +78,33 @@ public class ViewerKeyMapping {
       }
 
       if (pressed) {
-        this.actions.get(key).run();
+        doExecute(key);
       }
     }
   }
+
+  private void doExecute(int key) {
+
+    this.actions.get(key).run();
+
+    //Mise à jour de l'état lié a cette clé clavier
+    if (this.stateSuppliers.containsKey(key)) {
+      Supplier<?> supplier = this.stateSuppliers.get(key);
+      this.states.put(key, supplier.get());
+    }
+
+  }
+
+  private void doExecute(String trigger) {
+
+    this.triggers.get(trigger).run();
+
+    //Mise à jour de l'état lié a cette clé clavier
+    if (this.triggersStateSuppliers.containsKey(trigger)) {
+      Supplier<?> supplier = this.triggersStateSuppliers.get(trigger);
+      this.triggersStates.put(trigger, supplier.get());
+    }
+
+  }
+
 }

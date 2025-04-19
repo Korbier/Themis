@@ -21,6 +21,7 @@ public class MaterialProperties {
 
   public final static String PROPERTY_NAME_TEXTURE_ALBEDO = "texture.albedo";
   public final static String PROPERTY_NAME_TEXTURE_NORMAL = "texture.normal";
+
   public final static String PROPERTY_NAME_FLOAT_SHININESS = "float.shininess";
 
   public final static MaterialProperty<Vector4f> COLOR_AMBIENT = MaterialProperty.of(Vector4f.class, PROPERTY_NAME_COLOR_AMBIENT, -1);
@@ -32,6 +33,7 @@ public class MaterialProperties {
   public final static MaterialProperty<VkStagingImage> TEXTURE_NORMAL = MaterialProperty.of(VkStagingImage.class, PROPERTY_NAME_TEXTURE_NORMAL, VK_FORMAT_R8G8B8A8_UNORM);
 
   public final static MaterialProperty<Float> FLOAT_SHININESS = MaterialProperty.of(Float.class, PROPERTY_NAME_FLOAT_SHININESS, -1);
+
 
   static {
     properties.put(PROPERTY_NAME_COLOR_AMBIENT,   COLOR_AMBIENT);

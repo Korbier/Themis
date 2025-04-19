@@ -1,27 +1,24 @@
 package org.sc.viewer.renderactivity.geometry.material;
 
-import static org.lwjgl.vulkan.VK10.VK_FILTER_LINEAR;
-import static org.lwjgl.vulkan.VK10.VK_FORMAT_R32G32B32_SFLOAT;
-import static org.lwjgl.vulkan.VK10.VK_FORMAT_R32G32_SFLOAT;
-import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_FRAGMENT_BIT;
-import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_VERTEX_BIT;
-import static org.lwjgl.vulkan.VK10.VK_VERTEX_INPUT_RATE_VERTEX;
-
 import org.lwjgl.util.shaderc.Shaderc;
 import org.sc.themis.renderer.Renderer;
 import org.sc.themis.renderer.base.pipeline.VkPipelineDescriptor;
 import org.sc.themis.renderer.base.pipeline.VkShaderSourceCompiler;
 import org.sc.themis.renderer.base.pipeline.VkVertexInputStateDescriptor;
+import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSetProvider;
 import org.sc.themis.renderer.base.renderpass.VkRenderPass;
+import org.sc.themis.renderer.base.resource.buffer.VkBufferDescriptor;
 import org.sc.themis.renderer.base.resource.image.VkSamplerDescriptor;
 import org.sc.themis.renderer.material.MaterialRenderer;
 import org.sc.themis.renderer.resource.material.MaterialProperties;
-import org.sc.themis.renderer.resource.material.MaterialProperty;
 import org.sc.themis.scene.descriptorset.SceneDescriptorSet;
 import org.sc.themis.scene.light.pipeline.LightDescriptorSet;
 import org.sc.themis.scene.light.pipeline.PhongShaderSource;
 import org.sc.themis.shared.configuration.Configuration;
+import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.utils.MemorySizeUtils;
+
+import static org.lwjgl.vulkan.VK10.*;
 
 public class TextureMaterialRenderer extends MaterialRenderer {
 
@@ -32,6 +29,7 @@ public class TextureMaterialRenderer extends MaterialRenderer {
             layout(location = 0) out vec2 outTexture;
             layout(location = 1) out vec3 outPosition;
             layout(location = 2) out vec3 outNormal;
+            layout(location = 3) out mat3 outTBNMatrix;
 
             layout(location = 0) in vec3 inPosition;
             layout(location = 1) in vec3 inNormal;
@@ -54,14 +52,26 @@ public class TextureMaterialRenderer extends MaterialRenderer {
             layout(push_constant) uniform pushConstant {
                 layout(offset = 0) mat4 matrix;
             } instance;
+            
+            vec3 _normalize(mat3 normalMatrix, vec3 toNormalize) {
+                return normalize(normalMatrix * toNormalize);
+            }
 
             void main()
             {
 
+                mat3 normalMatrix = transpose(inverse(mat3(instance.matrix)));
+                
                 gl_Position = global.projection * global.view * instance.matrix * vec4(inPosition, 1.0f);
                 outTexture  = inTexture;
+                outNormal   = normalMatrix * inNormal;
                 outPosition = (instance.matrix * vec4(inPosition, 1.0f)).xyz;
-                outNormal = mat3(transpose(inverse(instance.matrix))) * inNormal;
+                
+                vec3 T = _normalize( normalMatrix, inTangent );
+                vec3 N = _normalize( normalMatrix, inNormal );
+                vec3 B = _normalize( normalMatrix, inBitangent );
+                
+                outTBNMatrix = mat3(T, B, N);                           
 
             }
             """;
@@ -74,6 +84,7 @@ public class TextureMaterialRenderer extends MaterialRenderer {
             layout(location = 0) in vec2 inTexture;
             layout(location = 1) in vec3 inPosition;
             layout(location = 2) in vec3 inNormal;
+            layout(location = 3) in mat3 inTBN;
             
             layout(location = 0) out vec4 outColor;
 
@@ -141,9 +152,12 @@ public class TextureMaterialRenderer extends MaterialRenderer {
             /******* DESCRIPTORSET - 2 - Material ******************/
             layout(set = 2, binding = 0) uniform sampler2D baseSampler;
             layout(set = 2, binding = 1) uniform sampler2D normalSampler;
+            layout(set = 2, binding = 2) uniform Material {
+                float enableNormal;
+            } material;
 
             /**** FUNCTIONS - Lights ****/
-                float attenuationType1( vec3 fragPosition, vec3 lightPosition, float radius, float falloff ) {
+            float attenuationType1( vec3 fragPosition, vec3 lightPosition, float radius, float falloff ) {
                    float distance = length( lightPosition - fragPosition );
                    float s = distance / radius;
                    if (s >= 1.0) return 0.0;
@@ -176,15 +190,15 @@ public class TextureMaterialRenderer extends MaterialRenderer {
                }
 
                vec3 diffuse( vec3 fragPosition, vec3 nlNormal, vec3 materialColor, vec3 lightDiffuseColor, vec3 lightPosition ) {
-                   vec3 lightDirection  = normalize(lightPosition - fragPosition);
-                   float diff = max( dot( nlNormal, lightDirection), 0.0 );
+                   vec3 lightDirection  = normalize( lightPosition - fragPosition );
+                   float diff = max(dot(nlNormal, lightDirection), 0.0 );
                    return lightDiffuseColor * materialColor * diff;
                }
 
-               vec3 specular( vec3 fragPosition, vec3 normal, vec3 materialSpecular, float materialShininess, vec3 lightSpecularColor, vec3 lightPosition ) {
-
+               vec3 specular( vec3 fragPosition, vec3 normal, vec3 materialSpecular, float materialShininess, vec3 lightSpecularColor, vec3 lightPosition, vec3 view ) {
+                  
                    vec3 lightDirection  = normalize( lightPosition - fragPosition );
-                   vec3 viewDirection = normalize( global.camera.xyz - fragPosition );
+                   vec3 viewDirection = normalize( view - fragPosition );
                    vec3 reflectDirection = reflect( -lightDirection, normal );
 
                    float specularFactor = max(dot(viewDirection, reflectDirection), 0.0);
@@ -196,69 +210,79 @@ public class TextureMaterialRenderer extends MaterialRenderer {
                    } else {
                        return vec3(0.0f);
                    }
-
                }
 
-               vec3 directional( vec3 nlNormal, vec3 position, vec3 materialAmbient, vec3 materialDiffuse, vec3 materialSpecular, float materialShininess, DirectionalLight light ) {
+               vec3 directional( mat3 tbn, vec3 view, vec3 normal, vec3 position, vec3 materialAmbient, vec3 materialDiffuse, vec3 materialSpecular, float materialShininess, DirectionalLight light ) {
+
+                   vec3 lightPosition = light.position.xyz;
+                   
                    vec3 ambientColor = ambient( light.ambient.rgb, materialAmbient );
-                   vec3 diffuseColor = diffuse( position, nlNormal, materialDiffuse, light.diffuse.rgb, light.position.xyz );
-                   vec3 specularColor = specular( position, nlNormal, materialSpecular, materialShininess, light.specular.rgb, light.position.xyz );
+                   vec3 diffuseColor = diffuse(position, normal, materialDiffuse, light.diffuse.rgb, lightPosition );
+                   vec3 specularColor = specular( position, normal, materialSpecular, materialShininess, light.specular.rgb, lightPosition, view );
+                   
                    return ambientColor + diffuseColor + specularColor;
+                   
                }
 
-               vec3 point( vec3 nlNormal, vec3 position, vec3 materialAmbient, vec3 materialDiffuse, vec3 materialSpecular, float materialShininess, PointLight light ) {
+               vec3 point( mat3 tbn, vec3 view, vec3 normal, vec3 position, vec3 materialAmbient, vec3 materialDiffuse, vec3 materialSpecular, float materialShininess, PointLight light ) {
+               
+                   vec3 lightPosition = light.position.xyz;
+                   
                    vec3 ambientColor = ambient( light.ambient.rgb, materialAmbient );
-                   vec3 diffuseColor = diffuse( position, nlNormal, materialDiffuse, light.diffuse.rgb, light.position.xyz );
-                   vec3 specularColor = specular( position, nlNormal, materialSpecular, materialShininess, light.specular.rgb, light.position.xyz );
-                   float attenuation = attenuation(position, nlNormal, light.position.xyz, light.attenuation);
+                   vec3 diffuseColor = diffuse( position, normal, materialDiffuse, light.diffuse.rgb, lightPosition );
+                   vec3 specularColor = specular( position, normal, materialSpecular, materialShininess, light.specular.rgb, lightPosition, view );
+                   float attenuation = attenuation(position, normal, lightPosition, light.attenuation);
                    return attenuation * (ambientColor + diffuseColor + specularColor);
                }
 
-               float spotIntensity( vec3 fragPosition, SpotLight light ) {
-                   float theta = dot(normalize(light.position.xyz - fragPosition), normalize(-light.direction.xyz));
+               float spotIntensity( vec3 fragPosition, vec3 lightPosition, SpotLight light ) {
+                   float theta = dot(normalize(lightPosition - fragPosition), normalize(-light.direction.xyz));
                    float epsilon = light.innerCutOff - light.outerCutOff;
                    return clamp((theta - light.outerCutOff) / epsilon, 0.0, 1.0 );
                }
 
-               vec3 spot( vec3 nlNormal, vec3 position, vec3 materialAmbient, vec3 materialDiffuse, vec3 materialSpecular, float materialShininess, SpotLight light ) {
+               vec3 spot( mat3 tbn, vec3 view, vec3 normal, vec3 position, vec3 materialAmbient, vec3 materialDiffuse, vec3 materialSpecular, float materialShininess, SpotLight light ) {
+        
+                   vec3 lightPosition = light.position.xyz;
 
                    vec3 ambientColor = ambient( light.ambient.rgb, materialAmbient );
-                   vec3 diffuseColor = diffuse( position, nlNormal, materialDiffuse, light.diffuse.rgb, light.position.xyz );
-                   vec3 specularColor = specular( position, nlNormal, materialSpecular, materialShininess, light.specular.rgb, light.position.xyz );
-                   float intensity = spotIntensity(position, light);
+                   vec3 diffuseColor = diffuse( position, normal, materialDiffuse, light.diffuse.rgb, lightPosition );
+                   vec3 specularColor = specular( position, normal, materialSpecular, materialShininess, light.specular.rgb, lightPosition, view );
+                   float intensity = spotIntensity(position, lightPosition, light);
 
                    diffuseColor *= intensity;
                    specularColor *= intensity;
 
-                   float attenuation = attenuation(position, nlNormal, light.position.xyz, light.attenuation);
+                   float attenuation = attenuation(position, normal, light.position.xyz, light.attenuation);
                    return attenuation * (ambientColor + diffuseColor + specularColor);
+                   
                }
 
-               vec3 phong_directionals( vec3 nlNormal, vec3 position, vec3 materialAmbient, vec3 materialDiffuse, vec3 materialSpecular, float materialShininess ) {
+               vec3 phong_directionals( mat3 tbn, vec3 view, vec3 normal, vec3 position, vec3 materialAmbient, vec3 materialDiffuse, vec3 materialSpecular, float materialShininess ) {
                    vec3 color = vec3(0.0f);
                    for (int i = 0; i<lights.directionalLightCount; i++ ) {
                        if ( directionalLights.lights[i].data.x == 1.0f ) {
-                           color += directional(nlNormal, position, materialAmbient, materialDiffuse, materialSpecular, materialShininess, directionalLights.lights[i]);
+                           color += directional(tbn, view, normal, position, materialAmbient, materialDiffuse, materialSpecular, materialShininess, directionalLights.lights[i]);
                        }
                    }
                    return color;
                }
 
-               vec3 phong_points( vec3 nlNormal, vec3 position, vec3 materialAmbient, vec3 materialDiffuse, vec3 materialSpecular, float materialShininess ) {
+               vec3 phong_points( mat3 tbn, vec3 view, vec3 normal, vec3 position, vec3 materialAmbient, vec3 materialDiffuse, vec3 materialSpecular, float materialShininess ) {
                    vec3 color = vec3(0.0f);
                    for (int i = 0; i<lights.pointLightCount; i++ ) {
                        if ( pointLights.lights[i].data.x == 1.0f ) {
-                           color += point(nlNormal, position, materialAmbient, materialDiffuse, materialSpecular, materialShininess, pointLights.lights[i]);
+                           color += point(tbn, view, normal, position, materialAmbient, materialDiffuse, materialSpecular, materialShininess, pointLights.lights[i]);
                        }
                    }
                    return color;
                }
 
-               vec3 phong_spots( vec3 nlNormal, vec3 position, vec3 materialAmbient, vec3 materialDiffuse, vec3 materialSpecular, float materialShininess ) {
+               vec3 phong_spots( mat3 tbn, vec3 view, vec3 normal, vec3 position, vec3 materialAmbient, vec3 materialDiffuse, vec3 materialSpecular, float materialShininess ) {
                    vec3 color = vec3(0.0f);
                    for (int i = 0; i<lights.spotLightCount; i++ ) {
                        if ( spotLights.lights[i].data.x == 1.0f ) {
-                           color += spot(nlNormal, position, materialAmbient, materialDiffuse, materialSpecular, materialShininess, spotLights.lights[i]);
+                           color += spot(tbn, view, normal, position, materialAmbient, materialDiffuse, materialSpecular, materialShininess, spotLights.lights[i]);
                        }
                    }
                    return color;
@@ -267,36 +291,44 @@ public class TextureMaterialRenderer extends MaterialRenderer {
             /**** MAIN ****/
             void main() {
             
+                mat3 tbn      = inTBN;
                 vec3 position = inPosition;
-                vec3 nlNormal = normalize(inNormal);
-                vec3 baseColor = texture(baseSampler, inTexture).rgb;
+                vec3 view     = global.camera.xyz;
+
+                vec3 color = texture(baseSampler, inTexture).rgb;
+                vec3 normal = inNormal;
                 
+                if (material.enableNormal == 1.0f) {
+                    normal = texture(normalSampler, inTexture).rgb;
+                    normal = normalize(tbn * (normal * 2.0 - 1.0));
+                }
+  
                 float shininess = 128.0f;
                 vec3 finalColor = vec3(0.0f);
 
-                finalColor += phong_directionals(nlNormal, position, baseColor, baseColor, baseColor, shininess);
-                finalColor += phong_points(nlNormal, position, baseColor, baseColor, baseColor, shininess);
-                finalColor += phong_spots(nlNormal, position, baseColor, baseColor, baseColor, shininess);
+                finalColor += phong_directionals(tbn, view, normal, position, color, color, color, shininess);
+                finalColor += phong_points(tbn, view, normal, position, color, color, color, shininess);
+                finalColor += phong_spots(tbn, view, normal, position, color, color, color, shininess);
 
-                outColor = vec4( finalColor, 1.0f );
+                outColor = vec4(finalColor, 1.0f );
 
             }
             """);
 
-  public static final String MATERIAL_ID = "materialRenderer.texture";
+  public static final String IDENTIFIER = "materialRenderer.texture-with-normalmapping";
   private static final VkSamplerDescriptor DESCRIPTOR = new VkSamplerDescriptor(VK_FILTER_LINEAR, 1, true);
+  private static final VkBufferDescriptor BUFFER_DESCRIPTOR = VkBufferDescriptor.descriptorsetUniform(MemorySizeUtils.FLOAT);
 
-  public TextureMaterialRenderer(
-      Configuration configuration,
-      Renderer renderer,
-      VkRenderPass renderPass,
-      SceneDescriptorSet sceneDescriptorSet,
-      LightDescriptorSet lightDescriptorSet) {
+  private boolean enableNormal = false;
 
-    super(configuration, renderer, MATERIAL_ID);
-
+  public TextureMaterialRenderer(Configuration configuration) {
+    super(configuration, IDENTIFIER);
     addMandatoryProperties(MaterialProperties.TEXTURE_ALBEDO);
     setVariantsIdentifierFunction(props -> props.get(MaterialProperties.TEXTURE_ALBEDO).toString());
+  }
+
+  @Override
+  public void setup(Renderer renderer, VkRenderPass renderpass, VkDescriptorSetProvider... descriptorsets) throws ThemisException {
 
     /** Pipeline * */
     addShader(VK_SHADER_STAGE_VERTEX_BIT, VkShaderSourceCompiler.compileShader(VERTEX_SOURCE, Shaderc.shaderc_glsl_vertex_shader));
@@ -309,20 +341,36 @@ public class TextureMaterialRenderer extends MaterialRenderer {
             .attribute(VK_FORMAT_R32G32_SFLOAT, MemorySizeUtils.VEC2F) // Texture
             .attribute(VK_FORMAT_R32G32B32_SFLOAT, MemorySizeUtils.VEC3F) // Tangent
             .attribute(VK_FORMAT_R32G32B32_SFLOAT, MemorySizeUtils.VEC3F));
-    setPipelineDescriptor(new VkPipelineDescriptor(renderPass, 0, false, 1, true, 1, 1, 1));
+    setPipelineDescriptor(new VkPipelineDescriptor(renderpass, 0, false, 1, true, 1, 1, 1));
 
-    /** Variant layout * */
+    /** Variant layout **/
     addVariantsCombinedImageSamplerBinding(0, VK_SHADER_STAGE_FRAGMENT_BIT, DESCRIPTOR);
     addVariantsCombinedImageSamplerBinding(1, VK_SHADER_STAGE_FRAGMENT_BIT, DESCRIPTOR);
-    setVariantsCombinedImageSamplerSetter(
-        (binding, descriptorset, sampler, props) -> {
+    addVariantsUniformBinding(2, VK_SHADER_STAGE_FRAGMENT_BIT, BUFFER_DESCRIPTOR);
+
+    setVariantsCombinedImageSamplerSetter( (binding, descriptorset, sampler, props) -> {
           switch (binding) {
             case 0 -> descriptorset.bind(binding, props.getProperty(MaterialProperties.TEXTURE_ALBEDO).getView(), sampler);
             case 1 -> descriptorset.bind(binding, props.getProperty(MaterialProperties.TEXTURE_NORMAL).getView(), sampler);
           }
-        });
+        }
+    );
+    setVariantsUniformSetter((binding, buffer, props) -> buffer.set(0, enableNormal ? 1.0f : 0.0f));
 
     /** Other descriptorsets * */
-    setDescriptorsetProviders(sceneDescriptorSet, lightDescriptorSet);
+    setDescriptorsetProviders(descriptorsets);
+
+    super.setup(renderer, renderpass, descriptorsets);
+
   }
+
+  public void switchEnableNormal() {
+    this.enableNormal = !this.enableNormal;
+    setDirty();
+  }
+
+  public boolean isNormalEnabled() {
+    return this.enableNormal;
+  }
+
 }

@@ -36,9 +36,7 @@ import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.viewer.renderactivity.RenderPass;
 import org.sc.viewer.renderactivity.ViewerRendererActivity;
-import org.sc.viewer.renderactivity.geometry.material.NoLightColorMaterialRenderer;
 import org.sc.viewer.renderactivity.geometry.material.TextureMaterialRenderer;
-import org.sc.viewer.renderactivity.geometry.material.TextureWithNormalMappingMaterialRenderer;
 import org.slf4j.LoggerFactory;
 
 /** Geometry renderpass. */
@@ -54,11 +52,11 @@ public class GeometryRenderPass extends RenderPass {
   private VkRenderPass renderPass;
 
   // Material
-  private MaterialRenderer[] materialRenderers;
   private MaterialManager materialManager;
 
-  public GeometryRenderPass(Configuration configuration) {
+  public GeometryRenderPass(Configuration configuration, MaterialManager materialManager) {
     super(configuration);
+    this.materialManager = materialManager;
   }
 
   @Override
@@ -71,12 +69,12 @@ public class GeometryRenderPass extends RenderPass {
 
   @Override
   public void setup(Scene scene) throws ThemisException {
-    this.materialManager.compile(scene.getMaterialsProperties());
+    this.materialManager.compile();
   }
 
   @Override
   public void cleanup() throws ThemisException {
-    for (MaterialRenderer materialRenderer : this.materialRenderers) {
+    for (MaterialRenderer materialRenderer : this.materialManager.getMaterialRenderers()) {
       materialRenderer.cleanup();
     }
     this.renderPass.cleanup();
@@ -97,11 +95,13 @@ public class GeometryRenderPass extends RenderPass {
     for (Model model : scene.getModels()) {
       if (model.isRenderable()) {
 
-        this.materialManager.bindMaterial(command, model);
+        this.materialManager.bindMaterialRenderer(command, model);
 
         for (Mesh mesh : model.getMeshes()) {
 
           Material material = this.materialManager.select(mesh.getProperties(), model.getMaterial());
+
+          this.materialManager.updateMaterialRenderer(material);
 
           if (material == null) {
             logger.error("No suitable MaterialProperties Struct found for mesh {} (model {})", mesh, model.getIdentifier());
@@ -189,24 +189,8 @@ public class GeometryRenderPass extends RenderPass {
   }
 
   private void setupMaterialManager() throws ThemisException {
-
-    this.materialRenderers = new MaterialRenderer[] {
-        new TextureMaterialRenderer(
-            getConfiguration(), getRenderer(), this.renderPass,
-            this.getViewerActivity().getSceneDescriptorset(),
-            this.getViewerActivity().getLighDescriptorset()
-        ),
-        new TextureWithNormalMappingMaterialRenderer(
-            getConfiguration(), getRenderer(), this.renderPass,
-            this.getViewerActivity().getSceneDescriptorset(),
-            this.getViewerActivity().getLighDescriptorset()
-        )
-    };
-
-    for (MaterialRenderer materialRenderer : this.materialRenderers) {
-      materialRenderer.setup();
+    for (MaterialRenderer renderer : this.materialManager.getMaterialRenderers() ) {
+      renderer.setup(getRenderer(), this.renderPass, this.getViewerActivity().getSceneDescriptorset(), this.getViewerActivity().getLighDescriptorset());
     }
-
-    this.materialManager = new MaterialManager(this.materialRenderers[0], this.materialRenderers);
   }
 }

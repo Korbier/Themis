@@ -32,6 +32,10 @@ public abstract sealed class Light permits DirectionalLight, PointLight, SpotLig
     this.data.x = visible ? 1.0f : 0.0f;
   }
 
+  public void switchVisible() {
+    setVisible(!isVisible());
+  }
+
   public Vector4f getData() {
     return this.data;
   }

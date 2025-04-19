@@ -3,6 +3,7 @@ package org.sc.themis.scene.pencil;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
+import org.sc.themis.renderer.pencil2d.Color;
 import org.sc.themis.renderer.resource.font.Font;
 import org.sc.themis.renderer.resource.font.FontCharacter;
 import org.sc.themis.renderer.resource.font.FontRepository;
@@ -65,7 +66,7 @@ public class Pencil {
     for (FontCharacter fchar : characters) {
 
       float posX = position.x() + decal + fchar.bearing().x();
-      float posY = position.y() + font.getFontSize() - fchar.bearing().y();
+      float posY = position.y() + font.getMaxYBearing() - fchar.bearing().y();
 
       Vector3f fontProperties = new Vector3f(
           fontIdx,

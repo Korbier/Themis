@@ -1,8 +1,10 @@
-package org.sc.themis.scene.ui;
+package org.sc.themis.scene.ui.component;
 
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import org.joml.Vector2f;
-import org.sc.themis.scene.pencil.Color;
+import org.sc.themis.renderer.pencil2d.Color;
+import org.sc.themis.scene.ui.UiBuilder;
 
 
 public final class ButtonBuilder extends ComponentBuilder<ButtonBuilder> {
@@ -16,11 +18,11 @@ public final class ButtonBuilder extends ComponentBuilder<ButtonBuilder> {
   private Color clrHot = null;
   private Color clrActive = null;
 
-  ButtonBuilder(UIBuilder builder) {
+  public ButtonBuilder(UiBuilder builder) {
     super(builder);
   }
 
-  ButtonBuilder text(String text) {
+  public ButtonBuilder text(String text) {
     this.text = text;
     return this;
   }
@@ -40,7 +42,7 @@ public final class ButtonBuilder extends ComponentBuilder<ButtonBuilder> {
     return this;
   }
 
-  public ButtonBuilder onClick(Consumer<UIBuilder> eventListener) {
+  public ButtonBuilder onClick(BiConsumer<UiBuilder, ButtonBuilder> eventListener) {
     addEvent(EVENT_ON_CLICK, eventListener);
     return this;
   }
@@ -56,7 +58,7 @@ public final class ButtonBuilder extends ComponentBuilder<ButtonBuilder> {
     Color defaultColor = this.clrDefault;
     Color hotColor = this.clrHot != null ? this.clrHot : this.clrDefault;
     Color activeColor = this.clrActive != null ? this.clrActive : this.clrDefault;
-
+/*
     pencil().rect(new Vector2f(left, top), new Vector2f(width, height), activeColor);
 
     if (isHotItem()) {
@@ -88,7 +90,7 @@ public final class ButtonBuilder extends ComponentBuilder<ButtonBuilder> {
           this.text
       );
     }
-
+*/
   }
 
   @Override
