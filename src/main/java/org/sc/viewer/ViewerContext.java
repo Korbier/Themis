@@ -77,6 +77,6 @@ public class ViewerContext {
   }
 
   private void mapPostProcessorSwitch(int key, String postProcessor) {
-    getKeyMapping().map(key, false, () -> switchPostProcessor(postProcessor));
+    getKeyMapping().map(key, false, () -> switchPostProcessor(postProcessor),() -> isPostProcessorEnabled(postProcessor));
   }
 }

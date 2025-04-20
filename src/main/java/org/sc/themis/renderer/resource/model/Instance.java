@@ -81,12 +81,6 @@ public class Instance {
     return this;
   }
 
-  public Instance rotate(Quaternionf rotation) {
-    this.rotation().add(rotation);
-    updateMatrix();
-    return this;
-  }
-
   public Instance scale(float scale) {
     this.scale = scale;
     updateMatrix();

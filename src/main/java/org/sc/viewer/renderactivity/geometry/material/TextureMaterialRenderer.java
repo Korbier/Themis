@@ -69,7 +69,8 @@ public class TextureMaterialRenderer extends MaterialRenderer {
                 
                 vec3 T = _normalize( normalMatrix, inTangent );
                 vec3 N = _normalize( normalMatrix, inNormal );
-                vec3 B = _normalize( normalMatrix, inBitangent );
+                T = normalize(T - dot(T, N) * N);
+                vec3 B = cross(N, T); //_normalize( normalMatrix, inBitangent );
                 
                 outTBNMatrix = mat3(T, B, N);                           
 
@@ -296,7 +297,7 @@ public class TextureMaterialRenderer extends MaterialRenderer {
                 vec3 view     = global.camera.xyz;
 
                 vec3 color = texture(baseSampler, inTexture).rgb;
-                vec3 normal = inNormal;
+                vec3 normal = normalize(inNormal);
                 
                 if (material.enableNormal == 1.0f) {
                     normal = texture(normalSampler, inTexture).rgb;
@@ -315,6 +316,7 @@ public class TextureMaterialRenderer extends MaterialRenderer {
             }
             """);
 
+
   public static final String IDENTIFIER = "materialRenderer.texture-with-normalmapping";
   private static final VkSamplerDescriptor DESCRIPTOR = new VkSamplerDescriptor(VK_FILTER_LINEAR, 1, true);
   private static final VkBufferDescriptor BUFFER_DESCRIPTOR = VkBufferDescriptor.descriptorsetUniform(MemorySizeUtils.FLOAT);
@@ -323,7 +325,7 @@ public class TextureMaterialRenderer extends MaterialRenderer {
 
   public TextureMaterialRenderer(Configuration configuration) {
     super(configuration, IDENTIFIER);
-    addMandatoryProperties(MaterialProperties.TEXTURE_ALBEDO);
+    addMandatoryProperties(MaterialProperties.TEXTURE_ALBEDO, MaterialProperties.TEXTURE_NORMAL);
     setVariantsIdentifierFunction(props -> props.get(MaterialProperties.TEXTURE_ALBEDO).toString());
   }
 

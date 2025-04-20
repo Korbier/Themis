@@ -43,9 +43,9 @@ public class ShowGridPostprocessor implements PostProcessor {
       """
          #version 450
          
-         const int lines_start = -4;
-         const int lines_end = 4;
-         const int lines_step = 2;
+         const int lines_start = -10;
+         const int lines_end = 10;
+         const int lines_step = 1;
 
          const vec4 defaultColor = vec4(0.8f, 0.8f, 0.8f, 1.0f);
          const vec4 axeColor = vec4(0.8f, 0.0f, 0.0f, 1.0f );

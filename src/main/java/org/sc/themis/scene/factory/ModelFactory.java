@@ -70,8 +70,14 @@ public class ModelFactory {
 
     try (AIScene scene = aiImportFile(modelFile.toAbsolutePath().toString(), flags)) {
       List<Material> properties = loadProperties(identifier, scene, allocator, manager, modelFile.getParent());
-      Mesh[] meshes = loadMeshs(allocator, identifier, scene, properties);
-      return new Model(identifier, meshes);
+
+      Vector3f min = new Vector3f(Float.MAX_VALUE);
+      Vector3f max = new Vector3f(Float.MIN_VALUE);
+
+      Mesh[] meshes = loadMeshs(allocator, identifier, scene, properties, min, max);
+
+      return new Model(identifier, meshes, max.sub(min));
+
     }
 
   }
@@ -80,7 +86,7 @@ public class ModelFactory {
     return modelIdentifier + ".mesh." + inc;
   }
 
-  public Mesh[] loadMeshs(VkStagingResourceAllocator allocator, String modelIdentifier, AIScene scene, List<Material> properties)
+  public Mesh[] loadMeshs(VkStagingResourceAllocator allocator, String modelIdentifier, AIScene scene, List<Material> properties, Vector3f min, Vector3f max)
       throws ThemisException {
 
     PointerBuffer aiMeshesBuffer = scene.mMeshes();
@@ -88,11 +94,12 @@ public class ModelFactory {
 
     Mesh[] meshes = new Mesh[numMeshes];
 
+
     for (int i = 0; i < numMeshes; i++) {
 
       AIMesh aiMesh = AIMesh.create(aiMeshesBuffer.get(i));
 
-      Vertex[] vertices = getVertices(aiMesh);
+      Vertex[] vertices = getVertices(aiMesh, min, max);
       int[] indices = getIndices(aiMesh);
 
       meshes[i] = new Mesh(allocator, getMeshIdentifier(modelIdentifier, i));
@@ -104,10 +111,7 @@ public class ModelFactory {
     return meshes;
   }
 
-  private Vertex[] getVertices(AIMesh aiMesh) {
-
-    Vector3f min = new Vector3f(Float.MAX_VALUE);
-    Vector3f max = new Vector3f(Float.MIN_VALUE);
+  private Vertex[] getVertices(AIMesh aiMesh, Vector3f min, Vector3f max) {
 
     List<Vertex> vertices = new ArrayList<>();
 
@@ -145,15 +149,8 @@ public class ModelFactory {
 
     }
 
-    System.out.println("MESH MIN ==> " + display(min));
-    System.out.println("MESH MAX ==> " + display(max));
-
     return vertices.toArray(Vertex[]::new);
 
-  }
-
-  private String display(Vector3f v) {
-    return "V(%.2f, %.2f, %.2f)".formatted(v.x, v.y, v.z);
   }
 
   protected int[] getIndices(AIMesh aiMesh) {
@@ -197,6 +194,8 @@ public class ModelFactory {
       setFloat(aiMaterial, AI_MATKEY_SHININESS, properties, MaterialProperties.FLOAT_SHININESS);
 
       setImage(workdir, allocator, aiMaterial, aiTextureType_BASE_COLOR, properties, MaterialProperties.TEXTURE_ALBEDO);
+     // setImage(workdir, allocator, aiMaterial, aiTextureType_DIFFUSE, properties, MaterialProperties.TEXTURE_ALBEDO);
+
       setImage( workdir, allocator, aiMaterial, aiTextureType_NORMALS, properties, MaterialProperties.TEXTURE_NORMAL);
 
       if (manager != null) {

@@ -60,12 +60,37 @@ public class ViewerUi extends UiSceneController {
         .size(PANEL_COLUMN_B_WIDTH, PANEL_ROW_HEIGHT)
         .position(PANEL_COLUMN_B_LEFT, PANEL_MARGIN);
 
+    LabelBuilder tbnLbl = builder().label()
+        .size(PANEL_COLUMN_A_WIDTH, PANEL_ROW_HEIGHT)
+        .position(PANEL_MARGIN, (PANEL_ROW_HEIGHT + PANEL_MARGIN) + PANEL_MARGIN)
+        .text("TBN Vectors");
+
+    ToggleButtonBuilder tbnTgl = builder().toggleButton()
+        .size(PANEL_COLUMN_B_WIDTH, PANEL_ROW_HEIGHT)
+        .position(PANEL_COLUMN_B_LEFT, (PANEL_ROW_HEIGHT + PANEL_MARGIN) + PANEL_MARGIN)
+        .isToggledSupplier(() -> context.getKeyMapping().getState(GLFW_KEY_F1))
+        .onClick((_,_) -> context.getKeyMapping().execute(GLFW_KEY_F1));
+
+    LabelBuilder gridLbl = builder().label()
+        .size(PANEL_COLUMN_A_WIDTH, PANEL_ROW_HEIGHT)
+        .position(PANEL_MARGIN, (PANEL_ROW_HEIGHT + PANEL_MARGIN) * 2 + PANEL_MARGIN )
+        .text("Grid");
+
+    ToggleButtonBuilder gridTgl = builder().toggleButton()
+        .size(PANEL_COLUMN_B_WIDTH, PANEL_ROW_HEIGHT)
+        .position(PANEL_COLUMN_B_LEFT, (PANEL_ROW_HEIGHT + PANEL_MARGIN) * 2 + PANEL_MARGIN )
+        .isToggledSupplier(() -> context.getKeyMapping().getState(GLFW_KEY_F2))
+        .onClick((_,_) -> context.getKeyMapping().execute(GLFW_KEY_F2));
+
+
     return builder().panel()
         .size(PANEL_WIDTH, PANEL_HEIGHT)
         .position(left, top)
         .text("Information")
         .child(
-            infoFpsLbl, this.infoMaterialLblValue
+            infoFpsLbl, this.infoMaterialLblValue,
+            tbnLbl, tbnTgl,
+            gridLbl, gridTgl
         );
 
   }
