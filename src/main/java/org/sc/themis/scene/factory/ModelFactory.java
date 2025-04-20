@@ -106,6 +106,9 @@ public class ModelFactory {
 
   private Vertex[] getVertices(AIMesh aiMesh) {
 
+    Vector3f min = new Vector3f(Float.MAX_VALUE);
+    Vector3f max = new Vector3f(Float.MIN_VALUE);
+
     List<Vertex> vertices = new ArrayList<>();
 
     AIVector3D.Buffer aiVertices = aiMesh.mVertices();
@@ -122,19 +125,35 @@ public class ModelFactory {
       AIVector3D tangent = aiTangents != null ? aiTangents.get() : null;
       AIVector3D bitangent = aiBitangents != null ? aiBitangents.get() : null;
 
-      vertices.add(
-          Vertex.of(
-              new Vector3f(aiVertex.x(), aiVertex.y(), aiVertex.z()),
-              normal != null ? new Vector3f(normal.x(), normal.y(), normal.z()) : new Vector3f(),
-              textCoord != null ? new Vector2f(textCoord.x(), 1 - textCoord.y()) : new Vector2f(),
-              tangent != null ? new Vector3f(tangent.x(), tangent.y(), tangent.z()) : new Vector3f(),
-              bitangent != null ? new Vector3f(bitangent.x(), bitangent.y(), bitangent.z()) : new Vector3f()
-          )
+      Vertex v =  Vertex.of(
+          new Vector3f(aiVertex.x(), aiVertex.y(), aiVertex.z()),
+          normal != null ? new Vector3f(normal.x(), normal.y(), normal.z()) : new Vector3f(),
+          textCoord != null ? new Vector2f(textCoord.x(), 1 - textCoord.y()) : new Vector2f(),
+          tangent != null ? new Vector3f(tangent.x(), tangent.y(), tangent.z()) : new Vector3f(),
+          bitangent != null ? new Vector3f(bitangent.x(), bitangent.y(), bitangent.z()) : new Vector3f()
       );
+
+      min.x = Float.min(min.x, v.position().x);
+      min.y = Float.min(min.y, v.position().y);
+      min.z = Float.min(min.z, v.position().z);
+
+      max.x = Float.max(max.x, v.position().x);
+      max.y = Float.max(max.y, v.position().y);
+      max.z = Float.max(max.z, v.position().z);
+
+      vertices.add(v);
+
     }
+
+    System.out.println("MESH MIN ==> " + display(min));
+    System.out.println("MESH MAX ==> " + display(max));
 
     return vertices.toArray(Vertex[]::new);
 
+  }
+
+  private String display(Vector3f v) {
+    return "V(%.2f, %.2f, %.2f)".formatted(v.x, v.y, v.z);
   }
 
   protected int[] getIndices(AIMesh aiMesh) {

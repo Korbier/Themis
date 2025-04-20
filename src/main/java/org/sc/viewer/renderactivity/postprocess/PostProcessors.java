@@ -9,6 +9,10 @@ import org.sc.themis.scene.descriptorset.InputDescriptorSet;
 import org.sc.themis.scene.descriptorset.SceneDescriptorSet;
 import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
+import org.sc.viewer.renderactivity.postprocess.pipeline.PostProcessorDrawEveryVertexPipeline;
+import org.sc.viewer.renderactivity.postprocess.pipeline.PostProcessorDrawOncePipeline;
+import org.sc.viewer.renderactivity.postprocess.pipeline.PostProcessorPipeline;
+import org.sc.viewer.renderactivity.postprocess.postprocessor.ShowGridPostprocessor;
 import org.sc.viewer.renderactivity.postprocess.postprocessor.ShowTBNPostprocessor;
 
 public class PostProcessors {
@@ -36,6 +40,8 @@ public class PostProcessors {
     this.geometryAttachmentDescriptorset = geometryAttachmentDescriptorset;
 
     addPostProcessor(ShowTBNPostprocessor.INSTANCE);
+    addPostProcessor(ShowGridPostprocessor.INSTANCE);
+
   }
 
   public void setup() throws ThemisException {
@@ -54,9 +60,9 @@ public class PostProcessors {
     return this.postprocessors.values();
   }
 
-  public Collection<String> get(PostProcessor.Frequency frequency) {
+  public Collection<String> get(PostProcessor.DrawFrequency drawFrequency) {
     return this.postprocessors.values().stream()
-        .filter(p -> p.getFrequency() == frequency)
+        .filter(p -> p.getFrequency() == drawFrequency)
         .map(PostProcessor::getIdentifier)
         .toList();
   }
@@ -66,19 +72,19 @@ public class PostProcessors {
   }
 
   private void addPostProcessor(PostProcessor postprocessor) {
+
     postprocessors.put(postprocessor.getIdentifier(), postprocessor);
     pipelines.put(
         postprocessor.getIdentifier(),
-        new PostProcessorPipeline(
-            this.configuration, this.renderer,
-            this.renderpass, this.sceneDescriptorSet,
-            this.geometryAttachmentDescriptorset, postprocessor));
+        switch (postprocessor.getFrequency()) {
+          case DRAW_EVERY_VERTEX -> new PostProcessorDrawEveryVertexPipeline( this.configuration, this.renderer, this.renderpass, this.sceneDescriptorSet, this.geometryAttachmentDescriptorset, postprocessor);
+          case DRAW_ONCE -> new PostProcessorDrawOncePipeline( this.configuration, this.renderer, this.renderpass, this.sceneDescriptorSet, this.geometryAttachmentDescriptorset, postprocessor);
+        }
+    );
+
   }
 
-  public void resize(
-      VkRenderPass renderpass,
-      SceneDescriptorSet sceneDescriptorset,
-      InputDescriptorSet geometryAttachmentDescriptorset)
+  public void resize(VkRenderPass renderpass,SceneDescriptorSet sceneDescriptorset,InputDescriptorSet geometryAttachmentDescriptorset)
       throws ThemisException {
     for (PostProcessorPipeline pipeline : this.pipelines.values()) {
       pipeline.resize(renderpass, sceneDescriptorset, geometryAttachmentDescriptorset);

@@ -1,12 +1,14 @@
 package org.sc.viewer;
 
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_F1;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_F2;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import org.sc.themis.renderer.material.MaterialRenderer;
 import org.sc.viewer.renderactivity.geometry.material.TextureMaterialRenderer;
+import org.sc.viewer.renderactivity.postprocess.postprocessor.ShowGridPostprocessor;
 import org.sc.viewer.renderactivity.postprocess.postprocessor.ShowTBNPostprocessor;
 
 public class ViewerContext {
@@ -25,9 +27,11 @@ public class ViewerContext {
 
     // Available postprocessors
     context.addPostProcessor(ShowTBNPostprocessor.IDENTIFIER);
+    context.addPostProcessor(ShowGridPostprocessor.IDENTIFIER);
 
     // Key mapping
     context.mapPostProcessorSwitch(GLFW_KEY_F1, ShowTBNPostprocessor.IDENTIFIER);
+    context.mapPostProcessorSwitch(GLFW_KEY_F2, ShowGridPostprocessor.IDENTIFIER);
 
     return context;
   }

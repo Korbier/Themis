@@ -78,12 +78,10 @@ public class PostProcessRenderPass extends RenderPass {
 
   private void setupPostProcessors() throws ThemisException {
     this.postProcessors =
-        new PostProcessors(
-            getConfiguration(),
-            getRenderer(),
-            this.renderPass,
-            getViewerActivity().getSceneDescriptorset(),
-            getViewerActivity().getGeometryDescriptorset());
+      new PostProcessors(
+          getConfiguration(), getRenderer(), this.renderPass,
+          getViewerActivity().getSceneDescriptorset(), getViewerActivity().getGeometryDescriptorset()
+      );
     this.postProcessors.setup();
   }
 
@@ -106,10 +104,17 @@ public class PostProcessRenderPass extends RenderPass {
     command.beginRenderPass(this.renderPass, frameBuffer);
     command.viewportAndScissor(getExtent2D());
 
-    for (String postprocessor : this.postProcessors.get(PostProcessor.Frequency.PER_VERTEX)) {
+    for (String postprocessor : this.postProcessors.get(PostProcessor.DrawFrequency.DRAW_EVERY_VERTEX)) {
       if (this.context.isPostProcessorEnabled(postprocessor)) {
         this.postProcessors.getPipeline(postprocessor).bind(command, frame);
         this.renderPerVertex(scene, command);
+      }
+    }
+
+    for (String postprocessor : this.postProcessors.get(PostProcessor.DrawFrequency.DRAW_ONCE)) {
+      if (this.context.isPostProcessorEnabled(postprocessor)) {
+        this.postProcessors.getPipeline(postprocessor).bind(command, frame);
+        this.renderOnce(scene, command);
       }
     }
 
@@ -131,6 +136,10 @@ public class PostProcessRenderPass extends RenderPass {
         }
       }
     }
+  }
+
+  private void renderOnce(Scene scene, VkCommand command) throws ThemisException {
+    command.draw(3, 1, 0, 0);
   }
 
   @Override

@@ -1,31 +1,20 @@
-package org.sc.viewer.renderactivity.postprocess;
-
-import static org.lwjgl.vulkan.VK10.VK_FORMAT_R32G32B32_SFLOAT;
-import static org.lwjgl.vulkan.VK10.VK_FORMAT_R32G32_SFLOAT;
-import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_FRAGMENT_BIT;
-import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_GEOMETRY_BIT;
-import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_VERTEX_BIT;
-import static org.lwjgl.vulkan.VK10.VK_VERTEX_INPUT_RATE_VERTEX;
+package org.sc.viewer.renderactivity.postprocess.pipeline;
 
 import org.lwjgl.system.MemoryStack;
 import org.sc.themis.renderer.Renderer;
 import org.sc.themis.renderer.base.command.VkCommand;
-import org.sc.themis.renderer.base.pipeline.VkPipeline;
-import org.sc.themis.renderer.base.pipeline.VkPipelineDescriptor;
-import org.sc.themis.renderer.base.pipeline.VkPipelineLayout;
-import org.sc.themis.renderer.base.pipeline.VkPushConstantRange;
-import org.sc.themis.renderer.base.pipeline.VkShaderProgram;
-import org.sc.themis.renderer.base.pipeline.VkShaderProgramStage;
-import org.sc.themis.renderer.base.pipeline.VkVertexInputState;
-import org.sc.themis.renderer.base.pipeline.VkVertexInputStateDescriptor;
+import org.sc.themis.renderer.base.pipeline.*;
 import org.sc.themis.renderer.base.renderpass.VkRenderPass;
 import org.sc.themis.scene.descriptorset.InputDescriptorSet;
 import org.sc.themis.scene.descriptorset.SceneDescriptorSet;
 import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.utils.MemorySizeUtils;
+import org.sc.viewer.renderactivity.postprocess.PostProcessor;
 
-public class PostProcessorPipeline {
+import static org.lwjgl.vulkan.VK10.*;
+
+public class PostProcessorDrawOncePipeline implements PostProcessorPipeline {
 
   private final Configuration configuration;
   private final Renderer renderer;
@@ -37,12 +26,9 @@ public class PostProcessorPipeline {
   private VkPipelineLayout pipelineLayout;
   private VkPipeline pipeline;
 
-  public PostProcessorPipeline(
-      Configuration configuration,
-      Renderer renderer,
-      VkRenderPass renderpass,
-      SceneDescriptorSet sceneDescriptorset,
-      InputDescriptorSet geometryAttachmentDescriptorset,
+  public PostProcessorDrawOncePipeline(
+      Configuration configuration, Renderer renderer, VkRenderPass renderpass,
+      SceneDescriptorSet sceneDescriptorset, InputDescriptorSet geometryAttachmentDescriptorset,
       PostProcessor postProcessor) {
     this.configuration = configuration;
     this.renderer = renderer;
@@ -64,10 +50,7 @@ public class PostProcessorPipeline {
     this.shaderProgram.cleanup();
   }
 
-  public void resize(
-      VkRenderPass renderpass,
-      SceneDescriptorSet sceneDescriptorset,
-      InputDescriptorSet geometryAttachmentDescriptorset)
+  public void resize(VkRenderPass renderpass, SceneDescriptorSet sceneDescriptorset, InputDescriptorSet geometryAttachmentDescriptorset)
       throws ThemisException {
     this.renderpass = renderpass;
     this.sceneDescriptorset = sceneDescriptorset;
@@ -90,12 +73,10 @@ public class PostProcessorPipeline {
         new VkShaderProgram(
             this.configuration,
             this.renderer.getDevice(),
-            new VkShaderProgramStage(
-                VK_SHADER_STAGE_VERTEX_BIT, this.postProcessor.getVertexShader()),
-            new VkShaderProgramStage(
-                VK_SHADER_STAGE_GEOMETRY_BIT, this.postProcessor.getGeometryShader()),
-            new VkShaderProgramStage(
-                VK_SHADER_STAGE_FRAGMENT_BIT, this.postProcessor.getFragmentShader()));
+            new VkShaderProgramStage(VK_SHADER_STAGE_VERTEX_BIT, this.postProcessor.getVertexShader()),
+            new VkShaderProgramStage(VK_SHADER_STAGE_GEOMETRY_BIT, this.postProcessor.getGeometryShader()),
+            new VkShaderProgramStage(VK_SHADER_STAGE_FRAGMENT_BIT, this.postProcessor.getFragmentShader())
+        );
 
     this.shaderProgram.setup();
   }
@@ -118,15 +99,7 @@ public class PostProcessorPipeline {
   }
 
   private VkVertexInputState createVertexInputState(MemoryStack stack) {
-    VkVertexInputState inputState =
-        new VkVertexInputState(
-            new VkVertexInputStateDescriptor(VK_VERTEX_INPUT_RATE_VERTEX)
-                .attribute(VK_FORMAT_R32G32B32_SFLOAT, MemorySizeUtils.VEC3F) // Position
-                .attribute(VK_FORMAT_R32G32B32_SFLOAT, MemorySizeUtils.VEC3F) // Normal
-                .attribute(VK_FORMAT_R32G32_SFLOAT, MemorySizeUtils.VEC2F) // Texture
-                .attribute(VK_FORMAT_R32G32B32_SFLOAT, MemorySizeUtils.VEC3F) // Tangent
-                .attribute(VK_FORMAT_R32G32B32_SFLOAT, MemorySizeUtils.VEC3F) // Bitangentr
-            );
+    VkVertexInputState inputState = new VkVertexInputState();
     inputState.setup(stack);
     return inputState;
   }
@@ -135,14 +108,10 @@ public class PostProcessorPipeline {
     try (MemoryStack stack = MemoryStack.stackPush()) {
       VkPipelineDescriptor pipelineDescriptor = createPipelineDescriptor(renderpass);
       VkVertexInputState vertexInputState = createVertexInputState(stack);
-      this.pipeline =
-          new VkPipeline(
-              this.configuration,
-              this.renderer.getDevice(),
-              pipelineDescriptor,
-              this.shaderProgram,
-              this.pipelineLayout,
-              vertexInputState);
+      this.pipeline = new VkPipeline(
+          this.configuration, this.renderer.getDevice(), pipelineDescriptor,
+          this.shaderProgram, this.pipelineLayout, vertexInputState
+      );
       pipeline.setup();
     }
   }
