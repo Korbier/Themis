@@ -6,6 +6,7 @@ import org.sc.themis.renderer.base.resource.staging.VkStagingImage;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import static org.lwjgl.vulkan.VK10.VK_FORMAT_R8G8B8A8_SRGB;
 import static org.lwjgl.vulkan.VK10.VK_FORMAT_R8G8B8A8_UNORM;
@@ -21,6 +22,7 @@ public class MaterialProperties {
 
   public final static String PROPERTY_NAME_TEXTURE_ALBEDO = "texture.albedo";
   public final static String PROPERTY_NAME_TEXTURE_NORMAL = "texture.normal";
+  public final static String PROPERTY_NAME_TEXTURE_EMISSIVE = "texture.emissive";
 
   public final static String PROPERTY_NAME_FLOAT_SHININESS = "float.shininess";
 
@@ -31,9 +33,9 @@ public class MaterialProperties {
 
   public final static MaterialProperty<VkStagingImage> TEXTURE_ALBEDO = MaterialProperty.of(VkStagingImage.class, PROPERTY_NAME_TEXTURE_ALBEDO, VK_FORMAT_R8G8B8A8_SRGB);
   public final static MaterialProperty<VkStagingImage> TEXTURE_NORMAL = MaterialProperty.of(VkStagingImage.class, PROPERTY_NAME_TEXTURE_NORMAL, VK_FORMAT_R8G8B8A8_UNORM);
+  public final static MaterialProperty<VkStagingImage> TEXTURE_EMISSIVE = MaterialProperty.of(VkStagingImage.class, PROPERTY_NAME_TEXTURE_EMISSIVE, VK_FORMAT_R8G8B8A8_SRGB);
 
   public final static MaterialProperty<Float> FLOAT_SHININESS = MaterialProperty.of(Float.class, PROPERTY_NAME_FLOAT_SHININESS, -1);
-
 
   static {
     properties.put(PROPERTY_NAME_COLOR_AMBIENT,   COLOR_AMBIENT);
@@ -42,11 +44,16 @@ public class MaterialProperties {
     properties.put(PROPERTY_NAME_COLOR_EMISSIVE,  COLOR_EMISSIVE);
     properties.put(PROPERTY_NAME_TEXTURE_ALBEDO,  TEXTURE_ALBEDO);
     properties.put(PROPERTY_NAME_TEXTURE_NORMAL,  TEXTURE_NORMAL);
+    properties.put(PROPERTY_NAME_TEXTURE_EMISSIVE, TEXTURE_EMISSIVE);
     properties.put(PROPERTY_NAME_FLOAT_SHININESS, FLOAT_SHININESS);
   }
 
   public static <T> MaterialProperty<T> get(String name) {
     return (MaterialProperty<T>) properties.get(name);
+  }
+
+  public static Set<String> keys() {
+    return properties.keySet();
   }
 
 }

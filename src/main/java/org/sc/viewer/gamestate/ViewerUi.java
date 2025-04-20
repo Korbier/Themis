@@ -173,13 +173,25 @@ public class ViewerUi extends UiSceneController {
         .isToggledSupplier(() -> context.getKeyMapping().getState(GLFW_KEY_4))
         .onClick((_,_) -> context.getKeyMapping().execute(GLFW_KEY_4));
 
+    LabelBuilder matEmissiveLbl = builder().label()
+        .size(PANEL_COLUMN_A_WIDTH, PANEL_ROW_HEIGHT)
+        .position(PANEL_MARGIN, (PANEL_ROW_HEIGHT + PANEL_MARGIN) * 2 + PANEL_MARGIN)
+        .text("Emissive");
+
+    ToggleButtonBuilder matEmissiveTgl = builder().toggleButton()
+        .size(PANEL_COLUMN_B_WIDTH, PANEL_ROW_HEIGHT)
+        .position(PANEL_COLUMN_B_LEFT, (PANEL_ROW_HEIGHT + PANEL_MARGIN) * 2 + PANEL_MARGIN)
+        .isToggledSupplier(() -> context.getKeyMapping().getState(GLFW_KEY_5))
+        .onClick((_,_) -> context.getKeyMapping().execute(GLFW_KEY_5));
+
     return builder().panel()
         .position(left, top)
         .size(PANEL_WIDTH, PANEL_HEIGHT)
         .text("Material")
         .child(
             matCbx,
-            matNormMappingLbl, matNormMappingTgl
+            matNormMappingLbl, matNormMappingTgl,
+            matEmissiveLbl, matEmissiveTgl
         );
         //.childVisibilityRule(matCbx.getComboboxContent(), matCbx::isOpen);
   }

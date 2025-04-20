@@ -69,7 +69,12 @@ public class ModelFactory {
     Assertions.isTrue(modelFile.toFile()::exists, new ModelFileNotFoundException(modelFile));
 
     try (AIScene scene = aiImportFile(modelFile.toAbsolutePath().toString(), flags)) {
-      List<Material> properties = loadProperties(identifier, scene, allocator, manager, modelFile.getParent());
+
+      List<Material> properties = loadProperties(identifier, scene, allocator, modelFile.getParent());
+
+      if (manager != null) {
+        manager.addMaterials(properties.toArray(new Material[0]));
+      }
 
       Vector3f min = new Vector3f(Float.MAX_VALUE);
       Vector3f max = new Vector3f(Float.MIN_VALUE);
@@ -173,7 +178,7 @@ public class ModelFactory {
 
   }
 
-  private List<Material> loadProperties( String identifier, AIScene scene, VkStagingResourceAllocator allocator, MaterialManager manager, Path workdir) throws ThemisException {
+  private List<Material> loadProperties( String identifier, AIScene scene, VkStagingResourceAllocator allocator, Path workdir) throws ThemisException {
 
     List<Material> result = new ArrayList<>();
 
@@ -193,14 +198,14 @@ public class ModelFactory {
       setColor(aiMaterial, AI_MATKEY_COLOR_SPECULAR, properties, MaterialProperties.COLOR_SPECULAR);
       setFloat(aiMaterial, AI_MATKEY_SHININESS, properties, MaterialProperties.FLOAT_SHININESS);
 
-      setImage(workdir, allocator, aiMaterial, aiTextureType_BASE_COLOR, properties, MaterialProperties.TEXTURE_ALBEDO);
-     // setImage(workdir, allocator, aiMaterial, aiTextureType_DIFFUSE, properties, MaterialProperties.TEXTURE_ALBEDO);
+      //Add default texture for fallbacks
+      VkStagingImage stgImage = allocator.allocateImage(MaterialProperties.TEXTURE_NORMAL.getImageFormat());
+      Image image = Image.of(0.0f,0.0f,0.0f,0.0f);
+      stgImage.load(image);
 
-      setImage( workdir, allocator, aiMaterial, aiTextureType_NORMALS, properties, MaterialProperties.TEXTURE_NORMAL);
-
-      if (manager != null) {
-        manager.addMaterials(properties);
-      }
+      setImage(workdir, allocator, aiMaterial, aiTextureType_BASE_COLOR, properties, MaterialProperties.TEXTURE_ALBEDO, stgImage);
+      setImage(workdir, allocator, aiMaterial, aiTextureType_NORMALS, properties, MaterialProperties.TEXTURE_NORMAL, stgImage);
+      setImage(workdir, allocator, aiMaterial, aiTextureType_EMISSIVE, properties, MaterialProperties.TEXTURE_EMISSIVE, stgImage);
 
       result.add(properties);
 
@@ -211,12 +216,9 @@ public class ModelFactory {
 
   private void
   setImage(
-      Path workdir,
-      VkStagingResourceAllocator allocator,
-      AIMaterial aiMaterial,
-      int assimpAttr,
-      Material properties,
-      MaterialProperty<VkStagingImage> property
+      Path workdir, VkStagingResourceAllocator allocator, AIMaterial aiMaterial,
+      int assimpAttr, Material properties, MaterialProperty<VkStagingImage> property,
+      VkStagingImage defaultImage
   ) throws ThemisException {
 
     String path = getTexturePath(aiMaterial, assimpAttr);
@@ -227,6 +229,9 @@ public class ModelFactory {
       Image image = ResourceLoader.get().get(ResourceEnum.IMAGE, ImageResourceDescriptor.of(path), workdir);
       stgImage.load(image);
       properties.put(property, stgImage);
+    } else {
+      logger.info("Using default texture for property {}", property.getName());
+      properties.put(property, defaultImage);
     }
 
   }

@@ -17,6 +17,7 @@ public class Model {
 
   private Material material = null;
   private String materialRenderer = null;
+
   private Vector3f originalSize = null;
 
   public Model(String identifier, Mesh[] meshes) {

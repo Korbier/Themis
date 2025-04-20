@@ -66,7 +66,7 @@ public abstract class MaterialRenderer extends TObject {
   /** Others Descriptorset and descriptorsetLayout * */
   private VkDescriptorSetProvider[] descriptorsetProviders;
 
-  private boolean dirty = false;
+  private Map<Material, Boolean> dirty = new HashMap<>();
 
   public MaterialRenderer(Configuration configuration, String identifier) {
     super(configuration);
@@ -170,7 +170,7 @@ public abstract class MaterialRenderer extends TObject {
 
   //Provoque un rechargement des uniforms
   public void setDirty() {
-    this.dirty = true;
+    this.dirty.keySet().forEach(k -> this.dirty.put(k, true));
   }
 
   /** Material building methods - Variant Identifier function * */
@@ -288,12 +288,12 @@ public abstract class MaterialRenderer extends TObject {
   public void update(Material material) throws ThemisException {
 
     try {
-      if (this.dirty) {
+      if (this.dirty.containsKey(material) && this.dirty.get(material)) {
         String variantIdentifier = material.getVariantIdentifier(this);
         this.variants.get(variantIdentifier).update(material);
       }
     } finally {
-      this.dirty = false;
+      this.dirty.put(material, false);
     }
 
   }
