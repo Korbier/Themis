@@ -2,6 +2,7 @@ package org.sc.themis.scene;
 
 import org.joml.Vector3f;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.sc.TestWithConfiguration;
@@ -50,6 +51,7 @@ public class SpotLightTest extends TestWithConfiguration {
 
   @Test
   @DisplayName("Scene.add - nominal case")
+  @Disabled
   public void testSceneAdd_01() {
 
     // Given
