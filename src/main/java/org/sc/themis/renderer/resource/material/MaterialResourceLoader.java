@@ -27,18 +27,28 @@ public class MaterialResourceLoader implements BiFunctionWithException<Path, Mat
       Material material = new Material(file.name, file.author, file.source);
       Path directory = path.getParent().resolve(file.dir);
 
-      for (Map.Entry<String,String> entry : file.properties.entrySet()) {
+      //Default texture
+      VkStagingImage stgImage = descriptor.getAllocator().allocateImage(MaterialProperties.TEXTURE_NORMAL.getImageFormat());
+      Image image = Image.of(1.0f,1.0f,1.0f,1.0f);
+      stgImage.load(image);
 
-        String key = entry.getKey();
-        String value = entry.getValue();
+      for (String key : MaterialProperties.keys()) {
 
-        MaterialProperty<VkStagingImage> materialProperty = MaterialProperties.get("texture." + key);
+        String keyInFile = key.replace("texture.", "");
+        MaterialProperty<?> materialProperty = MaterialProperties.get(key);
 
-        VkStagingImage stgImage = descriptor.getAllocator().allocateImage(materialProperty.getImageFormat());
-        Image image = ResourceLoader.get().get(ResourceEnum.IMAGE, ImageResourceDescriptor.of(value), directory);
-        stgImage.load(image);
+        if (file.properties.containsKey(keyInFile)) {
+          String value = file.properties.get(keyInFile);
 
-        material.put(materialProperty, stgImage);
+          VkStagingImage stgTextureImage = descriptor.getAllocator().allocateImage(materialProperty.getImageFormat());
+          Image textureImage = ResourceLoader.get().get(ResourceEnum.IMAGE, ImageResourceDescriptor.of(value), directory);
+          stgTextureImage.load(textureImage);
+
+          material.put(materialProperty, stgTextureImage);
+
+        } else {
+          material.put(materialProperty, stgImage);
+        }
 
       }
 

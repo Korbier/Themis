@@ -143,8 +143,8 @@ public class ShowTBNPostprocessor implements PostProcessor {
   }
 
   @Override
-  public Frequency getFrequency() {
-    return Frequency.PER_VERTEX;
+  public DrawFrequency getFrequency() {
+    return DrawFrequency.DRAW_EVERY_VERTEX;
   }
 
   @Override

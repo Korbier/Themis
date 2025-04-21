@@ -1,0 +1,11 @@
+Model Information:
+* title:	Mecha roe deer
+* source:	https://sketchfab.com/3d-models/mecha-roe-deer-6c25867eda6a4dafb274eb9efd37ebfd
+* author:	Osho (https://sketchfab.com/Crysis007-94)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Mecha roe deer" (https://sketchfab.com/3d-models/mecha-roe-deer-6c25867eda6a4dafb274eb9efd37ebfd) by Osho (https://sketchfab.com/Crysis007-94) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

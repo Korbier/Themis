@@ -69,7 +69,8 @@ public class TextureMaterialRenderer extends MaterialRenderer {
                 
                 vec3 T = _normalize( normalMatrix, inTangent );
                 vec3 N = _normalize( normalMatrix, inNormal );
-                vec3 B = _normalize( normalMatrix, inBitangent );
+                T = normalize(T - dot(T, N) * N);
+                vec3 B = cross(N, T); //_normalize( normalMatrix, inBitangent );
                 
                 outTBNMatrix = mat3(T, B, N);                           
 
@@ -152,8 +153,10 @@ public class TextureMaterialRenderer extends MaterialRenderer {
             /******* DESCRIPTORSET - 2 - Material ******************/
             layout(set = 2, binding = 0) uniform sampler2D baseSampler;
             layout(set = 2, binding = 1) uniform sampler2D normalSampler;
-            layout(set = 2, binding = 2) uniform Material {
+            layout(set = 2, binding = 2) uniform sampler2D emissiveSampler;
+            layout(set = 2, binding = 3) uniform Material {
                 float enableNormal;
+                float enableEmissive;
             } material;
 
             /**** FUNCTIONS - Lights ****/
@@ -296,30 +299,36 @@ public class TextureMaterialRenderer extends MaterialRenderer {
                 vec3 view     = global.camera.xyz;
 
                 vec3 color = texture(baseSampler, inTexture).rgb;
-                vec3 normal = inNormal;
+                vec3 normal = normalize(inNormal);
                 
                 if (material.enableNormal == 1.0f) {
                     normal = texture(normalSampler, inTexture).rgb;
                     normal = normalize(tbn * (normal * 2.0 - 1.0));
                 }
   
-                float shininess = 128.0f;
+                float shininess = 1.0f;
                 vec3 finalColor = vec3(0.0f);
 
                 finalColor += phong_directionals(tbn, view, normal, position, color, color, color, shininess);
                 finalColor += phong_points(tbn, view, normal, position, color, color, color, shininess);
                 finalColor += phong_spots(tbn, view, normal, position, color, color, color, shininess);
+                                
+                if (material.enableEmissive == 1.0f) {
+                    finalColor += texture(emissiveSampler, inTexture).rgb;
+                }
 
                 outColor = vec4(finalColor, 1.0f );
 
             }
             """);
 
+
   public static final String IDENTIFIER = "materialRenderer.texture-with-normalmapping";
   private static final VkSamplerDescriptor DESCRIPTOR = new VkSamplerDescriptor(VK_FILTER_LINEAR, 1, true);
-  private static final VkBufferDescriptor BUFFER_DESCRIPTOR = VkBufferDescriptor.descriptorsetUniform(MemorySizeUtils.FLOAT);
+  private static final VkBufferDescriptor BUFFER_DESCRIPTOR = VkBufferDescriptor.descriptorsetUniform(MemorySizeUtils.FLOAT * 2);
 
   private boolean enableNormal = false;
+  private boolean enableEmissive = false;
 
   public TextureMaterialRenderer(Configuration configuration) {
     super(configuration, IDENTIFIER);
@@ -333,7 +342,9 @@ public class TextureMaterialRenderer extends MaterialRenderer {
     /** Pipeline * */
     addShader(VK_SHADER_STAGE_VERTEX_BIT, VkShaderSourceCompiler.compileShader(VERTEX_SOURCE, Shaderc.shaderc_glsl_vertex_shader));
     addShader(VK_SHADER_STAGE_FRAGMENT_BIT, VkShaderSourceCompiler.compileShader(FRAGMENT_SOURCE, Shaderc.shaderc_glsl_fragment_shader));
+
     addConstantRange(VK_SHADER_STAGE_VERTEX_BIT, 0, MemorySizeUtils.MAT4x4F);
+
     setVertexInputDescriptor(
         new VkVertexInputStateDescriptor(VK_VERTEX_INPUT_RATE_VERTEX)
             .attribute(VK_FORMAT_R32G32B32_SFLOAT, MemorySizeUtils.VEC3F) // Position
@@ -346,16 +357,22 @@ public class TextureMaterialRenderer extends MaterialRenderer {
     /** Variant layout **/
     addVariantsCombinedImageSamplerBinding(0, VK_SHADER_STAGE_FRAGMENT_BIT, DESCRIPTOR);
     addVariantsCombinedImageSamplerBinding(1, VK_SHADER_STAGE_FRAGMENT_BIT, DESCRIPTOR);
-    addVariantsUniformBinding(2, VK_SHADER_STAGE_FRAGMENT_BIT, BUFFER_DESCRIPTOR);
+    addVariantsCombinedImageSamplerBinding(2, VK_SHADER_STAGE_FRAGMENT_BIT, DESCRIPTOR);
+    addVariantsUniformBinding(3, VK_SHADER_STAGE_FRAGMENT_BIT, BUFFER_DESCRIPTOR);
 
     setVariantsCombinedImageSamplerSetter( (binding, descriptorset, sampler, props) -> {
           switch (binding) {
             case 0 -> descriptorset.bind(binding, props.getProperty(MaterialProperties.TEXTURE_ALBEDO).getView(), sampler);
             case 1 -> descriptorset.bind(binding, props.getProperty(MaterialProperties.TEXTURE_NORMAL).getView(), sampler);
+            case 2 -> descriptorset.bind(binding, props.getProperty(MaterialProperties.TEXTURE_EMISSIVE).getView(), sampler);
           }
         }
     );
-    setVariantsUniformSetter((binding, buffer, props) -> buffer.set(0, enableNormal ? 1.0f : 0.0f));
+
+    setVariantsUniformSetter((binding, buffer, props) -> {
+      buffer.set(0, enableNormal ? 1.0f : 0.0f);
+      buffer.set(MemorySizeUtils.FLOAT, enableEmissive ? 1.0f : 0.0f);
+    });
 
     /** Other descriptorsets * */
     setDescriptorsetProviders(descriptorsets);
@@ -373,4 +390,12 @@ public class TextureMaterialRenderer extends MaterialRenderer {
     return this.enableNormal;
   }
 
+  public void switchEnableEmissive() {
+    this.enableEmissive = !this.enableEmissive;
+    setDirty();
+  }
+
+  public boolean isEmissiveEnabled() {
+    return this.enableEmissive;
+  }
 }

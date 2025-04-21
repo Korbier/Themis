@@ -100,7 +100,6 @@ public class GeometryRenderPass extends RenderPass {
         for (Mesh mesh : model.getMeshes()) {
 
           Material material = this.materialManager.select(mesh.getProperties(), model.getMaterial());
-
           this.materialManager.updateMaterialRenderer(material);
 
           if (material == null) {

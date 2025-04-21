@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.joml.Vector3f;
 import org.sc.themis.renderer.resource.material.Material;
 import org.sc.themis.shared.exception.ThemisException;
 
@@ -17,9 +18,16 @@ public class Model {
   private Material material = null;
   private String materialRenderer = null;
 
+  private Vector3f originalSize = null;
+
   public Model(String identifier, Mesh[] meshes) {
+    this(identifier, meshes, null);
+  }
+
+  public Model(String identifier, Mesh[] meshes, Vector3f originalSize) {
     this.identifier = identifier;
     this.meshes = meshes;
+    this.originalSize = originalSize;
   }
 
   public String getIdentifier() {
@@ -28,6 +36,10 @@ public class Model {
 
   public Optional<String> getMaterialRenderer() {
     return Optional.ofNullable(this.materialRenderer);
+  }
+
+  public Vector3f getOriginalSize() {
+    return this.originalSize;
   }
 
   public void setMaterialRenderer(String materialRendererIdentifier) {

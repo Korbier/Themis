@@ -69,7 +69,8 @@ public class ViewerGamestate implements Gamestate {
   }
 
   private void setupCamera(Scene scene) {
-    scene.getCamera().setPosition(0.0f, 0.0f, 6f);
+    scene.getCamera().setPosition(2.0f, 1.f, 5.0f);
+    scene.getCamera().setRotationDeg(10.0f, -32.0f);
   }
 
   private void setupUI(Scene scene) {
@@ -87,11 +88,13 @@ public class ViewerGamestate implements Gamestate {
 
     TextureMaterialRenderer materialRenderer = (TextureMaterialRenderer) materialManager.get(TextureMaterialRenderer.IDENTIFIER);
     this.context.getKeyMapping().map(GLFW_KEY_4, false, materialRenderer::switchEnableNormal, materialRenderer::isNormalEnabled);
+    this.context.getKeyMapping().map(GLFW_KEY_5, false, materialRenderer::switchEnableEmissive, materialRenderer::isEmissiveEnabled);
 
-    //this.model = ResourceLoader.get().get(ResourceEnum.MODEL, ModelResourceDescriptor.of("base/textured_unit_cube.gltf", "model", renderer.getResourceAllocator()));
-    this.model = ResourceLoader.get().get(ResourceEnum.MODEL, ModelResourceDescriptor.of("sed-2_0/scene.gltf", "model", renderer.getResourceAllocator(), this.materialManager));
+    //this.model = ResourceLoader.get().get(ResourceEnum.MODEL, ModelResourceDescriptor.of("base/textured_unit_cube.gltf", "model", renderer.getResourceAllocator(), this.materialManager));
+    this.model = ResourceLoader.get().get(ResourceEnum.MODEL, ModelResourceDescriptor.of("mecha_roe_deer/scene.gltf", "model", renderer.getResourceAllocator(), this.materialManager));
     this.model.setMaterial(material);
     this.model.setMaterialRenderer(this.context.activeRenderer().getIdentifier());
+
 
     this.context.getKeyMapping().mapTrigger(
         "TRIGGER.CHANGE.RENDERER",
@@ -99,10 +102,17 @@ public class ViewerGamestate implements Gamestate {
         () -> this.model.getMaterialRenderer().orElse(null)
     );
 
-    this.instance = this.model.create().position(1.5f, -2.0f, 0.0f).scale(1.5f);
+    this.instance = this.model.create();
+
+    if (this.model.getOriginalSize() != null) {
+      float max = Math.max(this.model.getOriginalSize().x, Math.max(this.model.getOriginalSize().y, this.model.getOriginalSize().z));
+      this.instance.scale( 4 / max ).position(0, -2, 0);
+    }
+
+    //sed-2_0    = this.model.create().scale(1.8f).position(1.0f, 0.0f, 0.0f);
     //base/cube    = this.model.create().scale(1.8f).position(1.0f, 0.0f, 0.0f);
     //anthro_shark = this.model.create().scale(1.0f).position(2.0f, -2.8f, 0.0f);
-    //mechanic_projection_sub = this.model.create().scale(2.5f);
+    //mechanic_projection_sub-02 = this.model.create().scale(2.5f);
     //portrait_from_the_future = this.model.create().scale(0.5f).position(1.0f, -60.0f, -20.0f);
     scene.add(instance);
     //scene.add(new FpsCameraController(scene));
@@ -112,16 +122,16 @@ public class ViewerGamestate implements Gamestate {
         new Vector3f(0.01f),
         new Vector3f(0.5f),
         new Vector3f(0.7f),
-        new Vector3f(0.0f, 0.0f, 5.0f)
+        new Vector3f(0.0f, 10.0f, 10.0f)
     );
     scene.add(dLight);
     this.context.getKeyMapping().map(GLFW_KEY_1, false, dLight::switchVisible, dLight::isVisible);
 
     PointLight pLight = new PointLight(
         new Vector3f(0.01f),
-        new Vector3f(0.7f, 0.0f, 0.0f),
-        new Vector3f(0.9f, 0.0f, 0.0f),
-        new Vector3f(0.0f, 5.0f, 3.0f), //new Vector3f(5.0f, d5.0f, 5.0f),
+        new Vector3f(0.7f, 0.3f, 0.0f),
+        new Vector3f(0.9f, 0.5f, 0.0f),
+        new Vector3f(5.0f, 3.0f, 0.0f),
         Attenuation.type1(32.0f, 4.0f)
     );
     scene.add(pLight);

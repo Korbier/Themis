@@ -1,6 +1,7 @@
 package org.sc.themis.scene.factory;
 
 import org.joml.Vector4f;
+import org.sc.themis.renderer.resource.image.Image;
 import org.sc.themis.renderer.resource.material.Material;
 import org.sc.themis.renderer.resource.material.MaterialProperties;
 import org.sc.themis.renderer.resource.material.MaterialProperty;
@@ -20,13 +21,6 @@ public class MaterialFactory {
   public Material color(float r, float g, float b, float shininess) {
     Vector4f color = new Vector4f(r, g, b, 1.0f);
     return color(color, color, color, shininess);
-  }
-
-  public Material textureWithNormalMap(VkStagingImage texture, VkStagingImage normalMap) {
-    Material properties = new Material("texture");
-    properties.put(MaterialProperties.TEXTURE_ALBEDO, texture);
-    properties.put(MaterialProperties.TEXTURE_NORMAL, normalMap);
-    return properties;
   }
 
 }

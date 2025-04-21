@@ -69,9 +69,20 @@ public class ModelFactory {
     Assertions.isTrue(modelFile.toFile()::exists, new ModelFileNotFoundException(modelFile));
 
     try (AIScene scene = aiImportFile(modelFile.toAbsolutePath().toString(), flags)) {
-      List<Material> properties = loadProperties(identifier, scene, allocator, manager, modelFile.getParent());
-      Mesh[] meshes = loadMeshs(allocator, identifier, scene, properties);
-      return new Model(identifier, meshes);
+
+      List<Material> properties = loadProperties(identifier, scene, allocator, modelFile.getParent());
+
+      if (manager != null) {
+        manager.addMaterials(properties.toArray(new Material[0]));
+      }
+
+      Vector3f min = new Vector3f(Float.MAX_VALUE);
+      Vector3f max = new Vector3f(Float.MIN_VALUE);
+
+      Mesh[] meshes = loadMeshs(allocator, identifier, scene, properties, min, max);
+
+      return new Model(identifier, meshes, max.sub(min));
+
     }
 
   }
@@ -80,7 +91,7 @@ public class ModelFactory {
     return modelIdentifier + ".mesh." + inc;
   }
 
-  public Mesh[] loadMeshs(VkStagingResourceAllocator allocator, String modelIdentifier, AIScene scene, List<Material> properties)
+  public Mesh[] loadMeshs(VkStagingResourceAllocator allocator, String modelIdentifier, AIScene scene, List<Material> properties, Vector3f min, Vector3f max)
       throws ThemisException {
 
     PointerBuffer aiMeshesBuffer = scene.mMeshes();
@@ -88,11 +99,12 @@ public class ModelFactory {
 
     Mesh[] meshes = new Mesh[numMeshes];
 
+
     for (int i = 0; i < numMeshes; i++) {
 
       AIMesh aiMesh = AIMesh.create(aiMeshesBuffer.get(i));
 
-      Vertex[] vertices = getVertices(aiMesh);
+      Vertex[] vertices = getVertices(aiMesh, min, max);
       int[] indices = getIndices(aiMesh);
 
       meshes[i] = new Mesh(allocator, getMeshIdentifier(modelIdentifier, i));
@@ -104,7 +116,7 @@ public class ModelFactory {
     return meshes;
   }
 
-  private Vertex[] getVertices(AIMesh aiMesh) {
+  private Vertex[] getVertices(AIMesh aiMesh, Vector3f min, Vector3f max) {
 
     List<Vertex> vertices = new ArrayList<>();
 
@@ -122,15 +134,24 @@ public class ModelFactory {
       AIVector3D tangent = aiTangents != null ? aiTangents.get() : null;
       AIVector3D bitangent = aiBitangents != null ? aiBitangents.get() : null;
 
-      vertices.add(
-          Vertex.of(
-              new Vector3f(aiVertex.x(), aiVertex.y(), aiVertex.z()),
-              normal != null ? new Vector3f(normal.x(), normal.y(), normal.z()) : new Vector3f(),
-              textCoord != null ? new Vector2f(textCoord.x(), 1 - textCoord.y()) : new Vector2f(),
-              tangent != null ? new Vector3f(tangent.x(), tangent.y(), tangent.z()) : new Vector3f(),
-              bitangent != null ? new Vector3f(bitangent.x(), bitangent.y(), bitangent.z()) : new Vector3f()
-          )
+      Vertex v =  Vertex.of(
+          new Vector3f(aiVertex.x(), aiVertex.y(), aiVertex.z()),
+          normal != null ? new Vector3f(normal.x(), normal.y(), normal.z()) : new Vector3f(),
+          textCoord != null ? new Vector2f(textCoord.x(), 1 - textCoord.y()) : new Vector2f(),
+          tangent != null ? new Vector3f(tangent.x(), tangent.y(), tangent.z()) : new Vector3f(),
+          bitangent != null ? new Vector3f(bitangent.x(), bitangent.y(), bitangent.z()) : new Vector3f()
       );
+
+      min.x = Float.min(min.x, v.position().x);
+      min.y = Float.min(min.y, v.position().y);
+      min.z = Float.min(min.z, v.position().z);
+
+      max.x = Float.max(max.x, v.position().x);
+      max.y = Float.max(max.y, v.position().y);
+      max.z = Float.max(max.z, v.position().z);
+
+      vertices.add(v);
+
     }
 
     return vertices.toArray(Vertex[]::new);
@@ -157,7 +178,7 @@ public class ModelFactory {
 
   }
 
-  private List<Material> loadProperties( String identifier, AIScene scene, VkStagingResourceAllocator allocator, MaterialManager manager, Path workdir) throws ThemisException {
+  private List<Material> loadProperties( String identifier, AIScene scene, VkStagingResourceAllocator allocator, Path workdir) throws ThemisException {
 
     List<Material> result = new ArrayList<>();
 
@@ -177,12 +198,14 @@ public class ModelFactory {
       setColor(aiMaterial, AI_MATKEY_COLOR_SPECULAR, properties, MaterialProperties.COLOR_SPECULAR);
       setFloat(aiMaterial, AI_MATKEY_SHININESS, properties, MaterialProperties.FLOAT_SHININESS);
 
-      setImage(workdir, allocator, aiMaterial, aiTextureType_BASE_COLOR, properties, MaterialProperties.TEXTURE_ALBEDO);
-      setImage( workdir, allocator, aiMaterial, aiTextureType_NORMALS, properties, MaterialProperties.TEXTURE_NORMAL);
+      //Add default texture for fallbacks
+      VkStagingImage stgImage = allocator.allocateImage(MaterialProperties.TEXTURE_NORMAL.getImageFormat());
+      Image image = Image.of(0.0f,0.0f,0.0f,0.0f);
+      stgImage.load(image);
 
-      if (manager != null) {
-        manager.addMaterials(properties);
-      }
+      setImage(workdir, allocator, aiMaterial, aiTextureType_BASE_COLOR, properties, MaterialProperties.TEXTURE_ALBEDO, stgImage);
+      setImage(workdir, allocator, aiMaterial, aiTextureType_NORMALS, properties, MaterialProperties.TEXTURE_NORMAL, stgImage);
+      setImage(workdir, allocator, aiMaterial, aiTextureType_EMISSIVE, properties, MaterialProperties.TEXTURE_EMISSIVE, stgImage);
 
       result.add(properties);
 
@@ -193,12 +216,9 @@ public class ModelFactory {
 
   private void
   setImage(
-      Path workdir,
-      VkStagingResourceAllocator allocator,
-      AIMaterial aiMaterial,
-      int assimpAttr,
-      Material properties,
-      MaterialProperty<VkStagingImage> property
+      Path workdir, VkStagingResourceAllocator allocator, AIMaterial aiMaterial,
+      int assimpAttr, Material properties, MaterialProperty<VkStagingImage> property,
+      VkStagingImage defaultImage
   ) throws ThemisException {
 
     String path = getTexturePath(aiMaterial, assimpAttr);
@@ -209,6 +229,9 @@ public class ModelFactory {
       Image image = ResourceLoader.get().get(ResourceEnum.IMAGE, ImageResourceDescriptor.of(path), workdir);
       stgImage.load(image);
       properties.put(property, stgImage);
+    } else {
+      logger.info("Using default texture for property {}", property.getName());
+      properties.put(property, defaultImage);
     }
 
   }

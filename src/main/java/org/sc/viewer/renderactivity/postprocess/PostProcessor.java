@@ -2,14 +2,14 @@ package org.sc.viewer.renderactivity.postprocess;
 
 public interface PostProcessor {
 
-  enum Frequency {
-    ONCE,
-    PER_VERTEX
+  enum DrawFrequency {
+    DRAW_ONCE,
+    DRAW_EVERY_VERTEX
   }
 
   String getIdentifier();
 
-  Frequency getFrequency();
+  DrawFrequency getFrequency();
 
   byte[] getVertexShader();
 

@@ -1,0 +1,11 @@
+Model Information:
+* title:	ALIEN
+* source:	https://sketchfab.com/3d-models/alien-29b88bd5e48145d59b7a248e9f9608a8
+* author:	EdDeasy (https://sketchfab.com/EdDeasy)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "ALIEN" (https://sketchfab.com/3d-models/alien-29b88bd5e48145d59b7a248e9f9608a8) by EdDeasy (https://sketchfab.com/EdDeasy) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
