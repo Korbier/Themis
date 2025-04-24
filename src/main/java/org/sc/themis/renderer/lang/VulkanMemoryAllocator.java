@@ -19,9 +19,9 @@ import org.lwjgl.vulkan.VkBufferCreateInfo;
 import org.lwjgl.vulkan.VkDevice;
 import org.lwjgl.vulkan.VkMemoryAllocateInfo;
 import org.lwjgl.vulkan.VkMemoryRequirements;
-import org.sc.themis.renderer.base.exception.VkOutOfDeviceMemoryException;
-import org.sc.themis.renderer.base.exception.VkOutOfHostMemoryException;
-import org.sc.themis.renderer.base.exception.VulkanException;
+import org.sc.themis.renderer.lang.exception.VkOutOfDeviceMemoryException;
+import org.sc.themis.renderer.lang.exception.VkOutOfHostMemoryException;
+import org.sc.themis.renderer.lang.exception.VulkanException;
 import org.sc.themis.shared.exception.ThemisException;
 
 public class VulkanMemoryAllocator extends Vulkan {

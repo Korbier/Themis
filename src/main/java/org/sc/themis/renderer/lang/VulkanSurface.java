@@ -13,10 +13,10 @@ import org.lwjgl.vulkan.VkQueue;
 import org.lwjgl.vulkan.VkSurfaceCapabilitiesKHR;
 import org.lwjgl.vulkan.VkSurfaceFormatKHR;
 import org.lwjgl.vulkan.VkSwapchainCreateInfoKHR;
-import org.sc.themis.renderer.base.exception.VkOutOfDateKHRException;
-import org.sc.themis.renderer.base.exception.VkOutOfDeviceMemoryException;
-import org.sc.themis.renderer.base.exception.VkOutOfHostMemoryException;
-import org.sc.themis.renderer.base.exception.VkSuboptimalKHRException;
+import org.sc.themis.renderer.lang.exception.VkOutOfDateKHRException;
+import org.sc.themis.renderer.lang.exception.VkOutOfDeviceMemoryException;
+import org.sc.themis.renderer.lang.exception.VkOutOfHostMemoryException;
+import org.sc.themis.renderer.lang.exception.VkSuboptimalKHRException;
 import org.sc.themis.shared.exception.ThemisException;
 
 public class VulkanSurface extends Vulkan {

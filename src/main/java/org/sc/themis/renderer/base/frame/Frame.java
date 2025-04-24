@@ -42,16 +42,13 @@ public class Frame {
     return put(key, function.apply(frame));
   }
 
-  <T extends TObject> T update(FrameKey<T> key, ConsumerWithException<T> consumer)
-      throws ThemisException {
+  <E extends ThemisException, T extends TObject> T update(FrameKey<T> key, ConsumerWithException<E, T> consumer) throws E {
     T data = (T) this.content.get(key);
     consumer.accept(data);
     return data;
   }
 
-  <T extends TObject> T update(
-      FrameKey<T> key, int frame, BiConsumerWithException<Integer, T> consumer)
-      throws ThemisException {
+  <E extends ThemisException, T extends TObject> T update(FrameKey<T> key, int frame, BiConsumerWithException<E, Integer, T> consumer) throws E {
     T data = (T) this.content.get(key);
     consumer.accept(frame, data);
     return data;

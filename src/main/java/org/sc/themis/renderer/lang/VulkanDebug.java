@@ -6,7 +6,7 @@ import static org.lwjgl.vulkan.EXTDebugUtils.vkDestroyDebugUtilsMessengerEXT;
 import java.nio.LongBuffer;
 import org.lwjgl.vulkan.VkDebugUtilsMessengerCreateInfoEXT;
 import org.lwjgl.vulkan.VkInstance;
-import org.sc.themis.renderer.base.exception.VkOutOfHostMemoryException;
+import org.sc.themis.renderer.lang.exception.VkOutOfHostMemoryException;
 import org.sc.themis.shared.exception.ThemisException;
 
 public class VulkanDebug extends Vulkan {

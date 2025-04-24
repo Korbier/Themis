@@ -26,10 +26,10 @@ import org.lwjgl.vulkan.VkGraphicsPipelineCreateInfo;
 import org.lwjgl.vulkan.VkPipelineLayoutCreateInfo;
 import org.lwjgl.vulkan.VkShaderModuleCreateInfo;
 import org.lwjgl.vulkan.VkWriteDescriptorSet;
-import org.sc.themis.renderer.base.exception.VkFragmentedPoolException;
-import org.sc.themis.renderer.base.exception.VkOutOfDeviceMemoryException;
-import org.sc.themis.renderer.base.exception.VkOutOfHostMemoryException;
-import org.sc.themis.renderer.base.exception.VkOutOfPoolMemoryException;
+import org.sc.themis.renderer.lang.exception.VkFragmentedPoolException;
+import org.sc.themis.renderer.lang.exception.VkOutOfDeviceMemoryException;
+import org.sc.themis.renderer.lang.exception.VkOutOfHostMemoryException;
+import org.sc.themis.renderer.lang.exception.VkOutOfPoolMemoryException;
 import org.sc.themis.shared.exception.ThemisException;
 
 public class VulkanPipeline extends Vulkan {

@@ -56,21 +56,19 @@ public class Frames {
     }
   }
 
-  public <T extends TObject> void update(FrameKey<T> key, ConsumerWithException<T> consumer)
-      throws ThemisException {
+  public <E extends ThemisException, T extends TObject> void update(FrameKey<T> key, ConsumerWithException<E, T> consumer) throws E {
     for (Frame frame : this.frames) {
       frame.update(key, consumer);
     }
   }
 
-  public <T extends TObject> void update( FrameKey<T> key, BiConsumerWithException<Integer, T> consumer) throws ThemisException {
+  public <E extends ThemisException, T extends TObject> void update( FrameKey<T> key, BiConsumerWithException<E, Integer, T> consumer) throws ThemisException {
     for (int i = 0; i < this.size; i++) {
       frames[i].update(key, i, consumer);
     }
   }
 
-  public <T extends TObject> T update(int idx, FrameKey<T> key, ConsumerWithException<T> consumer)
-      throws ThemisException {
+  public <E extends ThemisException, T extends TObject> T update(int idx, FrameKey<T> key, ConsumerWithException<E, T> consumer) throws E {
     return this.frames[idx].update(key, consumer);
   }
 

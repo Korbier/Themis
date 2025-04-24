@@ -12,8 +12,8 @@ import org.lwjgl.vulkan.VkDevice;
 import org.lwjgl.vulkan.VkImageCreateInfo;
 import org.lwjgl.vulkan.VkImageViewCreateInfo;
 import org.lwjgl.vulkan.VkSamplerCreateInfo;
-import org.sc.themis.renderer.base.exception.VkOutOfDeviceMemoryException;
-import org.sc.themis.renderer.base.exception.VkOutOfHostMemoryException;
+import org.sc.themis.renderer.lang.exception.VkOutOfDeviceMemoryException;
+import org.sc.themis.renderer.lang.exception.VkOutOfHostMemoryException;
 import org.sc.themis.shared.exception.ThemisException;
 
 public class VulkanImage extends Vulkan {

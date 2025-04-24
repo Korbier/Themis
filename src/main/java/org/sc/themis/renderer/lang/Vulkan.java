@@ -2,8 +2,8 @@ package org.sc.themis.renderer.lang;
 
 import java.util.function.Supplier;
 import org.lwjgl.vulkan.VK10;
-import org.sc.themis.renderer.base.exception.VulkanException;
-import org.sc.themis.shared.exception.ThemisException;
+import org.sc.themis.renderer.lang.exception.VkUnknownErrorException;
+import org.sc.themis.renderer.lang.exception.VulkanException;
 import org.sc.themis.shared.function.ConsumerWithException;
 
 public class Vulkan {
@@ -14,11 +14,9 @@ public class Vulkan {
    *
    * @param supplier the supplier for obtaining the Vulkan operation result
    * @param consumerWithException the consumer for handling Vulkan errors
-   * @throws ThemisException if an unknown error occurs during the Vulkan operation
+   * @throws E if an unknown error occurs during the Vulkan operation
    */
-  protected void vk(
-      Supplier<Integer> supplier, ConsumerWithException<Integer> consumerWithException)
-      throws ThemisException {
+  protected <E extends VulkanException> void vk(Supplier<Integer> supplier, ConsumerWithException<E, Integer> consumerWithException) throws E {
 
     int errno = supplier.get();
 
@@ -28,7 +26,8 @@ public class Vulkan {
 
     consumerWithException.accept(errno);
 
-    throw new VulkanException(errno, "Unknown error");
+    throw (E) new VkUnknownErrorException(errno);
+
   }
 
   /**
@@ -48,4 +47,5 @@ public class Vulkan {
   protected interface VulkanExecutor {
     void execute();
   }
+
 }
