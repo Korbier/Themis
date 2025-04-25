@@ -92,7 +92,7 @@ public class ViewerGamestate implements Gamestate {
     this.context.getKeyMapping().map(GLFW_KEY_5, false, materialRenderer::switchEnableEmissive, materialRenderer::isEmissiveEnabled);
 
     //this.model = ResourceLoader.get().get(ResourceEnum.MODEL, ModelResourceDescriptor.of("base/textured_unit_cube.gltf", "model", renderer.getResourceAllocator(), this.materialManager));
-    this.model = ResourceLoader.get().get(ResourceEnum.MODEL, ModelResourceDescriptor.of("cyberpunk_lost_planet/scene.gltf", "model", renderer.getResourceAllocator(), this.materialManager));
+    this.model = ResourceLoader.get().get(ResourceEnum.MODEL, ModelResourceDescriptor.of("mecha_roe_deer/scene.gltf", "model", renderer.getResourceAllocator(), this.materialManager));
     this.model.setMaterial(material);
     this.model.setMaterialRenderer(this.context.activeRenderer().getIdentifier());
 
@@ -107,7 +107,7 @@ public class ViewerGamestate implements Gamestate {
 
     if (this.model.getOriginalSize() != null) {
       float max = Math.max(this.model.getOriginalSize().x, Math.max(this.model.getOriginalSize().y, this.model.getOriginalSize().z));
-      this.instance.scale( 4 / max );
+      this.instance.scale( 4 / max ).position(0, -2, 0);
     }
 
     //sed-2_0    = this.model.create().scale(1.8f).position(1.0f, 0.0f, 0.0f);

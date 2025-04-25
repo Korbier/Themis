@@ -4,6 +4,7 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkExtent2D;
 import org.sc.themis.core.LifeCycle;
 import org.sc.themis.input.Input;
+import org.sc.themis.renderer.base.Device;
 import org.sc.themis.renderer.base.command.VkCommand;
 import org.sc.themis.renderer.base.command.VkCommandPool;
 import org.sc.themis.renderer.base.device.*;
@@ -45,10 +46,7 @@ public class Renderer implements LifeCycle {
   private final Input input;
   private final RendererActivity activity;
 
-  private final VkInstance instance;
-  private VkPhysicalDevice physicalDevice;
-  private VkDevice device;
-  private VkMemoryAllocator memoryAllocator;
+  private final Device device;
 
   private VkSurface surface;
   private VkSwapChain swapChain;
@@ -74,17 +72,14 @@ public class Renderer implements LifeCycle {
     this.window = window;
     this.input = input;
     this.activity = activity;
-    this.instance = new VkInstance(configuration);
+    this.device = new Device(configuration);
   }
 
   @Override
   public void setup() throws ThemisException {
 
     //Core setups
-    this.instance.setup();
-    this.setupPhysicalDevice();
-    this.setupDevice();
-    this.setupMemoryAllocator();
+    this.device.setup();
 
     //Presentation setup
     this.setupSurface();
@@ -106,7 +101,7 @@ public class Renderer implements LifeCycle {
   }
 
   private void setupResourceAllocator() throws ThemisException {
-    getServices().set(VkStagingResourceAllocator.class, new VkStagingResourceAllocator(this.device, this.memoryAllocator));
+    getServices().set(VkStagingResourceAllocator.class, new VkStagingResourceAllocator(this.device.device(), this.device.memoryAllocator()));
   }
 
   @Override
@@ -121,10 +116,7 @@ public class Renderer implements LifeCycle {
     this.graphicQueue.cleanup();
     this.surface.cleanup();
     this.services.cleanup();
-    this.memoryAllocator.cleanup();
     this.device.cleanup();
-    this.physicalDevice.cleanup();
-    this.instance.cleanup();
   }
 
   public ServiceContainer getServices() {
@@ -182,11 +174,11 @@ public class Renderer implements LifeCycle {
   }
 
   public VkDevice getDevice() {
-    return this.device;
+    return this.device.device();
   }
 
   public VkMemoryAllocator getMemoryAllocator() {
-    return this.memoryAllocator;
+    return this.device.memoryAllocator();
   }
 
   public VkStagingResourceAllocator getResourceAllocator() {
@@ -257,7 +249,7 @@ public class Renderer implements LifeCycle {
 
   private void setupSwapChain() throws ThemisException {
     this.swapChain = new VkSwapChain(
-        this.window, this.device, this.surface,
+        this.window, this.device.device(), this.surface,
         this.configuration.get(ConfigurationEnum.rendererImageCount, 3),
         this.configuration.get(ConfigurationEnum.rendererVSyncEnabled, true),
         this.presentQueue, this.graphicQueue, this.transfertQueue);
@@ -265,7 +257,7 @@ public class Renderer implements LifeCycle {
   }
 
   private void setupSurface() throws ThemisException {
-    this.surface = new VkSurface(this.instance, this.window);
+    this.surface = new VkSurface(this.device.instance(), this.window);
     this.surface.setup();
   }
 
@@ -274,9 +266,9 @@ public class Renderer implements LifeCycle {
   }
 
   private void setupCommandPool() throws ThemisException {
-    this.graphicCommandPool = new VkCommandPool(this.device, this.graphicQueue);
+    this.graphicCommandPool = new VkCommandPool(this.device.device(), this.graphicQueue);
     this.graphicCommandPool.setup();
-    this.transfertCommandPool = new VkCommandPool(this.device, this.transfertQueue);
+    this.transfertCommandPool = new VkCommandPool(this.device.device(), this.transfertQueue);
     this.transfertCommandPool.setup();
     this.transfertCommand = createTransfertCommand(true);
   }
@@ -287,34 +279,11 @@ public class Renderer implements LifeCycle {
     this.presentQueue = this.device.selectPresentQueue(DEFAULT_QUEUE_INDEX, this.surface);
   }
 
-  private void setupMemoryAllocator() throws ThemisException {
-    this.memoryAllocator = new VkMemoryAllocator(this.physicalDevice, this.device, this.instance);
-    this.memoryAllocator.setup();
-  }
 
-  private void setupDevice() throws ThemisException {
-
-    this.device = new VkDevice(
-        this.physicalDevice,
-        this.configuration.get(ConfigurationEnum.rendererFeatureSamplerAnisotropy, false),
-        this.configuration.get(ConfigurationEnum.rendererFeatureGeometryShader, false),
-        this.configuration.get(ConfigurationEnum.rendererFeatureFragmentStoresAndAtomics, false)
-    );
-    this.device.setup();
-  }
-
-  private void setupPhysicalDevice() throws ThemisException {
-    VkPhysicalDevices devices = new VkPhysicalDevices(this.instance);
-    try {
-      devices.setup();
-      this.physicalDevice = devices.select(VkPhysicalDeviceSelectors.hasGraphicsQueue.and(VkPhysicalDeviceSelectors.hasKHRSwapChainExtension));
-    } finally {
-      devices.cleanup();
-    }
-  }
 
   private void setupSemaphores() throws ThemisException {
-    this.framesInFlight.create(FK_ACQUIRE_SEMAPHORE, () -> new VkSemaphore(this.device));
-    this.framesInFlight.create(FK_PRESENT_SEMAPHORE, () -> new VkSemaphore(this.device));
+    this.framesInFlight.create(FK_ACQUIRE_SEMAPHORE, () -> new VkSemaphore(this.device.device()));
+    this.framesInFlight.create(FK_PRESENT_SEMAPHORE, () -> new VkSemaphore(this.device.device()));
   }
+
 }

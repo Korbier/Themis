@@ -1,4 +1,4 @@
-package org.sc.themis.renderer.base;
+package org.sc.themis.renderer.resource;
 
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.function.BiFunctionWithException;

@@ -1,6 +1,5 @@
 package org.sc.themis.renderer.resource;
 
-import org.sc.themis.renderer.base.ResourceType;
 import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.configuration.ConfigurationEnum;
 import org.sc.themis.shared.exception.ThemisException;
