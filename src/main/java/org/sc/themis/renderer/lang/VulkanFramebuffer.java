@@ -10,7 +10,7 @@ import org.sc.themis.renderer.lang.exception.VkOutOfDeviceMemoryException;
 import org.sc.themis.renderer.lang.exception.VkOutOfHostMemoryException;
 import org.sc.themis.shared.exception.ThemisException;
 
-public class VulkanFramebuffer extends Vulkan {
+public class VulkanFramebuffer extends VulkanBackend {
 
   public void createFramebuffer(
       VkDevice device, VkFramebufferCreateInfo pCreateInfo, LongBuffer pFramebuffer)

@@ -16,7 +16,7 @@ import org.sc.themis.renderer.lang.exception.VkOutOfDeviceMemoryException;
 import org.sc.themis.renderer.lang.exception.VkOutOfHostMemoryException;
 import org.sc.themis.shared.exception.ThemisException;
 
-public class VulkanImage extends Vulkan {
+public class VulkanImage extends VulkanBackend {
 
   public void createImage(VkDevice device, VkImageCreateInfo pCreateInfo, LongBuffer pImage)
       throws ThemisException {

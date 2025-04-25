@@ -10,7 +10,7 @@ import org.sc.themis.renderer.lang.exception.VkOutOfDeviceMemoryException;
 import org.sc.themis.renderer.lang.exception.VkOutOfHostMemoryException;
 import org.sc.themis.shared.exception.ThemisException;
 
-public class VulkanRenderPass extends Vulkan {
+public class VulkanRenderPass extends VulkanBackend {
 
   public void createRenderPass(
       VkDevice device, VkRenderPassCreateInfo pCreateInfo, LongBuffer pRenderPass)

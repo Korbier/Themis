@@ -24,7 +24,7 @@ import org.sc.themis.renderer.lang.exception.VkOutOfHostMemoryException;
 import org.sc.themis.renderer.lang.exception.VulkanException;
 import org.sc.themis.shared.exception.ThemisException;
 
-public class VulkanMemoryAllocator extends Vulkan {
+public class VulkanMemoryAllocator extends VulkanBackend {
 
   public void createAllocator(VmaAllocatorCreateInfo createInfo, PointerBuffer pAllocator)
       throws ThemisException {

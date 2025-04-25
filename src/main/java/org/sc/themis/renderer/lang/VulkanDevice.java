@@ -18,7 +18,7 @@ import org.sc.themis.renderer.lang.exception.VkOutOfHostMemoryException;
 import org.sc.themis.renderer.lang.exception.VkTooManyObjectsException;
 import org.sc.themis.shared.exception.ThemisException;
 
-public class VulkanDevice extends Vulkan {
+public class VulkanDevice extends VulkanBackend {
 
   public void createDevice(
       VkPhysicalDevice physicalDevice, VkDeviceCreateInfo pCreateInfo, PointerBuffer pDevice)

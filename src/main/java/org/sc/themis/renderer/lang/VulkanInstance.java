@@ -20,7 +20,7 @@ import org.sc.themis.renderer.lang.exception.VkOutOfHostMemoryException;
 import org.sc.themis.renderer.lang.exception.VulkanException;
 import org.sc.themis.shared.exception.ThemisException;
 
-public class VulkanInstance extends Vulkan {
+public class VulkanInstance extends VulkanBackend {
 
   public void createInstance(VkInstanceCreateInfo pCreateInfo, PointerBuffer pInstance)
       throws ThemisException {

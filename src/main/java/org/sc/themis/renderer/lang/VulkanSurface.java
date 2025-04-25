@@ -19,7 +19,7 @@ import org.sc.themis.renderer.lang.exception.VkOutOfHostMemoryException;
 import org.sc.themis.renderer.lang.exception.VkSuboptimalKHRException;
 import org.sc.themis.shared.exception.ThemisException;
 
-public class VulkanSurface extends Vulkan {
+public class VulkanSurface extends VulkanBackend {
 
   public void createWindowSurface(VkInstance instance, long window, LongBuffer pSurface)
       throws ThemisException {

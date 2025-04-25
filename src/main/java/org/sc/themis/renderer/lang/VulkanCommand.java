@@ -37,7 +37,7 @@ import org.sc.themis.renderer.lang.exception.VkOutOfHostMemoryException;
 import org.sc.themis.renderer.lang.exception.VulkanException;
 import org.sc.themis.shared.exception.ThemisException;
 
-public class VulkanCommand extends Vulkan {
+public class VulkanCommand extends VulkanBackend {
 
   /**
    * Create a new command pool object

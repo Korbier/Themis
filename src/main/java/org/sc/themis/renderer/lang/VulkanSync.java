@@ -15,7 +15,7 @@ import org.sc.themis.renderer.lang.exception.VkOutOfDeviceMemoryException;
 import org.sc.themis.renderer.lang.exception.VkOutOfHostMemoryException;
 import org.sc.themis.shared.exception.ThemisException;
 
-public class VulkanSync extends Vulkan {
+public class VulkanSync extends VulkanBackend {
 
   public void createSemaphore(
       VkDevice device, VkSemaphoreCreateInfo pCreateInfo, LongBuffer pSemaphore)

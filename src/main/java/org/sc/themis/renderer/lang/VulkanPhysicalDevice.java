@@ -22,7 +22,7 @@ import org.sc.themis.renderer.lang.exception.VkOutOfDeviceMemoryException;
 import org.sc.themis.renderer.lang.exception.VkOutOfHostMemoryException;
 import org.sc.themis.shared.exception.ThemisException;
 
-public class VulkanPhysicalDevice extends Vulkan {
+public class VulkanPhysicalDevice extends VulkanBackend {
 
   public void enumerateDeviceExtensionProperties(
       VkPhysicalDevice physicalDevice,

@@ -32,7 +32,7 @@ import org.sc.themis.renderer.lang.exception.VkOutOfHostMemoryException;
 import org.sc.themis.renderer.lang.exception.VkOutOfPoolMemoryException;
 import org.sc.themis.shared.exception.ThemisException;
 
-public class VulkanPipeline extends Vulkan {
+public class VulkanPipeline extends VulkanBackend {
 
   public void createShaderModule(
       VkDevice device, VkShaderModuleCreateInfo pCreateInfo, LongBuffer pShaderModule)

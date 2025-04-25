@@ -91,7 +91,7 @@ public class ViewerGamestate implements Gamestate {
     this.context.getKeyMapping().map(GLFW_KEY_5, false, materialRenderer::switchEnableEmissive, materialRenderer::isEmissiveEnabled);
 
     //this.model = ResourceLoader.get().get(ResourceEnum.MODEL, ModelResourceDescriptor.of("base/textured_unit_cube.gltf", "model", renderer.getResourceAllocator(), this.materialManager));
-    this.model = ResourceLoader.get().get(ResourceEnum.MODEL, ModelResourceDescriptor.of("mecha_roe_deer/scene.gltf", "model", renderer.getResourceAllocator(), this.materialManager));
+    this.model = ResourceLoader.get().get(ResourceEnum.MODEL, ModelResourceDescriptor.of("cyberpunk_lost_planet/scene.gltf", "model", renderer.getResourceAllocator(), this.materialManager));
     this.model.setMaterial(material);
     this.model.setMaterialRenderer(this.context.activeRenderer().getIdentifier());
 
