@@ -3,13 +3,9 @@ package org.sc.themis.renderer;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
-import org.sc.themis.shared.tobject.TObject;
+import org.sc.themis.core.LifeCycle;
 
-public abstract class RendererActivity extends TObject {
-
-  public RendererActivity(Configuration configuration) {
-    super(configuration);
-  }
+public abstract class RendererActivity implements LifeCycle {
 
   public abstract void setup(Renderer renderer) throws ThemisException;
 
@@ -20,6 +16,6 @@ public abstract class RendererActivity extends TObject {
   public void setup(Scene scene) throws ThemisException {}
 
   @Override
-  public final void setup() throws ThemisException {}
+  public void setup() throws ThemisException {}
 
 }

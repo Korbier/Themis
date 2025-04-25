@@ -1,11 +1,11 @@
 package org.sc.themis.renderer.base.frame;
 
+import org.sc.themis.core.LifeCycle;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.function.BiConsumerWithException;
 import org.sc.themis.shared.function.ConsumerWithException;
 import org.sc.themis.shared.function.FunctionWithException;
 import org.sc.themis.shared.function.SupplierWithException;
-import org.sc.themis.shared.tobject.TObject;
 
 public class Frames {
 
@@ -38,41 +38,41 @@ public class Frames {
     return this.frames[idx];
   }
 
-  public <T extends TObject> T get(int idx, FrameKey<T> key) {
+  public <T extends LifeCycle> T get(int idx, FrameKey<T> key) {
     return this.frames[idx].get(key);
   }
 
-  public <T extends TObject> void create(FrameKey<T> key, SupplierWithException<T> supplier)
+  public <T extends LifeCycle> void create(FrameKey<T> key, SupplierWithException<T> supplier)
       throws ThemisException {
     for (Frame frame : this.frames) {
       frame.create(key, supplier);
     }
   }
 
-  public <T extends TObject> void create(
+  public <T extends LifeCycle> void create(
       FrameKey<T> key, FunctionWithException<Integer, T> function) throws ThemisException {
     for (int i = 0; i < this.size; i++) {
       frames[i].create(key, i, function);
     }
   }
 
-  public <E extends ThemisException, T extends TObject> void update(FrameKey<T> key, ConsumerWithException<E, T> consumer) throws E {
+  public <E extends ThemisException, T extends LifeCycle> void update(FrameKey<T> key, ConsumerWithException<E, T> consumer) throws E {
     for (Frame frame : this.frames) {
       frame.update(key, consumer);
     }
   }
 
-  public <E extends ThemisException, T extends TObject> void update( FrameKey<T> key, BiConsumerWithException<E, Integer, T> consumer) throws ThemisException {
+  public <E extends ThemisException, T extends LifeCycle> void update( FrameKey<T> key, BiConsumerWithException<E, Integer, T> consumer) throws ThemisException {
     for (int i = 0; i < this.size; i++) {
       frames[i].update(key, i, consumer);
     }
   }
 
-  public <E extends ThemisException, T extends TObject> T update(int idx, FrameKey<T> key, ConsumerWithException<E, T> consumer) throws E {
+  public <E extends ThemisException, T extends LifeCycle> T update(int idx, FrameKey<T> key, ConsumerWithException<E, T> consumer) throws E {
     return this.frames[idx].update(key, consumer);
   }
 
-  public <T extends TObject> void remove(FrameKey<T> key) throws ThemisException {
+  public <T extends LifeCycle> void remove(FrameKey<T> key) throws ThemisException {
     for (Frame frame : this.frames) {
       frame.remove(key);
     }

@@ -2,17 +2,17 @@ package org.sc.themis.renderer.lang;
 
 public class Vulkan {
 
-  public final static VulkanDebug debug = new VulkanDebug();
-  public final static VulkanInstance instance = new VulkanInstance();
-  public final static VulkanPhysicalDevice physicalDevice = new VulkanPhysicalDevice();
-  public final static VulkanDevice device = new VulkanDevice();
-  public final static VulkanMemoryAllocator memoryAllocator = new VulkanMemoryAllocator();
-  public final static VulkanSurface surface = new VulkanSurface();
-  public final static VulkanImage image = new VulkanImage();
-  public final static VulkanSync sync = new VulkanSync();
-  public final static VulkanFramebuffer framebuffer = new VulkanFramebuffer();
-  public final static VulkanRenderPass renderPass = new VulkanRenderPass();
-  public final static VulkanPipeline pipeline = new VulkanPipeline();
-  public final static VulkanCommand command = new VulkanCommand();
+  protected final VulkanDebug debug = new VulkanDebug();
+  protected final VulkanInstance instance = new VulkanInstance();
+  protected final VulkanPhysicalDevice physicalDevice = new VulkanPhysicalDevice();
+  protected final VulkanDevice device = new VulkanDevice();
+  protected final VulkanMemoryAllocator memoryAllocator = new VulkanMemoryAllocator();
+  protected final VulkanSurface surface = new VulkanSurface();
+  protected final VulkanImage image = new VulkanImage();
+  protected final VulkanSync sync = new VulkanSync();
+  protected final VulkanFramebuffer framebuffer = new VulkanFramebuffer();
+  protected final VulkanRenderPass renderPass = new VulkanRenderPass();
+  protected final VulkanPipeline pipeline = new VulkanPipeline();
+  protected final VulkanCommand command = new VulkanCommand();
 
 }

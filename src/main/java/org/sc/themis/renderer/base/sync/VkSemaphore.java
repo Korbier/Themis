@@ -1,22 +1,22 @@
 package org.sc.themis.renderer.base.sync;
 
-import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-
-import java.nio.LongBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkSemaphoreCreateInfo;
+import org.sc.themis.core.LifeCycle;
 import org.sc.themis.renderer.base.device.VkDevice;
-import org.sc.themis.renderer.lang.VulkanObject;
-import org.sc.themis.shared.configuration.Configuration;
+import org.sc.themis.renderer.lang.Vulkan;
 import org.sc.themis.shared.exception.ThemisException;
 
-public class VkSemaphore extends VulkanObject {
+import java.nio.LongBuffer;
+
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+public class VkSemaphore extends Vulkan implements LifeCycle {
 
   private final VkDevice device;
   private long handle;
 
-  public VkSemaphore(Configuration configuration, VkDevice device) {
-    super(configuration);
+  public VkSemaphore(VkDevice device) {
     this.device = device;
   }
 
@@ -30,7 +30,7 @@ public class VkSemaphore extends VulkanObject {
 
   @Override
   public void cleanup() throws ThemisException {
-    vkSync().destroySemaphore(this.device.getHandle(), this.handle);
+   sync.destroySemaphore(this.device.getHandle(), this.handle);
   }
 
   public long getHandle() {
@@ -40,7 +40,7 @@ public class VkSemaphore extends VulkanObject {
   private long vkCreateSemaphore(MemoryStack stack, VkSemaphoreCreateInfo semaphoreCreateInfo)
       throws ThemisException {
     LongBuffer semaphore = stack.mallocLong(1);
-    vkSync().createSemaphore(this.device.getHandle(), semaphoreCreateInfo, semaphore);
+   sync.createSemaphore(this.device.getHandle(), semaphoreCreateInfo, semaphore);
     return semaphore.get(0);
   }
 

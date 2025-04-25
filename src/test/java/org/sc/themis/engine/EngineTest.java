@@ -21,15 +21,12 @@ public class EngineTest extends TestWithConfiguration {
   void testRenderActivity(Playgrounds playground) throws ThemisException {
 
     // Given
-    RendererActivity activity = playground.getFactory().apply(getConfiguration());
+    RendererActivity activity = playground.getFactory().get();
     Engine engine = new Engine(getConfiguration(), activity);
 
     // When
     engine.setup();
-    engine.setGamestate(new EngineTestGamestate(
-        engine,
-        playground.getGamestate(),
-        5));
+    engine.setGamestate(new EngineTestGamestate(engine, playground.getGamestate(), 5));
     engine.run();
 
     // Then
@@ -45,7 +42,7 @@ public class EngineTest extends TestWithConfiguration {
 
     // Given
 
-    Engine engine = new Engine(getConfiguration(), new NoopRendererActivity(getConfiguration()));
+    Engine engine = new Engine(getConfiguration(), new NoopRendererActivity());
 
     // When
     engine.setup();

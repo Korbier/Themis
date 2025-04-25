@@ -105,8 +105,8 @@ public class NoLightColorMaterialRenderer extends MaterialRenderer {
 
   private static final VkBufferDescriptor BUFFER_DESCRIPTOR = VkBufferDescriptor.descriptorsetUniform(BUFFER_SIZE);
 
-  public NoLightColorMaterialRenderer(Configuration configuration) {
-    super(configuration, IDENTIFIER);
+  public NoLightColorMaterialRenderer() {
+    super(IDENTIFIER);
     addMandatoryProperties(MaterialProperties.COLOR_DIFFUSE);
     setVariantsIdentifierFunction( props -> props.generateVariantIdentifier(MaterialProperties.COLOR_DIFFUSE));
   }

@@ -9,10 +9,6 @@ import org.sc.viewer.renderactivity.RenderPass;
 
 public class ShadowRenderPass extends RenderPass {
 
-  public ShadowRenderPass(Configuration configuration) {
-    super(configuration);
-  }
-
   @Override
   public void setup() throws ThemisException {}
 

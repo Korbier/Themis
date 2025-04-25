@@ -8,9 +8,10 @@ import java.util.List;
 import java.util.Set;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkLayerProperties;
-import org.sc.themis.renderer.lang.VulkanObject;
+import org.sc.themis.renderer.lang.Vulkan;
 import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
+import org.sc.themis.core.LifeCycle;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -22,15 +23,11 @@ import org.slf4j.LoggerFactory;
  * <p>This class provides a way to fetch and filter the available layers, as well as to retrieve the
  * selected validation layers.
  */
-public class VkLayers extends VulkanObject {
+public class VkLayers extends Vulkan implements LifeCycle {
 
   private static final org.slf4j.Logger logger = LoggerFactory.getLogger(VkLayers.class);
 
   private final Set<VkLayer> layers = new HashSet<>();
-
-  public VkLayers(Configuration configuration) {
-    super(configuration);
-  }
 
   @Override
   public void setup() throws ThemisException {
@@ -114,12 +111,12 @@ public class VkLayers extends VulkanObject {
   private VkLayerProperties.Buffer vkFetchLayers(MemoryStack stack) throws ThemisException {
 
     IntBuffer numLayersArr = stack.callocInt(1);
-    vkInstance().enumerateInstanceLayerProperties(numLayersArr, null);
+   instance.enumerateInstanceLayerProperties(numLayersArr, null);
 
     int numLayers = numLayersArr.get(0);
     VkLayerProperties.Buffer layersBuff = VkLayerProperties.calloc(numLayers, stack);
 
-    vkInstance().enumerateInstanceLayerProperties(numLayersArr, layersBuff);
+   instance.enumerateInstanceLayerProperties(numLayersArr, layersBuff);
 
     return layersBuff;
   }

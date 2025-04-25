@@ -1,46 +1,30 @@
 package org.sc.playground.scene.triangle;
 
-import static org.lwjgl.vulkan.VK10.VK_FORMAT_R32G32B32_SFLOAT;
-import static org.lwjgl.vulkan.VK10.VK_FORMAT_R32G32_SFLOAT;
-import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_FRAGMENT_BIT;
-import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_VERTEX_BIT;
-import static org.lwjgl.vulkan.VK10.VK_VERTEX_INPUT_RATE_VERTEX;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.util.shaderc.Shaderc;
 import org.sc.playground.shared.BaseRendererActivity;
 import org.sc.themis.renderer.base.command.VkCommand;
 import org.sc.themis.renderer.base.framebuffer.VkFrameBuffer;
-import org.sc.themis.renderer.base.pipeline.VkPipeline;
-import org.sc.themis.renderer.base.pipeline.VkPipelineDescriptor;
-import org.sc.themis.renderer.base.pipeline.VkPipelineLayout;
-import org.sc.themis.renderer.base.pipeline.VkPushConstantRange;
-import org.sc.themis.renderer.base.pipeline.VkShaderProgram;
-import org.sc.themis.renderer.base.pipeline.VkShaderProgramStage;
-import org.sc.themis.renderer.base.pipeline.VkShaderSourceCompiler;
-import org.sc.themis.renderer.base.pipeline.VkVertexInputState;
-import org.sc.themis.renderer.base.pipeline.VkVertexInputStateDescriptor;
+import org.sc.themis.renderer.base.pipeline.*;
 import org.sc.themis.renderer.base.sync.VkFence;
-import org.sc.themis.scene.Scene;
 import org.sc.themis.renderer.resource.model.Mesh;
+import org.sc.themis.scene.Scene;
 import org.sc.themis.scene.factory.MeshFactory;
-import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.utils.MemorySizeUtils;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
+import static org.lwjgl.vulkan.VK10.*;
+
 public class SceneTriangleRendererActivity extends BaseRendererActivity {
 
-  private static final String SHADER_VERTEX_SOURCE =
-      "src/main/resources/playground/scene/triangle/vertex_shader.glsl";
-  private static final String SHADER_VERTEX_COMPILED =
-      "target/playground/scene/triangle/vertex_shader.spirv";
-  private static final String SHADER_FRAGMENT_SOURCE =
-      "src/main/resources/playground/scene/triangle/fragment_shader.glsl";
-  private static final String SHADER_FRAGMENT_COMPILED =
-      "target/playground/scene/triangle/fragment_shader.spirv";
+  private static final String SHADER_VERTEX_SOURCE = "src/main/resources/playground/scene/triangle/vertex_shader.glsl";
+  private static final String SHADER_VERTEX_COMPILED = "target/playground/scene/triangle/vertex_shader.spirv";
+  private static final String SHADER_FRAGMENT_SOURCE = "src/main/resources/playground/scene/triangle/fragment_shader.glsl";
+  private static final String SHADER_FRAGMENT_COMPILED = "target/playground/scene/triangle/fragment_shader.spirv";
 
   private VkShaderProgram shaderProgram;
   private VkPipelineLayout pipelineLayout;
@@ -48,10 +32,6 @@ public class SceneTriangleRendererActivity extends BaseRendererActivity {
 
   private final MeshFactory meshFactory = new MeshFactory();
   private Mesh triangle;
-
-  public SceneTriangleRendererActivity(Configuration configuration) {
-    super(configuration);
-  }
 
   @Override
   public void render(Scene scene, long tpf) throws ThemisException {
@@ -74,8 +54,7 @@ public class SceneTriangleRendererActivity extends BaseRendererActivity {
 
     command.endRenderPass();
     command.end();
-    command.submit(
-        fence, this.renderer.getAcquireSemaphore(frame), this.renderer.getPresentSemaphore(frame));
+    command.submit(fence, this.renderer.getAcquireSemaphore(frame), this.renderer.getPresentSemaphore(frame));
 
     fence.waitForAndReset();
   }
@@ -95,29 +74,20 @@ public class SceneTriangleRendererActivity extends BaseRendererActivity {
   }
 
   private void setupTriangle() throws ThemisException {
-    this.triangle =
-        this.meshFactory.createTriangle(this.renderer.getResourceAllocator(), "my-triangle");
+    this.triangle = this.meshFactory.createTriangle(this.renderer.getResourceAllocator(), "my-triangle");
   }
 
   private void setupShaderProgram() throws ThemisException {
 
     try {
 
-      VkShaderSourceCompiler.compileShaderIfChanged(
-          SHADER_VERTEX_SOURCE, SHADER_VERTEX_COMPILED, Shaderc.shaderc_glsl_vertex_shader);
-      VkShaderSourceCompiler.compileShaderIfChanged(
-          SHADER_FRAGMENT_SOURCE, SHADER_FRAGMENT_COMPILED, Shaderc.shaderc_glsl_fragment_shader);
+      VkShaderSourceCompiler.compileShaderIfChanged(SHADER_VERTEX_SOURCE, SHADER_VERTEX_COMPILED, Shaderc.shaderc_glsl_vertex_shader);
+      VkShaderSourceCompiler.compileShaderIfChanged(SHADER_FRAGMENT_SOURCE, SHADER_FRAGMENT_COMPILED, Shaderc.shaderc_glsl_fragment_shader);
 
-      VkShaderProgramStage vertexStage =
-          new VkShaderProgramStage(
-              VK_SHADER_STAGE_VERTEX_BIT, Files.readAllBytes(Paths.get(SHADER_VERTEX_COMPILED)));
-      VkShaderProgramStage fragmentStage =
-          new VkShaderProgramStage(
-              VK_SHADER_STAGE_FRAGMENT_BIT,
-              Files.readAllBytes(Paths.get(SHADER_FRAGMENT_COMPILED)));
+      VkShaderProgramStage vertexStage = new VkShaderProgramStage(VK_SHADER_STAGE_VERTEX_BIT, Files.readAllBytes(Paths.get(SHADER_VERTEX_COMPILED)));
+      VkShaderProgramStage fragmentStage = new VkShaderProgramStage(VK_SHADER_STAGE_FRAGMENT_BIT, Files.readAllBytes(Paths.get(SHADER_FRAGMENT_COMPILED)));
 
-      this.shaderProgram =
-          new VkShaderProgram(getConfiguration(), renderer.getDevice(), vertexStage, fragmentStage);
+      this.shaderProgram = new VkShaderProgram(renderer.getDevice(), vertexStage, fragmentStage);
       this.shaderProgram.setup();
 
     } catch (IOException e) {
@@ -127,32 +97,21 @@ public class SceneTriangleRendererActivity extends BaseRendererActivity {
 
   private void setupPipelineAndLayout() throws ThemisException {
 
-    this.pipelineLayout =
-        new VkPipelineLayout(
-            getConfiguration(), this.renderer.getDevice(), new VkPushConstantRange[0]);
+    this.pipelineLayout = new VkPipelineLayout(this.renderer.getDevice(), new VkPushConstantRange[0]);
     this.pipelineLayout.setup();
 
     try (MemoryStack stack = MemoryStack.stackPush()) {
 
-      VkVertexInputStateDescriptor descriptor1 =
-          new VkVertexInputStateDescriptor(VK_VERTEX_INPUT_RATE_VERTEX)
-              .attribute(VK_FORMAT_R32G32B32_SFLOAT, MemorySizeUtils.VEC3F) // Position
-              .attribute(VK_FORMAT_R32G32B32_SFLOAT, MemorySizeUtils.VEC3F) // Normal
-              .attribute(VK_FORMAT_R32G32_SFLOAT, MemorySizeUtils.VEC2F) // Texture
-              .attribute(VK_FORMAT_R32G32B32_SFLOAT, MemorySizeUtils.VEC3F) // Tangent
-              .attribute(VK_FORMAT_R32G32B32_SFLOAT, MemorySizeUtils.VEC3F);
+      VkVertexInputStateDescriptor descriptor1 = new VkVertexInputStateDescriptor(VK_VERTEX_INPUT_RATE_VERTEX).attribute(VK_FORMAT_R32G32B32_SFLOAT, MemorySizeUtils.VEC3F) // Position
+          .attribute(VK_FORMAT_R32G32B32_SFLOAT, MemorySizeUtils.VEC3F) // Normal
+          .attribute(VK_FORMAT_R32G32_SFLOAT, MemorySizeUtils.VEC2F) // Texture
+          .attribute(VK_FORMAT_R32G32B32_SFLOAT, MemorySizeUtils.VEC3F) // Tangent
+          .attribute(VK_FORMAT_R32G32B32_SFLOAT, MemorySizeUtils.VEC3F);
 
       VkVertexInputState inputState = new VkVertexInputState(descriptor1);
       inputState.setup(stack);
 
-      this.pipeline =
-          new VkPipeline(
-              getConfiguration(),
-              this.renderer.getDevice(),
-              new VkPipelineDescriptor(this.renderPass, 0, false, 1, false, 1, 1, 1),
-              this.shaderProgram,
-              this.pipelineLayout,
-              inputState);
+      this.pipeline = new VkPipeline(this.renderer.getDevice(), new VkPipelineDescriptor(this.renderPass, 0, false, 1, false, 1, 1, 1), this.shaderProgram, this.pipelineLayout, inputState);
 
       this.pipeline.setup();
     }

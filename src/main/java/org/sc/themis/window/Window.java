@@ -26,16 +26,18 @@ import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.assertion.Assertions;
 import org.sc.themis.shared.configuration.ConfigurationEnum;
 import org.sc.themis.shared.exception.ThemisException;
-import org.sc.themis.shared.tobject.TObject;
+import org.sc.themis.core.LifeCycle;
 import org.sc.themis.shared.utils.LogUtils;
 import org.sc.themis.window.exception.WindowGlfwInitException;
 import org.sc.themis.window.exception.WindowVideoModeNotSupportedException;
 import org.sc.themis.window.exception.WindowVukanNotSupportedException;
 import org.slf4j.LoggerFactory;
 
-public class Window extends TObject {
+public class Window implements LifeCycle {
 
   private static final org.slf4j.Logger logger = LoggerFactory.getLogger(Window.class);
+
+  private final Configuration configuration;
 
   private final Vector2i size = new Vector2i();
   private final Vector2i resolution = new Vector2i();
@@ -45,7 +47,7 @@ public class Window extends TObject {
   private boolean resized = false;
 
   public Window(Configuration configuration) {
-    super(configuration);
+    this.configuration = configuration;
   }
 
   @Override
@@ -59,13 +61,13 @@ public class Window extends TObject {
 
     setupAttributes(
         vidMode,
-        getConfiguration().get(ConfigurationEnum.windowWidth, 800),
-        getConfiguration().get(ConfigurationEnum.windowHeight, 600)
+        this.configuration.get(ConfigurationEnum.windowWidth, 800),
+        this.configuration.get(ConfigurationEnum.windowHeight, 600)
     );
     setupWindow(
-        getConfiguration().get(ConfigurationEnum.applicationName, "no-name"),
-        getConfiguration().get(ConfigurationEnum.windowResizable, true),
-        getConfiguration().get(ConfigurationEnum.windowMaximized, false)
+        this.configuration.get(ConfigurationEnum.applicationName, "no-name"),
+        this.configuration.get(ConfigurationEnum.windowResizable, true),
+        this.configuration.get(ConfigurationEnum.windowMaximized, false)
     );
     setupCallback();
 

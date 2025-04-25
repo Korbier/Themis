@@ -36,12 +36,12 @@ public class VkCommand extends VkCommandSet {
   private final PipelineCommandSet pipeline;
   private final ResourceSet resource;
 
-  public VkCommand(Configuration configuration, VkCommandBuffer buffer) {
-    super(configuration, buffer);
-    this.main = new MainCommandSet(configuration, buffer);
-    this.renderpass = new RenderPassCommandSet(configuration, buffer);
-    this.pipeline = new PipelineCommandSet(configuration, buffer);
-    this.resource = new ResourceSet(configuration, buffer);
+  public VkCommand(VkCommandBuffer buffer) {
+    super(buffer);
+    this.main = new MainCommandSet(buffer);
+    this.renderpass = new RenderPassCommandSet(buffer);
+    this.pipeline = new PipelineCommandSet(buffer);
+    this.resource = new ResourceSet(buffer);
   }
 
   private MainCommandSet mainSet() {

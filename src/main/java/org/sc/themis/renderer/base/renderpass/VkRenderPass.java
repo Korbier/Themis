@@ -11,13 +11,13 @@ import org.lwjgl.vulkan.VkAttachmentReference;
 import org.lwjgl.vulkan.VkRenderPassCreateInfo;
 import org.lwjgl.vulkan.VkSubpassDescription;
 import org.sc.themis.renderer.base.device.VkDevice;
-import org.sc.themis.renderer.lang.VulkanObject;
-import org.sc.themis.shared.configuration.Configuration;
+import org.sc.themis.renderer.lang.Vulkan;
 import org.sc.themis.shared.exception.ThemisException;
+import org.sc.themis.core.LifeCycle;
 import org.sc.themis.shared.utils.LogUtils;
 import org.slf4j.LoggerFactory;
 
-public class VkRenderPass extends VulkanObject {
+public class VkRenderPass extends Vulkan implements LifeCycle {
 
   private static final org.slf4j.Logger logger = LoggerFactory.getLogger(VkRenderPass.class);
 
@@ -26,8 +26,7 @@ public class VkRenderPass extends VulkanObject {
 
   private long handle;
 
-  public VkRenderPass(Configuration configuration, VkDevice device, VkRenderPassDescriptor descriptor) {
-    super(configuration);
+  public VkRenderPass(VkDevice device, VkRenderPassDescriptor descriptor) {
     this.device = device;
     this.descriptor = descriptor;
   }
@@ -47,11 +46,12 @@ public class VkRenderPass extends VulkanObject {
     }
 
     logger.trace("Renderpass initialised ({})", this);
+
   }
 
   @Override
   public void cleanup() throws ThemisException {
-    vkRenderPass().destroyRenderPass(this.device.getHandle(), this.handle);
+   renderPass.destroyRenderPass(this.device.getHandle(), this.handle);
   }
 
   @Override
@@ -70,7 +70,7 @@ public class VkRenderPass extends VulkanObject {
   private long vkCreateRenderPass(MemoryStack stack, VkRenderPassCreateInfo renderPassCreateInfo)
       throws ThemisException {
     LongBuffer pRenderPass = stack.mallocLong(1);
-    vkRenderPass().createRenderPass(this.device.getHandle(), renderPassCreateInfo, pRenderPass);
+   renderPass.createRenderPass(this.device.getHandle(), renderPassCreateInfo, pRenderPass);
     return pRenderPass.get(0);
   }
 

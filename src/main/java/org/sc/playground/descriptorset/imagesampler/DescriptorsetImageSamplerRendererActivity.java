@@ -1,53 +1,40 @@
 package org.sc.playground.descriptorset.imagesampler;
 
-import static org.lwjgl.vulkan.VK10.VK_FILTER_LINEAR;
-import static org.lwjgl.vulkan.VK10.VK_FORMAT_R8G8B8A8_SRGB;
-import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_FRAGMENT_BIT;
-import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_VERTEX_BIT;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.util.shaderc.Shaderc;
 import org.sc.playground.shared.BaseRendererActivity;
 import org.sc.themis.renderer.base.command.VkCommand;
 import org.sc.themis.renderer.base.frame.FrameKey;
 import org.sc.themis.renderer.base.framebuffer.VkFrameBuffer;
-import org.sc.themis.renderer.base.pipeline.VkPipeline;
-import org.sc.themis.renderer.base.pipeline.VkPipelineDescriptor;
-import org.sc.themis.renderer.base.pipeline.VkPipelineLayout;
-import org.sc.themis.renderer.base.pipeline.VkPushConstantRange;
-import org.sc.themis.renderer.base.pipeline.VkShaderProgram;
-import org.sc.themis.renderer.base.pipeline.VkShaderProgramStage;
-import org.sc.themis.renderer.base.pipeline.VkShaderSourceCompiler;
-import org.sc.themis.renderer.base.pipeline.VkVertexInputState;
+import org.sc.themis.renderer.base.pipeline.*;
 import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorPool;
 import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSet;
 import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSetBinding;
 import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSetLayout;
 import org.sc.themis.renderer.base.resource.image.VkSampler;
 import org.sc.themis.renderer.base.resource.image.VkSamplerDescriptor;
-import org.sc.themis.renderer.base.sync.VkFence;
 import org.sc.themis.renderer.base.resource.staging.VkStagingImage;
+import org.sc.themis.renderer.base.sync.VkFence;
+import org.sc.themis.renderer.resource.ResourceEnum;
+import org.sc.themis.renderer.resource.ResourceLoader;
+import org.sc.themis.renderer.resource.image.Image;
+import org.sc.themis.renderer.resource.image.ImageResourceDescriptor;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
-import org.sc.themis.renderer.resource.image.Image;
-import org.sc.themis.renderer.resource.image.ImageResourceDescriptor;
-import org.sc.themis.renderer.resource.ResourceEnum;
-import org.sc.themis.renderer.resource.ResourceLoader;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
+import static org.lwjgl.vulkan.VK10.*;
 
 public class DescriptorsetImageSamplerRendererActivity extends BaseRendererActivity {
 
-  private static final String SHADER_VERTEX_SOURCE =
-      "src/main/resources/playground/descriptorset/imagesampler/vertex_shader.glsl";
-  private static final String SHADER_VERTEX_COMPILED =
-      "target/playground/descriptorset/imagesampler/vertex_shader.spirv";
-  private static final String SHADER_FRAGMENT_SOURCE =
-      "src/main/resources/playground/descriptorset/imagesampler/fragment_shader.glsl";
-  private static final String SHADER_FRAGMENT_COMPILED =
-      "target/playground/descriptorset/imagesampler/fragment_shader.spirv";
+  private static final String SHADER_VERTEX_SOURCE = "src/main/resources/playground/descriptorset/imagesampler/vertex_shader.glsl";
+  private static final String SHADER_VERTEX_COMPILED = "target/playground/descriptorset/imagesampler/vertex_shader.spirv";
+  private static final String SHADER_FRAGMENT_SOURCE = "src/main/resources/playground/descriptorset/imagesampler/fragment_shader.glsl";
+  private static final String SHADER_FRAGMENT_COMPILED = "target/playground/descriptorset/imagesampler/fragment_shader.spirv";
 
   /*** Pipeline ***/
   private VkShaderProgram shaderProgram;
@@ -56,18 +43,13 @@ public class DescriptorsetImageSamplerRendererActivity extends BaseRendererActiv
   private VkPipeline pipeline;
 
   /*** Descriptorset ***/
-  private static final FrameKey<VkDescriptorSet> FK_DESCRIPTORSET =
-      FrameKey.of(VkDescriptorSet.class);
+  private static final FrameKey<VkDescriptorSet> FK_DESCRIPTORSET = FrameKey.of(VkDescriptorSet.class);
 
   private VkDescriptorSetLayout descriptorLayout;
   private VkDescriptorPool descriptorPool;
 
   private VkSampler sampler;
   private VkStagingImage vkImage;
-
-  public DescriptorsetImageSamplerRendererActivity(Configuration configuration) {
-    super(configuration);
-  }
 
   @Override
   public void render(Scene scene, long tpf) throws ThemisException {
@@ -87,8 +69,7 @@ public class DescriptorsetImageSamplerRendererActivity extends BaseRendererActiv
     command.draw(6, 1, 0, 0);
     command.endRenderPass();
     command.end();
-    command.submit(
-        fence, this.renderer.getAcquireSemaphore(frame), this.renderer.getPresentSemaphore(frame));
+    command.submit(fence, this.renderer.getAcquireSemaphore(frame), this.renderer.getPresentSemaphore(frame));
 
     fence.waitForAndReset();
   }
@@ -115,21 +96,13 @@ public class DescriptorsetImageSamplerRendererActivity extends BaseRendererActiv
 
     try {
 
-      VkShaderSourceCompiler.compileShaderIfChanged(
-          SHADER_VERTEX_SOURCE, SHADER_VERTEX_COMPILED, Shaderc.shaderc_glsl_vertex_shader);
-      VkShaderSourceCompiler.compileShaderIfChanged(
-          SHADER_FRAGMENT_SOURCE, SHADER_FRAGMENT_COMPILED, Shaderc.shaderc_glsl_fragment_shader);
+      VkShaderSourceCompiler.compileShaderIfChanged(SHADER_VERTEX_SOURCE, SHADER_VERTEX_COMPILED, Shaderc.shaderc_glsl_vertex_shader);
+      VkShaderSourceCompiler.compileShaderIfChanged(SHADER_FRAGMENT_SOURCE, SHADER_FRAGMENT_COMPILED, Shaderc.shaderc_glsl_fragment_shader);
 
-      VkShaderProgramStage vertexStage =
-          new VkShaderProgramStage(
-              VK_SHADER_STAGE_VERTEX_BIT, Files.readAllBytes(Paths.get(SHADER_VERTEX_COMPILED)));
-      VkShaderProgramStage fragmentStage =
-          new VkShaderProgramStage(
-              VK_SHADER_STAGE_FRAGMENT_BIT,
-              Files.readAllBytes(Paths.get(SHADER_FRAGMENT_COMPILED)));
+      VkShaderProgramStage vertexStage = new VkShaderProgramStage(VK_SHADER_STAGE_VERTEX_BIT, Files.readAllBytes(Paths.get(SHADER_VERTEX_COMPILED)));
+      VkShaderProgramStage fragmentStage = new VkShaderProgramStage(VK_SHADER_STAGE_FRAGMENT_BIT, Files.readAllBytes(Paths.get(SHADER_FRAGMENT_COMPILED)));
 
-      this.shaderProgram =
-          new VkShaderProgram(getConfiguration(), renderer.getDevice(), vertexStage, fragmentStage);
+      this.shaderProgram = new VkShaderProgram(renderer.getDevice(), vertexStage, fragmentStage);
       this.shaderProgram.setup();
 
     } catch (IOException e) {
@@ -139,12 +112,7 @@ public class DescriptorsetImageSamplerRendererActivity extends BaseRendererActiv
 
   private void setupPipelineAndLayout() throws ThemisException {
 
-    this.pipelineLayout =
-        new VkPipelineLayout(
-            getConfiguration(),
-            this.renderer.getDevice(),
-            new VkPushConstantRange[0],
-            this.descriptorLayout);
+    this.pipelineLayout = new VkPipelineLayout(this.renderer.getDevice(), new VkPushConstantRange[0], this.descriptorLayout);
     this.pipelineLayout.setup();
 
     try (MemoryStack stack = MemoryStack.stackPush()) {
@@ -152,14 +120,7 @@ public class DescriptorsetImageSamplerRendererActivity extends BaseRendererActiv
       VkVertexInputState inputState = new VkVertexInputState();
       inputState.setup(stack);
 
-      this.pipeline =
-          new VkPipeline(
-              getConfiguration(),
-              this.renderer.getDevice(),
-              new VkPipelineDescriptor(this.renderPass, 0, false, 1, false, 1, 1, 1),
-              this.shaderProgram,
-              this.pipelineLayout,
-              inputState);
+      this.pipeline = new VkPipeline(this.renderer.getDevice(), new VkPipelineDescriptor(this.renderPass, 0, false, 1, false, 1, 1, 1), this.shaderProgram, this.pipelineLayout, inputState);
 
       this.pipeline.setup();
     }
@@ -167,38 +128,18 @@ public class DescriptorsetImageSamplerRendererActivity extends BaseRendererActiv
 
   private void setupDescriptorSets() throws ThemisException {
 
-    this.descriptorLayout =
-        new VkDescriptorSetLayout(
-            getConfiguration(),
-            this.renderer.getDevice(),
-            VkDescriptorSetBinding.combinedImageSampler(0, VK_SHADER_STAGE_FRAGMENT_BIT));
+    this.descriptorLayout = new VkDescriptorSetLayout(this.renderer.getDevice(), VkDescriptorSetBinding.combinedImageSampler(0, VK_SHADER_STAGE_FRAGMENT_BIT));
     this.descriptorLayout.setup();
 
-    this.descriptorPool =
-        new VkDescriptorPool(
-            getConfiguration(),
-            this.renderer.getDevice(),
-            this.renderer.getFrameCount(),
-            this.descriptorLayout);
+    this.descriptorPool = new VkDescriptorPool(this.renderer.getDevice(), this.renderer.getFrameCount(), this.descriptorLayout);
     this.descriptorPool.setup();
 
-    getFrames()
-        .create(
-            FK_DESCRIPTORSET,
-            () ->
-                new VkDescriptorSet(
-                    getConfiguration(),
-                    this.renderer.getDevice(),
-                    this.descriptorPool,
-                    this.descriptorLayout));
-    getFrames()
-        .update(
-            FK_DESCRIPTORSET,
-            (descriptorset) -> descriptorset.bind(0, this.vkImage.getView(), this.sampler));
+    getFrames().create(FK_DESCRIPTORSET, () -> new VkDescriptorSet(this.renderer.getDevice(), this.descriptorPool, this.descriptorLayout));
+    getFrames().update(FK_DESCRIPTORSET, (descriptorset) -> descriptorset.bind(0, this.vkImage.getView(), this.sampler));
   }
 
   private void setupImage() throws ThemisException {
-    this.sampler = new VkSampler(getConfiguration(),this.renderer.getDevice(),new VkSamplerDescriptor(VK_FILTER_LINEAR, 1, true));
+    this.sampler = new VkSampler(this.renderer.getDevice(), new VkSamplerDescriptor(VK_FILTER_LINEAR, 1, true));
     this.sampler.setup();
     Image image = ResourceLoader.get().get(ResourceEnum.IMAGE, ImageResourceDescriptor.of("vulkan.png"));
     this.vkImage = this.renderer.getResourceAllocator().allocateImage(VK_FORMAT_R8G8B8A8_SRGB);

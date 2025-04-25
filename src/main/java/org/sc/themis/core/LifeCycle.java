@@ -1,4 +1,4 @@
-package org.sc.themis.shared.tobject;
+package org.sc.themis.core;
 
 import org.sc.themis.shared.exception.ThemisException;
 

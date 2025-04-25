@@ -5,19 +5,18 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import org.lwjgl.vulkan.VkExtent2D;
 import org.sc.themis.renderer.base.device.VkDevice;
-import org.sc.themis.renderer.lang.VulkanObject;
 import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
+import org.sc.themis.core.LifeCycle;
 
-public class VkFrameBufferAttachments extends VulkanObject {
+public class VkFrameBufferAttachments implements LifeCycle {
 
   private final VkDevice device;
   private final int width;
   private final int height;
   private final Map<String, VkFrameBufferAttachment> attachments = new LinkedHashMap<>();
 
-  public VkFrameBufferAttachments(Configuration configuration, VkDevice device, VkExtent2D extent) {
-    super(configuration);
+  public VkFrameBufferAttachments(VkDevice device, VkExtent2D extent) {
     this.device = device;
     this.width = extent.width();
     this.height = extent.height();
@@ -37,11 +36,8 @@ public class VkFrameBufferAttachments extends VulkanObject {
     }
   }
 
-  public VkFrameBufferAttachments color(String name, int format, int usage, int sampleCount)
-      throws ThemisException {
-    VkFrameBufferAttachment attachment =
-        VkFrameBufferAttachment.color(
-            getConfiguration(), this.device, this.width, this.height, format, usage, sampleCount);
+  public VkFrameBufferAttachments color(String name, int format, int usage, int sampleCount) throws ThemisException {
+    VkFrameBufferAttachment attachment = VkFrameBufferAttachment.color( this.device, this.width, this.height, format, usage, sampleCount);
     attachment.setup();
     this.attachments.put(name, attachment);
     return this;
@@ -55,30 +51,24 @@ public class VkFrameBufferAttachments extends VulkanObject {
     return depth(name, format, usage, 1);
   }
 
-  public VkFrameBufferAttachments depth(String name, int format, int usage, int layers)
-      throws ThemisException {
-    VkFrameBufferAttachment attachment =
-        VkFrameBufferAttachment.depth(
-            getConfiguration(), this.device, this.width, this.height, format, usage, layers);
+  public VkFrameBufferAttachments depth(String name, int format, int usage, int layers) throws ThemisException {
+    VkFrameBufferAttachment attachment = VkFrameBufferAttachment.depth(this.device, this.width, this.height, format, usage, layers);
     attachment.setup();
     this.attachments.put(name, attachment);
     return this;
   }
 
   public VkFrameBufferAttachments raw(String name, int format) throws ThemisException {
-    VkFrameBufferAttachment attachment = VkFrameBufferAttachment.raw(getConfiguration(), format);
+    VkFrameBufferAttachment attachment = VkFrameBufferAttachment.raw(format);
     attachment.setup();
     this.attachments.put(name, attachment);
     return this;
   }
 
   public long getColorAttachmentCount() {
-    return this.attachments.values().stream()
-        .filter(
-            a ->
-                a.getType() == VkFrameBufferAttachment.VkFrameBufferAttachmentType.COLOR
-                    || a.getType() == VkFrameBufferAttachment.VkFrameBufferAttachmentType.RAW)
-        .count();
+    return this.attachments.values().stream().filter( a ->
+      a.getType() == VkFrameBufferAttachment.VkFrameBufferAttachmentType.COLOR || a.getType() == VkFrameBufferAttachment.VkFrameBufferAttachmentType.RAW
+    ).count();
   }
 
   public long getImageCount() {
@@ -99,4 +89,5 @@ public class VkFrameBufferAttachments extends VulkanObject {
   public Collection<VkFrameBufferAttachment> get() {
     return this.attachments.values();
   }
+
 }

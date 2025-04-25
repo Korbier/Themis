@@ -1,25 +1,26 @@
 package org.sc.themis.renderer.base.queue;
 
-import java.util.Objects;
-import org.sc.themis.renderer.lang.VulkanObject;
-import org.sc.themis.shared.configuration.Configuration;
+import org.sc.themis.core.LifeCycle;
 import org.sc.themis.shared.exception.ThemisException;
 
-public class VkQueue extends VulkanObject {
+import java.util.Objects;
+
+public class VkQueue implements LifeCycle {
 
   private final org.lwjgl.vulkan.VkQueue vkQueue;
   private final int queueFamilyIndex;
 
-  public VkQueue(Configuration configuration, org.lwjgl.vulkan.VkQueue queue, int queueFamilyIndex) {
-    super(configuration);
+  public VkQueue(org.lwjgl.vulkan.VkQueue queue, int queueFamilyIndex) {
     this.vkQueue = queue;
     this.queueFamilyIndex = queueFamilyIndex;
   }
 
-  public void setup() throws ThemisException {}
+  public void setup() throws ThemisException {
+  }
 
   @Override
-  public void cleanup() throws ThemisException {}
+  public void cleanup() throws ThemisException {
+  }
 
   @Override
   public boolean equals(Object o) {

@@ -293,9 +293,9 @@ public class ColorMaterialRenderer extends MaterialRenderer {
 
   private static final VkBufferDescriptor BUFFER_DESCRIPTOR = VkBufferDescriptor.descriptorsetUniform(BUFFER_SIZE);
 
-  public ColorMaterialRenderer(Configuration configuration) {
+  public ColorMaterialRenderer() {
 
-    super(configuration, IDENTIFIER);
+    super(IDENTIFIER);
 
     addMandatoryProperties(
         MaterialProperties.COLOR_AMBIENT,

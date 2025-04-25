@@ -6,7 +6,6 @@ import org.sc.themis.shared.configuration.ConfigurationEnum;
 
 public class Projection {
 
-  private final Configuration configuration;
   private final Matrix4f perspective;
   private final Matrix4f orthographic;
 
@@ -14,13 +13,12 @@ public class Projection {
   private float znear;
   private float zfar;
 
-  public Projection(Configuration configuration) {
-    this.configuration = configuration;
+  public Projection(float fov, float znear, float zfar) {
     this.perspective = new Matrix4f();
     this.orthographic = new Matrix4f();
-    this.fov = this.configuration.get(ConfigurationEnum.sceneProjectionFov, 60.0f);
-    this.znear = this.configuration.get(ConfigurationEnum.sceneProjectionZNear, 0.1f);
-    this.zfar = this.configuration.get(ConfigurationEnum.sceneProjectionZFar, 1400.0f);
+    this.fov = fov;     //this.configuration.get(ConfigurationEnum.sceneProjectionFov, 60.0f);
+    this.znear = znear; //this.configuration.get(ConfigurationEnum.sceneProjectionZNear, 0.1f);
+    this.zfar = zfar;   //this.configuration.get(ConfigurationEnum.sceneProjectionZFar, 1400.0f);
   }
 
   public Matrix4f perspective() {
@@ -44,16 +42,9 @@ public class Projection {
   }
 
   public void resize(int width, int height) {
-
-    this.fov = this.configuration.get(ConfigurationEnum.sceneProjectionFov, 60.0f);
-    this.znear = this.configuration.get(ConfigurationEnum.sceneProjectionZNear, 0.1f);
-    this.zfar = this.configuration.get(ConfigurationEnum.sceneProjectionZFar, 1400.0f);
-
     perspective().identity();
     perspective().perspective((float) Math.toRadians(this.fov), (float) width / (float) height, this.znear, this.zfar, true);
-
     orthographic().identity();
     orthographic().ortho(0, (float) width, (float) height, 0, this.znear, this.zfar, true);
-
   }
 }

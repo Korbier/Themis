@@ -1,19 +1,17 @@
 package org.sc.themis.renderer.base.command;
 
-import static org.lwjgl.vulkan.VK13.VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-import static org.lwjgl.vulkan.VK13.VK_COMMAND_BUFFER_LEVEL_SECONDARY;
-import static org.lwjgl.vulkan.VK13.VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkCommandBufferAllocateInfo;
+import org.sc.themis.core.LifeCycle;
 import org.sc.themis.renderer.base.device.VkDevice;
 import org.sc.themis.renderer.base.queue.VkQueue;
-import org.sc.themis.renderer.lang.VulkanObject;
-import org.sc.themis.shared.configuration.Configuration;
+import org.sc.themis.renderer.lang.Vulkan;
 import org.sc.themis.shared.exception.ThemisException;
 
-public class VkCommandBuffer extends VulkanObject {
+import static org.lwjgl.vulkan.VK13.*;
+
+public class VkCommandBuffer extends Vulkan implements LifeCycle {
 
   private final VkDevice device;
   private final VkCommandPool commandPool;
@@ -22,8 +20,7 @@ public class VkCommandBuffer extends VulkanObject {
 
   private org.lwjgl.vulkan.VkCommandBuffer handle;
 
-  public VkCommandBuffer( Configuration configuration, VkDevice device, VkCommandPool pool, VkQueue queue, boolean primary) {
-    super(configuration);
+  public VkCommandBuffer(VkDevice device, VkCommandPool pool, VkQueue queue, boolean primary) {
     this.device = device;
     this.commandPool = pool;
     this.queue = queue;
@@ -39,7 +36,7 @@ public class VkCommandBuffer extends VulkanObject {
 
   @Override
   public void cleanup() throws ThemisException {
-    vkCommand().freeCommandBuffers(this.device.getHandle(), this.commandPool.getHandle(), this.handle);
+   command.freeCommandBuffers(this.device.getHandle(), this.commandPool.getHandle(), this.handle);
   }
 
   public org.lwjgl.vulkan.VkCommandBuffer getHandle() {
@@ -65,7 +62,7 @@ public class VkCommandBuffer extends VulkanObject {
 
     PointerBuffer buffer = stack.mallocPointer(1);
 
-    vkCommand().allocateCommandBuffers(this.device.getHandle(), cmdBufAllocateInfo, buffer);
+   command.allocateCommandBuffers(this.device.getHandle(), cmdBufAllocateInfo, buffer);
 
     return new org.lwjgl.vulkan.VkCommandBuffer(buffer.get(0), this.device.getHandle());
 

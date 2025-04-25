@@ -6,15 +6,14 @@ import org.sc.themis.renderer.Renderer;
 import org.sc.themis.renderer.base.pipeline.*;
 import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSetLayout;
 import org.sc.themis.renderer.base.renderpass.VkRenderPass;
-import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
-import org.sc.themis.shared.tobject.TObject;
+import org.sc.themis.core.LifeCycle;
 import org.sc.themis.shared.utils.MemorySizeUtils;
 
 import static org.lwjgl.vulkan.VK10.*;
 import static org.lwjgl.vulkan.VK10.VK_FORMAT_R32G32B32A32_SFLOAT;
 
-public class TriangleChannelPipeline extends TObject implements Pencil2DChannelPipeline {
+public class TriangleChannelPipeline implements LifeCycle, Pencil2DChannelPipeline {
 
   private final String VERTEX_SRC = """
             #version 450
@@ -74,8 +73,7 @@ public class TriangleChannelPipeline extends TObject implements Pencil2DChannelP
   private VkPipelineLayout pipelineLayout;
   private VkPipeline pipeline;
 
-  public TriangleChannelPipeline(Configuration configuration, Renderer renderer, VkRenderPass pass, VkDescriptorSetLayout layout) {
-    super(configuration);
+  public TriangleChannelPipeline(Renderer renderer, VkRenderPass pass, VkDescriptorSetLayout layout) {
     this.renderer = renderer;
     this.pass = pass;
     this.layout = layout;
@@ -105,10 +103,10 @@ public class TriangleChannelPipeline extends TObject implements Pencil2DChannelP
         VkShaderSourceCompiler.compileShader(FRAGMENT_SRC, Shaderc.shaderc_glsl_fragment_shader)
     );
 
-    this.shaderProgram = new VkShaderProgram(getConfiguration(), this.renderer.getDevice(), vertexShader, fragmentShader);
+    this.shaderProgram = new VkShaderProgram(this.renderer.getDevice(), vertexShader, fragmentShader);
     this.shaderProgram.setup();
 
-    this.pipelineLayout = new VkPipelineLayout(getConfiguration(),this.renderer.getDevice(),new VkPushConstantRange[0],this.layout);
+    this.pipelineLayout = new VkPipelineLayout(this.renderer.getDevice(),new VkPushConstantRange[0],this.layout);
     this.pipelineLayout.setup();
 
     try (MemoryStack stack = MemoryStack.stackPush()) {
@@ -124,7 +122,7 @@ public class TriangleChannelPipeline extends TObject implements Pencil2DChannelP
       inputState.setup(stack);
 
       this.pipeline = new VkPipeline(
-          getConfiguration(), this.renderer.getDevice(),
+          this.renderer.getDevice(),
           new VkPipelineDescriptor(this.pass, 0, true, 1, false, 1, 1, 1),
           this.shaderProgram, this.pipelineLayout, inputState
       );

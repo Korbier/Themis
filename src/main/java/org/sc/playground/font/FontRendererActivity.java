@@ -1,14 +1,5 @@
 package org.sc.playground.font;
 
-import static org.lwjgl.vulkan.VK10.VK_FILTER_LINEAR;
-import static org.lwjgl.vulkan.VK10.VK_FORMAT_R8G8B8A8_SRGB;
-import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_FRAGMENT_BIT;
-import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_VERTEX_BIT;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.util.shaderc.Shaderc;
 import org.sc.playground.shared.BaseRendererActivity;
@@ -22,23 +13,26 @@ import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSetBinding
 import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSetLayout;
 import org.sc.themis.renderer.base.resource.image.VkSampler;
 import org.sc.themis.renderer.base.resource.image.VkSamplerDescriptor;
-import org.sc.themis.renderer.base.sync.VkFence;
 import org.sc.themis.renderer.base.resource.staging.VkStagingImage;
+import org.sc.themis.renderer.base.sync.VkFence;
+import org.sc.themis.renderer.resource.font.Font;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
-import org.sc.themis.renderer.resource.font.Font;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
+import static org.lwjgl.vulkan.VK10.*;
 
 public class FontRendererActivity extends BaseRendererActivity {
 
-  private static final String SHADER_VERTEX_SOURCE =
-      "src/main/resources/playground/font/vertex_shader.glsl";
-  private static final String SHADER_VERTEX_COMPILED =
-      "target/playground/font/vertex_shader.spirv";
-  private static final String SHADER_FRAGMENT_SOURCE =
-      "src/main/resources/playground/font/fragment_shader.glsl";
-  private static final String SHADER_FRAGMENT_COMPILED =
-      "target/playground/font/fragment_shader.spirv";
+  private static final String SHADER_VERTEX_SOURCE = "src/main/resources/playground/font/vertex_shader.glsl";
+  private static final String SHADER_VERTEX_COMPILED = "target/playground/font/vertex_shader.spirv";
+  private static final String SHADER_FRAGMENT_SOURCE = "src/main/resources/playground/font/fragment_shader.glsl";
+  private static final String SHADER_FRAGMENT_COMPILED = "target/playground/font/fragment_shader.spirv";
 
   /*** Pipeline ***/
   private VkShaderProgram shaderProgram;
@@ -47,18 +41,13 @@ public class FontRendererActivity extends BaseRendererActivity {
   private VkPipeline pipeline;
 
   /*** Descriptorset ***/
-  private static final FrameKey<VkDescriptorSet> FK_DESCRIPTORSET =
-      FrameKey.of(VkDescriptorSet.class);
+  private static final FrameKey<VkDescriptorSet> FK_DESCRIPTORSET = FrameKey.of(VkDescriptorSet.class);
 
   private VkDescriptorSetLayout descriptorLayout;
   private VkDescriptorPool descriptorPool;
 
   private VkSampler sampler;
   private VkStagingImage vkImage;
-
-  public FontRendererActivity(Configuration configuration) {
-    super(configuration);
-  }
 
   @Override
   public void render(Scene scene, long tpf) throws ThemisException {
@@ -78,8 +67,7 @@ public class FontRendererActivity extends BaseRendererActivity {
     command.draw(6, 1, 0, 0);
     command.endRenderPass();
     command.end();
-    command.submit(
-        fence, this.renderer.getAcquireSemaphore(frame), this.renderer.getPresentSemaphore(frame));
+    command.submit(fence, this.renderer.getAcquireSemaphore(frame), this.renderer.getPresentSemaphore(frame));
 
     fence.waitForAndReset();
   }
@@ -106,21 +94,13 @@ public class FontRendererActivity extends BaseRendererActivity {
 
     try {
 
-      VkShaderSourceCompiler.compileShaderIfChanged(
-          SHADER_VERTEX_SOURCE, SHADER_VERTEX_COMPILED, Shaderc.shaderc_glsl_vertex_shader);
-      VkShaderSourceCompiler.compileShaderIfChanged(
-          SHADER_FRAGMENT_SOURCE, SHADER_FRAGMENT_COMPILED, Shaderc.shaderc_glsl_fragment_shader);
+      VkShaderSourceCompiler.compileShaderIfChanged(SHADER_VERTEX_SOURCE, SHADER_VERTEX_COMPILED, Shaderc.shaderc_glsl_vertex_shader);
+      VkShaderSourceCompiler.compileShaderIfChanged(SHADER_FRAGMENT_SOURCE, SHADER_FRAGMENT_COMPILED, Shaderc.shaderc_glsl_fragment_shader);
 
-      VkShaderProgramStage vertexStage =
-          new VkShaderProgramStage(
-              VK_SHADER_STAGE_VERTEX_BIT, Files.readAllBytes(Paths.get(SHADER_VERTEX_COMPILED)));
-      VkShaderProgramStage fragmentStage =
-          new VkShaderProgramStage(
-              VK_SHADER_STAGE_FRAGMENT_BIT,
-              Files.readAllBytes(Paths.get(SHADER_FRAGMENT_COMPILED)));
+      VkShaderProgramStage vertexStage = new VkShaderProgramStage(VK_SHADER_STAGE_VERTEX_BIT, Files.readAllBytes(Paths.get(SHADER_VERTEX_COMPILED)));
+      VkShaderProgramStage fragmentStage = new VkShaderProgramStage(VK_SHADER_STAGE_FRAGMENT_BIT, Files.readAllBytes(Paths.get(SHADER_FRAGMENT_COMPILED)));
 
-      this.shaderProgram =
-          new VkShaderProgram(getConfiguration(), renderer.getDevice(), vertexStage, fragmentStage);
+      this.shaderProgram = new VkShaderProgram(renderer.getDevice(), vertexStage, fragmentStage);
       this.shaderProgram.setup();
 
     } catch (IOException e) {
@@ -130,12 +110,7 @@ public class FontRendererActivity extends BaseRendererActivity {
 
   private void setupPipelineAndLayout() throws ThemisException {
 
-    this.pipelineLayout =
-        new VkPipelineLayout(
-            getConfiguration(),
-            this.renderer.getDevice(),
-            new VkPushConstantRange[0],
-            this.descriptorLayout);
+    this.pipelineLayout = new VkPipelineLayout(this.renderer.getDevice(), new VkPushConstantRange[0], this.descriptorLayout);
     this.pipelineLayout.setup();
 
     try (MemoryStack stack = MemoryStack.stackPush()) {
@@ -143,14 +118,7 @@ public class FontRendererActivity extends BaseRendererActivity {
       VkVertexInputState inputState = new VkVertexInputState();
       inputState.setup(stack);
 
-      this.pipeline =
-          new VkPipeline(
-              getConfiguration(),
-              this.renderer.getDevice(),
-              new VkPipelineDescriptor(this.renderPass, 0, false, 1, true, 1, 1, 1),
-              this.shaderProgram,
-              this.pipelineLayout,
-              inputState);
+      this.pipeline = new VkPipeline(this.renderer.getDevice(), new VkPipelineDescriptor(this.renderPass, 0, false, 1, true, 1, 1, 1), this.shaderProgram, this.pipelineLayout, inputState);
 
       this.pipeline.setup();
     }
@@ -158,43 +126,19 @@ public class FontRendererActivity extends BaseRendererActivity {
 
   private void setupDescriptorSets() throws ThemisException {
 
-    this.descriptorLayout =
-        new VkDescriptorSetLayout(
-            getConfiguration(),
-            this.renderer.getDevice(),
-            VkDescriptorSetBinding.combinedImageSampler(0, VK_SHADER_STAGE_FRAGMENT_BIT));
+    this.descriptorLayout = new VkDescriptorSetLayout(this.renderer.getDevice(), VkDescriptorSetBinding.combinedImageSampler(0, VK_SHADER_STAGE_FRAGMENT_BIT));
     this.descriptorLayout.setup();
 
-    this.descriptorPool =
-        new VkDescriptorPool(
-            getConfiguration(),
-            this.renderer.getDevice(),
-            this.renderer.getFrameCount(),
-            this.descriptorLayout);
+    this.descriptorPool = new VkDescriptorPool(this.renderer.getDevice(), this.renderer.getFrameCount(), this.descriptorLayout);
     this.descriptorPool.setup();
 
-    getFrames()
-        .create(
-            FK_DESCRIPTORSET,
-            () ->
-                new VkDescriptorSet(
-                    getConfiguration(),
-                    this.renderer.getDevice(),
-                    this.descriptorPool,
-                    this.descriptorLayout));
-    getFrames()
-        .update(
-            FK_DESCRIPTORSET,
-            (descriptorset) -> descriptorset.bind(0, this.vkImage.getView(), this.sampler));
+    getFrames().create(FK_DESCRIPTORSET, () -> new VkDescriptorSet(this.renderer.getDevice(), this.descriptorPool, this.descriptorLayout));
+    getFrames().update(FK_DESCRIPTORSET, (descriptorset) -> descriptorset.bind(0, this.vkImage.getView(), this.sampler));
   }
 
   private void setupImage() throws ThemisException {
 
-    this.sampler =
-        new VkSampler(
-            getConfiguration(),
-            this.renderer.getDevice(),
-            new VkSamplerDescriptor(VK_FILTER_LINEAR, 1, true));
+    this.sampler = new VkSampler(this.renderer.getDevice(), new VkSamplerDescriptor(VK_FILTER_LINEAR, 1, true));
     this.sampler.setup();
 
     Font font = Font.normal(18, Path.of("./src/main/resources/playground/font/CenturyGothic.ttf"));

@@ -11,15 +11,14 @@ import org.sc.themis.renderer.base.resource.staging.VkStagingImage;
 import org.sc.themis.renderer.resource.font.FontRepository;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.scene.base.Projection;
-import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
-import org.sc.themis.shared.tobject.TObject;
+import org.sc.themis.core.LifeCycle;
 import org.sc.themis.shared.utils.MemorySizeUtils;
 
 import static org.lwjgl.vulkan.VK10.*;
 import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_FRAGMENT_BIT;
 
-public class Pencil2DDescriptorset extends TObject implements VkDescriptorSetProvider {
+public class Pencil2DDescriptorset implements LifeCycle, VkDescriptorSetProvider {
 
   private static final FrameKey<VkBuffer> FK_BUFFER = FrameKey.of(VkBuffer.class);
   private static final FrameKey<VkDescriptorSet> FK_DESCRIPTORSET = FrameKey.of(VkDescriptorSet.class);
@@ -35,8 +34,7 @@ public class Pencil2DDescriptorset extends TObject implements VkDescriptorSetPro
   private VkSampler sampler = null;
   private VkStagingImage stgImage = null;
 
-  public Pencil2DDescriptorset(Configuration configuration, Renderer renderer, FontRepository fontRepository) {
-    super(configuration);
+  public Pencil2DDescriptorset(Renderer renderer, FontRepository fontRepository) {
     this.renderer = renderer;
     this.fontRepository= fontRepository;
   }
@@ -90,7 +88,7 @@ public class Pencil2DDescriptorset extends TObject implements VkDescriptorSetPro
 
   private void setupDescriptorLayout() throws ThemisException {
     this.descriptorSetLayout = new VkDescriptorSetLayout(
-        getConfiguration(), this.renderer.getDevice(),
+        this.renderer.getDevice(),
         VkDescriptorSetBinding.uniform(0, VK_SHADER_STAGE_VERTEX_BIT),
         VkDescriptorSetBinding.combinedImageSampler(0, VK_SHADER_STAGE_FRAGMENT_BIT)
     );
@@ -99,7 +97,7 @@ public class Pencil2DDescriptorset extends TObject implements VkDescriptorSetPro
 
   private void setupDescriptorPool() throws ThemisException {
     this.descriptorPool = new VkDescriptorPool(
-        getConfiguration(), this.renderer.getDevice(),
+        this.renderer.getDevice(),
         this.renderer.getFramesInFlight().getSize(),
         this.descriptorSetLayout
     );
@@ -108,7 +106,7 @@ public class Pencil2DDescriptorset extends TObject implements VkDescriptorSetPro
 
   private void setupBuffers() throws ThemisException {
     this.renderer.getFramesInFlight().create( FK_BUFFER, () ->
-        new VkBuffer( getConfiguration(), this.renderer.getDevice(), this.renderer.getMemoryAllocator(), BUFFER_DESCRIPTOR)
+        new VkBuffer(this.renderer.getDevice(), this.renderer.getMemoryAllocator(), BUFFER_DESCRIPTOR)
     );
   }
 
@@ -116,7 +114,7 @@ public class Pencil2DDescriptorset extends TObject implements VkDescriptorSetPro
 
     if (isFontRepositoryAvailable()) {
 
-      this.sampler = new VkSampler(getConfiguration(), this.renderer.getDevice(), new VkSamplerDescriptor(VK_FILTER_LINEAR, 1, true, false));
+      this.sampler = new VkSampler(this.renderer.getDevice(), new VkSamplerDescriptor(VK_FILTER_LINEAR, 1, true, false));
       this.sampler.setup();
 
       this.stgImage = this.renderer.getResourceAllocator().allocateImage(VK_FORMAT_R8_UNORM, this.fontRepository.size());
@@ -128,7 +126,7 @@ public class Pencil2DDescriptorset extends TObject implements VkDescriptorSetPro
 
   private void setupDescriptorSets() throws ThemisException {
     this.renderer.getFramesInFlight().create(FK_DESCRIPTORSET, () ->
-        new VkDescriptorSet( getConfiguration(), this.renderer.getDevice(), this.descriptorPool, this.descriptorSetLayout)
+        new VkDescriptorSet(this.renderer.getDevice(), this.descriptorPool, this.descriptorSetLayout)
     );
     this.renderer.getFramesInFlight().update( FK_DESCRIPTORSET, (frame, descriptorset) -> {
       descriptorset.bind(0, this.renderer.getFramesInFlight().get(frame, FK_BUFFER));

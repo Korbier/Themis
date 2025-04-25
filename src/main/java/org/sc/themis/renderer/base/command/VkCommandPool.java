@@ -1,19 +1,20 @@
 package org.sc.themis.renderer.base.command;
 
-import static org.lwjgl.vulkan.VK10.VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-
-import java.nio.LongBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkCommandPoolCreateInfo;
+import org.sc.themis.core.LifeCycle;
 import org.sc.themis.renderer.base.device.VkDevice;
 import org.sc.themis.renderer.base.queue.VkQueue;
-import org.sc.themis.renderer.lang.VulkanObject;
-import org.sc.themis.shared.configuration.Configuration;
+import org.sc.themis.renderer.lang.Vulkan;
 import org.sc.themis.shared.exception.ThemisException;
 import org.slf4j.LoggerFactory;
 
-public class VkCommandPool extends VulkanObject {
+import java.nio.LongBuffer;
+
+import static org.lwjgl.vulkan.VK10.VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+
+public class VkCommandPool extends Vulkan implements LifeCycle {
 
   private static final org.slf4j.Logger logger = LoggerFactory.getLogger(VkCommandPool.class);
 
@@ -21,8 +22,7 @@ public class VkCommandPool extends VulkanObject {
   private final VkQueue queue;
   private long handle;
 
-  public VkCommandPool(Configuration configuration, VkDevice device, VkQueue queue) {
-    super(configuration);
+  public VkCommandPool(VkDevice device, VkQueue queue) {
     this.device = device;
     this.queue = queue;
   }
@@ -48,29 +48,29 @@ public class VkCommandPool extends VulkanObject {
 
   public VkCommand create(boolean primary) throws ThemisException {
 
-    VkCommandBuffer buffer =
-        new VkCommandBuffer(getConfiguration(), this.device, this, this.queue, primary);
+    VkCommandBuffer buffer = new VkCommandBuffer(this.device, this, this.queue, primary);
     buffer.setup();
 
-    return new VkCommand(getConfiguration(), buffer);
+    return new VkCommand(buffer);
   }
 
   private long vkCreateCommandPool(MemoryStack stack) throws ThemisException {
 
-    VkCommandPoolCreateInfo cmdPoolInfo = VkCommandPoolCreateInfo.calloc(stack)
-            .sType(VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO)
-            .flags(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT)
-            .queueFamilyIndex(this.queue.getQueueFamilyIndex());
+    VkCommandPoolCreateInfo cmdPoolInfo = VkCommandPoolCreateInfo
+        .calloc(stack)
+        .sType(VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO)
+        .flags(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT)
+        .queueFamilyIndex(this.queue.getQueueFamilyIndex());
 
     LongBuffer lp = stack.mallocLong(1);
 
-    vkCommand().createCommandPool(this.device.getHandle(), cmdPoolInfo, lp);
+   command.createCommandPool(this.device.getHandle(), cmdPoolInfo, lp);
 
     return lp.get(0);
 
   }
 
   private void vkDestroyCommandPool() throws ThemisException {
-    vkCommand().destroyCommandPool(this.device.getHandle(), this.handle);
+   command.destroyCommandPool(this.device.getHandle(), this.handle);
   }
 }

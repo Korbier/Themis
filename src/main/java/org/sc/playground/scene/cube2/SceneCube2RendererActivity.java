@@ -1,27 +1,22 @@
 package org.sc.playground.scene.cube2;
 
-import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_VERTEX_BIT;
-
 import org.sc.playground.shared.BaseRendererActivity;
 import org.sc.themis.renderer.base.command.VkCommand;
 import org.sc.themis.renderer.base.framebuffer.VkFrameBuffer;
 import org.sc.themis.renderer.base.sync.VkFence;
-import org.sc.themis.scene.Scene;
 import org.sc.themis.renderer.resource.model.Instance;
 import org.sc.themis.renderer.resource.model.Mesh;
 import org.sc.themis.renderer.resource.model.Model;
+import org.sc.themis.scene.Scene;
 import org.sc.themis.scene.descriptorset.SceneDescriptorSet;
-import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
+
+import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_VERTEX_BIT;
 
 public class SceneCube2RendererActivity extends BaseRendererActivity {
 
   private SceneDescriptorSet sceneDescriptorSet;
   private ColorMaterialRenderer colorMaterial;
-
-  public SceneCube2RendererActivity(Configuration configuration) {
-    super(configuration);
-  }
 
   @Override
   public void render(Scene scene, long tpf) throws ThemisException {
@@ -43,8 +38,7 @@ public class SceneCube2RendererActivity extends BaseRendererActivity {
       if (model.isRenderable()) {
         for (Mesh mesh : model.getMeshes()) {
 
-          command.bindDescriptorSets(
-              new int[0], this.colorMaterial.getDescriptorSets(frame, mesh.getProperties()));
+          command.bindDescriptorSets(new int[0], this.colorMaterial.getDescriptorSets(frame, mesh.getProperties()));
 
           command.bindBuffers(mesh.getVerticesBuffer(), mesh.getIndicesBuffer());
 
@@ -58,8 +52,7 @@ public class SceneCube2RendererActivity extends BaseRendererActivity {
 
     command.endRenderPass();
     command.end();
-    command.submit(
-        fence, this.renderer.getAcquireSemaphore(frame), this.renderer.getPresentSemaphore(frame));
+    command.submit(fence, this.renderer.getAcquireSemaphore(frame), this.renderer.getPresentSemaphore(frame));
 
     fence.waitForAndReset();
   }
@@ -86,10 +79,10 @@ public class SceneCube2RendererActivity extends BaseRendererActivity {
 
   private void setupSceneDescriptorSet() throws ThemisException {
 
-    this.sceneDescriptorSet = new SceneDescriptorSet(getConfiguration(), this.renderer);
+    this.sceneDescriptorSet = new SceneDescriptorSet(this.renderer);
     this.sceneDescriptorSet.setup();
 
-    this.colorMaterial = new ColorMaterialRenderer(getConfiguration());
+    this.colorMaterial = new ColorMaterialRenderer();
     this.colorMaterial.setup(this.renderer, this.renderPass, this.sceneDescriptorSet);
     this.colorMaterial.setup();
   }

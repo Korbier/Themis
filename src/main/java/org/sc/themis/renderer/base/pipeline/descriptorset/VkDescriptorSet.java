@@ -18,11 +18,11 @@ import org.sc.themis.renderer.base.framebuffer.VkFrameBufferAttachment;
 import org.sc.themis.renderer.base.resource.buffer.VkBuffer;
 import org.sc.themis.renderer.base.resource.image.VkImageView;
 import org.sc.themis.renderer.base.resource.image.VkSampler;
-import org.sc.themis.renderer.lang.VulkanObject;
-import org.sc.themis.shared.configuration.Configuration;
+import org.sc.themis.renderer.lang.Vulkan;
 import org.sc.themis.shared.exception.ThemisException;
+import org.sc.themis.core.LifeCycle;
 
-public class VkDescriptorSet extends VulkanObject {
+public class VkDescriptorSet extends Vulkan implements LifeCycle {
 
   private final VkDevice device;
   private final VkDescriptorPool descriptorPool;
@@ -31,11 +31,9 @@ public class VkDescriptorSet extends VulkanObject {
   private long handle;
 
   public VkDescriptorSet(
-      Configuration configuration,
       VkDevice device,
       VkDescriptorPool descriptorPool,
       VkDescriptorSetLayout... descriptorSetLayouts) {
-    super(configuration);
     this.device = device;
     this.descriptorPool = descriptorPool;
     this.descriptorSetLayouts = descriptorSetLayouts;
@@ -58,12 +56,9 @@ public class VkDescriptorSet extends VulkanObject {
     return this.handle;
   }
 
-  private long vkCreateDescriptorSet(
-      MemoryStack stack, VkDescriptorSetAllocateInfo descriptorSetAllocateInfo)
-      throws ThemisException {
+  private long vkCreateDescriptorSet(MemoryStack stack, VkDescriptorSetAllocateInfo descriptorSetAllocateInfo) throws ThemisException {
     LongBuffer pDescriptorSet = stack.mallocLong(1);
-    vkPipeline()
-        .allocateDescriptorSets(this.device.getHandle(), descriptorSetAllocateInfo, pDescriptorSet);
+   pipeline.allocateDescriptorSets(this.device.getHandle(), descriptorSetAllocateInfo, pDescriptorSet);
     return pDescriptorSet.get(0);
   }
 
@@ -108,7 +103,7 @@ public class VkDescriptorSet extends VulkanObject {
             .pBufferInfo(bufferInfo);
       }
 
-      vkPipeline().updateDescriptorSets(this.device.getHandle(), descrBuffer, null);
+     pipeline.updateDescriptorSets(this.device.getHandle(), descrBuffer, null);
     }
   }
 
@@ -132,7 +127,7 @@ public class VkDescriptorSet extends VulkanObject {
           .descriptorCount(1)
           .pImageInfo(imageInfo);
 
-      vkPipeline().updateDescriptorSets(this.device.getHandle(), descrBuffer, null);
+     pipeline.updateDescriptorSets(this.device.getHandle(), descrBuffer, null);
     }
   }
 
@@ -160,7 +155,7 @@ public class VkDescriptorSet extends VulkanObject {
           .descriptorCount(1)
           .pImageInfo(imageInfo);
 
-      vkPipeline().updateDescriptorSets(this.device.getHandle(), descrBuffer, null);
+     pipeline.updateDescriptorSets(this.device.getHandle(), descrBuffer, null);
     }
   }
 
@@ -183,7 +178,7 @@ public class VkDescriptorSet extends VulkanObject {
           .descriptorCount(1)
           .pImageInfo(imageInfo);
 
-      vkPipeline().updateDescriptorSets(this.device.getHandle(), descrBuffer, null);
+     pipeline.updateDescriptorSets(this.device.getHandle(), descrBuffer, null);
     }
   }
 }

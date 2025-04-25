@@ -9,21 +9,22 @@ import org.lwjgl.system.MemoryStack;
 import org.sc.themis.renderer.base.command.VkCommandBuffer;
 import org.sc.themis.renderer.base.pipeline.VkPipeline;
 import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSet;
+import org.sc.themis.renderer.lang.Vulkan;
 import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.utils.MemorySizeUtils;
 
 public class PipelineCommandSet extends VkCommandSet {
 
-  private VkPipeline pipeline;
+  private VkPipeline vkPipeline;
 
-  public PipelineCommandSet(Configuration configuration, VkCommandBuffer buffer) {
-    super(configuration, buffer);
+  public PipelineCommandSet(VkCommandBuffer buffer) {
+    super(buffer);
   }
 
   public void bindPipeline(VkPipeline pipeline, int pipelineBindPoint) throws ThemisException {
-    this.pipeline = pipeline;
-    vkCommand().cmdBindPipeline(buffer().getHandle(), pipelineBindPoint, pipeline.getHandle());
+    this.vkPipeline = pipeline;
+   command.cmdBindPipeline(buffer().getHandle(), pipelineBindPoint, pipeline.getHandle());
   }
 
   public void pushConstant(int shaderStage, int offset, float[] data) throws ThemisException {
@@ -31,7 +32,7 @@ public class PipelineCommandSet extends VkCommandSet {
     try (MemoryStack stack = MemoryStack.stackPush()) {
       ByteBuffer pValues = stack.malloc(MemorySizeUtils.MAT4x4F);
       pValues.asFloatBuffer().put(data);
-      vkCommand().cmdPushConstants(buffer().getHandle(), pipeline().getPipelineLayout().getHandle(), shaderStage, offset, pValues );
+     command.cmdPushConstants(buffer().getHandle(), pipeline().getPipelineLayout().getHandle(), shaderStage, offset, pValues );
     }
   }
 
@@ -40,12 +41,12 @@ public class PipelineCommandSet extends VkCommandSet {
     try (MemoryStack stack = MemoryStack.stackPush()) {
       ByteBuffer pValues = stack.malloc(MemorySizeUtils.MAT4x4F);
       pValues.asIntBuffer().put(data);
-      vkCommand().cmdPushConstants( buffer().getHandle(), pipeline().getPipelineLayout().getHandle(), shaderStage, offset, pValues );
+     command.cmdPushConstants( buffer().getHandle(), pipeline().getPipelineLayout().getHandle(), shaderStage, offset, pValues );
     }
   }
 
   private VkPipeline pipeline() {
-    return this.pipeline;
+    return this.vkPipeline;
   }
 
   private void assetPipelineBinded() {
@@ -78,7 +79,7 @@ public class PipelineCommandSet extends VkCommandSet {
         }
       }
 
-      vkPipeline().cmdBindDescriptorSets(
+     pipeline.cmdBindDescriptorSets(
               buffer().getHandle(),
               VK_PIPELINE_BIND_POINT_GRAPHICS,
               pipeline().getPipelineLayout().getHandle(),

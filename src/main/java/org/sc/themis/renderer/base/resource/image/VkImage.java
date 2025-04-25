@@ -12,11 +12,12 @@ import org.lwjgl.vulkan.VkImageCreateInfo;
 import org.lwjgl.vulkan.VkMemoryAllocateInfo;
 import org.lwjgl.vulkan.VkMemoryRequirements;
 import org.sc.themis.renderer.base.device.VkDevice;
-import org.sc.themis.renderer.lang.VulkanObject;
+import org.sc.themis.renderer.lang.Vulkan;
 import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
+import org.sc.themis.core.LifeCycle;
 
-public class VkImage extends VulkanObject {
+public class VkImage extends Vulkan implements LifeCycle {
 
   private final VkDevice device;
   private final VkImageDescriptor descriptor;
@@ -24,8 +25,7 @@ public class VkImage extends VulkanObject {
   private long handle;
   private long memoryHandle;
 
-  public VkImage(Configuration configuration, VkDevice device, VkImageDescriptor descriptor) {
-    super(configuration);
+  public VkImage(VkDevice device, VkImageDescriptor descriptor) {
     this.device = device;
     this.descriptor = descriptor;
   }
@@ -52,8 +52,8 @@ public class VkImage extends VulkanObject {
 
   @Override
   public void cleanup() throws ThemisException {
-    vkImage().destroyImage(this.device.getHandle(), this.handle);
-    vkMemoryAllocator().freeMemory(this.device.getHandle(), this.memoryHandle);
+   image.destroyImage(this.device.getHandle(), this.handle);
+   memoryAllocator.freeMemory(this.device.getHandle(), this.memoryHandle);
   }
 
   public long getHandle() {
@@ -81,7 +81,7 @@ public class VkImage extends VulkanObject {
   private long vkCreateImage(MemoryStack stack, VkImageCreateInfo imageCreateInfo)
       throws ThemisException {
     LongBuffer lp = stack.mallocLong(1);
-    vkImage().createImage(this.device.getHandle(), imageCreateInfo, lp);
+   image.createImage(this.device.getHandle(), imageCreateInfo, lp);
     return lp.get(0);
   }
 
@@ -103,14 +103,14 @@ public class VkImage extends VulkanObject {
   private long vkBindImageMemory(MemoryStack stack, long image, VkMemoryAllocateInfo memAllocInfo)
       throws ThemisException {
     long memoryAllocation = vkAllocateMemory(stack, memAllocInfo);
-    vkMemoryAllocator().bindImageMemory(this.device.getHandle(), image, memoryAllocation, 0);
+   memoryAllocator.bindImageMemory(this.device.getHandle(), image, memoryAllocation, 0);
     return memoryAllocation;
   }
 
   private long vkAllocateMemory(MemoryStack stack, VkMemoryAllocateInfo memAllocInfo)
       throws ThemisException {
     LongBuffer pointer = stack.mallocLong(1);
-    vkMemoryAllocator().allocateMemory(this.device.getHandle(), memAllocInfo, pointer);
+   memoryAllocator.allocateMemory(this.device.getHandle(), memAllocInfo, pointer);
     return pointer.get(0);
   }
 
@@ -118,7 +118,7 @@ public class VkImage extends VulkanObject {
       throws ThemisException {
 
     VkMemoryRequirements memReqs = VkMemoryRequirements.calloc(stack);
-    vkMemoryAllocator().getImageMemoryRequirements(this.device.getHandle(), handle, memReqs);
+   memoryAllocator.getImageMemoryRequirements(this.device.getHandle(), handle, memReqs);
 
     // Select memory size and type
     return VkMemoryAllocateInfo.calloc(stack)

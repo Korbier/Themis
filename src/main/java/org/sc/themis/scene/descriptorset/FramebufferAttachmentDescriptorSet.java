@@ -1,7 +1,6 @@
 package org.sc.themis.scene.descriptorset;
 
-import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_FRAGMENT_BIT;
-
+import org.sc.themis.core.LifeCycle;
 import org.sc.themis.renderer.Renderer;
 import org.sc.themis.renderer.base.frame.FrameKey;
 import org.sc.themis.renderer.base.framebuffer.VkFrameBufferAttachment;
@@ -9,15 +8,16 @@ import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorPool;
 import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSet;
 import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSetBinding;
 import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSetLayout;
-import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
-import org.sc.themis.shared.tobject.TObject;
 
-/** */
-public class FramebufferAttachmentDescriptorSet extends TObject {
+import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_FRAGMENT_BIT;
 
-  private static final FrameKey<VkDescriptorSet> FK_DESCRIPTORSET =
-      FrameKey.of(VkDescriptorSet.class);
+/**
+ *
+ */
+public class FramebufferAttachmentDescriptorSet implements LifeCycle {
+
+  private static final FrameKey<VkDescriptorSet> FK_DESCRIPTORSET = FrameKey.of(VkDescriptorSet.class);
 
   private final Renderer renderer;
   private final VkFrameBufferAttachment[] attachments;
@@ -25,9 +25,7 @@ public class FramebufferAttachmentDescriptorSet extends TObject {
   private VkDescriptorSetLayout descriptorSetLayout;
   private VkDescriptorPool descriptorPool;
 
-  public FramebufferAttachmentDescriptorSet(
-      Configuration configuration, Renderer renderer, VkFrameBufferAttachment... attachments) {
-    super(configuration);
+  public FramebufferAttachmentDescriptorSet(Renderer renderer, VkFrameBufferAttachment... attachments) {
     this.renderer = renderer;
     this.attachments = attachments;
   }
@@ -48,25 +46,12 @@ public class FramebufferAttachmentDescriptorSet extends TObject {
   }
 
   private void setupDescriptorSets() throws ThemisException {
-    this.renderer
-        .getFramesInFlight()
-        .create(
-            FK_DESCRIPTORSET,
-            () ->
-                new VkDescriptorSet(
-                    getConfiguration(),
-                    this.renderer.getDevice(),
-                    this.descriptorPool,
-                    this.descriptorSetLayout));
-    this.renderer
-        .getFramesInFlight()
-        .update(
-            FK_DESCRIPTORSET,
-            desc -> {
-              for (int i = 0; i < this.attachments.length; i++) {
-                desc.bind(i, this.attachments[i]);
-              }
-            });
+    this.renderer.getFramesInFlight().create(FK_DESCRIPTORSET, () -> new VkDescriptorSet(this.renderer.getDevice(), this.descriptorPool, this.descriptorSetLayout));
+    this.renderer.getFramesInFlight().update(FK_DESCRIPTORSET, desc -> {
+      for (int i = 0; i < this.attachments.length; i++) {
+        desc.bind(i, this.attachments[i]);
+      }
+    });
   }
 
   private void setupDescriptorLayout() throws ThemisException {
@@ -76,18 +61,12 @@ public class FramebufferAttachmentDescriptorSet extends TObject {
       bindings[i] = VkDescriptorSetBinding.input(i, VK_SHADER_STAGE_FRAGMENT_BIT);
     }
 
-    this.descriptorSetLayout =
-        new VkDescriptorSetLayout(getConfiguration(), this.renderer.getDevice(), bindings);
+    this.descriptorSetLayout = new VkDescriptorSetLayout(this.renderer.getDevice(), bindings);
     this.descriptorSetLayout.setup();
   }
 
   private void setupDescriptorPool() throws ThemisException {
-    this.descriptorPool =
-        new VkDescriptorPool(
-            getConfiguration(),
-            this.renderer.getDevice(),
-            this.renderer.getFramesInFlight().getSize(),
-            this.descriptorSetLayout);
+    this.descriptorPool = new VkDescriptorPool(this.renderer.getDevice(), this.renderer.getFramesInFlight().getSize(), this.descriptorSetLayout);
     this.descriptorPool.setup();
   }
 

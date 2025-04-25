@@ -1,47 +1,32 @@
 package org.sc.playground.triangle;
 
-import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_FRAGMENT_BIT;
-import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_VERTEX_BIT;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.util.shaderc.Shaderc;
 import org.sc.playground.shared.BaseRendererActivity;
 import org.sc.themis.renderer.base.command.VkCommand;
 import org.sc.themis.renderer.base.framebuffer.VkFrameBuffer;
-import org.sc.themis.renderer.base.pipeline.VkPipeline;
-import org.sc.themis.renderer.base.pipeline.VkPipelineDescriptor;
-import org.sc.themis.renderer.base.pipeline.VkPipelineLayout;
-import org.sc.themis.renderer.base.pipeline.VkPushConstantRange;
-import org.sc.themis.renderer.base.pipeline.VkShaderProgram;
-import org.sc.themis.renderer.base.pipeline.VkShaderProgramStage;
-import org.sc.themis.renderer.base.pipeline.VkShaderSourceCompiler;
-import org.sc.themis.renderer.base.pipeline.VkVertexInputState;
+import org.sc.themis.renderer.base.pipeline.*;
 import org.sc.themis.renderer.base.sync.VkFence;
 import org.sc.themis.scene.Scene;
-import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
+import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_FRAGMENT_BIT;
+import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_VERTEX_BIT;
 
 public class TriangleRendererActivity extends BaseRendererActivity {
 
-  private static final String SHADER_VERTEX_SOURCE =
-      "src/main/resources/playground/triangle/vertex_shader.glsl";
-  private static final String SHADER_VERTEX_COMPILED =
-      "target/playground/triangle/vertex_shader.spirv";
-  private static final String SHADER_FRAGMENT_SOURCE =
-      "src/main/resources/playground/triangle/fragment_shader.glsl";
-  private static final String SHADER_FRAGMENT_COMPILED =
-      "target/playground/triangle/fragment_shader.spirv";
+  private static final String SHADER_VERTEX_SOURCE = "src/main/resources/playground/triangle/vertex_shader.glsl";
+  private static final String SHADER_VERTEX_COMPILED = "target/playground/triangle/vertex_shader.spirv";
+  private static final String SHADER_FRAGMENT_SOURCE = "src/main/resources/playground/triangle/fragment_shader.glsl";
+  private static final String SHADER_FRAGMENT_COMPILED = "target/playground/triangle/fragment_shader.spirv";
 
   private VkShaderProgram shaderProgram;
   private VkPipelineLayout pipelineLayout;
   private VkPipeline pipeline;
-
-  public TriangleRendererActivity(Configuration configuration) {
-    super(configuration);
-  }
 
   @Override
   public void render(Scene scene, long tpf) throws ThemisException {
@@ -59,8 +44,7 @@ public class TriangleRendererActivity extends BaseRendererActivity {
     command.draw(3, 1, 0, 0);
     command.endRenderPass();
     command.end();
-    command.submit(
-        fence, this.renderer.getAcquireSemaphore(frame), this.renderer.getPresentSemaphore(frame));
+    command.submit(fence, this.renderer.getAcquireSemaphore(frame), this.renderer.getPresentSemaphore(frame));
 
     fence.waitForAndReset();
   }
@@ -81,21 +65,13 @@ public class TriangleRendererActivity extends BaseRendererActivity {
 
     try {
 
-      VkShaderSourceCompiler.compileShaderIfChanged(
-          SHADER_VERTEX_SOURCE, SHADER_VERTEX_COMPILED, Shaderc.shaderc_glsl_vertex_shader);
-      VkShaderSourceCompiler.compileShaderIfChanged(
-          SHADER_FRAGMENT_SOURCE, SHADER_FRAGMENT_COMPILED, Shaderc.shaderc_glsl_fragment_shader);
+      VkShaderSourceCompiler.compileShaderIfChanged(SHADER_VERTEX_SOURCE, SHADER_VERTEX_COMPILED, Shaderc.shaderc_glsl_vertex_shader);
+      VkShaderSourceCompiler.compileShaderIfChanged(SHADER_FRAGMENT_SOURCE, SHADER_FRAGMENT_COMPILED, Shaderc.shaderc_glsl_fragment_shader);
 
-      VkShaderProgramStage vertexStage =
-          new VkShaderProgramStage(
-              VK_SHADER_STAGE_VERTEX_BIT, Files.readAllBytes(Paths.get(SHADER_VERTEX_COMPILED)));
-      VkShaderProgramStage fragmentStage =
-          new VkShaderProgramStage(
-              VK_SHADER_STAGE_FRAGMENT_BIT,
-              Files.readAllBytes(Paths.get(SHADER_FRAGMENT_COMPILED)));
+      VkShaderProgramStage vertexStage = new VkShaderProgramStage(VK_SHADER_STAGE_VERTEX_BIT, Files.readAllBytes(Paths.get(SHADER_VERTEX_COMPILED)));
+      VkShaderProgramStage fragmentStage = new VkShaderProgramStage(VK_SHADER_STAGE_FRAGMENT_BIT, Files.readAllBytes(Paths.get(SHADER_FRAGMENT_COMPILED)));
 
-      this.shaderProgram =
-          new VkShaderProgram(getConfiguration(), renderer.getDevice(), vertexStage, fragmentStage);
+      this.shaderProgram = new VkShaderProgram(renderer.getDevice(), vertexStage, fragmentStage);
       this.shaderProgram.setup();
 
     } catch (IOException e) {
@@ -105,9 +81,7 @@ public class TriangleRendererActivity extends BaseRendererActivity {
 
   private void setupPipelineAndLayout() throws ThemisException {
 
-    this.pipelineLayout =
-        new VkPipelineLayout(
-            getConfiguration(), this.renderer.getDevice(), new VkPushConstantRange[0]);
+    this.pipelineLayout = new VkPipelineLayout(this.renderer.getDevice(), new VkPushConstantRange[0]);
     this.pipelineLayout.setup();
 
     try (MemoryStack stack = MemoryStack.stackPush()) {
@@ -115,14 +89,7 @@ public class TriangleRendererActivity extends BaseRendererActivity {
       VkVertexInputState inputState = new VkVertexInputState();
       inputState.setup(stack);
 
-      this.pipeline =
-          new VkPipeline(
-              getConfiguration(),
-              this.renderer.getDevice(),
-              new VkPipelineDescriptor(this.renderPass, 0, false, 1, false, 1, 1, 1),
-              this.shaderProgram,
-              this.pipelineLayout,
-              inputState);
+      this.pipeline = new VkPipeline(this.renderer.getDevice(), new VkPipelineDescriptor(this.renderPass, 0, false, 1, false, 1, 1, 1), this.shaderProgram, this.pipelineLayout, inputState);
 
       this.pipeline.setup();
     }

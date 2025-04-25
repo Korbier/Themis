@@ -1,21 +1,5 @@
 package org.sc.themis.renderer.base.device;
 
-import static org.lwjgl.vulkan.EXTDebugUtils.VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-import static org.lwjgl.vulkan.EXTDebugUtils.VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT;
-import static org.lwjgl.vulkan.EXTDebugUtils.VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT;
-import static org.lwjgl.vulkan.EXTDebugUtils.VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT;
-import static org.lwjgl.vulkan.EXTDebugUtils.VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-import static org.lwjgl.vulkan.EXTDebugUtils.VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT;
-import static org.lwjgl.vulkan.EXTDebugUtils.VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-import static org.lwjgl.vulkan.VK10.VK_FALSE;
-import static org.lwjgl.vulkan.VK10.VK_NULL_HANDLE;
-import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_APPLICATION_INFO;
-import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-import static org.lwjgl.vulkan.VK13.VK_API_VERSION_1_3;
-
-import java.nio.LongBuffer;
-import java.util.ArrayList;
-import java.util.List;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFWVulkan;
 import org.lwjgl.system.MemoryStack;
@@ -24,6 +8,7 @@ import org.lwjgl.vulkan.VkApplicationInfo;
 import org.lwjgl.vulkan.VkDebugUtilsMessengerCallbackDataEXT;
 import org.lwjgl.vulkan.VkDebugUtilsMessengerCreateInfoEXT;
 import org.lwjgl.vulkan.VkInstanceCreateInfo;
+import org.sc.themis.core.LifeCycle;
 import org.sc.themis.renderer.base.device.extension.VkDefaultExtensions;
 import org.sc.themis.renderer.base.device.extension.VkExtension;
 import org.sc.themis.renderer.base.device.extension.VkExtensions;
@@ -31,24 +16,28 @@ import org.sc.themis.renderer.base.device.layer.VkDefaultLayers;
 import org.sc.themis.renderer.base.device.layer.VkLayer;
 import org.sc.themis.renderer.base.device.layer.VkLayers;
 import org.sc.themis.renderer.lang.Vulkan;
-import org.sc.themis.renderer.lang.VulkanObject;
 import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.configuration.ConfigurationEnum;
 import org.sc.themis.shared.exception.ThemisException;
-import org.sc.themis.shared.tobject.TObject;
 import org.sc.themis.shared.utils.LogUtils;
 import org.slf4j.LoggerFactory;
 
-public class VkInstance extends TObject {
+import java.nio.LongBuffer;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.lwjgl.vulkan.EXTDebugUtils.*;
+import static org.lwjgl.vulkan.VK10.*;
+import static org.lwjgl.vulkan.VK13.VK_API_VERSION_1_3;
+
+public class VkInstance extends Vulkan implements LifeCycle {
 
   private static final org.slf4j.Logger logger = LoggerFactory.getLogger(VkInstance.class);
 
-  private static final int MESSAGE_SEVERITY_BITMASK =
-      VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT;
+  private static final int MESSAGE_SEVERITY_BITMASK = VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT;
+  private static final int MESSAGE_TYPE_BITMASK = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
 
-  private static final int MESSAGE_TYPE_BITMASK =
-      VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-
+  private final Configuration configuration;
   private final VkLayers layers;
   private final VkExtensions extensions;
   private final List<VkLayer> validationLayers = new ArrayList<>();
@@ -61,9 +50,9 @@ public class VkInstance extends TObject {
   private org.lwjgl.vulkan.VkInstance handle;
 
   public VkInstance(Configuration configuration) {
-    super(configuration);
-    this.layers = new VkLayers(configuration);
-    this.extensions = new VkExtensions(configuration);
+    this.configuration = configuration;
+    this.layers = new VkLayers();
+    this.extensions = new VkExtensions();
   }
 
   @Override
@@ -89,14 +78,14 @@ public class VkInstance extends TObject {
   }
 
   private void vkCleanupInstance() throws ThemisException {
-    Vulkan.instance.destroyInstance(this.handle);
+   instance.destroyInstance(this.handle);
     this.handle = null;
   }
 
   private void vkCleanupDebugMessenger() throws ThemisException {
 
     if (this.debugMessengerHandler != VK_NULL_HANDLE) {
-      Vulkan.debug.destroyDebugUtilsMessengerEXT(this.handle, this.debugMessengerHandler);
+      debug.destroyDebugUtilsMessengerEXT(this.handle, this.debugMessengerHandler);
       this.debugMessengerHandler = VK_NULL_HANDLE;
     }
 
@@ -167,10 +156,10 @@ public class VkInstance extends TObject {
   private VkApplicationInfo createApplicationInfo(MemoryStack stack) {
     return VkApplicationInfo.calloc(stack)
         .sType(VK_STRUCTURE_TYPE_APPLICATION_INFO)
-        .pApplicationName(stack.UTF8(getConfiguration().get(ConfigurationEnum.applicationName, "no-name")))
-        .applicationVersion(getConfiguration().get(ConfigurationEnum.applicationVersion, 1))
-        .pEngineName(stack.UTF8(getConfiguration().get(ConfigurationEnum.engineName, "no-name")))
-        .engineVersion(getConfiguration().get(ConfigurationEnum.engineVersion, 1))
+        .pApplicationName(stack.UTF8(this.configuration.get(ConfigurationEnum.applicationName, "no-name")))
+        .applicationVersion(this.configuration.get(ConfigurationEnum.applicationVersion, 1))
+        .pEngineName(stack.UTF8(this.configuration.get(ConfigurationEnum.engineName, "no-name")))
+        .engineVersion(this.configuration.get(ConfigurationEnum.engineVersion, 1))
         .apiVersion(VK_API_VERSION_1_3);
   }
 
@@ -217,7 +206,7 @@ public class VkInstance extends TObject {
 
   private boolean checkDebugMode() {
 
-    if (!getConfiguration().get(ConfigurationEnum.rendererDebug, false)) {
+    if (!this.configuration.get(ConfigurationEnum.rendererDebug, false)) {
       return false;
     }
 
@@ -260,7 +249,7 @@ public class VkInstance extends TObject {
 
       try (MemoryStack stack = MemoryStack.stackPush()) {
         LongBuffer buffer = stack.mallocLong(1);
-        Vulkan.debug.createDebugUtilsMessengerEXT(this.handle, this.vkDebugMessenger, buffer);
+       debug.createDebugUtilsMessengerEXT(this.handle, this.vkDebugMessenger, buffer);
         this.debugMessengerHandler = buffer.get(0);
       }
 
@@ -288,7 +277,7 @@ public class VkInstance extends TObject {
 
   private org.lwjgl.vulkan.VkInstance vkCreateInstance(MemoryStack stack, VkInstanceCreateInfo instanceCreateInfo) throws ThemisException {
     PointerBuffer pInstance = stack.mallocPointer(1);
-    Vulkan.instance.createInstance(instanceCreateInfo, pInstance);
+   instance.createInstance(instanceCreateInfo, pInstance);
     return new org.lwjgl.vulkan.VkInstance(pInstance.get(0), instanceCreateInfo);
   }
 }

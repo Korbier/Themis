@@ -1,5 +1,8 @@
 package org.sc.viewer.gamestate;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.sc.themis.gamestate.Gamestate;
@@ -30,21 +33,19 @@ import org.sc.viewer.renderactivity.geometry.material.TextureMaterialRenderer;
 
 import static org.lwjgl.glfw.GLFW.*;
 
+@ApplicationScoped
 public class ViewerGamestate implements Gamestate {
 
-  private final ViewerContext context;
-  private final MaterialManager materialManager;
-  private final Pencil2D pencil;
+  @Inject private ViewerContext context;
+  @Inject private MaterialManager materialManager;
+  @Inject private FontRepository fontRepository;
+  private Pencil2D pencil;
   private Instance instance;
   private Model model;
 
-  public ViewerGamestate(ViewerContext context, FontRepository fontRepository, MaterialManager materialManager) {
-
-    this.context = context;
-    this.materialManager = materialManager;
-
+  @PostConstruct
+  public void start() {
     this.pencil = new Pencil2D(fontRepository);
-
   }
 
   @Override
@@ -106,7 +107,7 @@ public class ViewerGamestate implements Gamestate {
 
     if (this.model.getOriginalSize() != null) {
       float max = Math.max(this.model.getOriginalSize().x, Math.max(this.model.getOriginalSize().y, this.model.getOriginalSize().z));
-      this.instance.scale( 4 / max ).position(0, -2, 0);
+      this.instance.scale( 4 / max );
     }
 
     //sed-2_0    = this.model.create().scale(1.8f).position(1.0f, 0.0f, 0.0f);

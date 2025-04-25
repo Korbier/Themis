@@ -15,34 +15,37 @@ import org.sc.themis.renderer.base.command.VkCommandBuffer;
 import org.sc.themis.renderer.base.command.VkCommandInheritanceInfo;
 import org.sc.themis.renderer.base.sync.VkFence;
 import org.sc.themis.renderer.base.sync.VkSemaphore;
+import org.sc.themis.renderer.lang.Vulkan;
 import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 
 public class MainCommandSet extends VkCommandSet {
 
-  public MainCommandSet(Configuration configuration, VkCommandBuffer buffer) {
-    super(configuration, buffer);
+  Vulkan vulkan = new Vulkan();
+
+  public MainCommandSet(VkCommandBuffer buffer) {
+    super(buffer);
   }
 
   public void reset() throws ThemisException {
-    vkCommand().resetCommandBuffer(buffer().getHandle());
+   command.resetCommandBuffer(buffer().getHandle());
   }
 
   public void begin(int flags, VkCommandInheritanceInfo inheritanceInfo) throws ThemisException {
     try (MemoryStack stack = MemoryStack.stackPush()) {
       VkCommandBufferBeginInfo commandBufferBeginInfo = createCommandBufferBeginInfo(stack, flags, inheritanceInfo);
-      vkCommand().beginCommandBuffer(buffer().getHandle(), commandBufferBeginInfo);
+     command.beginCommandBuffer(buffer().getHandle(), commandBufferBeginInfo);
     }
   }
 
   public void end() throws ThemisException {
-    vkCommand().endCommandBuffer(buffer().getHandle());
+   command.endCommandBuffer(buffer().getHandle());
   }
 
   public void submit( VkFence fence, VkSemaphore waitSemaphore, VkSemaphore signalSemaphore, IntBuffer dstStageMasks) throws ThemisException {
     try (MemoryStack stack = MemoryStack.stackPush()) {
       VkSubmitInfo submitInfo = createSubmitInfo(stack, waitSemaphore, signalSemaphore, dstStageMasks);
-      vkCommand().queueSubmit( buffer().getQueue().getHandle(), submitInfo, fence != null ? fence.getHandle() : VK_NULL_HANDLE);
+     command.queueSubmit( buffer().getQueue().getHandle(), submitInfo, fence != null ? fence.getHandle() : VK_NULL_HANDLE);
     }
   }
 

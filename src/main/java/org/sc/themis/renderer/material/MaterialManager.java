@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import jakarta.enterprise.context.ApplicationScoped;
 import org.sc.themis.renderer.base.command.VkCommand;
 import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSet;
 import org.sc.themis.renderer.resource.material.Material;
@@ -11,6 +12,7 @@ import org.sc.themis.renderer.resource.model.Model;
 import org.sc.themis.shared.exception.ThemisException;
 
 /** Material manager. */
+@ApplicationScoped
 public class MaterialManager {
 
   private final Map<String, MaterialRenderer> availableMaterials = new HashMap<>();
