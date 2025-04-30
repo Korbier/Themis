@@ -1,13 +1,13 @@
-package org.sc.themis.engine;
+package org.sc.themis.core;
 
 import org.jboss.weld.environment.se.Weld;
 import org.jboss.weld.environment.se.WeldContainer;
 
-public class EngineDiContext implements AutoCloseable {
+public class CoreDiContext implements AutoCloseable {
 
   private WeldContainer container;
 
-  public EngineDiContext start() {
+  public CoreDiContext start() {
     Weld weld = new Weld();
     this.container = weld.initialize();
     return this;

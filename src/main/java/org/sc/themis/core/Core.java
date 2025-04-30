@@ -1,7 +1,6 @@
 package org.sc.themis.core;
 
 import org.sc.themis.engine.Engine;
-import org.sc.themis.engine.EngineDiContext;
 import org.sc.themis.gamestate.Gamestate;
 import org.sc.themis.renderer.RendererActivity;
 import org.sc.themis.shared.assertion.Assertions;
@@ -38,7 +37,7 @@ public class Core {
 
     Assertions.notNull(this.configuration, new ThemisException());
 
-    try (EngineDiContext diContext = new EngineDiContext().start()) {
+    try (CoreDiContext diContext = new CoreDiContext().start()) {
 
       Configuration conf = diContext.select(Configuration.class);
       Gamestate gamestate = this.gamestate != null ? this.gamestate : diContext.select(this.gamestateType);
