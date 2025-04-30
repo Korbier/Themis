@@ -1,4 +1,4 @@
-package org.sc.themis.renderer.material.setter;
+package org.sc.themis.renderer.material_old.setter;
 
 import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSet;
 import org.sc.themis.renderer.base.resource.image.VkSampler;

@@ -1,7 +1,7 @@
 package org.sc.themis.renderer.resource.model;
 
 import org.sc.themis.renderer.base.resource.staging.VkStagingResourceAllocator;
-import org.sc.themis.renderer.material.MaterialManager;
+import org.sc.themis.renderer.material_old.MaterialManager;
 import org.sc.themis.renderer.resource.base.ResourceDescriptor;
 
 import java.nio.file.Path;

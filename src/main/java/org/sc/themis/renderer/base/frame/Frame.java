@@ -32,14 +32,11 @@ public class Frame {
     }
   }
 
-  <T extends LifeCycle> T create(FrameKey<T> key, SupplierWithException<T> supplier)
-      throws ThemisException {
+  <T extends LifeCycle> T create(FrameKey<T> key, SupplierWithException<T> supplier) throws ThemisException {
     return put(key, supplier.get());
   }
 
-  <T extends LifeCycle> T create(
-      FrameKey<T> key, int frame, FunctionWithException<Integer, T> function)
-      throws ThemisException {
+  <T extends LifeCycle> T create(FrameKey<T> key, int frame, FunctionWithException<Integer, T> function) throws ThemisException {
     return put(key, function.apply(frame));
   }
 

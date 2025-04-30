@@ -14,10 +14,9 @@ import org.sc.themis.renderer.base.pipeline.VkVertexInputStateDescriptor;
 import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSetProvider;
 import org.sc.themis.renderer.base.renderpass.VkRenderPass;
 import org.sc.themis.renderer.base.resource.buffer.VkBufferDescriptor;
-import org.sc.themis.renderer.material.MaterialRenderer;
+import org.sc.themis.renderer.material_old.MaterialRenderer;
 import org.sc.themis.renderer.resource.material.MaterialProperties;
 import org.sc.themis.scene.light.pipeline.PhongShaderSource;
-import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.utils.MemorySizeUtils;
 

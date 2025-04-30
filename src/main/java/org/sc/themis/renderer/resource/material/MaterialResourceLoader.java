@@ -35,7 +35,7 @@ public class MaterialResourceLoader implements BiFunctionWithException<Path, Mat
       for (String key : MaterialProperties.keys()) {
 
         String keyInFile = key.replace("texture.", "");
-        MaterialProperty<?> materialProperty = MaterialProperties.get(key);
+        MaterialProperty<VkStagingImage> materialProperty = MaterialProperties.get(key);
 
         if (file.properties.containsKey(keyInFile)) {
           String value = file.properties.get(keyInFile);
@@ -44,10 +44,10 @@ public class MaterialResourceLoader implements BiFunctionWithException<Path, Mat
           Image textureImage = ResourceLoader.get().get(ResourceEnum.IMAGE, ImageResourceDescriptor.of(value), directory);
           stgTextureImage.load(textureImage);
 
-          material.put(materialProperty, stgTextureImage);
+          material.set(materialProperty, stgTextureImage);
 
         } else {
-          material.put(materialProperty, stgImage);
+          material.set(materialProperty, stgImage);
         }
 
       }

@@ -25,18 +25,16 @@ import org.sc.themis.renderer.base.renderpass.VkRenderPassLayout;
 import org.sc.themis.renderer.base.renderpass.VkSubpass;
 import org.sc.themis.renderer.base.sync.VkFence;
 import org.sc.themis.renderer.base.sync.VkSemaphore;
-import org.sc.themis.renderer.material.MaterialManager;
-import org.sc.themis.renderer.material.MaterialRenderer;
+import org.sc.themis.renderer.material_old.MaterialManager;
+import org.sc.themis.renderer.material_old.MaterialRenderer;
 import org.sc.themis.renderer.resource.material.Material;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.renderer.resource.model.Instance;
 import org.sc.themis.renderer.resource.model.Mesh;
 import org.sc.themis.renderer.resource.model.Model;
-import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.viewer.renderactivity.RenderPass;
 import org.sc.viewer.renderactivity.ViewerRendererActivity;
-import org.sc.viewer.renderactivity.geometry.material.TextureMaterialRenderer;
 import org.slf4j.LoggerFactory;
 
 /** Geometry renderpass. */
@@ -98,7 +96,7 @@ public class GeometryRenderPass extends RenderPass {
 
         for (Mesh mesh : model.getMeshes()) {
 
-          Material material = this.materialManager.select(mesh.getProperties(), model.getMaterial());
+          Material material = this.materialManager.select(mesh.getMaterial(), model.getMaterial());
           this.materialManager.updateMaterialRenderer(material);
 
           if (material == null) {

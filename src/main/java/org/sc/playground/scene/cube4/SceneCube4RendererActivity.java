@@ -40,8 +40,8 @@ public class SceneCube4RendererActivity extends BaseRendererActivity {
         for (Mesh mesh : model.getMeshes()) {
 
           command.bindDescriptorSets(
-              this.colorMaterial.getDynamicOffset(frame, mesh.getProperties()),
-              this.colorMaterial.getDescriptorSets(frame, mesh.getProperties()));
+              this.colorMaterial.getDynamicOffset(frame, mesh.getMaterial()),
+              this.colorMaterial.getDescriptorSets(frame, mesh.getMaterial()));
 
           command.bindBuffers(mesh.getVerticesBuffer(), mesh.getIndicesBuffer());
 
@@ -65,7 +65,7 @@ public class SceneCube4RendererActivity extends BaseRendererActivity {
   public void setup(Scene scene) throws ThemisException {
     for (Model model : scene.getModels()) {
       for (Mesh mesh : model.getMeshes()) {
-        this.colorMaterial.add(mesh.getProperties());
+        this.colorMaterial.add(mesh.getMaterial());
       }
     }
   }

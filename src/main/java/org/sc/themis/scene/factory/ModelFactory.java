@@ -1,7 +1,6 @@
 package org.sc.themis.scene.factory;
 
 import static org.lwjgl.assimp.Assimp.*;
-import static org.lwjgl.vulkan.VK10.VK_FORMAT_R8G8B8A8_SRGB;
 
 import java.nio.IntBuffer;
 import java.nio.file.Path;
@@ -20,7 +19,7 @@ import org.lwjgl.assimp.AIScene;
 import org.lwjgl.assimp.AIString;
 import org.lwjgl.assimp.AIVector3D;
 import org.lwjgl.system.MemoryStack;
-import org.sc.themis.renderer.material.MaterialManager;
+import org.sc.themis.renderer.material_old.MaterialManager;
 import org.sc.themis.renderer.resource.material.Material;
 import org.sc.themis.renderer.resource.material.MaterialProperties;
 import org.sc.themis.renderer.resource.material.MaterialProperty;
@@ -109,7 +108,7 @@ public class ModelFactory {
 
       meshes[i] = new Mesh(allocator, getMeshIdentifier(modelIdentifier, i));
       meshes[i].set(vertices, indices);
-      meshes[i].setProperties(properties.get(aiMesh.mMaterialIndex()));
+      meshes[i].setMaterial(properties.get(aiMesh.mMaterialIndex()));
 
     }
 
@@ -228,10 +227,10 @@ public class ModelFactory {
       VkStagingImage stgImage = allocator.allocateImage(property.getImageFormat());
       Image image = ResourceLoader.get().get(ResourceEnum.IMAGE, ImageResourceDescriptor.of(path), workdir);
       stgImage.load(image);
-      properties.put(property, stgImage);
+      properties.set(property, stgImage);
     } else {
       logger.info("Using default texture for property {}", property.getName());
-      properties.put(property, defaultImage);
+      properties.set(property, defaultImage);
     }
 
   }
@@ -253,7 +252,7 @@ public class ModelFactory {
     }
   }
 
-  private void setColor(AIMaterial assimpMaterial, String assimpAttr, Map<MaterialProperty<?>, Object> properties, MaterialProperty<Vector4f> property) {
+  private void setColor(AIMaterial assimpMaterial, String assimpAttr, Material properties, MaterialProperty<Vector4f> property) {
 
     AIColor4D workColor = AIColor4D.create();
     aiGetMaterialColor(assimpMaterial, assimpAttr, 0, 0, workColor);
@@ -261,15 +260,15 @@ public class ModelFactory {
     if (workColor.r() != 0.0f || workColor.g() != 0.0f && workColor.b() != 0.0f || workColor.a() != 0.0f) {
       Vector4f color = new Vector4f(workColor.r(), workColor.g(), workColor.b(), workColor.a());
       logger.info("Loading color property {} ({})", property.getName(), color);
-      properties.put(property, color);
+      properties.set(property, color);
     }
 
   }
 
-  private void setFloat(AIMaterial assimpMaterial, String assimpAttr, Map<MaterialProperty<?>, Object> properties, MaterialProperty<Float> property) {
+  private void setFloat(AIMaterial assimpMaterial, String assimpAttr, Material properties, MaterialProperty<Float> property) {
     AIColor4D workColor = AIColor4D.create();
     aiGetMaterialColor(assimpMaterial, assimpAttr, 0, 0, workColor);
-    properties.put(property, workColor.r());
+    properties.set(property, workColor.r());
   }
 
 }

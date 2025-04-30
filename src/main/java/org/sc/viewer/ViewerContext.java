@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import jakarta.enterprise.context.ApplicationScoped;
-import org.sc.themis.renderer.material.MaterialRenderer;
+import org.sc.themis.renderer.material_old.MaterialRenderer;
 
 @ApplicationScoped
 public class ViewerContext {

@@ -1,8 +1,6 @@
-package org.sc.themis.renderer.material;
+package org.sc.themis.renderer.material_old;
 
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import org.sc.themis.renderer.base.command.VkCommand;

@@ -1,4 +1,4 @@
-package org.sc.themis.renderer.material;
+package org.sc.themis.renderer.material_old;
 
 import org.sc.themis.core.LifeCycle;
 import org.sc.themis.renderer.base.frame.FrameKey;

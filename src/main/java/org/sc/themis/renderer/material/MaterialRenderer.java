@@ -1,111 +1,82 @@
 package org.sc.themis.renderer.material;
 
-import org.sc.themis.core.LifeCycle;
+import org.lwjgl.system.MemoryStack;
 import org.sc.themis.renderer.Renderer;
-import org.sc.themis.renderer.base.device.VkDevice;
-import org.sc.themis.renderer.base.device.VkMemoryAllocator;
-import org.sc.themis.renderer.base.frame.Frames;
-import org.sc.themis.renderer.base.pipeline.VkPipeline;
-import org.sc.themis.renderer.base.pipeline.VkPipelineDescriptor;
-import org.sc.themis.renderer.base.pipeline.VkVertexInputStateDescriptor;
-import org.sc.themis.renderer.base.pipeline.descriptorset.*;
-import org.sc.themis.renderer.base.renderpass.VkRenderPass;
-import org.sc.themis.renderer.base.resource.buffer.VkBufferDescriptor;
-import org.sc.themis.renderer.base.resource.image.VkSamplerDescriptor;
-import org.sc.themis.renderer.material.setter.CombinedImageSamplerSetter;
-import org.sc.themis.renderer.material.setter.UniformDynamicSetter;
-import org.sc.themis.renderer.material.setter.UniformSetter;
+import org.sc.themis.renderer.base.exception.MaterialException;
+import org.sc.themis.renderer.base.pipeline.*;
+import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorPool;
+import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSetBinding;
+import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSetLayout;
 import org.sc.themis.renderer.resource.material.Material;
-import org.sc.themis.renderer.resource.material.MaterialProperty;
+import org.sc.themis.shared.assertion.Assertions;
 import org.sc.themis.shared.exception.ThemisException;
-import org.slf4j.LoggerFactory;
 
-import java.util.*;
-import java.util.function.Function;
+import java.util.ArrayList;
+import java.util.List;
 
-public abstract class MaterialRenderer implements LifeCycle {
-
-  private static final org.slf4j.Logger logger = LoggerFactory.getLogger(MaterialRenderer.class);
+public class MaterialRenderer<P extends MaterialRendererProperties> {
 
   private static final int DESCRIPTORPOOL_SIZE = 10;
 
-  private Renderer renderer;
-  private final String identifier;
+  private String identifier;
+  private P properties;
 
-  /**
-   * Variant identifier function
-   **/
-  private Set<MaterialProperty<?>> mandatoryMaterials = new HashSet<>();
-  private Function<Material, String> variantIdentifierFunction = Material::toString;
+  /** Pipeline **/
+  private final List<VkShaderProgramStage> shaderStages = new ArrayList<>();
+  private final List<VkPushConstantRange> pushConstantRanges = new ArrayList<>();
+  private VkVertexInputStateDescriptor vertexInputStateDescriptor = null;
+  private VkPipelineDescriptor pipelineDescriptor = null;
+  private VkDescriptorSetLayout[] layouts;
+  private VkShaderProgram program;
+  private VkPipelineLayout layout;
+  private VkPipeline pipeline;
 
-  /**
-   * Pipeline *
-   */
-  private MaterialPipeline pipeline;
-
-  /**
-   * Main *
-   */
-  private final Map<String, Integer> variantOffsets = new HashMap<>();
-
-  private final MaterialDescriptor mainDescriptor = new MaterialDescriptor();
+  /** Main variant **/
+  private MaterialVariantLayout mainLayout;
   private VkDescriptorSetLayout mainDescriptorSetLayout;
   private VkDescriptorPool mainDescriptorPool;
-  private MaterialMainVariant mainVariant;
-  private UniformDynamicSetter mainUniformSetter;
+  private MaterialVariant<P> mainVariant;
+  private MaterialVariantSetter<P> mainConsumer;
 
-  /**
-   * Variants *
-   */
-  private final Map<String, MaterialVariant> variants = new HashMap<>();
+  /** Material variant **/
+  private MaterialVariantLayout variantLayout;
+  private VkDescriptorSetLayout variantDescriptorSetLayout;
+  private VkDescriptorPool variantDescriptorPool;
+  private MaterialVariantSetter<Material> variantConsumer;
 
-  private final MaterialDescriptor variantsDescriptor = new MaterialDescriptor();
-  private VkDescriptorSetLayout variantsDescriptorSetLayout;
-  private VkDescriptorPool variantsDescriptorPool;
-  private final List<VkDescriptorPool> oldVariantsDescriptorPools = new ArrayList<>();
-  private UniformSetter variantsUniformSetter;
-  private CombinedImageSamplerSetter variantsCombinedImageSamplerSetter;
-
-  /**
-   * Others Descriptorset and descriptorsetLayout *
-   */
-  private VkDescriptorSetProvider[] descriptorsetProviders;
-
-  private Map<Material, Boolean> dirty = new HashMap<>();
-
-  public MaterialRenderer(String identifier) {
-    this.identifier = identifier;
-    this.pipeline = new MaterialPipeline();
+  public static <T extends MaterialRendererProperties> MaterialRenderer.Builder<T> builder() {
+    return new MaterialRenderer.Builder<>();
   }
 
-  public void setup(Renderer renderer, VkRenderPass renderpass, VkDescriptorSetProvider... descriptorsets) throws ThemisException {
-    this.renderer = renderer;
-    this.setupVariantsDescriptorsetLayout();
-    this.setupVariantsDescriptorPool();
-    this.setupMainDescriptorsetLayout();
-    this.setupMainDescriptorPool();
-    this.pipeline.setup(renderer, collectDescriptorsetLayouts());
+  public MaterialVariant<P> mainVariant() {
+    return this.mainVariant;
   }
 
-  @Override
-  public String toString() {
-    return getIdentifier();
+  public void set(Renderer renderer, P properties) throws ThemisException {
+    if (this.mainVariant != null) {
+      this.mainVariant.set(renderer, properties);
+    }
   }
 
-  @Override
-  public void setup() throws ThemisException {
-    //Do nothing
+  public MaterialVariant<Material> create(Renderer renderer, Material initialValue) throws ThemisException {
+    MaterialVariant<Material> variant = new MaterialVariant<>(this.variantLayout, this.variantDescriptorPool, this.variantConsumer);
+    variant.set(renderer, initialValue);
+    return variant;
   }
 
-  @Override
+  public void setup(Renderer renderer) throws ThemisException {
+    setupShaderPrograms(renderer);
+    setupPipelineLayout(renderer);
+    setupPipeline(renderer);
+    setupMain(renderer);
+    setupVariant(renderer);
+  }
+
   public void cleanup() throws ThemisException {
 
-    for (VkDescriptorPool pool : this.oldVariantsDescriptorPools) pool.cleanup();
-    for (MaterialVariant variant : this.variants.values()) variant.cleanup();
-
-    if (this.variantsDescriptorSetLayout != null) {
-      this.variantsDescriptorPool.cleanup();
-      this.variantsDescriptorSetLayout.cleanup();
+    if (this.variantDescriptorSetLayout != null) {
+      this.variantDescriptorPool.cleanup();
+      this.variantDescriptorSetLayout.cleanup();
     }
 
     if (this.mainDescriptorSetLayout != null) {
@@ -114,314 +85,138 @@ public abstract class MaterialRenderer implements LifeCycle {
     }
 
     this.pipeline.cleanup();
+    this.layout.cleanup();
+    this.program.cleanup();
+
   }
 
-  /**
-   * Material usage methods - create and store variant for provided properties *
-   */
-  public String add(Material properties) throws ThemisException {
-
-    for (MaterialProperty<?> mandatory : this.mandatoryMaterials) {
-      if (!properties.containsKeys(mandatory)) {
-        logger.warn("Properties not compatible with material {} ({} is missing)", this.getIdentifier(), mandatory);
-        return null;
-      }
-    }
-
-    logger.info("New variant for material {}", this.getIdentifier());
-
-    String variantIdentifier = getVariantIdentifier(properties);
-    properties.setVariantIdentifier(this, variantIdentifier);
-
-    boolean exists = this.variantOffsets.containsKey(variantIdentifier);
-
-    if (!exists) {
-
-      int offset = this.variantOffsets.size();
-
-      if (this.variantsDescriptorSetLayout != null) {
-
-        if (this.variants.containsKey(variantIdentifier)) {
-          return variantIdentifier;
-        }
-
-        MaterialVariant variant = new MaterialVariant(this, variantIdentifier);
-        variant.setup();
-        variant.update(properties);
-
-        this.variants.put(variantIdentifier, variant);
-      }
-
-      if (this.mainDescriptorSetLayout != null) {
-
-        // Si il existe déjà un variant principal, on le détruit afin de le recréer en ajoutant les nouvelles propriétés
-        if (this.mainVariant != null) {
-          this.mainDescriptorPool.cleanup();
-          this.mainVariant.cleanup();
-        }
-
-        this.setupMainDescriptorPool();
-
-        this.mainVariant = new MaterialMainVariant(this, getIdentifier() + ".main");
-        this.mainVariant.setup();
-        // this.mainVariant.setProperties(offset, properties);
-
-      }
-
-      this.variantOffsets.put(variantIdentifier, offset);
-    }
-
-    return variantIdentifier;
+  private void setupShaderPrograms(Renderer renderer) throws ThemisException {
+    Assertions.notEmpty(this.shaderStages, new MaterialException("No Shader Program Stage provided (call method addShader)"));
+    this.program = new VkShaderProgram(renderer.getDevice(), this.shaderStages.toArray(new VkShaderProgramStage[0]));
+    this.program.setup();
   }
 
-  //Provoque un rechargement des uniforms
-  public void setDirty() {
-    this.dirty.keySet().forEach(k -> this.dirty.put(k, true));
+  private void setupPipelineLayout(Renderer renderer) throws ThemisException {
+    this.layout = new VkPipelineLayout(renderer.getDevice(), this.pushConstantRanges.toArray(new VkPushConstantRange[0]), layouts);
+    this.layout.setup();
   }
 
-  /**
-   * Material building methods - Variant Identifier function *
-   */
-  protected void addMandatoryProperties(MaterialProperty<?>... properties) {
-    Collections.addAll(this.mandatoryMaterials, properties);
-  }
+  private void setupPipeline(Renderer renderer) throws ThemisException {
 
-  protected void setVariantsIdentifierFunction(Function<org.sc.themis.renderer.resource.material.Material, String> variantIdentifierFunction) {
-    this.variantIdentifierFunction = variantIdentifierFunction;
-  }
+    Assertions.notNull(this.pipelineDescriptor, new MaterialException("No Pipeline Descriptor defined (call method setPipelineDescriptor)"));
+    Assertions.notNull(this.vertexInputStateDescriptor, new MaterialException("No Vertex InputState defined (call method setVertexInputDescriptor)"));
 
-  /**
-   * Material building methods - Pipeline *
-   */
-  public void addShader(int shaderStage, byte[] source) {
-    this.pipeline.addShader(shaderStage, source);
-  }
+    try (MemoryStack stack = MemoryStack.stackPush()) {
 
-  public void addConstantRange(int stage, int offset, int size) {
-    this.pipeline.addConstantRange(stage, offset, size);
-  }
+      VkVertexInputState inputState = new VkVertexInputState(this.vertexInputStateDescriptor);
+      inputState.setup(stack);
 
-  public void setVertexInputDescriptor(VkVertexInputStateDescriptor descriptor) {
-    this.pipeline.setVertexInputDescriptor(descriptor);
-  }
+      this.pipeline = new VkPipeline(renderer.getDevice(), this.pipelineDescriptor, this.program, this.layout, inputState);
 
-  public void setPipelineDescriptor(VkPipelineDescriptor descriptor) {
-    this.pipeline.setPipelineDescriptor(descriptor);
-  }
-
-  /**
-   * Material building methods - Main *
-   */
-  protected void addMainUniformDynamicBinding(int binding, int shaderStage, VkBufferDescriptor bufferDescriptor) {
-    this.mainDescriptor.addUniformDynamicBinding(binding, shaderStage, bufferDescriptor);
-  }
-
-  protected void setMainUniformSetter(UniformDynamicSetter uniformSetter) {
-    this.mainUniformSetter = uniformSetter;
-  }
-
-  /**
-   * Material building methods - Variant *
-   */
-  protected void addVariantsUniformBinding(int binding, int shaderStage, VkBufferDescriptor bufferDescriptor) {
-    this.variantsDescriptor.addUniformBinding(binding, shaderStage, bufferDescriptor);
-  }
-
-  protected void addVariantsCombinedImageSamplerBinding(int binding, int shaderStage, VkSamplerDescriptor samplerDescriptor) {
-    this.variantsDescriptor.addCombinedImageSamplerBinding(binding, shaderStage, samplerDescriptor);
-  }
-
-  protected void setVariantsUniformSetter(UniformSetter uniformSetter) {
-    this.variantsUniformSetter = uniformSetter;
-  }
-
-  protected void setVariantsCombinedImageSamplerSetter(CombinedImageSamplerSetter combinedImageSamplerSetter) {
-    this.variantsCombinedImageSamplerSetter = combinedImageSamplerSetter;
-  }
-
-  /**
-   * Others Descriptorsets and descriptorsetLayouts *
-   */
-  public void setDescriptorsetProviders(VkDescriptorSetProvider... providers) {
-    this.descriptorsetProviders = providers;
-  }
-
-  /**
-   * Getters *
-   */
-  public String getIdentifier() {
-    return this.identifier;
-  }
-
-  protected VkDevice getDevice() {
-    return this.renderer.getDevice();
-  }
-
-  protected Frames getFrames() {
-    return this.renderer.getFramesInFlight();
-  }
-
-  protected VkMemoryAllocator getAllocator() {
-    return this.renderer.getMemoryAllocator();
-  }
-
-  public VkPipeline getPipeline() {
-    return this.pipeline.getPipeline();
-  }
-
-  public UniformSetter getVariantsUniformSetter() {
-    return this.variantsUniformSetter;
-  }
-
-  public CombinedImageSamplerSetter getVariantsCombinedImageSamplerSetter() {
-    return this.variantsCombinedImageSamplerSetter;
-  }
-
-  public UniformDynamicSetter getMainUniformSetter() {
-    return this.mainUniformSetter;
-  }
-
-  public VkDescriptorPool getMainDescriptorPool() {
-    return this.mainDescriptorPool;
-  }
-
-  public MaterialDescriptor getMainDescriptor() {
-    return this.mainDescriptor;
-  }
-
-  public VkDescriptorPool getVariantsDescriptorPool() throws ThemisException {
-
-    if (this.variantsDescriptorPool.isFull()) {
-      this.oldVariantsDescriptorPools.add(this.variantsDescriptorPool);
-      setupVariantsDescriptorPool();
-    }
-
-    return this.variantsDescriptorPool;
-  }
-
-  public MaterialDescriptor getVariantsDescriptor() {
-    return this.variantsDescriptor;
-  }
-
-  public void update(Material material) throws ThemisException {
-
-    try {
-      if (this.dirty.containsKey(material) && this.dirty.get(material)) {
-        String variantIdentifier = material.getVariantIdentifier(this);
-        this.variants.get(variantIdentifier).update(material);
-      }
-    } finally {
-      this.dirty.put(material, false);
+      this.pipeline.setup();
     }
 
   }
 
-  public int[] getDynamicOffset(int frame, Material properties) {
+  private void setupMain(Renderer renderer) throws ThemisException {
 
-    String variantIdentifier = properties.getVariantIdentifier(this);
+    VkDescriptorSetBinding[] bindings = this.mainLayout.bindings().values().toArray(new VkDescriptorSetBinding[0]);
 
-    int[] offsets = new int[this.mainDescriptorSetLayout.size()];
-
-    for (int i = 0; i < this.mainDescriptorSetLayout.size(); i++) {
-      offsets[i] =
-          this.mainVariant.getAlignedOffset(frame, i, this.variantOffsets.get(variantIdentifier));
-    }
-
-    return offsets;
-  }
-
-  public VkDescriptorSet[] getDescriptorSets(int frame, Material properties) {
-
-    String variantIdentifier = properties.getVariantIdentifier(this);
-
-    int count = this.descriptorsetProviders.length;
-    if (this.mainDescriptorSetLayout != null) count++;
-    if (this.variantsDescriptorSetLayout != null) count++;
-
-    VkDescriptorSet[] descriptorsets = new VkDescriptorSet[count];
-    if (this.variantsDescriptorSetLayout != null)
-      descriptorsets[--count] = this.variants.get(variantIdentifier).getDescriptorSet(frame);
-    if (this.mainDescriptorSetLayout != null)
-      descriptorsets[--count] = this.mainVariant.getDescriptorSet(frame);
-    for (int i = count - 1; i >= 0; i--)
-      descriptorsets[i] = this.descriptorsetProviders[i].getDescriptorSet(frame);
-
-    return descriptorsets;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    MaterialRenderer mesh = (MaterialRenderer) o;
-    return Objects.equals(identifier, mesh.identifier);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hashCode(identifier);
-  }
-
-  private String getVariantIdentifier(org.sc.themis.renderer.resource.material.Material properties) {
-    return this.variantIdentifierFunction.apply(properties);
-  }
-
-  private void setupMainDescriptorsetLayout() throws ThemisException {
-    VkDescriptorSetBinding[] bindings = this.mainDescriptor.getBindings().values().toArray(new VkDescriptorSetBinding[0]);
     if (bindings.length > 0) {
-      this.mainDescriptorSetLayout = new VkDescriptorSetLayout(getDevice(), bindings);
+      this.mainDescriptorSetLayout = new VkDescriptorSetLayout(renderer.getDevice(), bindings);
       this.mainDescriptorSetLayout.setup();
     }
-  }
 
-  private void setupMainDescriptorPool() throws ThemisException {
     if (this.mainDescriptorSetLayout != null) {
-      this.mainDescriptorPool = new VkDescriptorPool(getDevice(), getFrames().getSize(), this.mainDescriptorSetLayout);
+
+      this.mainDescriptorPool = new VkDescriptorPool(renderer.getDevice(), renderer.getFramesInFlight().getSize(), this.mainDescriptorSetLayout);
       this.mainDescriptorPool.setup();
+
+      this.mainVariant = new MaterialVariant<>(this.mainLayout, this.mainDescriptorPool, this.mainConsumer);
+
     }
+
   }
 
-  private void setupVariantsDescriptorsetLayout() throws ThemisException {
-    VkDescriptorSetBinding[] bindings = this.variantsDescriptor.getBindings().values().toArray(new VkDescriptorSetBinding[0]);
+  private void setupVariant(Renderer renderer) throws ThemisException {
+
+    VkDescriptorSetBinding[] bindings = this.variantLayout.bindings().values().toArray(new VkDescriptorSetBinding[0]);
+
     if (bindings.length > 0) {
-      this.variantsDescriptorSetLayout = new VkDescriptorSetLayout(getDevice(), bindings);
-      this.variantsDescriptorSetLayout.setup();
-    }
-  }
-
-  private void setupVariantsDescriptorPool() throws ThemisException {
-    if (this.variantsDescriptorSetLayout != null) {
-      this.variantsDescriptorPool =
-          new VkDescriptorPool(getDevice(), getFrames().getSize() * MaterialRenderer.DESCRIPTORPOOL_SIZE, this.variantsDescriptorSetLayout);
-      this.variantsDescriptorPool.setup();
-    }
-  }
-
-  private VkDescriptorSetLayout[] collectDescriptorsetLayouts() {
-
-    int count = this.descriptorsetProviders != null ? this.descriptorsetProviders.length : 0;
-    if (this.mainDescriptorSetLayout != null) {
-      count++;
-    }
-    if (this.variantsDescriptorSetLayout != null) {
-      count++;
+      this.variantDescriptorSetLayout = new VkDescriptorSetLayout(renderer.getDevice(), bindings);
+      this.variantDescriptorSetLayout.setup();
     }
 
-    VkDescriptorSetLayout[] layouts = new VkDescriptorSetLayout[count];
-    if (this.variantsDescriptorSetLayout != null) {
-      layouts[--count] = this.variantsDescriptorSetLayout;
+    if (this.variantDescriptorSetLayout != null) {
+      this.variantDescriptorPool = new VkDescriptorPool(renderer.getDevice(), renderer.getFramesInFlight().getSize() * DESCRIPTORPOOL_SIZE, this.variantDescriptorSetLayout);
+      this.variantDescriptorPool.setup();
     }
-    if (this.mainDescriptorSetLayout != null) {
-      layouts[--count] = this.mainDescriptorSetLayout;
-    }
-    if (this.descriptorsetProviders != null) {
-      for (int i = count - 1; i >= 0; i--) {
-        layouts[i] = this.descriptorsetProviders[i].getDescriptorSetLayout();
-      }
-    }
-
-    return layouts;
 
   }
+
+  public static class Builder<P extends MaterialRendererProperties> {
+
+    private final MaterialRenderer<P> mRenderer;
+
+    public Builder() {
+      this.mRenderer = new MaterialRenderer<>();
+    }
+
+    public MaterialRenderer.Builder<P> identifier(String identifier) {
+      this.mRenderer.identifier = identifier;
+      return this;
+    }
+
+    public MaterialRenderer.Builder<P> shaderStage(int shaderStage, byte[] source) {
+      this.mRenderer.shaderStages.add(new VkShaderProgramStage(shaderStage, source));
+      return this;
+    }
+
+    public MaterialRenderer.Builder<P> pushConstantRange(int stage, int offset, int  range) {
+      this.mRenderer.pushConstantRanges.add(new VkPushConstantRange(stage, offset, range));
+      return this;
+    }
+
+    public MaterialRenderer.Builder<P> vertexInputStateDescriptor(VkVertexInputStateDescriptor descriptor) {
+      this.mRenderer.vertexInputStateDescriptor = descriptor;
+      return this;
+    }
+
+    public MaterialRenderer.Builder<P> pipelineDescriptor(VkPipelineDescriptor descriptor) {
+      this.mRenderer.pipelineDescriptor = descriptor;
+      return this;
+    }
+
+    public MaterialRenderer.Builder<P> layouts(VkDescriptorSetLayout... layouts) {
+      this.mRenderer.layouts = layouts;
+      return this;
+    }
+
+    public MaterialRenderer.Builder<P> mainLayout(MaterialVariantLayout layout) {
+      this.mRenderer.mainLayout = layout;
+      return this;
+    }
+
+    public MaterialRenderer.Builder<P> variantLayout(MaterialVariantLayout layout) {
+      this.mRenderer.variantLayout = layout;
+      return this;
+    }
+
+    public MaterialRenderer.Builder<P> mainConsumer(MaterialVariantSetter<P> consumer) {
+      this.mRenderer.mainConsumer = consumer;
+      return this;
+    }
+
+    public MaterialRenderer.Builder<P> variantConsumer(MaterialVariantSetter<Material> consumer) {
+      this.mRenderer.variantConsumer = consumer;
+      return this;
+    }
+
+    public MaterialRenderer<P> build() {
+      return this.mRenderer;
+    }
+
+  }
+
 
 }

@@ -11,7 +11,7 @@ import org.sc.themis.renderer.base.frame.Frames;
 import org.sc.themis.renderer.base.framebuffer.VkFrameBufferAttachments;
 import org.sc.themis.renderer.base.sync.VkFence;
 import org.sc.themis.renderer.base.sync.VkSemaphore;
-import org.sc.themis.renderer.material.MaterialManager;
+import org.sc.themis.renderer.material_old.MaterialManager;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.scene.descriptorset.InputDescriptorSet;
 import org.sc.themis.scene.descriptorset.MousePickingDescriptorSet;

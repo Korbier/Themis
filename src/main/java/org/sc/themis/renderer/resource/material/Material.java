@@ -1,15 +1,15 @@
 package org.sc.themis.renderer.resource.material;
 
-import org.sc.themis.renderer.material.MaterialRenderer;
-
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.Objects;
+import java.util.Map;
 
-public class Material extends HashMap<MaterialProperty<?>, Object> {
+public class Material {
 
   private final String name;
   private final String author;
   private final String source;
+  private final Map<MaterialProperty<?>, Object> properties = new HashMap<>();
 
   public Material(String name) {
     this(name, "no-author", "no-source");
@@ -33,33 +33,28 @@ public class Material extends HashMap<MaterialProperty<?>, Object> {
     return source;
   }
 
-  private final HashMap<String, String> variantIdentifier = new HashMap<>();
-
-  public <T> T getProperty(MaterialProperty<T> property) {
-    return (T) get(property);
+  public <T> T get(MaterialProperty<T> property) {
+    return (T) this.properties.get(property);
   }
 
-  public void setVariantIdentifier(MaterialRenderer materialRenderer, String identifier) {
-    this.variantIdentifier.put(materialRenderer.getIdentifier(), identifier);
-  }
-
-  public String getVariantIdentifier(MaterialRenderer materialRenderer) {
-    return this.variantIdentifier.get(materialRenderer.getIdentifier());
+  public <T> void set(MaterialProperty<T> property, T value) {
+    this.properties.put(property, value);
   }
 
   public boolean containsKeys(MaterialProperty<?>... properties) {
 
     for (MaterialProperty<?> property : properties) {
-      if (!containsKey(property)) {
+      if (!this.properties.containsKey(property)) {
         return false;
       }
     }
 
     return true;
+
   }
 
-  public String generateVariantIdentifier(MaterialProperty<?>... properties) {
-    return Integer.toString(Objects.hashCode(properties));
+  public Collection<Object> values() {
+    return this.properties.values();
   }
 
 }

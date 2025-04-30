@@ -11,10 +11,10 @@ public class MaterialFactory {
 
   public Material color(Vector4f ambient, Vector4f diffuse, Vector4f specular, float shininess) {
     Material properties = new Material("color");
-    properties.put(MaterialProperties.COLOR_AMBIENT, ambient);
-    properties.put(MaterialProperties.COLOR_DIFFUSE, diffuse);
-    properties.put(MaterialProperties.COLOR_SPECULAR, specular);
-    properties.put(MaterialProperties.FLOAT_SHININESS, shininess);
+    properties.set(MaterialProperties.COLOR_AMBIENT, ambient);
+    properties.set(MaterialProperties.COLOR_DIFFUSE, diffuse);
+    properties.set(MaterialProperties.COLOR_SPECULAR, specular);
+    properties.set(MaterialProperties.FLOAT_SHININESS, shininess);
     return properties;
   }
 

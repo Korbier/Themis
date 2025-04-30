@@ -9,7 +9,7 @@ import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSetProvide
 import org.sc.themis.renderer.base.renderpass.VkRenderPass;
 import org.sc.themis.renderer.base.resource.buffer.VkBufferDescriptor;
 import org.sc.themis.renderer.base.resource.image.VkSamplerDescriptor;
-import org.sc.themis.renderer.material.MaterialRenderer;
+import org.sc.themis.renderer.material_old.MaterialRenderer;
 import org.sc.themis.renderer.resource.material.MaterialProperties;
 import org.sc.themis.scene.light.pipeline.PhongShaderSource;
 import org.sc.themis.shared.exception.ThemisException;

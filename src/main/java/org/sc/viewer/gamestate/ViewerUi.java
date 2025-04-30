@@ -1,7 +1,7 @@
 package org.sc.viewer.gamestate;
 
-import org.sc.themis.renderer.material.MaterialManager;
-import org.sc.themis.renderer.material.MaterialRenderer;
+import org.sc.themis.renderer.material_old.MaterialManager;
+import org.sc.themis.renderer.material_old.MaterialRenderer;
 import org.sc.themis.renderer.pencil2d.Pencil2D;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.scene.ui.UiSceneController;

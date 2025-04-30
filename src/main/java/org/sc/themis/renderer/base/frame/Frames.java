@@ -42,8 +42,7 @@ public class Frames {
     return this.frames[idx].get(key);
   }
 
-  public <T extends LifeCycle> void create(FrameKey<T> key, SupplierWithException<T> supplier)
-      throws ThemisException {
+  public <T extends LifeCycle> void create(FrameKey<T> key, SupplierWithException<T> supplier) throws ThemisException {
     for (Frame frame : this.frames) {
       frame.create(key, supplier);
     }

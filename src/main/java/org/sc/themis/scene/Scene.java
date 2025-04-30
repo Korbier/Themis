@@ -164,7 +164,7 @@ public class Scene implements LifeCycle {
       materialProperties.add(model.getMaterial());
 
       for (Mesh mesh : model.getMeshes()) {
-        materialProperties.add(mesh.getProperties());
+        materialProperties.add(mesh.getMaterial());
       }
     }
 

@@ -38,7 +38,7 @@ public class SceneCube3RendererActivity extends BaseRendererActivity {
       if (model.isRenderable()) {
         for (Mesh mesh : model.getMeshes()) {
 
-          command.bindDescriptorSets(new int[0], this.material.getDescriptorSets(frame, mesh.getProperties()));
+          command.bindDescriptorSets(new int[0], this.material.getDescriptorSets(frame, mesh.getMaterial()));
 
           command.bindBuffers(mesh.getVerticesBuffer(), mesh.getIndicesBuffer());
 
@@ -61,7 +61,7 @@ public class SceneCube3RendererActivity extends BaseRendererActivity {
   public void setup(Scene scene) throws ThemisException {
     for (Model model : scene.getModels()) {
       for (Mesh mesh : model.getMeshes()) {
-        this.material.add(mesh.getProperties());
+        this.material.add(mesh.getMaterial());
       }
     }
   }

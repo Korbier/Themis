@@ -1,4 +1,4 @@
-package org.sc.themis.renderer.material;
+package org.sc.themis.renderer.material_old;
 
 import org.lwjgl.system.MemoryStack;
 import org.sc.themis.renderer.Renderer;

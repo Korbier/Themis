@@ -69,10 +69,10 @@ public class SceneCube3Gamestate implements Gamestate {
       throws ThemisException {
 
     Material material = new Material("cube");
-    material.put(MaterialProperties.TEXTURE_ALBEDO, vkImage);
+    material.set(MaterialProperties.TEXTURE_ALBEDO, vkImage);
 
     Mesh cube = this.meshFactory.createCube(renderer.getResourceAllocator(), prefix + "my-cube ");
-    cube.setProperties(material);
+    cube.setMaterial(material);
 
     return this.modelFactory.create(prefix + "my-cube-model", cube);
   }

@@ -52,6 +52,10 @@ public class VkDescriptorSetLayout extends Vulkan implements LifeCycle {
     return this.bindings[binding];
   }
 
+  public VkDescriptorSetBinding[] getBindings() {
+    return this.bindings;
+  }
+
   public int size() {
     return this.bindings.length;
   }

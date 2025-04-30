@@ -1,7 +1,7 @@
 package org.sc.viewer;
 
 import org.sc.themis.core.Core;
-import org.sc.themis.renderer.material.MaterialManager;
+import org.sc.themis.renderer.material_old.MaterialManager;
 import org.sc.themis.renderer.resource.ResourceEnum;
 import org.sc.themis.renderer.resource.ResourceLoader;
 import org.sc.themis.renderer.resource.font.FontRepository;

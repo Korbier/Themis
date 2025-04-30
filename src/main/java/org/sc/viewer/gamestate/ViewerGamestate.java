@@ -7,20 +7,18 @@ import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.sc.themis.gamestate.Gamestate;
 import org.sc.themis.renderer.Renderer;
-import org.sc.themis.renderer.material.MaterialManager;
+import org.sc.themis.renderer.material_old.MaterialManager;
 import org.sc.themis.renderer.pencil2d.Pencil2D;
 import org.sc.themis.renderer.resource.ResourceEnum;
 import org.sc.themis.renderer.resource.ResourceLoader;
 import org.sc.themis.renderer.resource.font.FontRepository;
 import org.sc.themis.renderer.resource.material.Material;
 import org.sc.themis.renderer.resource.material.MaterialProperties;
-import org.sc.themis.renderer.resource.material.MaterialProperty;
 import org.sc.themis.renderer.resource.material.MaterialResourceDescriptor;
 import org.sc.themis.renderer.resource.model.Instance;
 import org.sc.themis.renderer.resource.model.Model;
 import org.sc.themis.renderer.resource.model.ModelResourceDescriptor;
 import org.sc.themis.scene.Scene;
-import org.sc.themis.scene.controller.FpsCameraController;
 import org.sc.themis.scene.controller.OrbitCameraController;
 import org.sc.themis.scene.light.DirectionalLight;
 import org.sc.themis.scene.light.PointLight;
@@ -81,10 +79,10 @@ public class ViewerGamestate implements Gamestate {
   private void setupScene(Renderer renderer, Scene scene) throws ThemisException {
 
     Material material = ResourceLoader.get().get(ResourceEnum.MATERIAL, MaterialResourceDescriptor.of("limestone3.json", renderer.getResourceAllocator()));
-    material.put(MaterialProperties.COLOR_AMBIENT, new Vector4f(1.0f) );
-    material.put(MaterialProperties.COLOR_DIFFUSE, new Vector4f(1.0f) );
-    material.put(MaterialProperties.COLOR_SPECULAR, new Vector4f(1.0f) );
-    material.put(MaterialProperties.FLOAT_SHININESS, 128.0f );
+    material.set(MaterialProperties.COLOR_AMBIENT, new Vector4f(1.0f) );
+    material.set(MaterialProperties.COLOR_DIFFUSE, new Vector4f(1.0f) );
+    material.set(MaterialProperties.COLOR_SPECULAR, new Vector4f(1.0f) );
+    material.set(MaterialProperties.FLOAT_SHININESS, 128.0f );
     this.materialManager.addMaterials(material);
 
     TextureMaterialRenderer materialRenderer = (TextureMaterialRenderer) materialManager.get(TextureMaterialRenderer.IDENTIFIER);

@@ -1,4 +1,4 @@
-package org.sc.themis.renderer.material;
+package org.sc.themis.renderer.material_old;
 
 import java.util.HashMap;
 import java.util.Map;

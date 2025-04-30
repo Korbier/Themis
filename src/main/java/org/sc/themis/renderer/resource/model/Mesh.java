@@ -18,7 +18,7 @@ public class Mesh {
 
   private final VkStagingBuffer vertexBuffer;
   private final VkStagingBuffer indiceBuffer;
-  private Material properties = null;
+  private Material material = null;
 
   private boolean renderable = false;
   private int vertexCount = 0;
@@ -39,20 +39,19 @@ public class Mesh {
 
     this.vertexBuffer.load(aVertices.length * MemorySizeUtils.FLOAT, 0, aVertices);
     this.indiceBuffer.load(indices.length * MemorySizeUtils.INT, 0, indices);
+
   }
 
-  public void setProperties(Material properties) {
-    this.properties = properties;
+  public void setMaterial(Material material) {
+    this.material = material;
   }
 
-  public Material getProperties() {
-    return this.properties;
+  public Material getMaterial() {
+    return this.material;
   }
 
   public void cleanup() throws ThemisException {
     this.renderable = false;
-    // this.vertexBuffer.cleanup();
-    // this.indiceBuffer.cleanup();
   }
 
   private float[] toArray(Vertex[] vertices) {
@@ -93,8 +92,8 @@ public class Mesh {
       return false;
     }
 
-    if (this.properties != null) {
-      for (Object property : this.properties.values()) {
+    if (this.material != null) {
+      for (Object property : this.material.values()) {
         if (property instanceof VkStagingResource resource && !resource.isRenderable()) {
           return false;
         }

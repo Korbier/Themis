@@ -55,10 +55,10 @@ public class SceneCube2Gamestate implements Gamestate {
       throws ThemisException {
 
     Material material = new Material("cube");
-    material.put(MaterialProperties.COLOR_AMBIENT, color);
+    material.set(MaterialProperties.COLOR_AMBIENT, color);
 
     Mesh cube = this.meshFactory.createCube(renderer.getResourceAllocator(), prefix + "my-cube ");
-    cube.setProperties(material);
+    cube.setMaterial(material);
 
     return this.modelFactory.create(prefix + "my-cube-model", cube);
   }
