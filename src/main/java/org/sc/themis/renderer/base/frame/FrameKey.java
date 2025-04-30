@@ -1,10 +1,10 @@
 package org.sc.themis.renderer.base.frame;
 
-import org.sc.themis.shared.tobject.TObject;
+import org.sc.themis.core.LifeCycle;
 
-public interface FrameKey<D extends TObject> {
+public interface FrameKey<D extends LifeCycle> {
 
-  static <T extends TObject> FrameKey<T> of(Class<T> clazz) {
+  static <T extends LifeCycle> FrameKey<T> of(Class<T> clazz) {
     return () -> clazz;
   }
 

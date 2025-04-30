@@ -25,24 +25,27 @@ import org.lwjgl.vulkan.VkOffset3D;
 import org.sc.themis.renderer.base.command.VkCommandBuffer;
 import org.sc.themis.renderer.base.resource.buffer.VkBuffer;
 import org.sc.themis.renderer.base.resource.image.VkImage;
+import org.sc.themis.renderer.lang.Vulkan;
 import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 
 public class ResourceSet extends VkCommandSet {
 
-  public ResourceSet(Configuration configuration, VkCommandBuffer buffer) {
-    super(configuration, buffer);
+  Vulkan vulkan = new Vulkan();
+
+  public ResourceSet(VkCommandBuffer buffer) {
+    super(buffer);
   }
 
   public void copy(VkBuffer srcBuffer, VkBuffer dstBuffer, VkBufferCopyRegion ... regions)
       throws ThemisException {
     VkBufferCopy.Buffer copyRegion = createBufferCopy(regions);
-    vkCommand().cmdCopyBuffer(buffer().getHandle(), srcBuffer.getHandle(), dstBuffer.getHandle(), copyRegion);
+   command.cmdCopyBuffer(buffer().getHandle(), srcBuffer.getHandle(), dstBuffer.getHandle(), copyRegion);
   }
 
   public void copy(VkBuffer srcBuffer, VkImage dstImage, VkBufferImageCopyRegion ... regions) throws ThemisException {
     VkBufferImageCopy.Buffer bufferImgCopy = createBufferImageCopy(regions);
-    vkCommand().cmdCopyBufferToImage(
+   command.cmdCopyBufferToImage(
             buffer().getHandle(),
             srcBuffer.getHandle(),
             dstImage.getHandle(),
@@ -61,7 +64,7 @@ public class ResourceSet extends VkCommandSet {
   ) throws ThemisException {
     VkImageMemoryBarrier.Buffer barrier =
         createImageMemoryBarrier(image.getHandle(), sourceLayout, targetLayout, srcAccessMask, dstAccessMask, subResourceRange);
-    vkCommand().cmdPipelineBarrier(buffer().getHandle(), srcPipelineStage, dstPipelineStage, barrier);
+   command.cmdPipelineBarrier(buffer().getHandle(), srcPipelineStage, dstPipelineStage, barrier);
   }
 
   public void generateMipMaps(VkImage image, int mipsLevel) throws ThemisException {

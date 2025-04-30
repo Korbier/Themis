@@ -1,8 +1,5 @@
 package org.sc.viewer.renderactivity.postprocess;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 import org.sc.themis.renderer.Renderer;
 import org.sc.themis.renderer.base.renderpass.VkRenderPass;
 import org.sc.themis.scene.descriptorset.InputDescriptorSet;
@@ -15,9 +12,12 @@ import org.sc.viewer.renderactivity.postprocess.pipeline.PostProcessorPipeline;
 import org.sc.viewer.renderactivity.postprocess.postprocessor.ShowGridPostprocessor;
 import org.sc.viewer.renderactivity.postprocess.postprocessor.ShowTBNPostprocessor;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+
 public class PostProcessors {
 
-  private final Configuration configuration;
   private final Renderer renderer;
   private final SceneDescriptorSet sceneDescriptorSet;
   private final InputDescriptorSet geometryAttachmentDescriptorset;
@@ -26,14 +26,7 @@ public class PostProcessors {
   private final Map<String, PostProcessor> postprocessors = new HashMap<>();
   private final Map<String, PostProcessorPipeline> pipelines = new HashMap<>();
 
-  public PostProcessors(
-      Configuration configuration,
-      Renderer renderer,
-      VkRenderPass renderpass,
-      SceneDescriptorSet sceneDescriptorset,
-      InputDescriptorSet geometryAttachmentDescriptorset) {
-
-    this.configuration = configuration;
+  public PostProcessors(Renderer renderer, VkRenderPass renderpass, SceneDescriptorSet sceneDescriptorset, InputDescriptorSet geometryAttachmentDescriptorset) {
     this.renderer = renderer;
     this.renderpass = renderpass;
     this.sceneDescriptorSet = sceneDescriptorset;
@@ -61,10 +54,7 @@ public class PostProcessors {
   }
 
   public Collection<String> get(PostProcessor.DrawFrequency drawFrequency) {
-    return this.postprocessors.values().stream()
-        .filter(p -> p.getFrequency() == drawFrequency)
-        .map(PostProcessor::getIdentifier)
-        .toList();
+    return this.postprocessors.values().stream().filter(p -> p.getFrequency() == drawFrequency).map(PostProcessor::getIdentifier).toList();
   }
 
   public PostProcessorPipeline getPipeline(String identifier) {
@@ -74,18 +64,14 @@ public class PostProcessors {
   private void addPostProcessor(PostProcessor postprocessor) {
 
     postprocessors.put(postprocessor.getIdentifier(), postprocessor);
-    pipelines.put(
-        postprocessor.getIdentifier(),
-        switch (postprocessor.getFrequency()) {
-          case DRAW_EVERY_VERTEX -> new PostProcessorDrawEveryVertexPipeline( this.configuration, this.renderer, this.renderpass, this.sceneDescriptorSet, this.geometryAttachmentDescriptorset, postprocessor);
-          case DRAW_ONCE -> new PostProcessorDrawOncePipeline( this.configuration, this.renderer, this.renderpass, this.sceneDescriptorSet, this.geometryAttachmentDescriptorset, postprocessor);
-        }
-    );
+    pipelines.put(postprocessor.getIdentifier(), switch (postprocessor.getFrequency()) {
+      case DRAW_EVERY_VERTEX -> new PostProcessorDrawEveryVertexPipeline(this.renderer, this.renderpass, this.sceneDescriptorSet, this.geometryAttachmentDescriptorset, postprocessor);
+      case DRAW_ONCE -> new PostProcessorDrawOncePipeline(this.renderer, this.renderpass, this.sceneDescriptorSet, this.geometryAttachmentDescriptorset, postprocessor);
+    });
 
   }
 
-  public void resize(VkRenderPass renderpass,SceneDescriptorSet sceneDescriptorset,InputDescriptorSet geometryAttachmentDescriptorset)
-      throws ThemisException {
+  public void resize(VkRenderPass renderpass, SceneDescriptorSet sceneDescriptorset, InputDescriptorSet geometryAttachmentDescriptorset) throws ThemisException {
     for (PostProcessorPipeline pipeline : this.pipelines.values()) {
       pipeline.resize(renderpass, sceneDescriptorset, geometryAttachmentDescriptorset);
     }

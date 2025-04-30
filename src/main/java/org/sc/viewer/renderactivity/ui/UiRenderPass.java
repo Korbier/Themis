@@ -52,8 +52,7 @@ public class UiRenderPass extends RenderPass {
   private Pencil2DPipeline pencilPipeline;
   private Pencil2D pencil2d;
 
-  public UiRenderPass(Configuration configuration, Pencil2D pencil2d) {
-    super(configuration);
+  public UiRenderPass(Pencil2D pencil2d) {
     this.pencil2d = pencil2d;
   }
 
@@ -68,12 +67,12 @@ public class UiRenderPass extends RenderPass {
   }
 
   private void setupBackPipeline() throws ThemisException {
-    this.UIBackPipeline = new UIBackPipeline(getConfiguration(), getDevice(), getViewerActivity(), this.renderPass);
+    this.UIBackPipeline = new UIBackPipeline(getDevice(), getViewerActivity(), this.renderPass);
     this.UIBackPipeline.setup();
   }
 
   private void setupFrontPipeline() throws ThemisException {
-    this.pencilPipeline = new Pencil2DPipeline(getConfiguration(), getRenderer(), this.renderPass, this.pencil2d);
+    this.pencilPipeline = new Pencil2DPipeline(getRenderer(), this.renderPass, this.pencil2d);
     this.pencilPipeline.setup();
   }
 
@@ -129,31 +128,25 @@ public class UiRenderPass extends RenderPass {
   }
 
   private void setupFramebufferAttachments() throws ThemisException {
-    this.frameBufferAttachments =
-        new VkFrameBufferAttachments(getConfiguration(), getDevice(), getExtent2D());
+    this.frameBufferAttachments = new VkFrameBufferAttachments(getDevice(), getExtent2D());
     this.frameBufferAttachments.setup();
     this.frameBufferAttachments.raw(FB_ATTACHMENT_COLOR, getImageFormat());
   }
 
   private void setupRenderPass() throws ThemisException {
     VkRenderPassDescriptor descriptor = createSubPassDescriptor(getDevice());
-    this.renderPass = new VkRenderPass(getConfiguration(), getDevice(), descriptor);
+    this.renderPass = new VkRenderPass(getDevice(), descriptor);
     this.renderPass.setup();
   }
 
   private VkRenderPassDescriptor createSubPassDescriptor(VkDevice device) {
 
-    VkRenderPassLayout layout =
-        new VkRenderPassLayout()
-            .add(
-                0,
-                VK_FORMAT_B8G8R8A8_SRGB,
-                VK_IMAGE_LAYOUT_UNDEFINED,
-                VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-                VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-                VK_ATTACHMENT_STORE_OP_STORE,
-                VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-                VK_ATTACHMENT_STORE_OP_DONT_CARE);
+    VkRenderPassLayout layout = new VkRenderPassLayout().add(
+        0, VK_FORMAT_B8G8R8A8_SRGB,
+        VK_IMAGE_LAYOUT_UNDEFINED,VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+        VK_ATTACHMENT_LOAD_OP_DONT_CARE,VK_ATTACHMENT_STORE_OP_STORE,
+        VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE
+    );
 
     VkSubpass subpass = new VkSubpass(device, VK_PIPELINE_BIND_POINT_GRAPHICS);
     subpass.color(0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
@@ -176,13 +169,8 @@ public class UiRenderPass extends RenderPass {
         .create(
             FK_FRAMEBUFFER,
             (frame) -> {
-              VkFrameBufferDescriptor descriptor =
-                  new VkFrameBufferDescriptor(
-                      getExtent2D(),
-                      this.renderPass.getHandle(),
-                      getImageView(frame).getHandle()
-                  );
-              return new VkFrameBuffer(getConfiguration(), getDevice(), descriptor);
+              VkFrameBufferDescriptor descriptor = new VkFrameBufferDescriptor(getExtent2D(), this.renderPass.getHandle(), getImageView(frame).getHandle());
+              return new VkFrameBuffer(getDevice(), descriptor);
             });
   }
 

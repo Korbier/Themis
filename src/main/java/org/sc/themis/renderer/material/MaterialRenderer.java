@@ -1,8 +1,6 @@
 package org.sc.themis.renderer.material;
 
-import java.util.*;
-import java.util.function.Function;
-
+import org.sc.themis.core.LifeCycle;
 import org.sc.themis.renderer.Renderer;
 import org.sc.themis.renderer.base.device.VkDevice;
 import org.sc.themis.renderer.base.device.VkMemoryAllocator;
@@ -10,11 +8,7 @@ import org.sc.themis.renderer.base.frame.Frames;
 import org.sc.themis.renderer.base.pipeline.VkPipeline;
 import org.sc.themis.renderer.base.pipeline.VkPipelineDescriptor;
 import org.sc.themis.renderer.base.pipeline.VkVertexInputStateDescriptor;
-import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorPool;
-import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSet;
-import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSetBinding;
-import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSetLayout;
-import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSetProvider;
+import org.sc.themis.renderer.base.pipeline.descriptorset.*;
 import org.sc.themis.renderer.base.renderpass.VkRenderPass;
 import org.sc.themis.renderer.base.resource.buffer.VkBufferDescriptor;
 import org.sc.themis.renderer.base.resource.image.VkSamplerDescriptor;
@@ -23,12 +17,13 @@ import org.sc.themis.renderer.material.setter.UniformDynamicSetter;
 import org.sc.themis.renderer.material.setter.UniformSetter;
 import org.sc.themis.renderer.resource.material.Material;
 import org.sc.themis.renderer.resource.material.MaterialProperty;
-import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
-import org.sc.themis.shared.tobject.TObject;
 import org.slf4j.LoggerFactory;
 
-public abstract class MaterialRenderer extends TObject {
+import java.util.*;
+import java.util.function.Function;
+
+public abstract class MaterialRenderer implements LifeCycle {
 
   private static final org.slf4j.Logger logger = LoggerFactory.getLogger(MaterialRenderer.class);
 
@@ -37,14 +32,20 @@ public abstract class MaterialRenderer extends TObject {
   private Renderer renderer;
   private final String identifier;
 
-  /** Variant identifier function **/
+  /**
+   * Variant identifier function
+   **/
   private Set<MaterialProperty<?>> mandatoryMaterials = new HashSet<>();
   private Function<Material, String> variantIdentifierFunction = Material::toString;
 
-  /** Pipeline * */
+  /**
+   * Pipeline *
+   */
   private MaterialPipeline pipeline;
 
-  /** Main * */
+  /**
+   * Main *
+   */
   private final Map<String, Integer> variantOffsets = new HashMap<>();
 
   private final MaterialDescriptor mainDescriptor = new MaterialDescriptor();
@@ -53,7 +54,9 @@ public abstract class MaterialRenderer extends TObject {
   private MaterialMainVariant mainVariant;
   private UniformDynamicSetter mainUniformSetter;
 
-  /** Variants * */
+  /**
+   * Variants *
+   */
   private final Map<String, MaterialVariant> variants = new HashMap<>();
 
   private final MaterialDescriptor variantsDescriptor = new MaterialDescriptor();
@@ -63,18 +66,19 @@ public abstract class MaterialRenderer extends TObject {
   private UniformSetter variantsUniformSetter;
   private CombinedImageSamplerSetter variantsCombinedImageSamplerSetter;
 
-  /** Others Descriptorset and descriptorsetLayout * */
+  /**
+   * Others Descriptorset and descriptorsetLayout *
+   */
   private VkDescriptorSetProvider[] descriptorsetProviders;
 
   private Map<Material, Boolean> dirty = new HashMap<>();
 
-  public MaterialRenderer(Configuration configuration, String identifier) {
-    super(configuration);
+  public MaterialRenderer(String identifier) {
     this.identifier = identifier;
-    this.pipeline = new MaterialPipeline(getConfiguration());
+    this.pipeline = new MaterialPipeline();
   }
 
-  public void setup(Renderer renderer, VkRenderPass renderpass, VkDescriptorSetProvider ... descriptorsets) throws ThemisException {
+  public void setup(Renderer renderer, VkRenderPass renderpass, VkDescriptorSetProvider... descriptorsets) throws ThemisException {
     this.renderer = renderer;
     this.setupVariantsDescriptorsetLayout();
     this.setupVariantsDescriptorPool();
@@ -112,7 +116,9 @@ public abstract class MaterialRenderer extends TObject {
     this.pipeline.cleanup();
   }
 
-  /** Material usage methods - create and store variant for provided properties * */
+  /**
+   * Material usage methods - create and store variant for provided properties *
+   */
   public String add(Material properties) throws ThemisException {
 
     for (MaterialProperty<?> mandatory : this.mandatoryMaterials) {
@@ -139,7 +145,7 @@ public abstract class MaterialRenderer extends TObject {
           return variantIdentifier;
         }
 
-        MaterialVariant variant = new MaterialVariant(getConfiguration(), this, variantIdentifier);
+        MaterialVariant variant = new MaterialVariant(this, variantIdentifier);
         variant.setup();
         variant.update(properties);
 
@@ -156,7 +162,7 @@ public abstract class MaterialRenderer extends TObject {
 
         this.setupMainDescriptorPool();
 
-        this.mainVariant = new MaterialMainVariant(getConfiguration(), this, getIdentifier() + ".main");
+        this.mainVariant = new MaterialMainVariant(this, getIdentifier() + ".main");
         this.mainVariant.setup();
         // this.mainVariant.setProperties(offset, properties);
 
@@ -173,8 +179,10 @@ public abstract class MaterialRenderer extends TObject {
     this.dirty.keySet().forEach(k -> this.dirty.put(k, true));
   }
 
-  /** Material building methods - Variant Identifier function * */
-  protected void addMandatoryProperties(MaterialProperty<?> ... properties) {
+  /**
+   * Material building methods - Variant Identifier function *
+   */
+  protected void addMandatoryProperties(MaterialProperty<?>... properties) {
     Collections.addAll(this.mandatoryMaterials, properties);
   }
 
@@ -182,7 +190,9 @@ public abstract class MaterialRenderer extends TObject {
     this.variantIdentifierFunction = variantIdentifierFunction;
   }
 
-  /** Material building methods - Pipeline * */
+  /**
+   * Material building methods - Pipeline *
+   */
   public void addShader(int shaderStage, byte[] source) {
     this.pipeline.addShader(shaderStage, source);
   }
@@ -199,7 +209,9 @@ public abstract class MaterialRenderer extends TObject {
     this.pipeline.setPipelineDescriptor(descriptor);
   }
 
-  /** Material building methods - Main * */
+  /**
+   * Material building methods - Main *
+   */
   protected void addMainUniformDynamicBinding(int binding, int shaderStage, VkBufferDescriptor bufferDescriptor) {
     this.mainDescriptor.addUniformDynamicBinding(binding, shaderStage, bufferDescriptor);
   }
@@ -208,7 +220,9 @@ public abstract class MaterialRenderer extends TObject {
     this.mainUniformSetter = uniformSetter;
   }
 
-  /** Material building methods - Variant * */
+  /**
+   * Material building methods - Variant *
+   */
   protected void addVariantsUniformBinding(int binding, int shaderStage, VkBufferDescriptor bufferDescriptor) {
     this.variantsDescriptor.addUniformBinding(binding, shaderStage, bufferDescriptor);
   }
@@ -225,12 +239,16 @@ public abstract class MaterialRenderer extends TObject {
     this.variantsCombinedImageSamplerSetter = combinedImageSamplerSetter;
   }
 
-  /** Others Descriptorsets and descriptorsetLayouts * */
+  /**
+   * Others Descriptorsets and descriptorsetLayouts *
+   */
   public void setDescriptorsetProviders(VkDescriptorSetProvider... providers) {
     this.descriptorsetProviders = providers;
   }
 
-  /** Getters * */
+  /**
+   * Getters *
+   */
   public String getIdentifier() {
     return this.identifier;
   }
@@ -351,14 +369,14 @@ public abstract class MaterialRenderer extends TObject {
   private void setupMainDescriptorsetLayout() throws ThemisException {
     VkDescriptorSetBinding[] bindings = this.mainDescriptor.getBindings().values().toArray(new VkDescriptorSetBinding[0]);
     if (bindings.length > 0) {
-      this.mainDescriptorSetLayout = new VkDescriptorSetLayout(getConfiguration(), getDevice(), bindings);
+      this.mainDescriptorSetLayout = new VkDescriptorSetLayout(getDevice(), bindings);
       this.mainDescriptorSetLayout.setup();
     }
   }
 
   private void setupMainDescriptorPool() throws ThemisException {
     if (this.mainDescriptorSetLayout != null) {
-      this.mainDescriptorPool = new VkDescriptorPool(getConfiguration(), getDevice(), getFrames().getSize(), this.mainDescriptorSetLayout);
+      this.mainDescriptorPool = new VkDescriptorPool(getDevice(), getFrames().getSize(), this.mainDescriptorSetLayout);
       this.mainDescriptorPool.setup();
     }
   }
@@ -366,7 +384,7 @@ public abstract class MaterialRenderer extends TObject {
   private void setupVariantsDescriptorsetLayout() throws ThemisException {
     VkDescriptorSetBinding[] bindings = this.variantsDescriptor.getBindings().values().toArray(new VkDescriptorSetBinding[0]);
     if (bindings.length > 0) {
-      this.variantsDescriptorSetLayout = new VkDescriptorSetLayout(getConfiguration(), getDevice(), bindings);
+      this.variantsDescriptorSetLayout = new VkDescriptorSetLayout(getDevice(), bindings);
       this.variantsDescriptorSetLayout.setup();
     }
   }
@@ -374,7 +392,7 @@ public abstract class MaterialRenderer extends TObject {
   private void setupVariantsDescriptorPool() throws ThemisException {
     if (this.variantsDescriptorSetLayout != null) {
       this.variantsDescriptorPool =
-          new VkDescriptorPool(getConfiguration(), getDevice(), getFrames().getSize() * MaterialRenderer.DESCRIPTORPOOL_SIZE, this.variantsDescriptorSetLayout);
+          new VkDescriptorPool(getDevice(), getFrames().getSize() * MaterialRenderer.DESCRIPTORPOOL_SIZE, this.variantsDescriptorSetLayout);
       this.variantsDescriptorPool.setup();
     }
   }

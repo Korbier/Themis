@@ -52,10 +52,9 @@ public class GeometryRenderPass extends RenderPass {
   private VkRenderPass renderPass;
 
   // Material
-  private MaterialManager materialManager;
+  private final MaterialManager materialManager;
 
-  public GeometryRenderPass(Configuration configuration, MaterialManager materialManager) {
-    super(configuration);
+  public GeometryRenderPass(MaterialManager materialManager) {
     this.materialManager = materialManager;
   }
 
@@ -135,7 +134,7 @@ public class GeometryRenderPass extends RenderPass {
 
   private void setupRenderPass() throws ThemisException {
     VkRenderPassDescriptor descriptor = createSubPassDescriptor(getDevice());
-    this.renderPass = new VkRenderPass(getConfiguration(), getDevice(), descriptor);
+    this.renderPass = new VkRenderPass(getDevice(), descriptor);
     this.renderPass.setup();
   }
 
@@ -149,7 +148,7 @@ public class GeometryRenderPass extends RenderPass {
               getGeometryFrameBufferAttachments().get(ViewerRendererActivity.GEOMETRY_FB_ATTACHMENT_DEPTH).getView().getHandle(),
               getGeometryFrameBufferAttachments().get(ViewerRendererActivity.GEOMETRY_FB_ATTACHMENT_COLOR).getView().getHandle()
           );
-          return new VkFrameBuffer(getConfiguration(), getDevice(), descriptor);
+          return new VkFrameBuffer(getDevice(), descriptor);
         }
     );
   }

@@ -4,13 +4,14 @@ import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.util.vma.VmaAllocatorCreateInfo;
 import org.lwjgl.util.vma.VmaVulkanFunctions;
-import org.sc.themis.renderer.lang.VulkanObject;
+import org.sc.themis.renderer.lang.Vulkan;
 import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
+import org.sc.themis.core.LifeCycle;
 import org.sc.themis.shared.utils.LogUtils;
 import org.slf4j.LoggerFactory;
 
-public class VkMemoryAllocator extends VulkanObject {
+public class VkMemoryAllocator extends Vulkan implements LifeCycle {
 
   private static final org.slf4j.Logger logger = LoggerFactory.getLogger(VkMemoryAllocator.class);
 
@@ -20,8 +21,7 @@ public class VkMemoryAllocator extends VulkanObject {
 
   private long handle;
 
-  public VkMemoryAllocator(Configuration configuration, VkPhysicalDevice physicalDevice, VkDevice device, VkInstance instance) {
-    super(configuration);
+  public VkMemoryAllocator(VkPhysicalDevice physicalDevice, VkDevice device, VkInstance instance) {
     this.physicalDevice = physicalDevice;
     this.device = device;
     this.instance = instance;
@@ -38,7 +38,7 @@ public class VkMemoryAllocator extends VulkanObject {
 
   @Override
   public void cleanup() throws ThemisException {
-    vkMemoryAllocator().destroyAllocator(this.handle);
+   memoryAllocator.destroyAllocator(this.handle);
   }
 
   public long getHandle() {
@@ -47,7 +47,7 @@ public class VkMemoryAllocator extends VulkanObject {
 
   private long createMemoryAllocator(MemoryStack stack, VmaAllocatorCreateInfo allocatorCreateInfo) throws ThemisException {
     PointerBuffer pAllocator = stack.mallocPointer(1);
-    vkMemoryAllocator().createAllocator(allocatorCreateInfo, pAllocator);
+   memoryAllocator.createAllocator(allocatorCreateInfo, pAllocator);
     return pAllocator.get(0);
   }
 
@@ -55,13 +55,11 @@ public class VkMemoryAllocator extends VulkanObject {
 
     VmaVulkanFunctions vmaVulkanFunctions = VmaVulkanFunctions.calloc(stack).set(this.instance.getHandle(), this.device.getHandle());
 
-    VmaAllocatorCreateInfo createInfo = VmaAllocatorCreateInfo.calloc(stack)
-            .instance(this.instance.getHandle())
-            .device(this.device.getHandle())
-            .physicalDevice(this.physicalDevice.getHandle())
-            .pVulkanFunctions(vmaVulkanFunctions);
-
-    return createInfo;
+    return VmaAllocatorCreateInfo.calloc(stack)
+        .instance(this.instance.getHandle())
+        .device(this.device.getHandle())
+        .physicalDevice(this.physicalDevice.getHandle())
+        .pVulkanFunctions(vmaVulkanFunctions);
 
   }
 }

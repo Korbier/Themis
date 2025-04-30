@@ -11,15 +11,11 @@ import org.sc.themis.renderer.base.sync.VkSemaphore;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
-import org.sc.themis.shared.tobject.TObject;
+import org.sc.themis.core.LifeCycle;
 
-public abstract class RenderPass extends TObject {
+public abstract class RenderPass implements LifeCycle {
 
   private ViewerRendererActivity viewerActivity;
-
-  public RenderPass(Configuration configuration) {
-    super(configuration);
-  }
 
   protected Renderer getRenderer() {
     return this.viewerActivity.getRenderer();

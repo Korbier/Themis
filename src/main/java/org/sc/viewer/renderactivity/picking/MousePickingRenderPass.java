@@ -9,10 +9,6 @@ import org.sc.viewer.renderactivity.RenderPass;
 
 public class MousePickingRenderPass extends RenderPass {
 
-  public MousePickingRenderPass(Configuration configuration) {
-    super(configuration);
-  }
-
   @Override
   public void setup() throws ThemisException {}
 

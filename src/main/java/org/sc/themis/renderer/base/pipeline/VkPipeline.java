@@ -41,12 +41,13 @@ import org.lwjgl.vulkan.VkPipelineRasterizationStateCreateInfo;
 import org.lwjgl.vulkan.VkPipelineShaderStageCreateInfo;
 import org.lwjgl.vulkan.VkPipelineViewportStateCreateInfo;
 import org.sc.themis.renderer.base.device.VkDevice;
-import org.sc.themis.renderer.lang.VulkanObject;
+import org.sc.themis.renderer.lang.Vulkan;
 import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
+import org.sc.themis.core.LifeCycle;
 import org.slf4j.LoggerFactory;
 
-public class VkPipeline extends VulkanObject {
+public class VkPipeline extends Vulkan implements LifeCycle {
 
   private static final org.slf4j.Logger logger = LoggerFactory.getLogger(VkPipeline.class);
 
@@ -59,14 +60,12 @@ public class VkPipeline extends VulkanObject {
   private long handle;
 
   public VkPipeline(
-      Configuration configuration,
       VkDevice device,
       VkPipelineDescriptor descriptor,
       VkShaderProgram shaderProgram,
       VkPipelineLayout layout,
       VkVertexInputState vertexInputState
   ) {
-    super(configuration);
     this.device = device;
     this.descriptor = descriptor;
     this.shaderProgram = shaderProgram;
@@ -109,7 +108,7 @@ public class VkPipeline extends VulkanObject {
 
   @Override
   public void cleanup() throws ThemisException {
-    vkPipeline().destroyPipeline(this.device.getHandle(), this.getHandle());
+   pipeline.destroyPipeline(this.device.getHandle(), this.getHandle());
   }
 
   @Override
@@ -269,7 +268,7 @@ public class VkPipeline extends VulkanObject {
 
   private long vkCreateGraphicPipeline(MemoryStack stack, VkGraphicsPipelineCreateInfo.Buffer graphicsPipelineCreateInfo) throws ThemisException {
     LongBuffer lp = stack.mallocLong(1);
-    vkPipeline().createGraphicsPipelines(this.device.getHandle(), VK_NULL_HANDLE, graphicsPipelineCreateInfo, lp);
+   pipeline.createGraphicsPipelines(this.device.getHandle(), VK_NULL_HANDLE, graphicsPipelineCreateInfo, lp);
     return lp.get(0);
   }
 }

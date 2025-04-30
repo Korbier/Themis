@@ -8,13 +8,13 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkDescriptorSetLayoutBinding;
 import org.lwjgl.vulkan.VkDescriptorSetLayoutCreateInfo;
 import org.sc.themis.renderer.base.device.VkDevice;
-import org.sc.themis.renderer.lang.VulkanObject;
-import org.sc.themis.shared.configuration.Configuration;
+import org.sc.themis.renderer.lang.Vulkan;
 import org.sc.themis.shared.exception.ThemisException;
+import org.sc.themis.core.LifeCycle;
 import org.sc.themis.shared.utils.LogUtils;
 import org.slf4j.LoggerFactory;
 
-public class VkDescriptorSetLayout extends VulkanObject {
+public class VkDescriptorSetLayout extends Vulkan implements LifeCycle {
 
   private static final org.slf4j.Logger logger = LoggerFactory.getLogger(VkDescriptorSetLayout.class);
 
@@ -23,8 +23,7 @@ public class VkDescriptorSetLayout extends VulkanObject {
 
   private long handle;
 
-  public VkDescriptorSetLayout(Configuration configuration, VkDevice device, VkDescriptorSetBinding... bindings) {
-    super(configuration);
+  public VkDescriptorSetLayout(VkDevice device, VkDescriptorSetBinding... bindings) {
     this.device = device;
     this.bindings = bindings;
   }
@@ -41,7 +40,7 @@ public class VkDescriptorSetLayout extends VulkanObject {
 
   @Override
   public void cleanup() throws ThemisException {
-    vkPipeline().destroyDescriptorSetLayout(this.device.getHandle(), getHandle());
+   pipeline.destroyDescriptorSetLayout(this.device.getHandle(), getHandle());
   }
 
   @Override
@@ -90,7 +89,7 @@ public class VkDescriptorSetLayout extends VulkanObject {
 
   private long vkCreateDescriptorSetLayout(MemoryStack stack, VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo) throws ThemisException {
     LongBuffer pSetLayout = stack.mallocLong(1);
-    vkPipeline().createDescriptorSetLayout(this.device.getHandle(), descriptorSetLayoutCreateInfo, pSetLayout);
+   pipeline.createDescriptorSetLayout(this.device.getHandle(), descriptorSetLayoutCreateInfo, pSetLayout);
     return pSetLayout.get(0);
   }
 }

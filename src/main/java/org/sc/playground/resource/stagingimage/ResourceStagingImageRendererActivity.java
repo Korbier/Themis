@@ -1,36 +1,27 @@
 package org.sc.playground.resource.stagingimage;
 
-import static org.lwjgl.vulkan.VK10.VK_FORMAT_R8G8B8A8_SRGB;
-import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_FRAGMENT_BIT;
-import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_VERTEX_BIT;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.util.shaderc.Shaderc;
 import org.sc.playground.shared.BaseRendererActivity;
 import org.sc.themis.renderer.base.command.VkCommand;
 import org.sc.themis.renderer.base.framebuffer.VkFrameBuffer;
-import org.sc.themis.renderer.base.pipeline.VkPipeline;
-import org.sc.themis.renderer.base.pipeline.VkPipelineDescriptor;
-import org.sc.themis.renderer.base.pipeline.VkPipelineLayout;
-import org.sc.themis.renderer.base.pipeline.VkPushConstantRange;
-import org.sc.themis.renderer.base.pipeline.VkShaderProgram;
-import org.sc.themis.renderer.base.pipeline.VkShaderProgramStage;
-import org.sc.themis.renderer.base.pipeline.VkShaderSourceCompiler;
-import org.sc.themis.renderer.base.pipeline.VkVertexInputState;
-import org.sc.themis.renderer.base.sync.VkFence;
+import org.sc.themis.renderer.base.pipeline.*;
 import org.sc.themis.renderer.base.resource.staging.VkStagingImage;
-import org.sc.themis.scene.Scene;
-import org.sc.themis.shared.configuration.Configuration;
-import org.sc.themis.shared.exception.ThemisException;
-import org.sc.themis.renderer.resource.image.Image;
-import org.sc.themis.renderer.resource.image.ImageResourceDescriptor;
+import org.sc.themis.renderer.base.sync.VkFence;
 import org.sc.themis.renderer.resource.ResourceEnum;
 import org.sc.themis.renderer.resource.ResourceLoader;
+import org.sc.themis.renderer.resource.image.Image;
+import org.sc.themis.renderer.resource.image.ImageResourceDescriptor;
+import org.sc.themis.scene.Scene;
+import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.utils.LogUtils;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
+import static org.lwjgl.vulkan.VK10.*;
 
 public class ResourceStagingImageRendererActivity extends BaseRendererActivity {
 
@@ -48,10 +39,6 @@ public class ResourceStagingImageRendererActivity extends BaseRendererActivity {
   private VkPipeline pipeline;
 
   private VkStagingImage vkImage;
-
-  public ResourceStagingImageRendererActivity(Configuration configuration) {
-    super(configuration);
-  }
 
   @Override
   public void render(Scene scene, long tpf) throws ThemisException {
@@ -98,7 +85,7 @@ public class ResourceStagingImageRendererActivity extends BaseRendererActivity {
       VkShaderProgramStage vertexStage = new VkShaderProgramStage(VK_SHADER_STAGE_VERTEX_BIT, Files.readAllBytes(Paths.get(SHADER_VERTEX_COMPILED)));
       VkShaderProgramStage fragmentStage = new VkShaderProgramStage(VK_SHADER_STAGE_FRAGMENT_BIT, Files.readAllBytes(Paths.get(SHADER_FRAGMENT_COMPILED)));
 
-      this.shaderProgram = new VkShaderProgram(getConfiguration(), renderer.getDevice(), vertexStage, fragmentStage);
+      this.shaderProgram = new VkShaderProgram(renderer.getDevice(), vertexStage, fragmentStage);
       this.shaderProgram.setup();
 
     } catch (IOException e) {
@@ -109,7 +96,7 @@ public class ResourceStagingImageRendererActivity extends BaseRendererActivity {
 
   private void setupPipelineAndLayout() throws ThemisException {
 
-    this.pipelineLayout = new VkPipelineLayout(getConfiguration(), this.renderer.getDevice(), new VkPushConstantRange[0]);
+    this.pipelineLayout = new VkPipelineLayout(this.renderer.getDevice(), new VkPushConstantRange[0]);
     this.pipelineLayout.setup();
 
     try (MemoryStack stack = MemoryStack.stackPush()) {
@@ -117,14 +104,7 @@ public class ResourceStagingImageRendererActivity extends BaseRendererActivity {
       VkVertexInputState inputState = new VkVertexInputState();
       inputState.setup(stack);
 
-      this.pipeline = new VkPipeline(
-              getConfiguration(),
-              this.renderer.getDevice(),
-              new VkPipelineDescriptor(this.renderPass, 0, false, 1, false, 1, 1, 1),
-              this.shaderProgram,
-              this.pipelineLayout,
-              inputState
-      );
+      this.pipeline = new VkPipeline(this.renderer.getDevice(), new VkPipelineDescriptor(this.renderPass, 0, false, 1, false, 1, 1, 1), this.shaderProgram, this.pipelineLayout, inputState);
 
       this.pipeline.setup();
     }
@@ -136,7 +116,7 @@ public class ResourceStagingImageRendererActivity extends BaseRendererActivity {
     this.vkImage = this.renderer.getResourceAllocator().allocateImage(VK_FORMAT_R8G8B8A8_SRGB);
     this.vkImage.load(image);
 
-    logger.info("Image loaded (image view address = {})",LogUtils.toHexString(this.vkImage.getView().getHandle()));
+    logger.info("Image loaded (image view address = {})", LogUtils.toHexString(this.vkImage.getView().getHandle()));
 
   }
 }

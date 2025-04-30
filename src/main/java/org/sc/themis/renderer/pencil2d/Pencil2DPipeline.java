@@ -6,20 +6,18 @@ import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSet;
 import org.sc.themis.renderer.base.renderpass.VkRenderPass;
 import org.sc.themis.renderer.base.resource.buffer.VkBuffer;
 import org.sc.themis.renderer.base.resource.buffer.VkBufferDescriptor;
-import org.sc.themis.renderer.base.sync.VkFence;
 import org.sc.themis.renderer.pencil2d.pipeline.Pencil2DChannelPipeline;
 import org.sc.themis.renderer.pencil2d.pipeline.TextChannelPipeline;
 import org.sc.themis.renderer.pencil2d.pipeline.TriangleChannelPipeline;
 import org.sc.themis.scene.Scene;
-import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
-import org.sc.themis.shared.tobject.TObject;
+import org.sc.themis.core.LifeCycle;
 import org.sc.themis.shared.utils.MemorySizeUtils;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class Pencil2DPipeline extends TObject {
+public class Pencil2DPipeline implements LifeCycle {
 
 
   private final Renderer renderer;
@@ -34,8 +32,7 @@ public class Pencil2DPipeline extends TObject {
   //private VkBuffer drawCommandVertexBuffer;
   //private VkBuffer drawCommandIndiceBuffer;
 
-  public Pencil2DPipeline(Configuration configuration, Renderer renderer, VkRenderPass pass, Pencil2D pencil) {
-    super(configuration);
+  public Pencil2DPipeline(Renderer renderer, VkRenderPass pass, Pencil2D pencil) {
     this.renderer = renderer;
     this.pass = pass;
     this.pencil = pencil;
@@ -48,14 +45,14 @@ public class Pencil2DPipeline extends TObject {
   }
 
   private void setupDescriptorset() throws ThemisException {
-    this.pencilDescriptorSet = new Pencil2DDescriptorset(getConfiguration(), this.renderer, this.pencil.fonts());
+    this.pencilDescriptorSet = new Pencil2DDescriptorset(this.renderer, this.pencil.fonts());
     this.pencilDescriptorSet.setup();
   }
 
   private void setupPipeline() throws ThemisException {
-    this.trianglePipeline = new TriangleChannelPipeline(getConfiguration(), renderer, this.pass, pencilDescriptorSet.getDescriptorSetLayout());
+    this.trianglePipeline = new TriangleChannelPipeline(renderer, this.pass, pencilDescriptorSet.getDescriptorSetLayout());
     this.trianglePipeline.setup();
-    this.textPipeline = new TextChannelPipeline(getConfiguration(), renderer, this.pass, pencilDescriptorSet.getDescriptorSetLayout());
+    this.textPipeline = new TextChannelPipeline(renderer, this.pass, pencilDescriptorSet.getDescriptorSetLayout());
     this.textPipeline.setup();
   }
 
@@ -125,13 +122,13 @@ public class Pencil2DPipeline extends TObject {
 
     if (cBuffers.drawCommandVertexBuffer == null) {
       VkBufferDescriptor decriptor = VkBufferDescriptor.vertexBuffer(channelVertexSize);
-      cBuffers.drawCommandVertexBuffer = new VkBuffer(getConfiguration(), this.renderer.getDevice(), this.renderer.getMemoryAllocator(), decriptor);
+      cBuffers.drawCommandVertexBuffer = new VkBuffer(this.renderer.getDevice(), this.renderer.getMemoryAllocator(), decriptor);
       cBuffers.drawCommandVertexBuffer.setup();
     }
 
     if (cBuffers.drawCommandIndiceBuffer == null) {
       VkBufferDescriptor decriptorIndices = VkBufferDescriptor.indiceBuffer(channelIndiceSize);
-      cBuffers.drawCommandIndiceBuffer = new VkBuffer(getConfiguration(), this.renderer.getDevice(), this.renderer.getMemoryAllocator(), decriptorIndices);
+      cBuffers.drawCommandIndiceBuffer = new VkBuffer(this.renderer.getDevice(), this.renderer.getMemoryAllocator(), decriptorIndices);
       cBuffers.drawCommandIndiceBuffer.setup();
     }
 
@@ -142,41 +139,6 @@ public class Pencil2DPipeline extends TObject {
 
 
   }
-/**
-  private void updateBuffers(Pencil2DChannel channel) throws ThemisException {
-
-    long dataSize = (long) channel.getVertexLength() * MemorySizeUtils.FLOAT;
-    long indiceSize = (long) channel.getIndiceCount() * MemorySizeUtils.INT;
-
-    if (this.drawCommandVertexBuffer == null || this.drawCommandVertexBuffer.getRequestedSize() < dataSize) {
-
-      if (this.drawCommandVertexBuffer != null) {
-        this.drawCommandVertexBuffer.cleanup();
-      }
-
-      VkBufferDescriptor decriptor = VkBufferDescriptor.vertexBuffer(dataSize);
-      this.drawCommandVertexBuffer = new VkBuffer(getConfiguration(), this.renderer.getDevice(), this.renderer.getMemoryAllocator(), decriptor);
-      this.drawCommandVertexBuffer.setup();
-
-    }
-
-    this.drawCommandVertexBuffer.set(0, channel.getVertices());
-
-    if (this.drawCommandIndiceBuffer == null || this.drawCommandIndiceBuffer.getRequestedSize() < indiceSize) {
-
-      if (this.drawCommandIndiceBuffer != null) {
-        this.drawCommandIndiceBuffer.cleanup();
-      }
-
-      VkBufferDescriptor decriptorIndices = VkBufferDescriptor.indiceBuffer(indiceSize);
-      this.drawCommandIndiceBuffer = new VkBuffer(getConfiguration(), this.renderer.getDevice(), this.renderer.getMemoryAllocator(), decriptorIndices);
-      this.drawCommandIndiceBuffer.setup();
-    }
-
-    this.drawCommandIndiceBuffer.set(0, channel.getIndices());
-
-  }
-**/
 
   public VkDescriptorSet getDescriptorset(int frame) {
     return this.pencilDescriptorSet.getDescriptorSet(frame);

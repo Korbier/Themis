@@ -1,5 +1,12 @@
 package org.sc.themis.renderer.base.device;
 
+import org.lwjgl.PointerBuffer;
+import org.lwjgl.system.MemoryStack;
+import org.sc.themis.core.LifeCycle;
+import org.sc.themis.renderer.lang.Vulkan;
+import org.sc.themis.shared.exception.ThemisException;
+import org.slf4j.LoggerFactory;
+
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -7,22 +14,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 
-import org.lwjgl.PointerBuffer;
-import org.lwjgl.system.MemoryStack;
-import org.sc.themis.renderer.lang.VulkanObject;
-import org.sc.themis.shared.configuration.Configuration;
-import org.sc.themis.shared.exception.ThemisException;
-import org.slf4j.LoggerFactory;
-
-public class VkPhysicalDevices extends VulkanObject {
+public class VkPhysicalDevices extends Vulkan implements LifeCycle {
 
   private static final org.slf4j.Logger logger = LoggerFactory.getLogger(VkPhysicalDevices.class);
 
   private final Set<Long> physicalDevices = new HashSet<>();
   private final VkInstance instance;
 
-  public VkPhysicalDevices(Configuration configuration, VkInstance instance) {
-    super(configuration);
+  public VkPhysicalDevices(VkInstance instance) {
     this.instance = instance;
   }
 
@@ -34,16 +33,16 @@ public class VkPhysicalDevices extends VulkanObject {
   }
 
   @Override
-  public void cleanup() {}
+  public void cleanup() {
+  }
 
   public VkPhysicalDevice select(Predicate<VkPhysicalDevice> selector) throws ThemisException {
 
     for (Long deviceHandle : getPhysicalDevices()) {
 
-      org.lwjgl.vulkan.VkPhysicalDevice handle =
-          new org.lwjgl.vulkan.VkPhysicalDevice(deviceHandle, this.instance.getHandle());
+      org.lwjgl.vulkan.VkPhysicalDevice handle = new org.lwjgl.vulkan.VkPhysicalDevice(deviceHandle, this.instance.getHandle());
 
-      VkPhysicalDevice device = new VkPhysicalDevice(getConfiguration(), handle);
+      VkPhysicalDevice device = new VkPhysicalDevice(handle);
       device.setup();
 
       if (selector.test(device)) {
@@ -91,14 +90,13 @@ public class VkPhysicalDevices extends VulkanObject {
 
     // Get number of physical devices
     IntBuffer intBuffer = stack.mallocInt(1);
-    vkPhysicalDevice().enumeratePhysicalDevices(this.instance.getHandle(), intBuffer, null);
+   physicalDevice.enumeratePhysicalDevices(this.instance.getHandle(), intBuffer, null);
 
     int numDevices = intBuffer.get(0);
 
     // Populate physical devices list pointer
     pPhysicalDevices = stack.mallocPointer(numDevices);
-    vkPhysicalDevice()
-        .enumeratePhysicalDevices(this.instance.getHandle(), intBuffer, pPhysicalDevices);
+   physicalDevice.enumeratePhysicalDevices(this.instance.getHandle(), intBuffer, pPhysicalDevices);
 
     return pPhysicalDevices;
   }

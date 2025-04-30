@@ -1,7 +1,7 @@
 package org.sc.themis.shared.service;
 
 import org.sc.themis.shared.exception.ThemisException;
-import org.sc.themis.shared.tobject.LifeCycle;
+import org.sc.themis.core.LifeCycle;
 
 import java.util.HashMap;
 import java.util.Map;

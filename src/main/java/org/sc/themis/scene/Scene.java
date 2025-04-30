@@ -17,13 +17,14 @@ import org.sc.themis.scene.light.DirectionalLight;
 import org.sc.themis.scene.light.PointLight;
 import org.sc.themis.scene.light.SpotLight;
 import org.sc.themis.shared.configuration.Configuration;
+import org.sc.themis.shared.configuration.ConfigurationEnum;
 import org.sc.themis.shared.exception.ThemisException;
-import org.sc.themis.shared.tobject.TObject;
+import org.sc.themis.core.LifeCycle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Scene. */
-public class Scene extends TObject {
+public class Scene implements LifeCycle {
 
   private static final Logger logger = LoggerFactory.getLogger(Scene.class);
 
@@ -49,8 +50,11 @@ public class Scene extends TObject {
    * @param configuration Main configuration.
    */
   public Scene(Configuration configuration) {
-    super(configuration);
-    this.projection = new Projection(configuration);
+    this.projection = new Projection(
+      configuration.get(ConfigurationEnum.sceneProjectionFov, 60.0f),
+      configuration.get(ConfigurationEnum.sceneProjectionZNear, 0.1f),
+      configuration.get(ConfigurationEnum.sceneProjectionZFar, 1400.0f)
+    );
     this.camera = new Camera();
   }
 

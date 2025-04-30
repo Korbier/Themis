@@ -5,7 +5,7 @@ import org.sc.themis.renderer.base.renderpass.VkRenderPass;
 import org.sc.themis.scene.descriptorset.InputDescriptorSet;
 import org.sc.themis.scene.descriptorset.SceneDescriptorSet;
 import org.sc.themis.shared.exception.ThemisException;
-import org.sc.themis.shared.tobject.LifeCycle;
+import org.sc.themis.core.LifeCycle;
 
 public interface PostProcessorPipeline extends LifeCycle {
 

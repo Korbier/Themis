@@ -11,12 +11,12 @@ import org.lwjgl.vulkan.VkDescriptorPoolCreateInfo;
 import org.lwjgl.vulkan.VkDescriptorPoolSize;
 import org.sc.themis.renderer.base.device.VkDevice;
 import org.sc.themis.renderer.base.exception.FullDescriptorsetPoolException;
-import org.sc.themis.renderer.lang.VulkanObject;
-import org.sc.themis.shared.configuration.Configuration;
+import org.sc.themis.renderer.lang.Vulkan;
 import org.sc.themis.shared.assertion.Assertions;
 import org.sc.themis.shared.exception.ThemisException;
+import org.sc.themis.core.LifeCycle;
 
-public class VkDescriptorPool extends VulkanObject {
+public class VkDescriptorPool extends Vulkan implements LifeCycle {
 
   private final VkDevice device;
   private final VkDescriptorSetLayout[] layouts;
@@ -24,9 +24,7 @@ public class VkDescriptorPool extends VulkanObject {
   private int created = 0;
   private long handle;
 
-  public VkDescriptorPool(
-      Configuration configuration, VkDevice device, int size, VkDescriptorSetLayout... layouts) {
-    super(configuration);
+  public VkDescriptorPool(VkDevice device, int size, VkDescriptorSetLayout... layouts) {
     this.device = device;
     this.size = size;
     this.layouts = layouts;
@@ -47,15 +45,13 @@ public class VkDescriptorPool extends VulkanObject {
 
   @Override
   public void cleanup() throws ThemisException {
-    vkPipeline().destroyDescriptorPool(this.device.getHandle(), this.handle);
+   pipeline.destroyDescriptorPool(this.device.getHandle(), this.handle);
   }
 
   public VkDescriptorSet create() throws FullDescriptorsetPoolException {
-
     Assertions.isFalse(this::isFull, new FullDescriptorsetPoolException());
-
     this.created++;
-    return new VkDescriptorSet(getConfiguration(), this.device, this, this.layouts);
+    return new VkDescriptorSet(this.device, this, this.layouts);
   }
 
   public boolean isFull() {
@@ -66,8 +62,7 @@ public class VkDescriptorPool extends VulkanObject {
     return this.handle;
   }
 
-  private VkDescriptorPoolCreateInfo createDescriptorPoolCreateInfo(
-      MemoryStack stack, VkDescriptorPoolSize.Buffer descriptorPoolSizes, int totalSize) {
+  private VkDescriptorPoolCreateInfo createDescriptorPoolCreateInfo(MemoryStack stack, VkDescriptorPoolSize.Buffer descriptorPoolSizes, int totalSize) {
     return VkDescriptorPoolCreateInfo.calloc(stack)
         .sType(VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO)
         .flags(VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT)
@@ -75,11 +70,9 @@ public class VkDescriptorPool extends VulkanObject {
         .maxSets(totalSize);
   }
 
-  private VkDescriptorPoolSize.Buffer createDescriptorPoolSizes(
-      MemoryStack stack, Map<Integer, Integer> countersByType) {
+  private VkDescriptorPoolSize.Buffer createDescriptorPoolSizes(MemoryStack stack, Map<Integer, Integer> countersByType) {
 
-    VkDescriptorPoolSize.Buffer poolSizes =
-        VkDescriptorPoolSize.calloc(countersByType.size(), stack);
+    VkDescriptorPoolSize.Buffer poolSizes = VkDescriptorPoolSize.calloc(countersByType.size(), stack);
     int idx = 0;
 
     for (Integer type : countersByType.keySet()) {
@@ -87,6 +80,7 @@ public class VkDescriptorPool extends VulkanObject {
     }
 
     return poolSizes;
+
   }
 
   private Map<Integer, Integer> countByType() {
@@ -109,12 +103,9 @@ public class VkDescriptorPool extends VulkanObject {
     return counters;
   }
 
-  private long vkCreateDescriptorPool(
-      MemoryStack stack, VkDescriptorPoolCreateInfo descriptorPoolCreateInfo)
-      throws ThemisException {
+  private long vkCreateDescriptorPool(MemoryStack stack, VkDescriptorPoolCreateInfo descriptorPoolCreateInfo) throws ThemisException {
     LongBuffer pDescriptorPool = stack.mallocLong(1);
-    vkPipeline()
-        .createDescriptorPool(this.device.getHandle(), descriptorPoolCreateInfo, pDescriptorPool);
+   pipeline.createDescriptorPool(this.device.getHandle(), descriptorPoolCreateInfo, pDescriptorPool);
     return pDescriptorPool.get(0);
   }
 }

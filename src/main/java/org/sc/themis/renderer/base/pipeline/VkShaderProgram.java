@@ -9,18 +9,17 @@ import java.util.Map;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkShaderModuleCreateInfo;
 import org.sc.themis.renderer.base.device.VkDevice;
-import org.sc.themis.renderer.lang.VulkanObject;
-import org.sc.themis.shared.configuration.Configuration;
+import org.sc.themis.renderer.lang.Vulkan;
 import org.sc.themis.shared.exception.ThemisException;
+import org.sc.themis.core.LifeCycle;
 
-public class VkShaderProgram extends VulkanObject {
+public class VkShaderProgram extends Vulkan implements LifeCycle {
 
   private final VkDevice device;
   private final VkShaderProgramStage[] stages;
   private final Map<Integer, Long> handles = new HashMap<>();
 
-  public VkShaderProgram(Configuration configuration, VkDevice device, VkShaderProgramStage... stages) {
-    super(configuration);
+  public VkShaderProgram(VkDevice device, VkShaderProgramStage... stages) {
     this.device = device;
     this.stages = stages;
   }
@@ -42,7 +41,7 @@ public class VkShaderProgram extends VulkanObject {
   @Override
   public void cleanup() throws ThemisException {
     for (Long handle : this.handles.values()) {
-      vkPipeline().destroyShaderModule(this.device.getHandle(), handle);
+     pipeline.destroyShaderModule(this.device.getHandle(), handle);
     }
   }
 
@@ -60,7 +59,7 @@ public class VkShaderProgram extends VulkanObject {
     VkShaderModuleCreateInfo shaderModuleCreateInfo = createShaderModuleCreateInfo(stack, stage.source());
     LongBuffer pShaderModule = stack.mallocLong(1);
 
-    vkPipeline().createShaderModule(this.device.getHandle(), shaderModuleCreateInfo, pShaderModule);
+   pipeline.createShaderModule(this.device.getHandle(), shaderModuleCreateInfo, pShaderModule);
 
     return pShaderModule.get(0);
   }

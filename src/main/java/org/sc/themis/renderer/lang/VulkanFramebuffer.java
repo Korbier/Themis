@@ -6,11 +6,11 @@ import static org.lwjgl.vulkan.VK10.vkDestroyFramebuffer;
 import java.nio.LongBuffer;
 import org.lwjgl.vulkan.VkDevice;
 import org.lwjgl.vulkan.VkFramebufferCreateInfo;
-import org.sc.themis.renderer.base.exception.VkOutOfDeviceMemoryException;
-import org.sc.themis.renderer.base.exception.VkOutOfHostMemoryException;
+import org.sc.themis.renderer.lang.exception.VkOutOfDeviceMemoryException;
+import org.sc.themis.renderer.lang.exception.VkOutOfHostMemoryException;
 import org.sc.themis.shared.exception.ThemisException;
 
-public class VulkanFramebuffer extends Vulkan {
+public class VulkanFramebuffer extends VulkanBackend {
 
   public void createFramebuffer(
       VkDevice device, VkFramebufferCreateInfo pCreateInfo, LongBuffer pFramebuffer)

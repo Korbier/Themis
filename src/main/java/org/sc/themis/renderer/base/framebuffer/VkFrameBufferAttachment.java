@@ -14,12 +14,12 @@ import org.sc.themis.renderer.base.resource.image.VkImage;
 import org.sc.themis.renderer.base.resource.image.VkImageDescriptor;
 import org.sc.themis.renderer.base.resource.image.VkImageView;
 import org.sc.themis.renderer.base.resource.image.VkImageViewDescriptor;
-import org.sc.themis.renderer.lang.VulkanObject;
 import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
+import org.sc.themis.core.LifeCycle;
 import org.slf4j.LoggerFactory;
 
-public class VkFrameBufferAttachment extends VulkanObject {
+public class VkFrameBufferAttachment implements LifeCycle {
 
   private static final org.slf4j.Logger logger = LoggerFactory.getLogger(VkFrameBufferAttachment.class);
 
@@ -41,34 +41,27 @@ public class VkFrameBufferAttachment extends VulkanObject {
   private VkImage image;
   private VkImageView imageView;
 
-  public static VkFrameBufferAttachment color(Configuration configuration, VkDevice device, int width, int height, int format, int usage, int sampleCount) {
-    return new VkFrameBufferAttachment(configuration, device, VkFrameBufferAttachmentType.COLOR, width, height, format, usage, sampleCount, 1);
+  public static VkFrameBufferAttachment color(VkDevice device, int width, int height, int format, int usage, int sampleCount) {
+    return new VkFrameBufferAttachment(device, VkFrameBufferAttachmentType.COLOR, width, height, format, usage, sampleCount, 1);
   }
 
-  public static VkFrameBufferAttachment depth(Configuration configuration, VkDevice device, int width, int height, int format, int usage) {
-    return new VkFrameBufferAttachment(configuration, device, VkFrameBufferAttachmentType.DEPTH, width, height, format, usage, VK_SAMPLE_COUNT_1_BIT, 1);
+  public static VkFrameBufferAttachment depth(VkDevice device, int width, int height, int format, int usage) {
+    return new VkFrameBufferAttachment(device, VkFrameBufferAttachmentType.DEPTH, width, height, format, usage, VK_SAMPLE_COUNT_1_BIT, 1);
   }
 
-  public static VkFrameBufferAttachment depth(Configuration configuration, VkDevice device, int width, int height, int format, int usage, int layers) {
-    return new VkFrameBufferAttachment(configuration, device, VkFrameBufferAttachmentType.DEPTH, width, height, format, usage, VK_SAMPLE_COUNT_1_BIT, layers);
+  public static VkFrameBufferAttachment depth(VkDevice device, int width, int height, int format, int usage, int layers) {
+    return new VkFrameBufferAttachment(device, VkFrameBufferAttachmentType.DEPTH, width, height, format, usage, VK_SAMPLE_COUNT_1_BIT, layers);
   }
 
-  public static VkFrameBufferAttachment raw(Configuration configuration, int format) {
-    return new VkFrameBufferAttachment(configuration, null, VkFrameBufferAttachmentType.RAW, -1, -1, format, -1, VK_SAMPLE_COUNT_1_BIT, 1);
+  public static VkFrameBufferAttachment raw(int format) {
+    return new VkFrameBufferAttachment(null, VkFrameBufferAttachmentType.RAW, -1, -1, format, -1, VK_SAMPLE_COUNT_1_BIT, 1);
   }
 
   private VkFrameBufferAttachment(
-      Configuration configuration,
-      VkDevice device,
-      VkFrameBufferAttachmentType type,
-      int width,
-      int height,
-      int format,
-      int usage,
-      int sampleCount,
-      int layers
+      VkDevice device, VkFrameBufferAttachmentType type,
+      int width, int height, int format, int usage,
+      int sampleCount, int layers
   ) {
-    super(configuration); // No Vulkan layer needed
     this.device = device;
     this.type = type;
     this.width = width;
@@ -159,7 +152,7 @@ public class VkFrameBufferAttachment extends VulkanObject {
 
   private void setupImage(int usage) throws ThemisException {
     VkImageDescriptor imageDescriptor = createImageDescriptor(usage);
-    this.image = new VkImage(getConfiguration(), this.device, imageDescriptor);
+    this.image = new VkImage(this.device, imageDescriptor);
     image.setup();
   }
 
@@ -169,7 +162,7 @@ public class VkFrameBufferAttachment extends VulkanObject {
 
   private void setupImageView(int mask) throws ThemisException {
     VkImageViewDescriptor viewDescriptor = createViewImageDescriptor(mask);
-    this.imageView = new VkImageView(getConfiguration(), this.device, image.getHandle(), viewDescriptor);
+    this.imageView = new VkImageView(this.device, image.getHandle(), viewDescriptor);
     this.imageView.setup();
   }
 }

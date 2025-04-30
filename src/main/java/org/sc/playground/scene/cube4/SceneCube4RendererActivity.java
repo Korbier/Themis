@@ -19,10 +19,6 @@ public class SceneCube4RendererActivity extends BaseRendererActivity {
   private SceneDescriptorSet sceneDescriptorSet;
   private ColorMaterialRenderer colorMaterial;
 
-  public SceneCube4RendererActivity(Configuration configuration) {
-    super(configuration);
-  }
-
   @Override
   public void render(Scene scene, long tpf) throws ThemisException {
 
@@ -87,10 +83,10 @@ public class SceneCube4RendererActivity extends BaseRendererActivity {
 
   private void setupSceneDescriptorSet() throws ThemisException {
 
-    this.sceneDescriptorSet = new SceneDescriptorSet(getConfiguration(), this.renderer);
+    this.sceneDescriptorSet = new SceneDescriptorSet(this.renderer);
     this.sceneDescriptorSet.setup();
 
-    this.colorMaterial = new ColorMaterialRenderer(getConfiguration());
+    this.colorMaterial = new ColorMaterialRenderer();
     this.colorMaterial.setup(this.renderer, this.renderPass, this.sceneDescriptorSet);
     this.colorMaterial.setup();
   }

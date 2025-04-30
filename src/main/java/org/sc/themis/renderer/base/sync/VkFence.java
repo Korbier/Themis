@@ -7,19 +7,19 @@ import java.nio.LongBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkFenceCreateInfo;
 import org.sc.themis.renderer.base.device.VkDevice;
-import org.sc.themis.renderer.lang.VulkanObject;
+import org.sc.themis.renderer.lang.Vulkan;
 import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
+import org.sc.themis.core.LifeCycle;
 
-public class VkFence extends VulkanObject {
+public class VkFence extends Vulkan implements LifeCycle {
 
   private final VkDevice device;
   private final boolean signaled;
 
   private long handle;
 
-  public VkFence(Configuration configuration, VkDevice device, boolean signaled) {
-    super(configuration);
+  public VkFence(VkDevice device, boolean signaled) {
     this.device = device;
     this.signaled = signaled;
   }
@@ -34,7 +34,7 @@ public class VkFence extends VulkanObject {
 
   @Override
   public void cleanup() throws ThemisException {
-    vkSync().destroyFence(this.device.getHandle(), this.getHandle());
+   sync.destroyFence(this.device.getHandle(), this.getHandle());
   }
 
   @Override
@@ -51,10 +51,9 @@ public class VkFence extends VulkanObject {
     return this.handle;
   }
 
-  private long vkCreateFence(MemoryStack stack, VkFenceCreateInfo fenceCreateInfo)
-      throws ThemisException {
+  private long vkCreateFence(MemoryStack stack, VkFenceCreateInfo fenceCreateInfo) throws ThemisException {
     LongBuffer lp = stack.mallocLong(1);
-    vkSync().createFence(this.device.getHandle(), fenceCreateInfo, lp);
+   sync.createFence(this.device.getHandle(), fenceCreateInfo, lp);
     return lp.get(0);
   }
 
@@ -65,10 +64,10 @@ public class VkFence extends VulkanObject {
   }
 
   private void waitFor() throws ThemisException {
-    vkSync().waitForFence(this.device.getHandle(), this.getHandle());
+   sync.waitForFence(this.device.getHandle(), this.getHandle());
   }
 
   private void reset() throws ThemisException {
-    vkSync().resetFence(this.device.getHandle(), this.getHandle());
+   sync.resetFence(this.device.getHandle(), this.getHandle());
   }
 }

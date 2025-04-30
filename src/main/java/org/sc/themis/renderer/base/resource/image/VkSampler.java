@@ -10,11 +10,12 @@ import java.nio.LongBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkSamplerCreateInfo;
 import org.sc.themis.renderer.base.device.VkDevice;
-import org.sc.themis.renderer.lang.VulkanObject;
+import org.sc.themis.renderer.lang.Vulkan;
 import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
+import org.sc.themis.core.LifeCycle;
 
-public class VkSampler extends VulkanObject {
+public class VkSampler extends Vulkan implements LifeCycle {
 
   private static final int MAX_ANISOTROPY = 16;
 
@@ -23,8 +24,7 @@ public class VkSampler extends VulkanObject {
 
   private long handle;
 
-  public VkSampler(Configuration configuration, VkDevice device, VkSamplerDescriptor descriptor) {
-    super(configuration);
+  public VkSampler(VkDevice device, VkSamplerDescriptor descriptor) {
     this.device = device;
     this.descriptor = descriptor;
   }
@@ -39,13 +39,13 @@ public class VkSampler extends VulkanObject {
 
   @Override
   public void cleanup() throws ThemisException {
-    vkImage().destroySampler(this.device.getHandle(), this.handle);
+    image.destroySampler(this.device.getHandle(), this.handle);
   }
 
   private long vkCreateSampler(MemoryStack stack, VkSamplerCreateInfo samplerCreateInfo)
       throws ThemisException {
     LongBuffer pSampler = stack.mallocLong(1);
-    vkImage().createSampler(this.device.getHandle(), samplerCreateInfo, pSampler);
+    image.createSampler(this.device.getHandle(), samplerCreateInfo, pSampler);
     return pSampler.get(0);
   }
 
@@ -67,8 +67,7 @@ public class VkSampler extends VulkanObject {
     samplerInfo.maxLod(this.descriptor.mipLevels());
     samplerInfo.mipLodBias(0.0f);
 
-    if (this.descriptor.anisotropyEnable()
-        && device.isFeatureEnabled(VkDevice.FEATURE_SAMPLER_ANISOTROPY)) {
+    if (this.descriptor.anisotropyEnable() && device.isFeatureEnabled(VkDevice.FEATURE_SAMPLER_ANISOTROPY)) {
       samplerInfo.anisotropyEnable(true).maxAnisotropy(MAX_ANISOTROPY);
     }
 

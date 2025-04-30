@@ -18,12 +18,13 @@ import org.lwjgl.vulkan.VkBufferCreateInfo;
 import org.sc.themis.renderer.base.device.VkDevice;
 import org.sc.themis.renderer.base.device.VkMemoryAllocator;
 import org.sc.themis.renderer.base.device.VkPhysicalDevice;
-import org.sc.themis.renderer.lang.VulkanObject;
+import org.sc.themis.renderer.lang.Vulkan;
 import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
+import org.sc.themis.core.LifeCycle;
 import org.sc.themis.shared.utils.MemorySizeUtils;
 
-public class VkBuffer extends VulkanObject {
+public class VkBuffer extends Vulkan implements LifeCycle {
 
   private final VkDevice device;
   private final VkMemoryAllocator allocator;
@@ -40,8 +41,7 @@ public class VkBuffer extends VulkanObject {
 
   private ByteBuffer mappedContent;
 
-  public VkBuffer( Configuration configuration, VkDevice device, VkMemoryAllocator allocator, VkBufferDescriptor descriptor) {
-    super(configuration);
+  public VkBuffer(VkDevice device, VkMemoryAllocator allocator, VkBufferDescriptor descriptor) {
     this.device = device;
     this.allocator = allocator;
     this.descriptor = descriptor;
@@ -74,7 +74,7 @@ public class VkBuffer extends VulkanObject {
   @Override
   public void cleanup() throws ThemisException {
     unmap();
-    vkMemoryAllocator().destroyBuffer(this.allocator.getHandle(), this.handle, this.allocation);
+   memoryAllocator.destroyBuffer(this.allocator.getHandle(), this.handle, this.allocation);
   }
 
   public VkBufferFiller filler() {
@@ -88,7 +88,7 @@ public class VkBuffer extends VulkanObject {
   private void setupBuffer(MemoryStack stack, VkBufferCreateInfo bufferCreateInfo, VmaAllocationCreateInfo allocInfo) throws ThemisException {
     PointerBuffer pAllocation = stack.callocPointer(1);
     LongBuffer pBuffer = stack.mallocLong(1);
-    vkMemoryAllocator().createBuffer(this.allocator.getHandle(), bufferCreateInfo, allocInfo, pBuffer, pAllocation);
+   memoryAllocator.createBuffer(this.allocator.getHandle(), bufferCreateInfo, allocInfo, pBuffer, pAllocation);
     this.handle = pBuffer.get(0);
     this.allocation = pAllocation.get(0);
   }
@@ -131,7 +131,7 @@ public class VkBuffer extends VulkanObject {
 
   public void map() throws ThemisException {
     if (isMappable()) {
-      vkMemoryAllocator().mapMemory(this.allocator.getHandle(), this.allocation, this.mappingPointer);
+     memoryAllocator.mapMemory(this.allocator.getHandle(), this.allocation, this.mappingPointer);
       this.mappedMemoryHandle = this.mappingPointer.get(0);
       this.mappedContent = MemoryUtil.memByteBuffer(this.mappedMemoryHandle, (int) getRequestedSize());
     }
@@ -140,7 +140,7 @@ public class VkBuffer extends VulkanObject {
   public void unmap() throws ThemisException {
     if (isMapped()) {
       this.mappedContent = null;
-      vkMemoryAllocator().unmapMemory(this.allocator.getHandle(), this.allocation);
+     memoryAllocator.unmapMemory(this.allocator.getHandle(), this.allocation);
     }
   }
 

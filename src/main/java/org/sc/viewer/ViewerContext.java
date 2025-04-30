@@ -1,40 +1,17 @@
 package org.sc.viewer;
 
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_F1;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_F2;
-
 import java.util.HashMap;
 import java.util.Map;
 
+import jakarta.enterprise.context.ApplicationScoped;
 import org.sc.themis.renderer.material.MaterialRenderer;
-import org.sc.viewer.renderactivity.geometry.material.TextureMaterialRenderer;
-import org.sc.viewer.renderactivity.postprocess.postprocessor.ShowGridPostprocessor;
-import org.sc.viewer.renderactivity.postprocess.postprocessor.ShowTBNPostprocessor;
 
+@ApplicationScoped
 public class ViewerContext {
 
   private final ViewerKeyMapping keyMapping = new ViewerKeyMapping();
-
   private final Map<String, Boolean> postprocessors = new HashMap<>();
-
   private MaterialRenderer activeRenderer;
-
-  public static ViewerContext createDefault(MaterialRenderer defaultMaterialRenderer) {
-
-    ViewerContext context = new ViewerContext();
-
-    context.activeRenderer = defaultMaterialRenderer;
-
-    // Available postprocessors
-    context.addPostProcessor(ShowTBNPostprocessor.IDENTIFIER);
-    context.addPostProcessor(ShowGridPostprocessor.IDENTIFIER);
-
-    // Key mapping
-    context.mapPostProcessorSwitch(GLFW_KEY_F1, ShowTBNPostprocessor.IDENTIFIER);
-    context.mapPostProcessorSwitch(GLFW_KEY_F2, ShowGridPostprocessor.IDENTIFIER);
-
-    return context;
-  }
 
   public ViewerKeyMapping getKeyMapping() {
     return this.keyMapping;
@@ -76,7 +53,7 @@ public class ViewerContext {
     return this.postprocessors.containsKey(identifier) && this.postprocessors.get(identifier);
   }
 
-  private void mapPostProcessorSwitch(int key, String postProcessor) {
+  public void mapPostProcessorSwitch(int key, String postProcessor) {
     getKeyMapping().map(key, false, () -> switchPostProcessor(postProcessor),() -> isPostProcessorEnabled(postProcessor));
   }
 }

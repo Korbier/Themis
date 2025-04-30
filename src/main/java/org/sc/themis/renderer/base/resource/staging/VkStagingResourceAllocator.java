@@ -9,13 +9,12 @@ import org.sc.themis.renderer.base.command.VkCommand;
 import org.sc.themis.renderer.base.device.VkDevice;
 import org.sc.themis.renderer.base.device.VkMemoryAllocator;
 import org.sc.themis.renderer.base.sync.VkFence;
-import org.sc.themis.renderer.lang.VulkanObject;
-import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.service.Service;
+import org.sc.themis.core.LifeCycle;
 import org.slf4j.LoggerFactory;
 
-public class VkStagingResourceAllocator extends VulkanObject implements Service {
+public class VkStagingResourceAllocator implements LifeCycle, Service {
 
   private static final org.slf4j.Logger logger = LoggerFactory.getLogger(VkStagingResourceAllocator.class);
 
@@ -31,15 +30,14 @@ public class VkStagingResourceAllocator extends VulkanObject implements Service 
 
   private VkFence commitFence;
 
-  public VkStagingResourceAllocator(Configuration configuration, VkDevice device, VkMemoryAllocator allocator) {
-    super(configuration);
+  public VkStagingResourceAllocator(VkDevice device, VkMemoryAllocator allocator) {
     this.device = device;
     this.allocator = allocator;
   }
 
   @Override
   public void setup() throws ThemisException {
-    this.commitFence = new VkFence(getConfiguration(), this.device, false);
+    this.commitFence = new VkFence(this.device, false);
     this.commitFence.setup();
   }
 
@@ -70,19 +68,19 @@ public class VkStagingResourceAllocator extends VulkanObject implements Service 
   }
 
   public VkStagingBuffer allocateBuffer(int bufferUsage) {
-    VkStagingBuffer buffer = new VkStagingBuffer(getConfiguration(), this, this.device, this.allocator, bufferUsage);
+    VkStagingBuffer buffer = new VkStagingBuffer(this, this.device, this.allocator, bufferUsage);
     buffer.setup();
     return buffer;
   }
 
   public VkStagingImage allocateImage(int imageFormat) {
-    VkStagingImage image = new VkStagingImage(getConfiguration(), this, this.device, this.allocator, imageFormat, true, 1);
+    VkStagingImage image = new VkStagingImage(this, this.device, this.allocator, imageFormat, true, 1);
     image.setup();
     return image;
   }
 
   public VkStagingImage allocateImage(int imageFormat, int layers) {
-    VkStagingImage image = new VkStagingImage(getConfiguration(), this, this.device, this.allocator, imageFormat, false, layers);
+    VkStagingImage image = new VkStagingImage(this, this.device, this.allocator, imageFormat, false, layers);
     image.setup();
     return image;
   }

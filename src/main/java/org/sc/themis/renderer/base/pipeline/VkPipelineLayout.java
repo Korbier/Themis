@@ -7,11 +7,12 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkPipelineLayoutCreateInfo;
 import org.sc.themis.renderer.base.device.VkDevice;
 import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSetLayout;
-import org.sc.themis.renderer.lang.VulkanObject;
+import org.sc.themis.renderer.lang.Vulkan;
 import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
+import org.sc.themis.core.LifeCycle;
 
-public class VkPipelineLayout extends VulkanObject {
+public class VkPipelineLayout extends Vulkan implements LifeCycle {
 
   private final VkDevice device;
   private final VkPushConstantRange[] constantRanges;
@@ -20,11 +21,9 @@ public class VkPipelineLayout extends VulkanObject {
   private long handle;
 
   public VkPipelineLayout(
-      Configuration configuration,
       VkDevice device,
       VkPushConstantRange[] pushConstantRanges,
       VkDescriptorSetLayout... descriptorSetLayouts) {
-    super(configuration);
     this.device = device;
     this.constantRanges = pushConstantRanges;
     this.descriptorSetLayouts = descriptorSetLayouts;
@@ -44,7 +43,7 @@ public class VkPipelineLayout extends VulkanObject {
 
   @Override
   public void cleanup() throws ThemisException {
-    vkPipeline().destroyPipelineLayout(this.device.getHandle(), this.handle);
+   pipeline.destroyPipelineLayout(this.device.getHandle(), this.handle);
   }
 
   public long getHandle() {
@@ -108,7 +107,7 @@ public class VkPipelineLayout extends VulkanObject {
   private long vkCreatePipelineLayout(
       MemoryStack stack, VkPipelineLayoutCreateInfo layoutCreateInfo) throws ThemisException {
     LongBuffer lp = stack.mallocLong(1);
-    vkPipeline().createPipelineLayout(this.device.getHandle(), layoutCreateInfo, lp);
+   pipeline.createPipelineLayout(this.device.getHandle(), layoutCreateInfo, lp);
     return lp.get(0);
   }
 }

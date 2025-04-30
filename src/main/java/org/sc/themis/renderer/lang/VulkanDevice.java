@@ -9,16 +9,16 @@ import org.lwjgl.PointerBuffer;
 import org.lwjgl.vulkan.VkDevice;
 import org.lwjgl.vulkan.VkDeviceCreateInfo;
 import org.lwjgl.vulkan.VkPhysicalDevice;
-import org.sc.themis.renderer.base.exception.VkDeviceLostException;
-import org.sc.themis.renderer.base.exception.VkExtensionNotPresentException;
-import org.sc.themis.renderer.base.exception.VkFeatureNotPresentException;
-import org.sc.themis.renderer.base.exception.VkInitializationFailedException;
-import org.sc.themis.renderer.base.exception.VkOutOfDeviceMemoryException;
-import org.sc.themis.renderer.base.exception.VkOutOfHostMemoryException;
-import org.sc.themis.renderer.base.exception.VkTooManyObjectsException;
+import org.sc.themis.renderer.lang.exception.VkDeviceLostException;
+import org.sc.themis.renderer.lang.exception.VkExtensionNotPresentException;
+import org.sc.themis.renderer.lang.exception.VkFeatureNotPresentException;
+import org.sc.themis.renderer.lang.exception.VkInitializationFailedException;
+import org.sc.themis.renderer.lang.exception.VkOutOfDeviceMemoryException;
+import org.sc.themis.renderer.lang.exception.VkOutOfHostMemoryException;
+import org.sc.themis.renderer.lang.exception.VkTooManyObjectsException;
 import org.sc.themis.shared.exception.ThemisException;
 
-public class VulkanDevice extends Vulkan {
+public class VulkanDevice extends VulkanBackend {
 
   public void createDevice(
       VkPhysicalDevice physicalDevice, VkDeviceCreateInfo pCreateInfo, PointerBuffer pDevice)

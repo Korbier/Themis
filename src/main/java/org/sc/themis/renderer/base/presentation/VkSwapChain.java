@@ -1,34 +1,18 @@
 package org.sc.themis.renderer.base.presentation;
 
-import static org.lwjgl.vulkan.VK10.VK_FORMAT_B8G8R8A8_SRGB;
-import static org.lwjgl.vulkan.VK10.VK_IMAGE_ASPECT_COLOR_BIT;
-import static org.lwjgl.vulkan.VK10.VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-import static org.lwjgl.vulkan.VK10.VK_IMAGE_VIEW_TYPE_2D;
-import static org.lwjgl.vulkan.VK10.VK_SHARING_MODE_CONCURRENT;
-import static org.lwjgl.vulkan.VK10.VK_SHARING_MODE_EXCLUSIVE;
-
-import java.nio.IntBuffer;
-import java.nio.LongBuffer;
-import java.util.Arrays;
-import java.util.List;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
-import org.lwjgl.vulkan.KHRSurface;
-import org.lwjgl.vulkan.KHRSwapchain;
-import org.lwjgl.vulkan.VkExtent2D;
-import org.lwjgl.vulkan.VkPresentInfoKHR;
-import org.lwjgl.vulkan.VkSurfaceCapabilitiesKHR;
-import org.lwjgl.vulkan.VkSurfaceFormatKHR;
-import org.lwjgl.vulkan.VkSwapchainCreateInfoKHR;
+import org.lwjgl.vulkan.*;
+import org.sc.themis.core.LifeCycle;
 import org.sc.themis.renderer.base.device.VkDevice;
 import org.sc.themis.renderer.base.exception.SurfaceFormatNotFoundException;
-import org.sc.themis.renderer.base.exception.VkOutOfDateKHRException;
-import org.sc.themis.renderer.base.exception.VkSuboptimalKHRException;
 import org.sc.themis.renderer.base.queue.VkQueue;
 import org.sc.themis.renderer.base.resource.image.VkImageView;
 import org.sc.themis.renderer.base.resource.image.VkImageViewDescriptor;
 import org.sc.themis.renderer.base.sync.VkSemaphore;
-import org.sc.themis.renderer.lang.VulkanObject;
+import org.sc.themis.renderer.lang.Vulkan;
+import org.sc.themis.renderer.lang.exception.VkOutOfDateKHRException;
+import org.sc.themis.renderer.lang.exception.VkSuboptimalKHRException;
 import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.configuration.ConfigurationEnum;
 import org.sc.themis.shared.exception.ThemisException;
@@ -36,15 +20,24 @@ import org.sc.themis.shared.utils.LogUtils;
 import org.sc.themis.window.Window;
 import org.slf4j.LoggerFactory;
 
-public class VkSwapChain extends VulkanObject {
+import java.nio.IntBuffer;
+import java.nio.LongBuffer;
+import java.util.Arrays;
+import java.util.List;
+
+import static org.lwjgl.vulkan.VK10.*;
+
+public class VkSwapChain extends Vulkan implements LifeCycle {
 
   private static final org.slf4j.Logger logger = LoggerFactory.getLogger(VkSwapChain.class);
 
   private final Window window;
   private final VkDevice device;
-  private final VkSurface surface;
+  private final VkSurface vkSurface;
   private final VkQueue presentQueue;
   private final VkQueue[] concurrentQueues;
+  private final int frameCount;
+  private final boolean enableVSync;
 
   private long handle;
 
@@ -54,17 +47,12 @@ public class VkSwapChain extends VulkanObject {
 
   private int currentFrame = 0;
 
-  public VkSwapChain(
-      Configuration configuration,
-      Window window,
-      VkDevice device,
-      VkSurface surface,
-      VkQueue presentQueue,
-      VkQueue... concurrentQueues) {
-    super(configuration);
+  public VkSwapChain(Window window, VkDevice device, VkSurface surface, int frameCount, boolean enableVSync, VkQueue presentQueue, VkQueue... concurrentQueues) {
     this.window = window;
     this.device = device;
-    this.surface = surface;
+    this.vkSurface = surface;
+    this.frameCount = frameCount;
+    this.enableVSync = enableVSync;
     this.presentQueue = presentQueue;
     this.concurrentQueues = concurrentQueues;
   }
@@ -97,11 +85,9 @@ public class VkSwapChain extends VulkanObject {
     this.imageViews = createImageViews(this.surfaceFormat.imageFormat());
   }
 
-  private void setupSwapChain(VkSurfaceCapabilitiesKHR surfaceCapabilities, int imageCount)
-      throws ThemisException {
+  private void setupSwapChain(VkSurfaceCapabilitiesKHR surfaceCapabilities, int imageCount) throws ThemisException {
     try (MemoryStack stack = MemoryStack.stackPush()) {
-      VkSwapchainCreateInfoKHR swapChainCreateInfo =
-          createSwapChainCreateInfo(stack, surfaceCapabilities, imageCount);
+      VkSwapchainCreateInfoKHR swapChainCreateInfo = createSwapChainCreateInfo(stack, surfaceCapabilities, imageCount);
       this.handle = vkCreateSwapChain(stack, swapChainCreateInfo);
     }
   }
@@ -138,16 +124,13 @@ public class VkSwapChain extends VulkanObject {
 
       for (int i = 0; i < surfaceFormats.remaining(); i++) {
         VkSurfaceFormatKHR surfaceFormatKHR = surfaceFormats.get(i);
-        if (surfaceFormatKHR.format() == VK_FORMAT_B8G8R8A8_SRGB
-            && surfaceFormatKHR.colorSpace() == KHRSurface.VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
-          this.surfaceFormat =
-              new VkSurfaceFormat(surfaceFormatKHR.format(), surfaceFormatKHR.colorSpace());
+        if (surfaceFormatKHR.format() == VK_FORMAT_B8G8R8A8_SRGB && surfaceFormatKHR.colorSpace() == KHRSurface.VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
+          this.surfaceFormat = new VkSurfaceFormat(surfaceFormatKHR.format(), surfaceFormatKHR.colorSpace());
           return;
         }
       }
 
-      this.surfaceFormat =
-          new VkSurfaceFormat(VK_FORMAT_B8G8R8A8_SRGB, surfaceFormats.get(0).colorSpace());
+      this.surfaceFormat = new VkSurfaceFormat(VK_FORMAT_B8G8R8A8_SRGB, surfaceFormats.get(0).colorSpace());
     }
   }
 
@@ -160,7 +143,7 @@ public class VkSwapChain extends VulkanObject {
       imageView.cleanup();
     }
 
-    vkSurface().destroySwapchainKHR(this.device.getHandle(), this.handle);
+   surface.destroySwapchainKHR(this.device.getHandle(), this.handle);
   }
 
   public VkSurfaceFormat getSurfaceFormat() {
@@ -189,14 +172,7 @@ public class VkSwapChain extends VulkanObject {
 
     try {
       IntBuffer ip = stack.mallocInt(1);
-      vkSurface()
-          .acquireNextImageKHR(
-              this.device.getHandle(),
-              this.handle,
-              ~0L,
-              acquireSemaphore.getHandle(),
-              MemoryUtil.NULL,
-              ip);
+     surface.acquireNextImageKHR(this.device.getHandle(), this.handle, ~0L, acquireSemaphore.getHandle(), MemoryUtil.NULL, ip);
       this.currentFrame = ip.get(0);
     } catch (VkOutOfDateKHRException e) {
       resize = true;
@@ -213,7 +189,7 @@ public class VkSwapChain extends VulkanObject {
 
     try {
       VkPresentInfoKHR presentInfo = createPresentInfo(stack, presentSemaphore);
-      vkSurface().queuePresentKHR(this.presentQueue.getHandle(), presentInfo);
+     surface.queuePresentKHR(this.presentQueue.getHandle(), presentInfo);
     } catch (VkOutOfDateKHRException e) {
       resize = true;
     } catch (VkSuboptimalKHRException e) {
@@ -226,10 +202,10 @@ public class VkSwapChain extends VulkanObject {
   }
 
   private VkPresentInfoKHR createPresentInfo(MemoryStack stack, VkSemaphore presentSemaphore) {
-    return VkPresentInfoKHR.calloc(stack)
+    return VkPresentInfoKHR
+        .calloc(stack)
         .sType(KHRSwapchain.VK_STRUCTURE_TYPE_PRESENT_INFO_KHR)
-        .pWaitSemaphores(
-            presentSemaphore != null ? stack.longs(presentSemaphore.getHandle()) : null)
+        .pWaitSemaphores(presentSemaphore != null ? stack.longs(presentSemaphore.getHandle()) : null)
         .swapchainCount(1)
         .pSwapchains(stack.longs(this.handle))
         .pImageIndices(stack.ints(this.currentFrame));
@@ -240,16 +216,11 @@ public class VkSwapChain extends VulkanObject {
     try (MemoryStack stack = MemoryStack.stackPush()) {
 
       LongBuffer swapChainImages = retrieveSwapChainImages(stack);
-
       VkImageView[] imageViews = new VkImageView[swapChainImages.remaining()];
-
-      VkImageViewDescriptor descriptor =
-          new VkImageViewDescriptor(
-              VK_IMAGE_ASPECT_COLOR_BIT, 0, format, 1, 1, VK_IMAGE_VIEW_TYPE_2D);
+      VkImageViewDescriptor descriptor = new VkImageViewDescriptor(VK_IMAGE_ASPECT_COLOR_BIT, 0, format, 1, 1, VK_IMAGE_VIEW_TYPE_2D);
 
       for (int i = 0; i < swapChainImages.remaining(); i++) {
-        imageViews[i] =
-            new VkImageView(getConfiguration(), device, swapChainImages.get(i), descriptor);
+        imageViews[i] = new VkImageView(device, swapChainImages.get(i), descriptor);
         imageViews[i].setup();
       }
 
@@ -260,41 +231,25 @@ public class VkSwapChain extends VulkanObject {
   private LongBuffer retrieveSwapChainImages(MemoryStack stack) throws ThemisException {
 
     IntBuffer ip = stack.mallocInt(1);
-    vkSurface().getSwapchainImagesKHR(this.device.getHandle(), this.handle, ip, null);
+   surface.getSwapchainImagesKHR(this.device.getHandle(), this.handle, ip, null);
 
     LongBuffer swapChainImages = stack.mallocLong(ip.get(0));
-    vkSurface().getSwapchainImagesKHR(this.device.getHandle(), this.handle, ip, swapChainImages);
+   surface.getSwapchainImagesKHR(this.device.getHandle(), this.handle, ip, swapChainImages);
 
     return swapChainImages;
   }
 
-  private long vkCreateSwapChain(MemoryStack stack, VkSwapchainCreateInfoKHR swapChainCreateInfo)
-      throws ThemisException {
+  private long vkCreateSwapChain(MemoryStack stack, VkSwapchainCreateInfoKHR swapChainCreateInfo) throws ThemisException {
     LongBuffer lp = stack.mallocLong(1);
-    vkSurface().createSwapchainKHR(this.device.getHandle(), swapChainCreateInfo, lp);
+   surface.createSwapchainKHR(this.device.getHandle(), swapChainCreateInfo, lp);
     return lp.get(0);
   }
 
-  private VkSwapchainCreateInfoKHR createSwapChainCreateInfo(
-      MemoryStack stack, VkSurfaceCapabilitiesKHR surfaceCapabilities, int imageCount)
-      throws ThemisException {
+  private VkSwapchainCreateInfoKHR createSwapChainCreateInfo(MemoryStack stack, VkSurfaceCapabilitiesKHR surfaceCapabilities, int imageCount) throws ThemisException {
 
-    VkSwapchainCreateInfoKHR swapchainCreateInfo =
-        VkSwapchainCreateInfoKHR.calloc(stack)
-            .sType(KHRSwapchain.VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR)
-            .surface(surface.getHandle())
-            .minImageCount(imageCount)
-            .imageFormat(surfaceFormat.imageFormat())
-            .imageColorSpace(surfaceFormat.colorSpace())
-            .imageExtent(swapChainExtent)
-            .imageArrayLayers(1)
-            .imageUsage(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
-            .imageSharingMode(VK_SHARING_MODE_EXCLUSIVE)
-            .preTransform(surfaceCapabilities.currentTransform())
-            .compositeAlpha(KHRSurface.VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR)
-            .clipped(true);
+    VkSwapchainCreateInfoKHR swapchainCreateInfo = VkSwapchainCreateInfoKHR.calloc(stack).sType(KHRSwapchain.VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR).surface(vkSurface.getHandle()).minImageCount(imageCount).imageFormat(surfaceFormat.imageFormat()).imageColorSpace(surfaceFormat.colorSpace()).imageExtent(swapChainExtent).imageArrayLayers(1).imageUsage(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT).imageSharingMode(VK_SHARING_MODE_EXCLUSIVE).preTransform(surfaceCapabilities.currentTransform()).compositeAlpha(KHRSurface.VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR).clipped(true);
 
-    if (getConfiguration().get(ConfigurationEnum.rendererVSyncEnabled, true)) {
+    if (this.enableVSync) {
       swapchainCreateInfo.presentMode(KHRSurface.VK_PRESENT_MODE_FIFO_KHR);
     } else {
       swapchainCreateInfo.presentMode(KHRSurface.VK_PRESENT_MODE_IMMEDIATE_KHR);
@@ -311,28 +266,20 @@ public class VkSwapChain extends VulkanObject {
       intBuffer.put(this.presentQueue.getQueueFamilyIndex());
       intBuffer.flip();
 
-      swapchainCreateInfo
-          .imageSharingMode(VK_SHARING_MODE_CONCURRENT)
-          .queueFamilyIndexCount(intBuffer.capacity())
-          .pQueueFamilyIndices(intBuffer);
+      swapchainCreateInfo.imageSharingMode(VK_SHARING_MODE_CONCURRENT).queueFamilyIndexCount(intBuffer.capacity()).pQueueFamilyIndices(intBuffer);
     }
 
     return swapchainCreateInfo;
   }
 
   private List<VkQueue> retrieveSharedQueue() {
-    return Arrays.stream(this.concurrentQueues)
-        .filter(q -> q.getQueueFamilyIndex() != this.presentQueue.getQueueFamilyIndex())
-        .toList();
+    return Arrays.stream(this.concurrentQueues).filter(q -> q.getQueueFamilyIndex() != this.presentQueue.getQueueFamilyIndex()).toList();
   }
 
-  private VkSurfaceFormatKHR.Buffer vkRetrieveSurfaceFormats(MemoryStack stack)
-      throws ThemisException {
+  private VkSurfaceFormatKHR.Buffer vkRetrieveSurfaceFormats(MemoryStack stack) throws ThemisException {
 
     IntBuffer ip = stack.mallocInt(1);
-    vkSurface()
-        .getPhysicalDeviceSurfaceFormatsKHR(
-            this.device.getPhysicalDevice().getHandle(), this.surface.getHandle(), ip, null);
+   surface.getPhysicalDeviceSurfaceFormatsKHR(this.device.getPhysicalDevice().getHandle(), this.vkSurface.getHandle(), ip, null);
 
     int numFormats = ip.get(0);
     if (numFormats <= 0) {
@@ -340,7 +287,7 @@ public class VkSwapChain extends VulkanObject {
     }
 
     VkSurfaceFormatKHR.Buffer surfaceFormats = VkSurfaceFormatKHR.calloc(numFormats, stack);
-    vkSurface().getPhysicalDeviceSurfaceFormatsKHR(this.device.getHandle().getPhysicalDevice(),this.surface.getHandle(),ip,surfaceFormats);
+   surface.getPhysicalDeviceSurfaceFormatsKHR(this.device.getHandle().getPhysicalDevice(), this.vkSurface.getHandle(), ip, surfaceFormats);
 
     return surfaceFormats;
   }
@@ -349,12 +296,11 @@ public class VkSwapChain extends VulkanObject {
 
     int maxImages = capabilities.maxImageCount();
     int minImages = capabilities.minImageCount();
-    int requestedImages = getConfiguration().get(ConfigurationEnum.rendererImageCount, 3);
 
     int result = minImages;
 
     if (maxImages != 0) {
-      result = Math.min(requestedImages, maxImages);
+      result = Math.min(this.frameCount, maxImages);
     }
 
     result = Math.max(result, minImages);
@@ -365,11 +311,7 @@ public class VkSwapChain extends VulkanObject {
 
   private VkSurfaceCapabilitiesKHR vkRetrieveSurfaceCapabilities(MemoryStack stack) throws ThemisException {
     VkSurfaceCapabilitiesKHR surfCapabilities = VkSurfaceCapabilitiesKHR.calloc(stack);
-    vkSurface().getPhysicalDeviceSurfaceCapabilities(
-            this.device.getPhysicalDevice().getHandle(),
-            this.surface.getHandle(),
-            surfCapabilities
-    );
+    surface.getPhysicalDeviceSurfaceCapabilities(this.device.getPhysicalDevice().getHandle(), this.vkSurface.getHandle(), surfCapabilities);
     return surfCapabilities;
   }
 }

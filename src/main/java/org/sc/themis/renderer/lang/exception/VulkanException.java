@@ -1,4 +1,4 @@
-package org.sc.themis.renderer.base.exception;
+package org.sc.themis.renderer.lang.exception;
 
 import org.sc.themis.shared.exception.ThemisException;
 
@@ -15,4 +15,9 @@ public class VulkanException extends ThemisException {
     super(message, cause);
     this.code = -1;
   }
+
+  public int getCode() {
+    return this.code;
+  }
+
 }

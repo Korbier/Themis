@@ -1,26 +1,18 @@
 package org.sc.themis.renderer.material;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.lwjgl.system.MemoryStack;
 import org.sc.themis.renderer.Renderer;
 import org.sc.themis.renderer.base.exception.MaterialException;
-import org.sc.themis.renderer.base.pipeline.VkPipeline;
-import org.sc.themis.renderer.base.pipeline.VkPipelineDescriptor;
-import org.sc.themis.renderer.base.pipeline.VkPipelineLayout;
-import org.sc.themis.renderer.base.pipeline.VkPushConstantRange;
-import org.sc.themis.renderer.base.pipeline.VkShaderProgram;
-import org.sc.themis.renderer.base.pipeline.VkShaderProgramStage;
-import org.sc.themis.renderer.base.pipeline.VkVertexInputState;
-import org.sc.themis.renderer.base.pipeline.VkVertexInputStateDescriptor;
+import org.sc.themis.renderer.base.pipeline.*;
 import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSetLayout;
-import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.assertion.Assertions;
 import org.sc.themis.shared.exception.ThemisException;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class MaterialPipeline {
 
-  private final Configuration configuration;
   private Renderer renderer;
 
   private final List<VkShaderProgramStage> shaderProgramStages = new ArrayList<>();
@@ -31,10 +23,6 @@ public class MaterialPipeline {
   private VkShaderProgram program;
   private VkPipelineLayout layout;
   private VkPipeline pipeline;
-
-  public MaterialPipeline(Configuration configuration) {
-    this.configuration = configuration;
-  }
 
   public void setup(Renderer renderer, VkDescriptorSetLayout... layouts) throws ThemisException {
     this.renderer = renderer;
@@ -71,56 +59,28 @@ public class MaterialPipeline {
 
   private void setupPipeline() throws ThemisException {
 
-    Assertions.notNull(
-        this.pipelineDescriptor,
-        new MaterialException(
-            "No Pipeline Descriptor defined (call method setPipelineDescriptor)"));
-    Assertions.notNull(
-        this.vertexInputStateDescriptor,
-        new MaterialException(
-            "No Vertex InputState defined (call method setVertexInputDescriptor)"));
+    Assertions.notNull(this.pipelineDescriptor, new MaterialException("No Pipeline Descriptor defined (call method setPipelineDescriptor)"));
+    Assertions.notNull(this.vertexInputStateDescriptor, new MaterialException("No Vertex InputState defined (call method setVertexInputDescriptor)"));
 
     try (MemoryStack stack = MemoryStack.stackPush()) {
 
       VkVertexInputState inputState = new VkVertexInputState(this.vertexInputStateDescriptor);
       inputState.setup(stack);
 
-      this.pipeline =
-          new VkPipeline(
-              this.configuration,
-              this.renderer.getDevice(),
-              this.pipelineDescriptor,
-              this.program,
-              this.layout,
-              inputState);
+      this.pipeline = new VkPipeline(this.renderer.getDevice(), this.pipelineDescriptor, this.program, this.layout, inputState);
 
       this.pipeline.setup();
     }
   }
 
   private void setupShaderProgram() throws ThemisException {
-
-    Assertions.notEmpty(
-        this.shaderProgramStages,
-        new MaterialException("No Shader Program Stage provided (call method addShader)"));
-
-    this.program =
-        new VkShaderProgram(
-            this.configuration,
-            renderer.getDevice(),
-            this.shaderProgramStages.toArray(new VkShaderProgramStage[0]));
+    Assertions.notEmpty(this.shaderProgramStages, new MaterialException("No Shader Program Stage provided (call method addShader)"));
+    this.program = new VkShaderProgram(renderer.getDevice(), this.shaderProgramStages.toArray(new VkShaderProgramStage[0]));
     this.program.setup();
   }
 
   private void setupPipelineLayout(VkDescriptorSetLayout... layouts) throws ThemisException {
-
-    this.layout =
-        new VkPipelineLayout(
-            this.configuration,
-            this.renderer.getDevice(),
-            this.pushConstantRanges.toArray(new VkPushConstantRange[0]),
-            layouts);
-
+    this.layout = new VkPipelineLayout(this.renderer.getDevice(), this.pushConstantRanges.toArray(new VkPushConstantRange[0]), layouts);
     this.layout.setup();
   }
 }

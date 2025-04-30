@@ -18,13 +18,14 @@ import org.sc.themis.renderer.base.renderpass.VkRenderPass;
 import org.sc.themis.renderer.base.renderpass.VkRenderPassAttachment;
 import org.sc.themis.renderer.base.renderpass.VkRenderPassLayout;
 import org.sc.themis.renderer.base.resource.buffer.VkBuffer;
+import org.sc.themis.renderer.lang.Vulkan;
 import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 
 public class RenderPassCommandSet extends VkCommandSet {
 
-  public RenderPassCommandSet(Configuration configuration, VkCommandBuffer buffer) {
-    super(configuration, buffer);
+  public RenderPassCommandSet(VkCommandBuffer buffer) {
+    super(buffer);
   }
 
   public void begin(VkRenderPass renderPass, VkFrameBuffer frameBuffer, boolean executeSecondaryCommandBuffer) throws ThemisException {
@@ -32,16 +33,16 @@ public class RenderPassCommandSet extends VkCommandSet {
       VkClearValue.Buffer clearValues = createClearValues(stack, renderPass);
       VkRenderPassBeginInfo renderPassBeginInfo = createRenderPassBeginInfo(stack, clearValues, renderPass, frameBuffer);
       int contents = executeSecondaryCommandBuffer ? VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS : VK_SUBPASS_CONTENTS_INLINE;
-      vkCommand().cmdBeginRenderPass(buffer().getHandle(), renderPassBeginInfo, contents);
+     command.cmdBeginRenderPass(buffer().getHandle(), renderPassBeginInfo, contents);
     }
   }
 
   public void endRenderPass() throws ThemisException {
-    vkCommand().cmdEndRenderPass(buffer().getHandle());
+   command.cmdEndRenderPass(buffer().getHandle());
   }
 
   public void nextSubPass() throws ThemisException {
-    vkCommand().cmdNextSubpass(buffer().getHandle(), VK_SUBPASS_CONTENTS_INLINE);
+   command.cmdNextSubpass(buffer().getHandle(), VK_SUBPASS_CONTENTS_INLINE);
   }
 
   public void scissor(int left, int top, int width, int height) throws ThemisException {
@@ -49,7 +50,7 @@ public class RenderPassCommandSet extends VkCommandSet {
       VkRect2D.Buffer scissor = VkRect2D.calloc(1, stack)
               .extent(it -> it.width(width).height(height))
               .offset(it -> it.x(left).y(top));
-      vkCommand().cmdSetScissor(buffer().getHandle(), scissor);
+     command.cmdSetScissor(buffer().getHandle(), scissor);
     }
   }
 
@@ -62,7 +63,7 @@ public class RenderPassCommandSet extends VkCommandSet {
               .width(width)
               .minDepth(0.0f)
               .maxDepth(1.0f);
-      vkCommand().cmdSetViewport(buffer().getHandle(), viewports);
+     command.cmdSetViewport(buffer().getHandle(), viewports);
     }
   }
 
@@ -70,8 +71,8 @@ public class RenderPassCommandSet extends VkCommandSet {
     try (MemoryStack stack = MemoryStack.stackPush()) {
       LongBuffer offsets = stack.mallocLong(1).put(0, 0L);
       LongBuffer vertexBuffer = stack.mallocLong(1).put(0, vertices.getHandle());
-      vkCommand().cmdBindVertexBuffers(buffer().getHandle(), 0, vertexBuffer, offsets);
-      vkCommand().cmdBindIndexBuffer(buffer().getHandle(), indices.getHandle(), 0, VK_INDEX_TYPE_UINT32);
+     command.cmdBindVertexBuffers(buffer().getHandle(), 0, vertexBuffer, offsets);
+     command.cmdBindIndexBuffer(buffer().getHandle(), indices.getHandle(), 0, VK_INDEX_TYPE_UINT32);
     }
   }
 
@@ -79,16 +80,16 @@ public class RenderPassCommandSet extends VkCommandSet {
     try (MemoryStack stack = MemoryStack.stackPush()) {
       LongBuffer offsets = stack.mallocLong(1).put(0, 0L);
       LongBuffer vertexBuffer = stack.mallocLong(1).put(0, vertices.getHandle());
-      vkCommand().cmdBindVertexBuffers(buffer().getHandle(), binding, vertexBuffer, offsets);
+     command.cmdBindVertexBuffers(buffer().getHandle(), binding, vertexBuffer, offsets);
     }
   }
 
   public void draw(int vertexCount, int instanceCount, int firstVertex, int firstInstance) throws ThemisException {
-    vkCommand().cmdDraw(buffer().getHandle(), vertexCount, instanceCount, firstVertex, firstInstance);
+   command.cmdDraw(buffer().getHandle(), vertexCount, instanceCount, firstVertex, firstInstance);
   }
 
   public void drawIndexed(int indexCount, int instanceCount, int firstIndex, int vertexOffset, int firstInstance) throws ThemisException {
-    vkCommand().cmdDrawIndexed(buffer().getHandle(), indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
+   command.cmdDrawIndexed(buffer().getHandle(), indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
   }
 
   private VkClearValue.Buffer createClearValues(MemoryStack stack, VkRenderPass renderPass) {

@@ -17,10 +17,10 @@ import org.sc.themis.renderer.base.pipeline.VkVertexInputState;
 import org.sc.themis.renderer.base.renderpass.VkRenderPass;
 import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
-import org.sc.themis.shared.tobject.TObject;
+import org.sc.themis.core.LifeCycle;
 import org.sc.viewer.renderactivity.ViewerRendererActivity;
 
-public class UIBackPipeline extends TObject {
+public class UIBackPipeline implements LifeCycle {
 
   // Back pipeline
   private final String BACK_VERTEX_SRC =
@@ -59,11 +59,9 @@ public class UIBackPipeline extends TObject {
   private VkPipeline pipeline;
 
   public UIBackPipeline(
-      Configuration configuration,
       VkDevice device,
       ViewerRendererActivity activity,
       VkRenderPass pass) {
-    super(configuration);
     this.device = device;
     this.activity = activity;
     this.pass = pass;
@@ -88,27 +86,15 @@ public class UIBackPipeline extends TObject {
   private void setupPipeline() throws ThemisException {
 
     VkShaderProgramStage vertexShader =
-        new VkShaderProgramStage(
-            VK_SHADER_STAGE_VERTEX_BIT,
-            VkShaderSourceCompiler.compileShader(
-                BACK_VERTEX_SRC, Shaderc.shaderc_glsl_vertex_shader));
+        new VkShaderProgramStage( VK_SHADER_STAGE_VERTEX_BIT, VkShaderSourceCompiler.compileShader(BACK_VERTEX_SRC, Shaderc.shaderc_glsl_vertex_shader));
 
     VkShaderProgramStage fragmentShader =
-        new VkShaderProgramStage(
-            VK_SHADER_STAGE_FRAGMENT_BIT,
-            VkShaderSourceCompiler.compileShader(
-                BACK_FRAGMENT_SRC, Shaderc.shaderc_glsl_fragment_shader));
+        new VkShaderProgramStage( VK_SHADER_STAGE_FRAGMENT_BIT, VkShaderSourceCompiler.compileShader(BACK_FRAGMENT_SRC, Shaderc.shaderc_glsl_fragment_shader));
 
-    this.shaderProgram =
-        new VkShaderProgram(getConfiguration(), this.device, vertexShader, fragmentShader);
+    this.shaderProgram = new VkShaderProgram(this.device, vertexShader, fragmentShader);
     this.shaderProgram.setup();
 
-    this.pipelineLayout =
-        new VkPipelineLayout(
-            getConfiguration(),
-            this.device,
-            new VkPushConstantRange[0],
-            this.activity.getGeometryDescriptorset().getDescriptorSetLayout());
+    this.pipelineLayout = new VkPipelineLayout(this.device, new VkPushConstantRange[0], this.activity.getGeometryDescriptorset().getDescriptorSetLayout());
     this.pipelineLayout.setup();
 
     try (MemoryStack stack = MemoryStack.stackPush()) {
@@ -118,12 +104,8 @@ public class UIBackPipeline extends TObject {
 
       this.pipeline =
           new VkPipeline(
-              getConfiguration(),
-              this.device,
-              new VkPipelineDescriptor(this.pass, 0, false, 1, false, 1, 1, 1),
-              this.shaderProgram,
-              this.pipelineLayout,
-              backInputState);
+              this.device, new VkPipelineDescriptor(this.pass, 0, false, 1, false, 1, 1, 1),
+              this.shaderProgram, this.pipelineLayout, backInputState);
       this.pipeline.setup();
     }
   }

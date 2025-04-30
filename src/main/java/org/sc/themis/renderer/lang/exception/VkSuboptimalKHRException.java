@@ -1,4 +1,4 @@
-package org.sc.themis.renderer.base.exception;
+package org.sc.themis.renderer.lang.exception;
 
 import org.lwjgl.vulkan.KHRSwapchain;
 

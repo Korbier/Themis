@@ -8,7 +8,6 @@ import org.sc.themis.renderer.base.resource.image.VkImage;
 import org.sc.themis.renderer.base.resource.image.VkImageDescriptor;
 import org.sc.themis.renderer.base.resource.image.VkImageView;
 import org.sc.themis.renderer.base.resource.image.VkImageViewDescriptor;
-import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.assertion.Assertions;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.renderer.resource.image.Image;
@@ -32,15 +31,11 @@ public final class VkStagingImage extends VkStagingResource {
   private int mipLevels;
 
   VkStagingImage(
-      Configuration configuration,
       VkStagingResourceAllocator resourceAllocator,
-      VkDevice device,
-      VkMemoryAllocator allocator,
-      int imageFormat,
-      boolean generateMipMaps,
-      int layers
+      VkDevice device, VkMemoryAllocator allocator,
+      int imageFormat, boolean generateMipMaps, int layers
   ) {
-    super(configuration, resourceAllocator, device, allocator);
+    super(resourceAllocator, device, allocator);
     this.device = device;
     this.imageFormat = imageFormat;
     this.generateMipMaps = generateMipMaps;
@@ -159,21 +154,16 @@ public final class VkStagingImage extends VkStagingResource {
             VK_SAMPLE_COUNT_1_BIT, this.layers,
             VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
             0);
-    this.image = new VkImage(getConfiguration(), this.device, descriptor);
+    this.image = new VkImage(this.device, descriptor);
     this.image.setup();
   }
 
   private void setupView() throws ThemisException {
     VkImageViewDescriptor descriptor =
         new VkImageViewDescriptor(
-            VK_IMAGE_ASPECT_COLOR_BIT,
-            0,
-            this.image.getDescriptor().format(),
-            this.layers,
-            this.mipLevels,
-            isMultiLayered() ? VK_IMAGE_VIEW_TYPE_2D_ARRAY : VK_IMAGE_VIEW_TYPE_2D);
-    this.view =
-        new VkImageView(getConfiguration(), this.device, this.image.getHandle(), descriptor);
+            VK_IMAGE_ASPECT_COLOR_BIT, 0, this.image.getDescriptor().format(),
+            this.layers, this.mipLevels, isMultiLayered() ? VK_IMAGE_VIEW_TYPE_2D_ARRAY : VK_IMAGE_VIEW_TYPE_2D);
+    this.view = new VkImageView(this.device, this.image.getHandle(), descriptor);
     this.view.setup();
   }
 

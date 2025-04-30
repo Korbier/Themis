@@ -6,13 +6,13 @@ import java.nio.LongBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkFramebufferCreateInfo;
 import org.sc.themis.renderer.base.device.VkDevice;
-import org.sc.themis.renderer.lang.VulkanObject;
-import org.sc.themis.shared.configuration.Configuration;
+import org.sc.themis.renderer.lang.Vulkan;
 import org.sc.themis.shared.exception.ThemisException;
+import org.sc.themis.core.LifeCycle;
 import org.sc.themis.shared.utils.LogUtils;
 import org.slf4j.LoggerFactory;
 
-public class VkFrameBuffer extends VulkanObject {
+public class VkFrameBuffer extends Vulkan implements LifeCycle {
 
   private static final org.slf4j.Logger logger = LoggerFactory.getLogger(VkFrameBuffer.class);
 
@@ -21,8 +21,7 @@ public class VkFrameBuffer extends VulkanObject {
 
   private long handle;
 
-  public VkFrameBuffer(Configuration configuration, VkDevice device, VkFrameBufferDescriptor descriptor) {
-    super(configuration);
+  public VkFrameBuffer(VkDevice device, VkFrameBufferDescriptor descriptor) {
     this.device = device;
     this.descriptor = descriptor;
   }
@@ -42,7 +41,7 @@ public class VkFrameBuffer extends VulkanObject {
 
   @Override
   public void cleanup() throws ThemisException {
-    vkFramebuffer().destroyFramebuffer(this.device.getHandle(), this.handle);
+   framebuffer.destroyFramebuffer(this.device.getHandle(), this.handle);
   }
 
   public long getHandle() {
@@ -53,10 +52,9 @@ public class VkFrameBuffer extends VulkanObject {
     return this.descriptor;
   }
 
-  private long vkCreateFrameBuffer(MemoryStack stack, VkFramebufferCreateInfo frameBufferCreateInfo)
-      throws ThemisException {
+  private long vkCreateFrameBuffer(MemoryStack stack, VkFramebufferCreateInfo frameBufferCreateInfo) throws ThemisException {
     LongBuffer pFramebuffer = stack.mallocLong(1);
-    vkFramebuffer().createFramebuffer(this.device.getHandle(), frameBufferCreateInfo, pFramebuffer);
+   framebuffer.createFramebuffer(this.device.getHandle(), frameBufferCreateInfo, pFramebuffer);
     return pFramebuffer.get(0);
   }
 

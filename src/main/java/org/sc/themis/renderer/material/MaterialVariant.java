@@ -1,10 +1,6 @@
 package org.sc.themis.renderer.material;
 
-import static org.lwjgl.vulkan.VK10.VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-import static org.lwjgl.vulkan.VK10.VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-
-import java.util.HashMap;
-import java.util.Map;
+import org.sc.themis.core.LifeCycle;
 import org.sc.themis.renderer.base.frame.FrameKey;
 import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorPool;
 import org.sc.themis.renderer.base.pipeline.descriptorset.VkDescriptorSet;
@@ -14,11 +10,15 @@ import org.sc.themis.renderer.base.resource.buffer.VkBufferDescriptor;
 import org.sc.themis.renderer.base.resource.image.VkSampler;
 import org.sc.themis.renderer.base.resource.image.VkSamplerDescriptor;
 import org.sc.themis.renderer.resource.material.Material;
-import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
-import org.sc.themis.shared.tobject.TObject;
 
-public class MaterialVariant extends TObject {
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.lwjgl.vulkan.VK10.VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+import static org.lwjgl.vulkan.VK10.VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+
+public class MaterialVariant implements LifeCycle {
 
   private final String identifier;
   private final MaterialRenderer materialRenderer;
@@ -27,8 +27,7 @@ public class MaterialVariant extends TObject {
   private final Map<Integer, FrameKey<VkBuffer>> buffers = new HashMap<>();
   private final Map<Integer, FrameKey<VkSampler>> samplers = new HashMap<>();
 
-  public MaterialVariant(Configuration configuration, MaterialRenderer materialRenderer, String identifier) {
-    super(configuration);
+  public MaterialVariant(MaterialRenderer materialRenderer, String identifier) {
     this.materialRenderer = materialRenderer;
     this.identifier = identifier;
   }
@@ -65,11 +64,7 @@ public class MaterialVariant extends TObject {
 
       if (binding.getDescriptorType() == VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER) {
         FrameKey<VkSampler> samplerKey = this.samplers.get(bindingIdx);
-        this.materialRenderer.getFrames().update( this.descriptorset, (frame, descriptorset) ->
-            this.materialRenderer
-                .getVariantsCombinedImageSamplerSetter()
-                .set(bindingIdx, descriptorset, this.materialRenderer.getFrames().get(frame, samplerKey), properties)
-        );
+        this.materialRenderer.getFrames().update(this.descriptorset, (frame, descriptorset) -> this.materialRenderer.getVariantsCombinedImageSamplerSetter().set(bindingIdx, descriptorset, this.materialRenderer.getFrames().get(frame, samplerKey), properties));
       }
 
     }
@@ -87,61 +82,37 @@ public class MaterialVariant extends TObject {
 
   private void setupUniform() throws ThemisException {
 
-    for (Map.Entry<Integer, VkDescriptorSetBinding> bindingEntry :
-        this.materialRenderer.getVariantsDescriptor().getBindings().entrySet()) {
+    for (Map.Entry<Integer, VkDescriptorSetBinding> bindingEntry : this.materialRenderer.getVariantsDescriptor().getBindings().entrySet()) {
 
       int bindingIdx = bindingEntry.getKey();
       VkDescriptorSetBinding binding = bindingEntry.getValue();
-      VkBufferDescriptor bufferDescriptor =
-          this.materialRenderer.getVariantsDescriptor().getBufferDescriptor(bindingIdx);
+      VkBufferDescriptor bufferDescriptor = this.materialRenderer.getVariantsDescriptor().getBufferDescriptor(bindingIdx);
 
-      if (binding.getDescriptorType() == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
-          && bufferDescriptor != null) {
+      if (binding.getDescriptorType() == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER && bufferDescriptor != null) {
         FrameKey<VkBuffer> bufferKey = FrameKey.of(VkBuffer.class);
         this.buffers.put(bindingIdx, bufferKey);
-        this.materialRenderer
-            .getFrames()
-            .create(
-                bufferKey,
-                () ->
-                    new VkBuffer(
-                        getConfiguration(),
-                        this.materialRenderer.getDevice(),
-                        this.materialRenderer.getAllocator(),
-                        bufferDescriptor));
-        this.materialRenderer
-            .getFrames()
-            .update(
-                this.descriptorset,
-                (frame, descriptorset) ->
-                    descriptorset.bind(
-                        bindingIdx, this.materialRenderer.getFrames().get(frame, bufferKey)));
+        this.materialRenderer.getFrames().create(bufferKey, () -> new VkBuffer(this.materialRenderer.getDevice(), this.materialRenderer.getAllocator(), bufferDescriptor));
+        this.materialRenderer.getFrames().update(this.descriptorset, (frame, descriptorset) -> descriptorset.bind(bindingIdx, this.materialRenderer.getFrames().get(frame, bufferKey)));
       }
     }
   }
 
   private void setupCombinedImageSampler() throws ThemisException {
 
-    for (Map.Entry<Integer, VkDescriptorSetBinding> bindingEntry :
-        this.materialRenderer.getVariantsDescriptor().getBindings().entrySet()) {
+    for (Map.Entry<Integer, VkDescriptorSetBinding> bindingEntry : this.materialRenderer.getVariantsDescriptor().getBindings().entrySet()) {
 
       int bindingIdx = bindingEntry.getKey();
       VkDescriptorSetBinding binding = bindingEntry.getValue();
-      VkSamplerDescriptor samplerDescriptor =
-          this.materialRenderer.getVariantsDescriptor().getSamplerDescriptor(bindingIdx);
+      VkSamplerDescriptor samplerDescriptor = this.materialRenderer.getVariantsDescriptor().getSamplerDescriptor(bindingIdx);
 
-      if (binding.getDescriptorType() == VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
-          && samplerDescriptor != null) {
+      if (binding.getDescriptorType() == VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER && samplerDescriptor != null) {
         FrameKey<VkSampler> samplerKey = FrameKey.of(VkSampler.class);
         this.samplers.put(bindingIdx, samplerKey);
-        this.materialRenderer
-            .getFrames()
-            .create(
-                samplerKey,
-                () ->
-                    new VkSampler(
-                        getConfiguration(), this.materialRenderer.getDevice(), samplerDescriptor));
+        this.materialRenderer.getFrames().create(samplerKey, () -> new VkSampler(this.materialRenderer.getDevice(), samplerDescriptor));
       }
+
     }
+
   }
+
 }

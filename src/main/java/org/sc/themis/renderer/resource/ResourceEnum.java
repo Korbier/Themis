@@ -1,6 +1,5 @@
 package org.sc.themis.renderer.resource;
 
-import org.sc.themis.renderer.base.ResourceType;
 import org.sc.themis.renderer.resource.font.Font;
 import org.sc.themis.renderer.resource.font.FontResourceLoader;
 import org.sc.themis.renderer.resource.image.Image;

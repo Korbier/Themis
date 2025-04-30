@@ -16,12 +16,12 @@ import java.util.HashMap;
 import java.util.Map;
 import org.joml.Vector2f;
 import org.sc.themis.shared.configuration.Configuration;
-import org.sc.themis.shared.tobject.TObject;
+import org.sc.themis.core.LifeCycle;
 import org.sc.themis.window.Window;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Input extends TObject {
+public class Input implements LifeCycle {
 
   private static final Logger logger = LoggerFactory.getLogger(Input.class);
 
@@ -36,8 +36,7 @@ public class Input extends TObject {
   private boolean rightMouseButtonPressed = false;
   private boolean mouseInWindow = false;
 
-  public Input(Configuration configuration, Window window) {
-    super(configuration);
+  public Input(Window window) {
     this.window = window;
   }
 

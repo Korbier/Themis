@@ -10,15 +10,16 @@ import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.assertion.Assertions;
 import org.sc.themis.shared.configuration.ConfigurationEnum;
 import org.sc.themis.shared.exception.ThemisException;
-import org.sc.themis.shared.tobject.TObject;
+import org.sc.themis.core.LifeCycle;
 import org.sc.themis.window.Window;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Engine extends TObject {
+public class Engine implements LifeCycle {
 
   private static final Logger logger = LoggerFactory.getLogger(Engine.class);
 
+  private final Configuration configuration;
   private final Window window;
   private final Input input;
   private final Renderer renderer;
@@ -30,9 +31,9 @@ public class Engine extends TObject {
   private Gamestate currentGamestate;
 
   public Engine(Configuration configuration, RendererActivity activity) {
-    super(configuration);
+    this.configuration = configuration;
     this.window = new Window(configuration);
-    this.input = new Input(configuration, this.window);
+    this.input = new Input(this.window);
     this.renderer = new Renderer(configuration, this.window, this.input, activity);
     this.scene = new Scene(configuration);
   }
@@ -67,6 +68,7 @@ public class Engine extends TObject {
 
     this.status = EngineStatus.RUNNING;
     this.loop();
+
   }
 
   public void stop() {
@@ -79,7 +81,7 @@ public class Engine extends TObject {
 
   private void loop() throws ThemisException {
 
-    long targetfps = getConfiguration().get(ConfigurationEnum.engineTargetFps);
+    long targetfps = this.configuration.get(ConfigurationEnum.engineTargetFps);
     long initialTime = System.currentTimeMillis();
     float timeU = 1000.0f / targetfps;
     double deltaUpdate = 0;
@@ -150,11 +152,11 @@ public class Engine extends TObject {
 
   private String getName() {
 
-    String appname = getConfiguration().get(ConfigurationEnum.applicationName);
-    int appversion =  getConfiguration().get(ConfigurationEnum.applicationVersion);
+    String appname = this.configuration.get(ConfigurationEnum.applicationName);
+    int appversion =  this.configuration.get(ConfigurationEnum.applicationVersion);
 
-    String engname = getConfiguration().get(ConfigurationEnum.engineName);
-    int engversion =  getConfiguration().get(ConfigurationEnum.engineVersion);
+    String engname = this.configuration.get(ConfigurationEnum.engineName);
+    int engversion =  this.configuration.get(ConfigurationEnum.engineVersion);
 
     return String.format("%s V%d (%s V%d)", appname, appversion, engname, engversion);
 

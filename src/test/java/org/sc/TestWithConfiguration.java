@@ -9,7 +9,8 @@ public class TestWithConfiguration {
 
   @BeforeEach
   public void setConfiguration() {
-      this.configuration = new Configuration("./src/test/resources/application.properties");
+      this.configuration = new Configuration();
+      this.configuration.load("./src/test/resources/application.properties");
   }
 
   public Configuration getConfiguration() {

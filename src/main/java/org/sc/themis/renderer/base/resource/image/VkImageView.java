@@ -6,28 +6,23 @@ import java.nio.LongBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkImageViewCreateInfo;
 import org.sc.themis.renderer.base.device.VkDevice;
-import org.sc.themis.renderer.lang.VulkanObject;
+import org.sc.themis.renderer.lang.Vulkan;
 import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
+import org.sc.themis.core.LifeCycle;
 
-public class VkImageView extends VulkanObject {
+public class VkImageView extends Vulkan implements LifeCycle {
 
   private final VkDevice device;
   private final long imageHandle;
   private final VkImageViewDescriptor descriptor;
 
   private long handle;
-
   /**
    * public VkImageView(Configuration configuration, VkDevice device, VkImage image,
    * VkImageViewDescriptor descriptor ) { this( vk, device, image.getHandle(), descriptor ); }
    */
-  public VkImageView(
-      Configuration configuration,
-      VkDevice device,
-      long imageHandle,
-      VkImageViewDescriptor descriptor) {
-    super(configuration);
+  public VkImageView(VkDevice device, long imageHandle, VkImageViewDescriptor descriptor) {
     this.device = device;
     this.imageHandle = imageHandle;
     this.descriptor = descriptor;
@@ -43,7 +38,7 @@ public class VkImageView extends VulkanObject {
 
   @Override
   public void cleanup() throws ThemisException {
-    vkImage().destroyImageView(this.device.getHandle(), this.handle);
+   image.destroyImageView(this.device.getHandle(), this.handle);
   }
 
   public long getHandle() {
@@ -77,7 +72,7 @@ public class VkImageView extends VulkanObject {
   private long vkCreateImageView(MemoryStack stack, VkImageViewCreateInfo viewCreateInfo)
       throws ThemisException {
     LongBuffer lp = stack.mallocLong(1);
-    vkImage().createImageView(this.device.getHandle(), viewCreateInfo, lp);
+   image.createImageView(this.device.getHandle(), viewCreateInfo, lp);
     return lp.get(0);
   }
 }

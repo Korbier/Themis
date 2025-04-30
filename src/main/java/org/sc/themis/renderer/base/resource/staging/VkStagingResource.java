@@ -16,11 +16,10 @@ import org.sc.themis.renderer.base.device.VkDevice;
 import org.sc.themis.renderer.base.device.VkMemoryAllocator;
 import org.sc.themis.renderer.base.resource.buffer.VkBuffer;
 import org.sc.themis.renderer.base.resource.buffer.VkBufferDescriptor;
-import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
-import org.sc.themis.shared.tobject.TObject;
+import org.sc.themis.core.LifeCycle;
 
-public abstract sealed class VkStagingResource extends TObject
+public abstract sealed class VkStagingResource implements LifeCycle
     permits VkStagingBuffer, VkStagingImage {
 
   private final VkDevice device;
@@ -31,12 +30,7 @@ public abstract sealed class VkStagingResource extends TObject
   private VkStagingResourceStatus status = VkStagingResourceStatus.CREATED;
   private VkBuffer stagingBuffer;
 
-  public VkStagingResource(
-      Configuration configuration,
-      VkStagingResourceAllocator resourceAllocator,
-      VkDevice device,
-      VkMemoryAllocator allocator) {
-    super(configuration);
+  public VkStagingResource( VkStagingResourceAllocator resourceAllocator, VkDevice device, VkMemoryAllocator allocator) {
     this.resourceAllocator = resourceAllocator;
     this.device = device;
     this.allocator = allocator;
@@ -169,13 +163,8 @@ public abstract sealed class VkStagingResource extends TObject
 
   protected void setupStagingBuffer() throws ThemisException {
     VkBufferDescriptor bufferDescriptor =
-        new VkBufferDescriptor(
-            this.bufferSize,
-            VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
-            VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-    this.stagingBuffer =
-        new VkBuffer(getConfiguration(), this.device, this.allocator, bufferDescriptor);
+        new VkBufferDescriptor( this.bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    this.stagingBuffer = new VkBuffer(this.device, this.allocator, bufferDescriptor);
     this.stagingBuffer.setup();
   }
 

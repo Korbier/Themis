@@ -1,33 +1,22 @@
 package org.sc.themis.renderer.base.device;
 
-import static org.lwjgl.vulkan.VK10.VK_MAX_MEMORY_TYPES;
-import static org.lwjgl.vulkan.VK10.VK_SAMPLE_COUNT_16_BIT;
-import static org.lwjgl.vulkan.VK10.VK_SAMPLE_COUNT_1_BIT;
-import static org.lwjgl.vulkan.VK10.VK_SAMPLE_COUNT_2_BIT;
-import static org.lwjgl.vulkan.VK10.VK_SAMPLE_COUNT_32_BIT;
-import static org.lwjgl.vulkan.VK10.VK_SAMPLE_COUNT_4_BIT;
-import static org.lwjgl.vulkan.VK10.VK_SAMPLE_COUNT_64_BIT;
-import static org.lwjgl.vulkan.VK10.VK_SAMPLE_COUNT_8_BIT;
+import org.lwjgl.system.MemoryStack;
+import org.lwjgl.vulkan.*;
+import org.sc.themis.core.LifeCycle;
+import org.sc.themis.renderer.base.queue.VkQueueFamily;
+import org.sc.themis.renderer.lang.Vulkan;
+import org.sc.themis.shared.exception.ThemisException;
+import org.slf4j.LoggerFactory;
 
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
-import org.lwjgl.system.MemoryStack;
-import org.lwjgl.vulkan.VkExtensionProperties;
-import org.lwjgl.vulkan.VkMemoryType;
-import org.lwjgl.vulkan.VkPhysicalDeviceFeatures;
-import org.lwjgl.vulkan.VkPhysicalDeviceMemoryProperties;
-import org.lwjgl.vulkan.VkPhysicalDeviceProperties;
-import org.lwjgl.vulkan.VkQueueFamilyProperties;
-import org.sc.themis.renderer.base.queue.VkQueueFamily;
-import org.sc.themis.renderer.lang.VulkanObject;
-import org.sc.themis.shared.configuration.Configuration;
-import org.sc.themis.shared.exception.ThemisException;
-import org.slf4j.LoggerFactory;
 
-public class VkPhysicalDevice extends VulkanObject {
+import static org.lwjgl.vulkan.VK10.*;
+
+public class VkPhysicalDevice extends Vulkan implements LifeCycle {
 
   private static final org.slf4j.Logger logger = LoggerFactory.getLogger(VkPhysicalDevice.class);
 
@@ -40,8 +29,7 @@ public class VkPhysicalDevice extends VulkanObject {
 
   private final List<VkQueueFamily> queueFamilies = new ArrayList<>();
 
-  public VkPhysicalDevice(Configuration configuration, org.lwjgl.vulkan.VkPhysicalDevice handle) {
-    super(configuration);
+  public VkPhysicalDevice(org.lwjgl.vulkan.VkPhysicalDevice handle) {
     this.handle = handle;
   }
 
@@ -134,43 +122,43 @@ public class VkPhysicalDevice extends VulkanObject {
   private VkExtensionProperties.Buffer vkFetchDeviceExtensions(MemoryStack stack, org.lwjgl.vulkan.VkPhysicalDevice device) throws ThemisException {
 
     IntBuffer intBuffer = stack.mallocInt(1);
-    vkPhysicalDevice().enumerateDeviceExtensionProperties(device, intBuffer, null);
+   physicalDevice.enumerateDeviceExtensionProperties(device, intBuffer, null);
 
     int numProperties = intBuffer.get(0);
     VkExtensionProperties.Buffer propBuff = VkExtensionProperties.calloc(numProperties);
 
-    vkPhysicalDevice().enumerateDeviceExtensionProperties(device, intBuffer, propBuff);
+   physicalDevice.enumerateDeviceExtensionProperties(device, intBuffer, propBuff);
 
     return propBuff;
   }
 
   private VkPhysicalDeviceMemoryProperties fetchMemoryProperties(org.lwjgl.vulkan.VkPhysicalDevice device) throws ThemisException {
     VkPhysicalDeviceMemoryProperties vkMemoryProperties = VkPhysicalDeviceMemoryProperties.calloc();
-    vkPhysicalDevice().getPhysicalDeviceMemoryProperties(device, vkMemoryProperties);
+   physicalDevice.getPhysicalDeviceMemoryProperties(device, vkMemoryProperties);
     return vkMemoryProperties;
   }
 
   private VkPhysicalDeviceFeatures fetchPhysicalDeviceFeatures(org.lwjgl.vulkan.VkPhysicalDevice device) throws ThemisException {
     VkPhysicalDeviceFeatures vkFeatures = VkPhysicalDeviceFeatures.calloc();
-    vkPhysicalDevice().getPhysicalDeviceFeatures(device, vkFeatures);
+   physicalDevice.getPhysicalDeviceFeatures(device, vkFeatures);
     return vkFeatures;
   }
 
   private VkPhysicalDeviceProperties fetchPhysicalDeviceProperties(org.lwjgl.vulkan.VkPhysicalDevice device) throws ThemisException {
     VkPhysicalDeviceProperties vkProperties = VkPhysicalDeviceProperties.calloc();
-    vkPhysicalDevice().getPhysicalDeviceProperties(device, vkProperties);
+   physicalDevice.getPhysicalDeviceProperties(device, vkProperties);
     return vkProperties;
   }
 
   private VkQueueFamilyProperties.Buffer fetchQueueFamilyProperties(MemoryStack stack, org.lwjgl.vulkan.VkPhysicalDevice device) throws ThemisException {
 
     IntBuffer intBuffer = stack.mallocInt(1);
-    vkPhysicalDevice().getPhysicalDeviceQueueFamilyProperties(device, intBuffer, null);
+   physicalDevice.getPhysicalDeviceQueueFamilyProperties(device, intBuffer, null);
 
     int numProperties = intBuffer.get(0);
     VkQueueFamilyProperties.Buffer propBuff = VkQueueFamilyProperties.calloc(numProperties);
 
-    vkPhysicalDevice().getPhysicalDeviceQueueFamilyProperties(device, intBuffer, propBuff);
+   physicalDevice.getPhysicalDeviceQueueFamilyProperties(device, intBuffer, propBuff);
 
     return propBuff;
   }
@@ -220,10 +208,7 @@ public class VkPhysicalDevice extends VulkanObject {
   private void showQueueFamilyProperties() {
 
     for (int i = 0; i < this.vkQueueFamilyProperties.capacity(); i++) {
-      logger.trace(
-          "Queue family found : count = {} / flag = {} ",
-          this.vkQueueFamilyProperties.get(i).queueCount(),
-          this.vkQueueFamilyProperties.get(i).queueFlags());
+      logger.trace("Queue family found : count = {} / flag = {} ", this.vkQueueFamilyProperties.get(i).queueCount(), this.vkQueueFamilyProperties.get(i).queueFlags());
     }
 
   }

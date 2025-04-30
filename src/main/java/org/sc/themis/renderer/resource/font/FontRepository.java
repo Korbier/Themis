@@ -1,5 +1,6 @@
 package org.sc.themis.renderer.resource.font;
 
+import jakarta.enterprise.context.ApplicationScoped;
 import org.sc.themis.renderer.resource.image.Image;
 import org.sc.themis.shared.exception.ThemisException;
 import org.sc.themis.shared.service.Service;
@@ -7,6 +8,7 @@ import org.sc.themis.shared.service.Service;
 import java.util.ArrayList;
 import java.util.List;
 
+@ApplicationScoped
 public class FontRepository implements Service {
 
   private final List<Font> fonts = new ArrayList<>();

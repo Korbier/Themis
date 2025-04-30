@@ -8,7 +8,6 @@ import org.sc.themis.renderer.base.device.VkDevice;
 import org.sc.themis.renderer.base.device.VkMemoryAllocator;
 import org.sc.themis.renderer.base.resource.buffer.VkBuffer;
 import org.sc.themis.renderer.base.resource.buffer.VkBufferDescriptor;
-import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
 
 public final class VkStagingBuffer extends VkStagingResource {
@@ -19,12 +18,11 @@ public final class VkStagingBuffer extends VkStagingResource {
   private VkBuffer buffer;
 
   VkStagingBuffer(
-      Configuration configuration,
       VkStagingResourceAllocator resourceAllocator,
       VkDevice device,
       VkMemoryAllocator allocator,
       int bufferUsage) {
-    super(configuration, resourceAllocator, device, allocator);
+    super(resourceAllocator, device, allocator);
     this.device = device;
     this.allocator = allocator;
     this.bufferUsage = bufferUsage;
@@ -58,8 +56,7 @@ public final class VkStagingBuffer extends VkStagingResource {
             VK_BUFFER_USAGE_TRANSFER_DST_BIT | this.bufferUsage,
             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
             0);
-    this.buffer =
-        new VkBuffer(getConfiguration(), this.device, this.allocator, vertexBufferDescriptor);
+    this.buffer = new VkBuffer(this.device, this.allocator, vertexBufferDescriptor);
     this.buffer.setup();
   }
 

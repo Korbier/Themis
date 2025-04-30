@@ -1,11 +1,8 @@
 package org.sc.viewer.renderactivity;
 
-import static org.lwjgl.vulkan.VK10.VK_FORMAT_D32_SFLOAT;
-import static org.lwjgl.vulkan.VK10.VK_FORMAT_R16G16B16A16_UNORM;
-import static org.lwjgl.vulkan.VK10.VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-import static org.lwjgl.vulkan.VK10.VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-import static org.lwjgl.vulkan.VK10.VK_SAMPLE_COUNT_1_BIT;
-
+import jakarta.annotation.PostConstruct;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import org.sc.themis.renderer.Renderer;
 import org.sc.themis.renderer.RendererActivity;
 import org.sc.themis.renderer.base.device.VkDevice;
@@ -15,7 +12,6 @@ import org.sc.themis.renderer.base.framebuffer.VkFrameBufferAttachments;
 import org.sc.themis.renderer.base.sync.VkFence;
 import org.sc.themis.renderer.base.sync.VkSemaphore;
 import org.sc.themis.renderer.material.MaterialManager;
-import org.sc.themis.renderer.resource.font.FontRepository;
 import org.sc.themis.scene.Scene;
 import org.sc.themis.scene.descriptorset.InputDescriptorSet;
 import org.sc.themis.scene.descriptorset.MousePickingDescriptorSet;
@@ -31,21 +27,33 @@ import org.sc.viewer.renderactivity.postprocess.PostProcessRenderPass;
 import org.sc.viewer.renderactivity.shadow.ShadowRenderPass;
 import org.sc.viewer.renderactivity.ui.UiRenderPass;
 
-/** Viewer renderer activity. */
+import static org.lwjgl.vulkan.VK10.*;
+
+/**
+ * Viewer renderer activity.
+ */
+@ApplicationScoped
 public class ViewerRendererActivity extends RendererActivity {
 
   public static final String GEOMETRY_FB_ATTACHMENT_COLOR = "geometry.framebuffer.attachment.color";
   public static final String GEOMETRY_FB_ATTACHMENT_DEPTH = "geometry.framebuffer.attachment.depth";
 
-  private final ViewerGamestate gamestate;
+  @Inject
+  ViewerGamestate gamestate;
+  @Inject
+  Configuration configuration;
+  @Inject
+  MaterialManager materialManager;
+  @Inject
+  ViewerContext context;
   private Renderer renderer;
 
   // Renderpasses
-  private final MousePickingRenderPass mousePickingRenderPass;
-  private final ShadowRenderPass shadowRenderPass;
-  private final GeometryRenderPass geometryRenderPass;
-  private final PostProcessRenderPass postProcessRenderPass;
-  private final UiRenderPass uiRenderPass;
+  private MousePickingRenderPass mousePickingRenderPass;
+  private ShadowRenderPass shadowRenderPass;
+  private GeometryRenderPass geometryRenderPass;
+  private PostProcessRenderPass postProcessRenderPass;
+  private UiRenderPass uiRenderPass;
 
   // Renderpasses common data
   private VkFrameBufferAttachments geometryFrameBufferAttachments;
@@ -63,25 +71,13 @@ public class ViewerRendererActivity extends RendererActivity {
   private LightDescriptorSet dsLight;
   private InputDescriptorSet dsGeometry;
 
-  /**
-   * Default constructor.
-   *
-   * @param configuration configuration
-   * @param gamestate gamestate
-   */
-  public ViewerRendererActivity(
-      Configuration configuration,
-      ViewerContext context,
-      ViewerGamestate gamestate,
-      MaterialManager materialManager
-  ) {
-    super(configuration);
-    this.gamestate = gamestate;
-    this.mousePickingRenderPass = new MousePickingRenderPass(configuration);
-    this.shadowRenderPass = new ShadowRenderPass(configuration);
-    this.geometryRenderPass = new GeometryRenderPass(configuration, materialManager);
-    this.postProcessRenderPass = new PostProcessRenderPass(configuration, context);
-    this.uiRenderPass = new UiRenderPass(configuration, gamestate.getPencil());
+  @PostConstruct
+  public void start() {
+    this.mousePickingRenderPass = new MousePickingRenderPass();
+    this.shadowRenderPass = new ShadowRenderPass();
+    this.geometryRenderPass = new GeometryRenderPass(materialManager);
+    this.postProcessRenderPass = new PostProcessRenderPass(context);
+    this.uiRenderPass = new UiRenderPass(gamestate.getPencil());
   }
 
   public Renderer getRenderer() {
@@ -144,37 +140,28 @@ public class ViewerRendererActivity extends RendererActivity {
   }
 
   private void setupGeometryFrameBufferAttachments() throws ThemisException {
-    this.geometryFrameBufferAttachments =
-        new VkFrameBufferAttachments(getConfiguration(), getDevice(), getRenderer().getExtent());
+    this.geometryFrameBufferAttachments = new VkFrameBufferAttachments(getDevice(), getRenderer().getExtent());
     this.geometryFrameBufferAttachments.setup();
-    this.geometryFrameBufferAttachments.depth(
-        GEOMETRY_FB_ATTACHMENT_DEPTH,
-        VK_FORMAT_D32_SFLOAT,
-        VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
-        1);
-    this.geometryFrameBufferAttachments.color(
-        GEOMETRY_FB_ATTACHMENT_COLOR, VK_FORMAT_R16G16B16A16_UNORM,
-        VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_SAMPLE_COUNT_1_BIT);
+    this.geometryFrameBufferAttachments.depth(GEOMETRY_FB_ATTACHMENT_DEPTH, VK_FORMAT_D32_SFLOAT, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, 1);
+    this.geometryFrameBufferAttachments.color(GEOMETRY_FB_ATTACHMENT_COLOR, VK_FORMAT_R16G16B16A16_UNORM, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_SAMPLE_COUNT_1_BIT);
   }
 
   private void setupDescriptorsets() throws ThemisException {
 
-    this.dsScene = new SceneDescriptorSet(getConfiguration(), renderer);
+    this.dsScene = new SceneDescriptorSet(renderer);
     this.dsScene.setup();
 
-    this.dsMousePicking = new MousePickingDescriptorSet(getConfiguration(), renderer);
+    this.dsMousePicking = new MousePickingDescriptorSet(renderer);
     this.dsMousePicking.setup();
 
-    this.dsLight = new LightDescriptorSet(getConfiguration(), renderer);
+    this.dsLight = new LightDescriptorSet(renderer);
     this.dsLight.setup();
 
     setupGeometryDescriptorset();
   }
 
   private void setupGeometryDescriptorset() throws ThemisException {
-    this.dsGeometry =
-        new InputDescriptorSet(
-            getConfiguration(), getRenderer(), getGeometryFrameBufferAttachments().size());
+    this.dsGeometry = new InputDescriptorSet(getRenderer(), getGeometryFrameBufferAttachments().size());
     this.dsGeometry.setup();
   }
 
@@ -189,28 +176,19 @@ public class ViewerRendererActivity extends RendererActivity {
   private void setupSemaphores() throws ThemisException {
 
     this.semPickingPassCompleted = FrameKey.of(VkSemaphore.class);
-    getFrames()
-        .create(
-            this.semPickingPassCompleted, () -> new VkSemaphore(getConfiguration(), getDevice()));
+    getFrames().create(this.semPickingPassCompleted, () -> new VkSemaphore(getDevice()));
 
     this.semShadowPassCompleted = FrameKey.of(VkSemaphore.class);
-    getFrames()
-        .create(
-            this.semShadowPassCompleted, () -> new VkSemaphore(getConfiguration(), getDevice()));
+    getFrames().create(this.semShadowPassCompleted, () -> new VkSemaphore(getDevice()));
 
     this.semGeometryPassCompleted = FrameKey.of(VkSemaphore.class);
-    getFrames()
-        .create(
-            this.semGeometryPassCompleted, () -> new VkSemaphore(getConfiguration(), getDevice()));
+    getFrames().create(this.semGeometryPassCompleted, () -> new VkSemaphore(getDevice()));
 
     this.semPostProcessPassCompleted = FrameKey.of(VkSemaphore.class);
-    getFrames()
-        .create(
-            this.semPostProcessPassCompleted,
-            () -> new VkSemaphore(getConfiguration(), getDevice()));
+    getFrames().create(this.semPostProcessPassCompleted, () -> new VkSemaphore(getDevice()));
 
     this.fenceGlobal = FrameKey.of(VkFence.class);
-    getFrames().create(this.fenceGlobal, () -> new VkFence(getConfiguration(), getDevice(), true));
+    getFrames().create(this.fenceGlobal, () -> new VkFence(getDevice(), true));
   }
 
   @Override
@@ -272,24 +250,11 @@ public class ViewerRendererActivity extends RendererActivity {
     VkFence fence = getFrames().get(frame, this.fenceGlobal);
     fence.waitForAndReset();
 
-    this.geometryRenderPass.render(
-        frame,
-        scene,
-        this.renderer.getAcquireSemaphore(frame),
-        getFrames().get(frame, this.semGeometryPassCompleted));
+    this.geometryRenderPass.render(frame, scene, this.renderer.getAcquireSemaphore(frame), getFrames().get(frame, this.semGeometryPassCompleted));
 
-    this.postProcessRenderPass.render(
-        frame,
-        scene,
-        getFrames().get(frame, this.semGeometryPassCompleted),
-        getFrames().get(frame, this.semPostProcessPassCompleted));
+    this.postProcessRenderPass.render(frame, scene, getFrames().get(frame, this.semGeometryPassCompleted), getFrames().get(frame, this.semPostProcessPassCompleted));
 
-    this.uiRenderPass.render(
-        frame,
-        scene,
-        getFrames().get(frame, this.semPostProcessPassCompleted),
-        this.renderer.getPresentSemaphore(frame),
-        fence);
+    this.uiRenderPass.render(frame, scene, getFrames().get(frame, this.semPostProcessPassCompleted), this.renderer.getPresentSemaphore(frame), fence);
   }
 
   @Override

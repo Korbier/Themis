@@ -21,15 +21,16 @@ import org.sc.themis.renderer.base.exception.NoQueueFamilyFoundException;
 import org.sc.themis.renderer.base.presentation.VkSurface;
 import org.sc.themis.renderer.base.queue.VkQueue;
 import org.sc.themis.renderer.base.queue.VkQueueFamily;
-import org.sc.themis.renderer.lang.VulkanObject;
+import org.sc.themis.renderer.lang.Vulkan;
 import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.configuration.ConfigurationEnum;
 import org.sc.themis.shared.exception.ThemisException;
+import org.sc.themis.core.LifeCycle;
 import org.sc.themis.shared.utils.BitwiseState;
 import org.sc.themis.shared.utils.LogUtils;
 import org.slf4j.LoggerFactory;
 
-public class VkDevice extends VulkanObject {
+public class VkDevice extends Vulkan implements LifeCycle {
 
   private static final org.slf4j.Logger logger = LoggerFactory.getLogger(VkDevice.class);
 
@@ -37,14 +38,20 @@ public class VkDevice extends VulkanObject {
   public static final int FEATURE_GEOMETRY_SHADER             = 0b0000_0000_0000_0000_0000_0000_0000_0010;
   public static final int FEATURE_FRAGMENT_STORES_AND_ATOMICS = 0b0000_0000_0000_0000_0000_0000_0000_0011;
 
+  private final boolean enableFeatureSamplerAnisotropy;
+  private final boolean enableFeatureGeometryShader;
+  private final boolean enableFeatureFragmentStoresAndAtomics;
+
   private final VkPhysicalDevice physicalDevice;
   private org.lwjgl.vulkan.VkDevice handle;
 
   private final BitwiseState features = new BitwiseState();
 
-  public VkDevice(Configuration configuration, VkPhysicalDevice physicalDevice) {
-    super(configuration);
+  public VkDevice(VkPhysicalDevice physicalDevice, boolean enableFeatureSamplerAnisotropy, boolean enableFeatureGeometryShader, boolean enableFeatureFragmentStoresAndAtomics) {
     this.physicalDevice = physicalDevice;
+    this.enableFeatureSamplerAnisotropy = enableFeatureSamplerAnisotropy;
+    this.enableFeatureGeometryShader = enableFeatureGeometryShader;
+    this.enableFeatureFragmentStoresAndAtomics = enableFeatureFragmentStoresAndAtomics;
   }
 
   public org.lwjgl.vulkan.VkDevice getHandle() {
@@ -67,7 +74,7 @@ public class VkDevice extends VulkanObject {
   }
 
   public void waitIdle() throws ThemisException {
-    vkDevice().deviceWaitIdle(this.getHandle());
+    device.deviceWaitIdle(this.getHandle());
   }
 
   public VkQueue selectQueue(int queueIndex, Predicate<VkQueueFamily> selector)
@@ -76,7 +83,7 @@ public class VkDevice extends VulkanObject {
     int queueFamilyIndex = selectQueueFamily(selector);
     org.lwjgl.vulkan.VkQueue vkQueue = vkFetchQueue(queueIndex, queueFamilyIndex);
 
-    VkQueue queue = new VkQueue(getConfiguration(), vkQueue, queueFamilyIndex);
+    VkQueue queue = new VkQueue(vkQueue, queueFamilyIndex);
     queue.setup();
 
     return queue;
@@ -112,7 +119,7 @@ public class VkDevice extends VulkanObject {
   }
 
   private void cleanupVkDevice() throws ThemisException {
-    vkDevice().destroyDevice(this.getHandle());
+    device.destroyDevice(this.getHandle());
   }
 
   private PointerBuffer selectVkExtensions(MemoryStack stack) {
@@ -136,19 +143,19 @@ public class VkDevice extends VulkanObject {
 
     logger.debug("Enabled features : ");
 
-    if (getConfiguration().get(ConfigurationEnum.rendererFeatureSamplerAnisotropy, false) && this.physicalDevice.getFeatures().samplerAnisotropy()) {
+    if (this.enableFeatureSamplerAnisotropy && this.physicalDevice.getFeatures().samplerAnisotropy()) {
       logger.debug(". Sampler anisotropy");
       this.features.set(FEATURE_SAMPLER_ANISOTROPY);
       features.samplerAnisotropy(true);
     }
 
-    if (getConfiguration().get(ConfigurationEnum.rendererFeatureGeometryShader, false) && this.physicalDevice.getFeatures().geometryShader()) {
+    if (this.enableFeatureGeometryShader && this.physicalDevice.getFeatures().geometryShader()) {
       logger.debug(". Geometry shader feature enabled");
       this.features.set(FEATURE_GEOMETRY_SHADER);
       features.geometryShader(true);
     }
 
-    if (getConfiguration().get(ConfigurationEnum.rendererFeatureFragmentStoresAndAtomics, false) && this.physicalDevice.getFeatures().fragmentStoresAndAtomics()) {
+    if (this.enableFeatureFragmentStoresAndAtomics && this.physicalDevice.getFeatures().fragmentStoresAndAtomics()) {
       logger.debug(". Fragment stores and atomics");
       this.features.set(FEATURE_FRAGMENT_STORES_AND_ATOMICS);
       features.fragmentStoresAndAtomics(true);
@@ -189,7 +196,7 @@ public class VkDevice extends VulkanObject {
 
   private org.lwjgl.vulkan.VkDevice vkCreateDevice(MemoryStack stack, VkDeviceCreateInfo deviceCreateInfo) throws ThemisException {
     PointerBuffer pp = stack.mallocPointer(1);
-    vkDevice().createDevice(this.physicalDevice.getHandle(), deviceCreateInfo, pp);
+    device.createDevice(this.physicalDevice.getHandle(), deviceCreateInfo, pp);
     return new org.lwjgl.vulkan.VkDevice(pp.get(0), this.physicalDevice.getHandle(), deviceCreateInfo);
   }
 
@@ -203,7 +210,7 @@ public class VkDevice extends VulkanObject {
   private org.lwjgl.vulkan.VkQueue vkFetchQueue(int queueIndex, int queueFamilyIndex) throws ThemisException {
     try (MemoryStack stack = MemoryStack.stackPush()) {
       PointerBuffer pQueue = stack.mallocPointer(1);
-      vkDevice().getDeviceQueue(getHandle(), queueFamilyIndex, queueIndex, pQueue);
+      device.getDeviceQueue(getHandle(), queueFamilyIndex, queueIndex, pQueue);
       return new org.lwjgl.vulkan.VkQueue(pQueue.get(0), getHandle());
     }
   }

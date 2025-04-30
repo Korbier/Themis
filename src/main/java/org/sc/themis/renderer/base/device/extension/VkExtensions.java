@@ -8,20 +8,17 @@ import java.util.List;
 import java.util.Set;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkExtensionProperties;
-import org.sc.themis.renderer.lang.VulkanObject;
+import org.sc.themis.renderer.lang.Vulkan;
 import org.sc.themis.shared.configuration.Configuration;
 import org.sc.themis.shared.exception.ThemisException;
+import org.sc.themis.core.LifeCycle;
 import org.slf4j.LoggerFactory;
 
-public class VkExtensions extends VulkanObject {
+public class VkExtensions extends Vulkan implements LifeCycle {
 
   private static final org.slf4j.Logger logger = LoggerFactory.getLogger(VkExtensions.class);
 
   private final Set<VkExtension> extensions = new HashSet<>();
-
-  public VkExtensions(Configuration configuration) {
-    super(configuration);
-  }
 
   @Override
   public void setup() throws ThemisException {
@@ -99,12 +96,12 @@ public class VkExtensions extends VulkanObject {
   private VkExtensionProperties.Buffer vkFetchExtensions(MemoryStack stack) throws ThemisException {
 
     IntBuffer numExtArr = stack.callocInt(1);
-    vkInstance().enumerateInstanceExtensionProperties(numExtArr, null);
+   instance.enumerateInstanceExtensionProperties(numExtArr, null);
 
     int numLayers = numExtArr.get(0);
     VkExtensionProperties.Buffer extensionsBuff = VkExtensionProperties.calloc(numLayers, stack);
 
-    vkInstance().enumerateInstanceExtensionProperties(numExtArr, extensionsBuff);
+   instance.enumerateInstanceExtensionProperties(numExtArr, extensionsBuff);
 
     return extensionsBuff;
   }
